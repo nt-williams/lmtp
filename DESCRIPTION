@@ -1,0 +1,18 @@
+Package: lmtpTMLE
+Title: Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Nicholas",
+           family = "Williams",
+           role = c("aut", "cre"),
+           email = "niw4001@med.cornell.edu", 
+           comment = c(ORCID = "0000-0002-1378-4831")),
+     person("Iván", "Díaz", email = "ild2005@med.cornell.edu",
+            role = c("aut"),
+            comment = c(ORCID = "0000-0001-9056-2047")))
+Description: TO DO.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.99.9001
