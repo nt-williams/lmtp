@@ -1,0 +1,60 @@
+
+# The engine for the substitution estimator
+estimate_m_glm <- function(data, shifted, tau,
+                           node_list, Y, m, family) {
+
+  if (tau > 0) {
+    # setup
+    form <- as.formula(paste(Y, paste(node_list[[tau]], collapse = " + "), sep = " ~ "))
+
+    # fit glm
+    fit <- glm(form, data = data, family = family)
+
+    # predict on shifted data
+    pseudo <- paste0("m", tau)
+    m[, tau] <- data[, pseudo] <- predict(fit, newdata = shifted)
+
+    # recursion
+    estimate_m_glm(data = data,
+                   shifted = shifted,
+                   tau = tau - 1,
+                   node_list = node_list,
+                   Y = pseudo,
+                   m = m)
+  } else {
+    # when t = 1 return matrix m
+    return(m)
+  }
+}
+
+# estimator of m using super learner
+estimate_m_sl <- function(data, shifted, Y, node_list,
+                       tau, outcome_type, learners = NULL, m) {
+
+  if (tau > 0) {
+    # setup
+    ensemble <- initiate_ensemble(data, Y, node_list[[tau]], outcome_type, learners)
+    to_predict <- initiate_ensemble_prediction(shifted, Y, node_list[[tau]], outcome_type)
+
+    # run SL
+    fit <- run_ensemble(ensemble)
+
+    # predict on shifted data
+    pseudo <- paste0("m", tau)
+    m[, tau] <- data[, pseudo] <- fit$predict(to_predict)
+
+    # recursion
+    estimate_m_sl(data = data,
+                  shifted = shifted,
+                  Y = pseduo,
+                  node_list = node_list,
+                  tau = tau - 1,
+                  outcome_type = outcome_type,
+                  learners,
+                  m = m)
+
+  } else {
+    # when t = 1 return matrix m
+    return(m)
+  }
+}
