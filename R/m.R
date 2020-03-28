@@ -1,5 +1,5 @@
 
-# The engine for the substitution estimator
+# the engine for the parametric substitution estimator
 estimate_m_glm <- function(data, shifted, tau,
                            node_list, Y, m, family) {
 
@@ -27,21 +27,21 @@ estimate_m_glm <- function(data, shifted, tau,
   }
 }
 
-# estimator of m using super learner
+# the engine for the initial estimator of m through super learner
 estimate_m_sl <- function(data, shifted, Y, node_list,
                        tau, outcome_type, learners = NULL, m) {
 
   if (tau > 0) {
     # setup
     ensemble <- initiate_ensemble(data, Y, node_list[[tau]], outcome_type, learners)
-    to_predict <- initiate_ensemble_prediction(shifted, Y, node_list[[tau]], outcome_type)
+    to_predict <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
 
     # run SL
     fit <- run_ensemble(ensemble)
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    m[, tau] <- data[, pseudo] <- fit$predict(to_predict)
+    m[, tau] <- data[, pseudo] <- predict_sl3_nondensity(fit, to_predict)
 
     # recursion
     estimate_m_sl(data = data,

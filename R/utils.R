@@ -35,3 +35,13 @@ scale_y_continuous <- function(x, mi = NULL, ma = NULL) {
 run_ensemble <- function(ensemble) {
   ensemble$stack$train(ensemble$task)
 }
+
+predict_sl3_nondensity <- function(object, task) {
+  out <- object$predict(task)
+  return(out)
+}
+
+predict_sl3_density <- function(object, task) {
+  out <- object$predict(task)$likelihood
+  return(out)
+}

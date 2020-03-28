@@ -1,5 +1,5 @@
 
-#' LMPTP Substitution Estimator
+#' Parametric LMPTP Substitution Estimator
 #'
 #' @param data data frame.
 #' @param A column names of treatment variables.
@@ -7,20 +7,19 @@
 #' @param node_list a node list that describes the time ordered structure of variables.
 #' @param shift the amount to shift treatment variables.
 #' @param family outcome variable family (i.e., continuous, binomial).
-#' @param method TODO: the model to be used for estimation.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-#' set.seed(429153)
-#' n_obs <- 1000
-#' W <- replicate(2, rbinom(n_obs, 1, 0.5))
-#' A <- rnorm(n_obs, mean = 2 * W, sd = 1)
-#' Y <- rbinom(n_obs, 1, plogis(A + W + rnorm(n_obs, mean = 0, sd = 1)))
-#' tl <- list(c("X1", "X2", "A"))
+#' set.seed(6246)
+#' n <- 500
+#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
+#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
+#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 #' df <- data.frame(W, A, Y)
-#' lmtp_sub(df, "A", "Y", tl, 0.5, "binomial")
+#' nl <- list(c("W1", "W2", "A"))
+#' lmtp_sub(df, "A", "Y", nl, 2, "continuous")
 lmtp_sub <- function(data, A, Y, node_list, shift,
                      outcome_type = c("binomial", "continuous")) {
 
@@ -30,12 +29,13 @@ lmtp_sub <- function(data, A, Y, node_list, shift,
   d <- shift_data(data, A, shift)
   m <- create_m(n, tau, data[, Y])
   ot <- match.arg(outcome_type)
-  family <- ifelse(ot == "continous", "gaussian", "binomial")
+  family <- ifelse(ot == "continuous", "gaussian", "binomial")
 
   # iterative expectation estimation
   m <- estimate_m_glm(data, d, tau, node_list, Y, m, family)
 
   # estimation of theta
+  # TODO: wrap this up into a separate helper function
   if (ot == "continuous") {
     theta <- mean(m[, 1])
   } else {
@@ -46,7 +46,7 @@ lmtp_sub <- function(data, A, Y, node_list, shift,
 
 }
 
-lmtp_ipw <- function(data, A, Y, node_list, shift, family,
-                     method = NULL) {
+lmtp_ipw <- function(data, A, Y, node_list, shift,
+                     outcome_type = c("binomial", "continuous")) {
 
 }
