@@ -2,25 +2,27 @@
 % Please edit documentation in R/sub_ipw.R
 \name{lmtp_sub}
 \alias{lmtp_sub}
-\title{Parametric LMPTP Substitution Estimator}
+\title{Parametric LMTP Substitution Estimator}
 \usage{
 lmtp_sub(
   data,
   A,
   Y,
-  node_list,
+  history,
   shift,
-  outcome_type = c("binomial", "continuous")
+  outcome_type = c("binomial", "continuous"),
+  bounds = NULL
 )
 }
 \arguments{
 \item{data}{data frame.}
 
-\item{A}{column names of treatment variables.}
+\item{A}{a vector of column names of treatment variables.}
 
 \item{Y}{column name of outcome variable.}
 
-\item{node_list}{a node list that describes the time ordered structure of variables.}
+\item{history}{a list of length tau with the column names for treatment history at each time point.
+The list should be ordered following the time ordering of the model.}
 
 \item{shift}{the amount to shift treatment variables.}
 
@@ -30,7 +32,7 @@ lmtp_sub(
 
 }
 \description{
-Parametric LMPTP Substitution Estimator
+Parametric LMTP Substitution Estimator
 }
 \examples{
 set.seed(6246)
@@ -39,6 +41,6 @@ W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
 A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
 Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 df <- data.frame(W, A, Y)
-nl <- list(c("W1", "W2", "A"))
-lmtp_sub(df, "A", "Y", nl, 2, "continuous")
+history <- list(c("W1", "W2"))
+lmtp_sub(df, "A", "Y", history, 2, "continuous")
 }

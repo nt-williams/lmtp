@@ -1,5 +1,7 @@
 
 shift_data <- function(data, A, shift) {
+  # TODO: currently only applies one possible, shift
+  # needs to modified to allow different shifts at different time points
   out <- data
   sapply(A, function(x) {
     out[, x] <<- data[[x]] + shift
@@ -18,17 +20,32 @@ rexpit <- function(x) {
   return(out)
 }
 
-scale_y_continuous <- function(x, mi = NULL, ma = NULL) {
+scale_y_continuous <- function(x, outcome_type, bounds = NULL) {
+  if (outcome_type == "binomial") {
+    out <- list(scaled = x,
+                bounds = NULL)
+    return(out)
+  }
 
-  if (is.null(mi)) {
+  if (is.null(bounds)) {
     mi <- min(x)
-  }
-
-  if (is.null(ma)) {
     ma <- max(x)
+  } else {
+    mi <- bounds[1]
+    ma <- bounds[2]
   }
 
-  out <- (x - mi) / (ma - mi)
+  scaled <- (x - mi) / (ma - mi)
+  out <- list(scaled = scaled,
+              bounds = c(mi, ma))
+  return(out)
+}
+
+rescale_y_continuous <- function(scaled, bounds) {
+  mi <- bounds[1]
+  ma <- bounds[2]
+
+  out <- (scaled*(ma - mi)) + mi
   return(out)
 }
 
@@ -43,5 +60,23 @@ predict_sl3_nondensity <- function(object, task) {
 
 predict_sl3_density <- function(object, task) {
   out <- object$predict(task)$likelihood
+  return(out)
+}
+
+theta_sub <- function(m, outcome_type, bounds = NULL) {
+  if (outcome_type == "continuous") {
+    rescaled <- rescale_y_continuous(m, bounds)
+    out <- mean(rescaled)
+  } else if (outcome_type == "binomial") {
+    out <- mean(rexpit(m))
+  }
+  return(out)
+}
+
+compute_theta <- function(eta, estimator, outcome_type, bounds = NULL) {
+
+  out <- switch(estimator,
+                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds))
+
   return(out)
 }

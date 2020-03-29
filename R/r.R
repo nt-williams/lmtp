@@ -1,6 +1,6 @@
 
 # the engine for density ratio nuisance parameter
-# currently only works for a single time points
+# currently only works for a single time point
 estimate_r_sl <- function(data, A, shifted_down, tau = NULL,
                           node_list = NULL, r = NULL, g = NULL,
                           learner_stack = NULL) {

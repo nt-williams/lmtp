@@ -1,7 +1,7 @@
 
 # the engine for the parametric substitution estimator
-estimate_m_glm <- function(data, shifted, tau,
-                           node_list, Y, m, family) {
+estimate_m_glm <- function(data, shifted, Y,
+                           node_list, tau, family, m) {
 
   if (tau > 0) {
     # setup
@@ -29,7 +29,7 @@ estimate_m_glm <- function(data, shifted, tau,
 
 # the engine for the initial estimator of m through super learner
 estimate_m_sl <- function(data, shifted, Y, node_list,
-                       tau, outcome_type, learners = NULL, m) {
+                          tau, outcome_type, learners = NULL, m) {
 
   if (tau > 0) {
     # setup
