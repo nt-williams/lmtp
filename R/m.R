@@ -12,7 +12,7 @@ estimate_m_glm <- function(data, shifted, Y,
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    m[, tau] <- data[, pseudo] <- predict(fit, newdata = shifted)
+    data[, pseudo] <- m[, tau] <- predict(fit, newdata = shifted)
 
     # recursion
     estimate_m_glm(data = data,
@@ -20,7 +20,8 @@ estimate_m_glm <- function(data, shifted, Y,
                    tau = tau - 1,
                    node_list = node_list,
                    Y = pseudo,
-                   m = m)
+                   m = m,
+                   family = "gaussian")
   } else {
     # when t = 1 return matrix m
     return(m)
@@ -49,7 +50,7 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
                   Y = pseduo,
                   node_list = node_list,
                   tau = tau - 1,
-                  outcome_type = outcome_type,
+                  outcome_type = "continuous",
                   learners,
                   m = m)
 

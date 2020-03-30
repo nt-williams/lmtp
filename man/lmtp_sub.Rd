@@ -26,6 +26,9 @@ The list should be ordered following the time ordering of the model.}
 
 \item{shift}{the amount to shift treatment variables.}
 
+\item{bounds}{an optional vector of the bounds for continuous outcomes. If NULL
+the bounds will be taken as the minimum and maximum of the observed data.}
+
 \item{family}{outcome variable family (i.e., continuous, binomial).}
 }
 \value{
@@ -35,6 +38,7 @@ The list should be ordered following the time ordering of the model.}
 Parametric LMTP Substitution Estimator
 }
 \examples{
+# Estimating the effect of a point treatment
 set.seed(6246)
 n <- 500
 W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))

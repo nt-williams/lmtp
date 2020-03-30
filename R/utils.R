@@ -1,10 +1,8 @@
 
-shift_data <- function(data, A, shift) {
-  # TODO: currently only applies one possible, shift
-  # needs to modified to allow different shifts at different time points
+shift_data <- function(data, A, .f) {
   out <- data
   sapply(A, function(x) {
-    out[, x] <<- data[[x]] + shift
+    out[, x] <<- .f(data[[x]])
   }, simplify = TRUE)
   return(out)
 }
@@ -75,6 +73,7 @@ theta_sub <- function(m, outcome_type, bounds = NULL) {
 
 compute_theta <- function(eta, estimator, outcome_type, bounds = NULL) {
 
+  # TODO: as the rest of the estimators are established need to write their theta methods
   out <- switch(estimator,
                 "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds))
 

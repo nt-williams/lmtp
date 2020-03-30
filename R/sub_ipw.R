@@ -8,11 +8,13 @@
 #'   The list should be ordered following the time ordering of the model.
 #' @param shift the amount to shift treatment variables.
 #' @param family outcome variable family (i.e., continuous, binomial).
-#'
+#' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
+#'   the bounds will be taken as the minimum and maximum of the observed data.
 #' @return
 #' @export
 #'
 #' @examples
+#' # Estimating the effect of a point treatment
 #' set.seed(6246)
 #' n <- 500
 #' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
@@ -27,17 +29,17 @@ lmtp_sub <- function(data, A, Y, history, shift,
 
   # setup
   n <- nrow(data)
-  tau <- length(history)
-  node_list <- create_node_list(A, history)
   d <- shift_data(data, A, shift)
-  m <- create_m(n, tau, data[, Y])
+  t <- length(history)
+  m <- create_m(n, t, data[, Y])
   ot <- match.arg(outcome_type)
+  node_list <- create_node_list(A, history)
   family <- ifelse(ot == "continuous", "gaussian", "binomial")
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   data[, "y_scaled"] <- scaled$scaled
 
   # iterative expectation estimation
-  m <- estimate_m_glm(data, d, "y_scaled", node_list, tau, family, m)
+  m <- estimate_m_glm(data, d, "y_scaled", node_list, t, family, m)
 
   # estimation of theta
   theta <- compute_theta(m, "sub", ot, scaled$bounds)

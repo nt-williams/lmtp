@@ -1,4 +1,6 @@
 
+# TODO: when we bound continuous outcomes, should the outcome_type become quasibinomial?
+
 # initiates an sl3 task and corresponding learner stack
 initiate_ensemble <- function(data, Y, X, outcome_type, learners = NULL) {
 
@@ -48,7 +50,7 @@ learner_defaults <- function(outcome_type, learners) {
 
   # setting candidate learners if not specified
   if (is.null(learners) & outcome_type %in% c("binomial", "quasibinomial")) {
-    learners <- c("Lrnr_glm", "Lrnr_mean")
+    learners <- c("Lrnr_glmnet", "Lrnr_glm", "Lrnr_mean")
     learners <- lapply(learners, sl3::make_learner)
     learners <- sl3::make_learner(sl3::Stack, learners)
   } else if (is.null(learners) & outcome_type == "density") {

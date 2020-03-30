@@ -2,12 +2,15 @@
 create_node_list <- function(A, history) {
 
   out <- list()
-  for (i in 1:length(history)) {
-    for (j in 1:length(A)) {
-      out[[i]] <- c(history[[i]], A[[j]])
-    }
+  tau <- length(A)
+  A <- Reduce(c, A, accumulate = T)
+  for (i in 1:tau) {
+      out[[i]] <- c(history[[i]], A[[i]])
   }
 
   # returns
   out
 }
+
+
+
