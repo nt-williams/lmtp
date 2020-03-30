@@ -6,10 +6,11 @@
 #' @param Y column name of outcome variable.
 #' @param history a list of length tau with the column names for treatment history at each time point.
 #'   The list should be ordered following the time ordering of the model.
-#' @param shift the amount to shift treatment variables.
+#' @param shift a function specified how tratment variables should be shifted.
 #' @param family outcome variable family (i.e., continuous, binomial).
 #' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
 #'   the bounds will be taken as the minimum and maximum of the observed data.
+#' @param method should estimation be through glm or Super Learner (using sl3). Default is glm.
 #' @return
 #' @export
 #'
@@ -25,7 +26,7 @@
 #' lmtp_sub(df, "A", "Y", history, 2, "continuous")
 lmtp_sub <- function(data, A, Y, history, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL) {
+                     bounds = NULL, method = c("glm", "sl")) {
 
   # setup
   n <- nrow(data)
@@ -35,14 +36,18 @@ lmtp_sub <- function(data, A, Y, history, shift,
   ot <- match.arg(outcome_type)
   node_list <- create_node_list(A, history)
   family <- ifelse(ot == "continuous", "gaussian", "binomial")
+  outcome_type = ifelse(ot == "continuous", "quasibinomial", "binomial")
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
-  data[, "y_scaled"] <- scaled$scaled
+  method <- match.arg(method)
+  d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
 
-  # iterative expectation estimation
-  m <- estimate_m_glm(data, d, "y_scaled", node_list, t, family, m)
+  # sequential regression
+  m <- switch(method,
+              "glm" = estimate_m_glm(data = data, shifted = d, Y = "y_scaled", node_list = node_list, tau = t, family = family, m = m),
+              "sl" = estimate_m_sl(data = data, shifted = d, Y = "y_scaled", node_list = node_list, tau = t, outcome_type = outcome_type, learners = NULL, m = m))
 
   # estimation of theta
-  theta <- compute_theta(m, "sub", ot, scaled$bounds)
+  theta <- compute_theta(m, "sub", ot, scaled$bounds, method)
 
   # returns
   return(theta)

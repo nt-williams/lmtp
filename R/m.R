@@ -12,7 +12,7 @@ estimate_m_glm <- function(data, shifted, Y,
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    data[, pseudo] <- m[, tau] <- predict(fit, newdata = shifted)
+    data[, pseudo] <- m[, tau] <- qlogis(bound(plogis(predict(fit, newdata = shifted))))
 
     # recursion
     estimate_m_glm(data = data,
@@ -42,15 +42,15 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    m[, tau] <- data[, pseudo] <- predict_sl3_nondensity(fit, to_predict)
+    m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3_nondensity(fit, to_predict))
 
     # recursion
     estimate_m_sl(data = data,
                   shifted = shifted,
-                  Y = pseduo,
+                  Y = pseudo,
                   node_list = node_list,
                   tau = tau - 1,
-                  outcome_type = "continuous",
+                  outcome_type = "quasibinomial",
                   learners,
                   m = m)
 

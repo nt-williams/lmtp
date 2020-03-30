@@ -18,6 +18,10 @@ rexpit <- function(x) {
   return(out)
 }
 
+bound <- function(x, p = 1e-5) {
+  pmax(pmin(x, 1 - p), p)
+}
+
 scale_y_continuous <- function(x, outcome_type, bounds = NULL) {
   if (outcome_type == "binomial") {
     out <- list(scaled = x,
@@ -61,21 +65,23 @@ predict_sl3_density <- function(object, task) {
   return(out)
 }
 
-theta_sub <- function(m, outcome_type, bounds = NULL) {
+theta_sub <- function(m, outcome_type, bounds = NULL, method) {
   if (outcome_type == "continuous") {
     rescaled <- rescale_y_continuous(m, bounds)
     out <- mean(rescaled)
-  } else if (outcome_type == "binomial") {
+  } else if (outcome_type == "binomial" & method == "glm") {
     out <- mean(rexpit(m))
+  } else if (outcome_type == "binomial" & method == "sl") {
+    out <- mean(m)
   }
   return(out)
 }
 
-compute_theta <- function(eta, estimator, outcome_type, bounds = NULL) {
+compute_theta <- function(eta, estimator, outcome_type, bounds = NULL, method = NULL) {
 
   # TODO: as the rest of the estimators are established need to write their theta methods
   out <- switch(estimator,
-                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds))
+                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds, method = method))
 
   return(out)
 }
