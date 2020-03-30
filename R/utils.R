@@ -22,6 +22,10 @@ bound <- function(x, p = 1e-5) {
   pmax(pmin(x, 1 - p), p)
 }
 
+truncate <- function(x, p = 1e-2) {
+  pmin(x, 1 - p)
+}
+
 scale_y_continuous <- function(x, outcome_type, bounds = NULL) {
   if (outcome_type == "binomial") {
     out <- list(scaled = x,

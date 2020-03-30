@@ -2,10 +2,10 @@
 # TODO: when we bound continuous outcomes, should the outcome_type become quasibinomial?
 
 # initiates an sl3 task and corresponding learner stack
-initiate_ensemble <- function(data, Y, X, outcome_type, learners = NULL) {
+initiate_ensemble <- function(data, Y, X, outcome_type, id = NULL, learners = NULL) {
 
   # general task
-  task <- initiate_sl3_task(data, Y, X, outcome_type)
+  task <- initiate_sl3_task(data, Y, X, outcome_type, id)
 
   # specifying learners
   sl3_profile <- learner_defaults(outcome_type, learners)
@@ -23,7 +23,7 @@ initiate_ensemble <- function(data, Y, X, outcome_type, learners = NULL) {
 }
 
 # general initiator of an sl3 task
-initiate_sl3_task <- function(data, Y, X, outcome_type) {
+initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL) {
 
   # general task
   task <-
@@ -32,6 +32,7 @@ initiate_sl3_task <- function(data, Y, X, outcome_type) {
       covariates = X,
       outcome = Y,
       outcome_type = outcome_type,
+      id = id
     )
 
   # returns
