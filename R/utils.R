@@ -55,8 +55,8 @@ rescale_y_continuous <- function(scaled, bounds) {
   return(out)
 }
 
-run_ensemble <- function(ensemble) {
-  ensemble$stack$train(ensemble$task)
+run_ensemble <- function(ensemble, task) {
+  ensemble$train(task)
 }
 
 predict_sl3_nondensity <- function(object, task) {
@@ -86,12 +86,23 @@ theta_ipw <- function(r, y, tau) {
   return(out)
 }
 
+theta_tml <- function(m, outcome_type, bounds = NULL) {
+  if (outcome_type == "continuous") {
+    rescaled <- rescale_y_continuous(m, bounds)
+    out <- mean(rescaled)
+  } else {
+    out <- mean(m)
+  }
+  return(out)
+}
+
 compute_theta <- function(eta, estimator, outcome_type, bounds = NULL, method = NULL) {
 
   # TODO: as the rest of the estimators are established need to write their theta methods
   out <- switch(estimator,
                 "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds, method = method),
-                "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau))
+                "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
+                "tml" = theta_tml(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds))
 
   return(out)
 }

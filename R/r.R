@@ -37,13 +37,14 @@ estimate_r_sl <- function(data, A, shift, tau,
     d <- rbind(data, shifted)
     d$id <- rep(1:n, 2)
     d$shift_indicator <- c(rep(0, n), rep(1, n))
-    ensemble <- initiate_ensemble(d, "shift_indicator", node_list[[t]], "binomial", "id", learner_stack)
+    task <- initiate_sl3_task(d, "shift_indicator", node_list[[t]], "binomial", "id")
+    ensemble <- initiate_ensemble("binomial", learner_stack)
 
     # run SL
-    fit <- run_ensemble(ensemble)
+    fit <- run_ensemble(ensemble, task)
 
     # ratios
-    pred <- bound(predict_sl3_nondensity(fit, ensemble$task), .Machine$double.eps)
+    pred <- bound(predict_sl3_nondensity(fit, task), .Machine$double.eps)
     rat <- pred / (1 - truncate(pred))
     r$natural[, t] <<- rat[d$shift_indicator == 0]
     r$shifted[, t] <<- rat[d$shift_indicator == 1]

@@ -1,4 +1,65 @@
 
+#' LMTP Targeted Maximum Likelihood Estimator
+#'
+#' @param data
+#' @param A
+#' @param Y
+#' @param history
+#' @param shift
+#' @param outcome_type
+#' @param bounds
+#' @param learner_stack_Q
+#' @param learner_stack_g
+#'
+#' @return
+#' @export
+#'
+#' @examples
+lmtp_tmle <- function(data, A, Y, history, shift,
+                      outcome_type = c("binomial", "continuous"),
+                      bounds = NULL, learner_stack_Q = NULL,
+                      learner_stack_g = NULL) {
+
+
+  # setup
+  n <- nrow(data)
+  d <- shift_data(data, A, shift)
+  t <- length(history)
+  m <- matrix(nrow = n, ncol = t)
+  ot <- match.arg(outcome_type)
+  node_list <- create_node_list(A, history)
+  scaled <- scale_y_continuous(data[, Y], ot, bounds)
+  d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
+
+  # propensity estimation
+  r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack_g)
+
+  # tmle
+  m_shifted <- estimate_tmle(data = data,
+                             shifted = d,
+                             Y = Y,
+                             node_list = node_list,
+                             tau = t,
+                             outcome_type = ot,
+                             m_natural = m,
+                             m_shifted = m,
+                             m_natural_initial = m,
+                             m_shifted_initial = m,
+                             r = r,
+                             learner_stack = learner_stack_Q)
+
+  eta <- list(m = m_shifted[, 1],
+              outcome_type = ot,
+              bounds = scaled$bounds)
+
+  # estimates
+  out <- compute_theta(eta, "tml", NULL, NULL, NULL)
+
+  # returns
+  return(out)
+}
+
+
 #' Parametric LMTP Substitution Estimator
 #'
 #' @param data data frame.
@@ -26,7 +87,8 @@
 #' lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous", method = "glm")
 lmtp_sub <- function(data, A, Y, history, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, method = c("glm", "sl")) {
+                     bounds = NULL, method = c("glm", "sl"),
+                     learner_stack = NULL) {
 
   # setup
   n <- nrow(data)
@@ -43,8 +105,21 @@ lmtp_sub <- function(data, A, Y, history, shift,
 
   # sequential regression
   m <- switch(method,
-              "glm" = estimate_m_glm(data = data, shifted = d, Y = "y_scaled", node_list = node_list, tau = t, family = family, m = m),
-              "sl" = estimate_m_sl(data = data, shifted = d, Y = "y_scaled", node_list = node_list, tau = t, outcome_type = outcome_type, learners = NULL, m = m))
+              "glm" = estimate_m_glm(data = data,
+                                     shifted = d,
+                                     Y = "y_scaled",
+                                     node_list = node_list,
+                                     tau = t,
+                                     family = family,
+                                     m = m),
+              "sl" = estimate_m_sl(data = data,
+                                   shifted = d,
+                                   Y = "y_scaled",
+                                   node_list = node_list,
+                                   tau = t,
+                                   outcome_type = outcome_type,
+                                   learner_stack = learner_stack,
+                                   m = m))
 
   # estimation of theta
   # TODO: options for the specific estimator should be wrapped up in a list

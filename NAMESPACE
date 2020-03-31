@@ -2,3 +2,4 @@
 
 export(lmtp_ipw)
 export(lmtp_sub)
+export(lmtp_tmle)
