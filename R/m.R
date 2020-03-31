@@ -43,7 +43,7 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3_nondensity(fit, pred_task))
+    m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
 
     # recursion
     estimate_m_sl(data = data,
@@ -61,7 +61,7 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
   }
 }
 
-
+# the engine for the TML estimator
 estimate_tmle <- function(data, shifted, Y, node_list, tau,
                           outcome_type, m_natural, m_shifted,
                           m_natural_initial, m_shifted_initial, r,
@@ -78,8 +78,8 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau,
 
     # predict on data
     pseudo <- paste0("m", tau)
-    m_natural_initial[, tau] <- bound(predict_sl3_nondensity(fit, fit_task))
-    m_shifted_initial[, tau] <- bound(predict_sl3_nondensity(fit, pred_task))
+    m_natural_initial[, tau] <- bound(predict_sl3(fit, fit_task))
+    m_shifted_initial[, tau] <- bound(predict_sl3(fit, pred_task))
 
     # tilt estimates
     fit <- suppressWarnings(glm(data[, Y] ~ offset(qlogis(m_natural_initial[, tau])),
@@ -100,7 +100,7 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau,
                   Y = pseudo,
                   node_list = node_list,
                   tau = tau - 1,
-                  outcome_type = "continuous",
+                  outcome_type = "quasibinomial",
                   m_natural = m_natural,
                   m_shifted = m_shifted,
                   m_natural_initial = m_natural_initial,

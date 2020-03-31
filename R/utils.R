@@ -13,11 +13,6 @@ create_m <- function(n, t, Y) {
   return(out)
 }
 
-rexpit <- function(x) {
-  out <- exp(x) / (1 + exp(x))
-  return(out)
-}
-
 bound <- function(x, p = 1e-5) {
   pmax(pmin(x, 1 - p), p)
 }
@@ -59,13 +54,8 @@ run_ensemble <- function(ensemble, task) {
   ensemble$train(task)
 }
 
-predict_sl3_nondensity <- function(object, task) {
+predict_sl3 <- function(object, task) {
   out <- object$predict(task)
-  return(out)
-}
-
-predict_sl3_density <- function(object, task) {
-  out <- object$predict(task)$likelihood
   return(out)
 }
 
@@ -74,7 +64,7 @@ theta_sub <- function(m, outcome_type, bounds = NULL, method) {
     rescaled <- rescale_y_continuous(m, bounds)
     out <- mean(rescaled)
   } else if (outcome_type == "binomial" & method == "glm") {
-    out <- mean(rexpit(m))
+    out <- mean(plogis(m))
   } else if (outcome_type == "binomial" & method == "sl") {
     out <- mean(m)
   }
@@ -100,9 +90,10 @@ compute_theta <- function(eta, estimator, outcome_type, bounds = NULL, method = 
 
   # TODO: as the rest of the estimators are established need to write their theta methods
   out <- switch(estimator,
-                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds, method = method),
+                "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds, method = eta$method),
                 "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
-                "tml" = theta_tml(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds))
+                "tml" = theta_tml(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds),
+                "sdr" = NULL)
 
   return(out)
 }

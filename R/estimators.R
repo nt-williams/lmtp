@@ -62,12 +62,12 @@ lmtp_tmle <- function(data, A, Y, history, shift,
                              r = r,
                              learner_stack = learner_stack_Q)
 
+  # estimates
   eta <- list(m = m_shifted[, 1],
               outcome_type = ot,
               bounds = scaled$bounds)
 
-  # estimates
-  out <- compute_theta(eta, "tml", NULL, NULL, NULL)
+  out <- compute_theta(eta, "tml")
 
   # returns
   return(out)
@@ -138,12 +138,15 @@ lmtp_sub <- function(data, A, Y, history, shift,
                                    m = m))
 
   # estimation of theta
-  # TODO: options for the specific estimator should be wrapped up in a list
-  # see lmtp_ipw for example
-  theta <- compute_theta(m, "sub", ot, scaled$bounds, method)
+  eta <- list(m = m[, 1],
+              outcome_type = ot,
+              bounds = scaled$bounds,
+              method = method)
+
+  out <- compute_theta(eta, "sub")
 
   # returns
-  return(theta)
+  return(out)
 
 }
 
@@ -182,14 +185,15 @@ lmtp_ipw <- function(data, A, Y, history, shift,
 
   # propensity estimation
   r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack)
+
+  # estimation of theta
   eta <- list(r = r$rn,
               y = data[, Y],
               tau = t)
 
-  # estimation of theta
-  theta <- compute_theta(eta, "ipw", NULL, NULL, NULL)
+  out <- compute_theta(eta, "ipw", NULL, NULL, NULL)
 
   # returns
-  return(theta)
+  return(out)
 
 }

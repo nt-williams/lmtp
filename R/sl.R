@@ -1,6 +1,4 @@
 
-# TODO: when we bound continuous outcomes, should the outcome_type become quasibinomial?
-
 # initiates an sl3 task and corresponding learner stack
 initiate_ensemble <- function(outcome_type, learners = NULL) {
 
