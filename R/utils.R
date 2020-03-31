@@ -81,11 +81,17 @@ theta_sub <- function(m, outcome_type, bounds = NULL, method) {
   return(out)
 }
 
+theta_ipw <- function(r, y, tau) {
+  out <- mean(r[, tau]*y)
+  return(out)
+}
+
 compute_theta <- function(eta, estimator, outcome_type, bounds = NULL, method = NULL) {
 
   # TODO: as the rest of the estimators are established need to write their theta methods
   out <- switch(estimator,
-                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds, method = method))
+                "sub" = theta_sub(m = eta[, 1], outcome_type = outcome_type, bounds = bounds, method = method),
+                "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau))
 
   return(out)
 }

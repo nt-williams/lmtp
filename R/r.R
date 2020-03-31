@@ -49,7 +49,7 @@ estimate_r_sl <- function(data, A, shift, tau,
     r$shifted[, t] <<- rat[d$shift_indicator == 1]
   })
 
-  rn <- t(apply(r$natural, 1, cumprod))
+  rn <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
   rd <- rn / (r$natural * r$shifted)
 
   # returns

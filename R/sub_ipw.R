@@ -23,7 +23,7 @@
 #' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 #' df <- data.frame(W, A, Y)
 #' history <- list(c("W1", "W2"))
-#' lmtp_sub(df, "A", "Y", history, 2, "continuous")
+#' lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous", method = "glm")
 lmtp_sub <- function(data, A, Y, history, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, method = c("glm", "sl")) {
@@ -47,6 +47,8 @@ lmtp_sub <- function(data, A, Y, history, shift,
               "sl" = estimate_m_sl(data = data, shifted = d, Y = "y_scaled", node_list = node_list, tau = t, outcome_type = outcome_type, learners = NULL, m = m))
 
   # estimation of theta
+  # TODO: options for the specific estimator should be wrapped up in a list
+  # see lmtp_ipw for example
   theta <- compute_theta(m, "sub", ot, scaled$bounds, method)
 
   # returns
@@ -54,7 +56,47 @@ lmtp_sub <- function(data, A, Y, history, shift,
 
 }
 
-lmtp_ipw <- function(data, A, Y, node_list, shift,
-                     outcome_type = c("binomial", "continuous")) {
+#' lMTP IPW Estimator
+#'
+#' @param data
+#' @param A
+#' @param Y
+#' @param history
+#' @param shift
+#' @param outcome_type
+#' @param learners
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' # Estimating the effect of a point treatment
+#' set.seed(6246)
+#' n <- 500
+#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
+#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
+#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
+#' df <- data.frame(W, A, Y)
+#' history <- list(c("W1", "W2"))
+#' lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "binomial")
+lmtp_ipw <- function(data, A, Y, history, shift,
+                     outcome_type = c("binomial", "continuous"),
+                     learners = NULL) {
+
+  # setup
+  t <- length(history)
+  node_list <- create_node_list(A, history)
+
+  # propensity estimation
+  r <- estimate_r_sl(data, A, shift, t, node_list, learners)
+  eta <- list(r = r$rn,
+              y = data[, Y],
+              tau = t)
+
+  # estimation of theta
+  theta <- compute_theta(eta, "ipw", NULL, NULL, NULL)
+
+  # returns
+  return(theta)
 
 }
