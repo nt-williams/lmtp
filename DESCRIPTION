@@ -24,3 +24,5 @@ Imports:
     sl3 (>= 1.3.7)
 Remotes: 
     tlverse/sl3
+Suggests: 
+    covr
