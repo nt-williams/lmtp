@@ -1,20 +1,34 @@
 
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
-#' @param data
-#' @param A
-#' @param Y
-#' @param history
-#' @param shift
-#' @param outcome_type
-#' @param bounds
-#' @param learner_stack_Q
-#' @param learner_stack_g
+#' @param data data frame.
+#' @param A a vector of column names of treatment variables.
+#' @param Y the column name of the outcome variable.
+#' @param history a list of length tau with the column names for treatment history at each time point.
+#'  The list should be ordered following the time ordering of the model.
+#' @param shift a function that specifies how tratment variables should be shifted.
+#' @param outcome_type outcome variable type (i.e., continuous, binomial).
+#' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
+#'   the bounds will be taken as the minimum and maximum of the observed data.
+#'   Ignored if outcome type is binary.
+#' @param learner_stack_Q an \code{sl3} learner stack for estimation of the outcome regression.
+#' @param learner_stack_g an \code{sl3} learner stack for estimation of the exposure mechanism.
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' # Estimating the effect of a point treatment
+#' set.seed(6246)
+#' n <- 500
+#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
+#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
+#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
+#' df <- data.frame(W, A, Y)
+#' history <- list(c("W1", "W2"))
+#' lmtp_tmle(df, "A", "Y", history, function(x) x + 2, "continuous",
+#'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
+#'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
 lmtp_tmle <- function(data, A, Y, history, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
@@ -37,7 +51,7 @@ lmtp_tmle <- function(data, A, Y, history, shift,
   # tmle
   m_shifted <- estimate_tmle(data = data,
                              shifted = d,
-                             Y = Y,
+                             Y = "y_scaled",
                              node_list = node_list,
                              tau = t,
                              outcome_type = ot,
@@ -64,14 +78,15 @@ lmtp_tmle <- function(data, A, Y, history, shift,
 #'
 #' @param data data frame.
 #' @param A a vector of column names of treatment variables.
-#' @param Y column name of outcome variable.
+#' @param Y the column name of the outcome variable.
 #' @param history a list of length tau with the column names for treatment history at each time point.
 #'   The list should be ordered following the time ordering of the model.
-#' @param shift a function specified how tratment variables should be shifted.
-#' @param family outcome variable family (i.e., continuous, binomial).
+#' @param shift a function that specifies how tratment variables should be shifted.
+#' @param outcome_type outcome variable type (i.e., continuous, binomial).
 #' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
 #'   the bounds will be taken as the minimum and maximum of the observed data.
 #' @param method should estimation be through glm or Super Learner (using sl3). Default is glm.
+#' @param learner_stack an optional \code{sl3} learner stack when method is set to \code{sl}.
 #' @return
 #' @export
 #'
@@ -84,7 +99,8 @@ lmtp_tmle <- function(data, A, Y, history, shift,
 #' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 #' df <- data.frame(W, A, Y)
 #' history <- list(c("W1", "W2"))
-#' lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous", method = "glm")
+#' lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous",
+#'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
 lmtp_sub <- function(data, A, Y, history, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, method = c("glm", "sl"),
@@ -133,13 +149,14 @@ lmtp_sub <- function(data, A, Y, history, shift,
 
 #' lMTP IPW Estimator
 #'
-#' @param data
-#' @param A
-#' @param Y
-#' @param history
-#' @param shift
-#' @param outcome_type
-#' @param learners
+#' @param data a data frame.
+#' @param A a vector of column names of treatment variables.
+#' @param Y the column name of the outcome variable.
+#' @param history a list of length tau with the column names for treatment history at each time point.
+#'  The list should be ordered following the time ordering of the model.
+#' @param shift a function that specifies how tratment variables should be shifted.
+#' @param outcome_type outcome variable type (i.e., continuous, binomial).
+#' @param learner_stack an \code{sl3} learner stack for estimation of the exposure mechanism.
 #'
 #' @return
 #' @export
@@ -153,17 +170,18 @@ lmtp_sub <- function(data, A, Y, history, shift,
 #' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 #' df <- data.frame(W, A, Y)
 #' history <- list(c("W1", "W2"))
-#' lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "binomial")
+#' lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "continuous",
+#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
 lmtp_ipw <- function(data, A, Y, history, shift,
                      outcome_type = c("binomial", "continuous"),
-                     learners = NULL) {
+                     learner_stack = NULL) {
 
   # setup
   t <- length(history)
   node_list <- create_node_list(A, history)
 
   # propensity estimation
-  r <- estimate_r_sl(data, A, shift, t, node_list, learners)
+  r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack)
   eta <- list(r = r$rn,
               y = data[, Y],
               tau = t)

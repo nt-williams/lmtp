@@ -11,11 +11,24 @@ lmtp_ipw(
   history,
   shift,
   outcome_type = c("binomial", "continuous"),
-  learners = NULL
+  learner_stack = NULL
 )
 }
 \arguments{
-\item{learners}{}
+\item{data}{a data frame.}
+
+\item{A}{a vector of column names of treatment variables.}
+
+\item{Y}{the column name of the outcome variable.}
+
+\item{history}{a list of length tau with the column names for treatment history at each time point.
+The list should be ordered following the time ordering of the model.}
+
+\item{shift}{a function that specifies how tratment variables should be shifted.}
+
+\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
+
+\item{learner_stack}{an \code{sl3} learner stack for estimation of the exposure mechanism.}
 }
 \value{
 
@@ -32,5 +45,6 @@ A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
 Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 df <- data.frame(W, A, Y)
 history <- list(c("W1", "W2"))
-lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "binomial")
+lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "continuous",
+         learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
 }

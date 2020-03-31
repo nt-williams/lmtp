@@ -21,19 +21,21 @@ lmtp_sub(
 
 \item{A}{a vector of column names of treatment variables.}
 
-\item{Y}{column name of outcome variable.}
+\item{Y}{the column name of the outcome variable.}
 
 \item{history}{a list of length tau with the column names for treatment history at each time point.
 The list should be ordered following the time ordering of the model.}
 
-\item{shift}{a function specified how tratment variables should be shifted.}
+\item{shift}{a function that specifies how tratment variables should be shifted.}
+
+\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
 
 \item{bounds}{an optional vector of the bounds for continuous outcomes. If NULL
 the bounds will be taken as the minimum and maximum of the observed data.}
 
 \item{method}{should estimation be through glm or Super Learner (using sl3). Default is glm.}
 
-\item{family}{outcome variable family (i.e., continuous, binomial).}
+\item{learner_stack}{an optional \code{sl3} learner stack when method is set to \code{sl}.}
 }
 \value{
 
@@ -50,5 +52,6 @@ A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
 Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 df <- data.frame(W, A, Y)
 history <- list(c("W1", "W2"))
-lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous", method = "glm")
+lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous",
+         method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
 }

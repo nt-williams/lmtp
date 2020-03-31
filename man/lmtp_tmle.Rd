@@ -17,11 +17,43 @@ lmtp_tmle(
 )
 }
 \arguments{
-\item{learner_stack_g}{}
+\item{data}{data frame.}
+
+\item{A}{a vector of column names of treatment variables.}
+
+\item{Y}{the column name of the outcome variable.}
+
+\item{history}{a list of length tau with the column names for treatment history at each time point.
+The list should be ordered following the time ordering of the model.}
+
+\item{shift}{a function that specifies how tratment variables should be shifted.}
+
+\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
+
+\item{bounds}{an optional vector of the bounds for continuous outcomes. If NULL
+the bounds will be taken as the minimum and maximum of the observed data.
+Ignored if outcome type is binary.}
+
+\item{learner_stack_Q}{an \code{sl3} learner stack for estimation of the outcome regression.}
+
+\item{learner_stack_g}{an \code{sl3} learner stack for estimation of the exposure mechanism.}
 }
 \value{
 
 }
 \description{
 LMTP Targeted Maximum Likelihood Estimator
+}
+\examples{
+# Estimating the effect of a point treatment
+set.seed(6246)
+n <- 500
+W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
+A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
+Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
+df <- data.frame(W, A, Y)
+history <- list(c("W1", "W2"))
+lmtp_tmle(df, "A", "Y", history, function(x) x + 2, "continuous",
+          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
+          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
 }
