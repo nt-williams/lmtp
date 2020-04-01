@@ -8,7 +8,8 @@ lmtp_tmle(
   data,
   A,
   Y,
-  history,
+  nodes,
+  k = NULL,
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
@@ -17,26 +18,31 @@ lmtp_tmle(
 )
 }
 \arguments{
-\item{data}{data frame.}
+\item{data}{A data frame.}
 
-\item{A}{a vector of column names of treatment variables.}
+\item{A}{A vector of column names of treatment variables.}
 
-\item{Y}{the column name of the outcome variable.}
+\item{nodes}{A list of length tau with the column names for new nodes to
+be introduced at each time point. The list should be ordered following
+the time ordering of the model.}
 
-\item{history}{a list of length tau with the column names for treatment history at each time point.
-The list should be ordered following the time ordering of the model.}
+\item{k}{An integer specifying how many previous time points nodes should be
+used for estimation at the given time point. Default is \code{NULL},
+all time points.}
 
-\item{shift}{a function that specifies how tratment variables should be shifted.}
+\item{shift}{A function that specifies how tratment variables should be shifted.}
 
-\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
 
-\item{bounds}{an optional vector of the bounds for continuous outcomes. If NULL
+\item{bounds}{An optional vector of the bounds for continuous outcomes. If NULL
 the bounds will be taken as the minimum and maximum of the observed data.
 Ignored if outcome type is binary.}
 
-\item{learner_stack_Q}{an \code{sl3} learner stack for estimation of the outcome regression.}
+\item{learner_stack_Q}{An \code{sl3} learner stack for estimation of the outcome
+regression.}
 
-\item{learner_stack_g}{an \code{sl3} learner stack for estimation of the exposure mechanism.}
+\item{learner_stack_g}{An \code{sl3} learner stack for estimation of the exposure
+mechanism.}
 }
 \value{
 

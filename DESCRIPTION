@@ -25,4 +25,5 @@ Imports:
 Remotes: 
     tlverse/sl3
 Suggests: 
+    testthat (>= 2.1.0),
     covr

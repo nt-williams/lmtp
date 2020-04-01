@@ -2,13 +2,14 @@
 % Please edit documentation in R/estimators.R
 \name{lmtp_sub}
 \alias{lmtp_sub}
-\title{Parametric LMTP Substitution Estimator}
+\title{LMTP Substitution Estimator}
 \usage{
 lmtp_sub(
   data,
   A,
   Y,
-  history,
+  nodes,
+  k = NULL,
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
@@ -17,31 +18,38 @@ lmtp_sub(
 )
 }
 \arguments{
-\item{data}{data frame.}
+\item{data}{A data frame.}
 
-\item{A}{a vector of column names of treatment variables.}
+\item{A}{A vector of column names of treatment variables.}
 
-\item{Y}{the column name of the outcome variable.}
+\item{Y}{The column name of the outcome variable.}
 
-\item{history}{a list of length tau with the column names for treatment history at each time point.
-The list should be ordered following the time ordering of the model.}
+\item{nodes}{A list of length tau with the column names for new nodes to
+be introduced at each time point. The list should be ordered following
+the time ordering of the model.}
 
-\item{shift}{a function that specifies how tratment variables should be shifted.}
+\item{k}{An integer specifying how many previous time points nodes should be
+used for estimation at the given time point. Default is \code{NULL},
+all time points.}
 
-\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
+\item{shift}{A function that specifies how tratment variables should be shifted.}
 
-\item{bounds}{an optional vector of the bounds for continuous outcomes. If NULL
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
+
+\item{bounds}{An optional vector of the bounds for continuous outcomes. If NULL
 the bounds will be taken as the minimum and maximum of the observed data.}
 
-\item{method}{should estimation be through glm or Super Learner (using sl3). Default is glm.}
+\item{method}{Should estimation be through glm or Super Learner (using sl3).
+Default is glm.}
 
-\item{learner_stack}{an optional \code{sl3} learner stack when method is set to \code{sl}.}
+\item{learner_stack}{An optional \code{sl3} learner stack when method is
+set to \code{sl}.}
 }
 \value{
 
 }
 \description{
-Parametric LMTP Substitution Estimator
+LMTP Substitution Estimator
 }
 \examples{
 # Estimating the effect of a point treatment

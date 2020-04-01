@@ -1,18 +1,23 @@
 
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
-#' @param data data frame.
-#' @param A a vector of column names of treatment variables.
-#' @param Y the column name of the outcome variable.
-#' @param history a list of length tau with the column names for treatment history at each time point.
-#'  The list should be ordered following the time ordering of the model.
-#' @param shift a function that specifies how tratment variables should be shifted.
-#' @param outcome_type outcome variable type (i.e., continuous, binomial).
-#' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
+#' @param data A data frame.
+#' @param A A vector of column names of treatment variables.
+#' @param nodes A list of length tau with the column names for new nodes to
+#'  be introduced at each time point. The list should be ordered following
+#'  the time ordering of the model.
+#' @param k An integer specifying how many previous time points nodes should be
+#'  used for estimation at the given time point. Default is \code{NULL},
+#'  all time points.
+#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'   the bounds will be taken as the minimum and maximum of the observed data.
 #'   Ignored if outcome type is binary.
-#' @param learner_stack_Q an \code{sl3} learner stack for estimation of the outcome regression.
-#' @param learner_stack_g an \code{sl3} learner stack for estimation of the exposure mechanism.
+#' @param learner_stack_Q An \code{sl3} learner stack for estimation of the outcome
+#'  regression.
+#' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
+#'  mechanism.
 #'
 #' @return
 #' @export
@@ -29,7 +34,7 @@
 #' lmtp_tmle(df, "A", "Y", history, function(x) x + 2, "continuous",
 #'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
 #'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_tmle <- function(data, A, Y, history, shift,
+lmtp_tmle <- function(data, A, Y, nodes, k = NULL, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
                       learner_stack_g = NULL) {
@@ -38,10 +43,10 @@ lmtp_tmle <- function(data, A, Y, history, shift,
   # setup
   n <- nrow(data)
   d <- shift_data(data, A, shift)
-  t <- length(history)
+  t <- length(nodes)
   m <- matrix(nrow = n, ncol = t)
   ot <- match.arg(outcome_type)
-  node_list <- create_node_list(A, history)
+  node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
 
@@ -74,19 +79,25 @@ lmtp_tmle <- function(data, A, Y, history, shift,
 }
 
 
-#' Parametric LMTP Substitution Estimator
+#' LMTP Substitution Estimator
 #'
-#' @param data data frame.
-#' @param A a vector of column names of treatment variables.
-#' @param Y the column name of the outcome variable.
-#' @param history a list of length tau with the column names for treatment history at each time point.
-#'   The list should be ordered following the time ordering of the model.
-#' @param shift a function that specifies how tratment variables should be shifted.
-#' @param outcome_type outcome variable type (i.e., continuous, binomial).
-#' @param bounds an optional vector of the bounds for continuous outcomes. If NULL
-#'   the bounds will be taken as the minimum and maximum of the observed data.
-#' @param method should estimation be through glm or Super Learner (using sl3). Default is glm.
-#' @param learner_stack an optional \code{sl3} learner stack when method is set to \code{sl}.
+#' @param data A data frame.
+#' @param A A vector of column names of treatment variables.
+#' @param Y The column name of the outcome variable.
+#' @param nodes A list of length tau with the column names for new nodes to
+#'  be introduced at each time point. The list should be ordered following
+#'  the time ordering of the model.
+#' @param k An integer specifying how many previous time points nodes should be
+#'  used for estimation at the given time point. Default is \code{NULL},
+#'  all time points.
+#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
+#'  the bounds will be taken as the minimum and maximum of the observed data.
+#' @param method Should estimation be through glm or Super Learner (using sl3).
+#'  Default is glm.
+#' @param learner_stack An optional \code{sl3} learner stack when method is
+#'  set to \code{sl}.
 #' @return
 #' @export
 #'
@@ -101,7 +112,7 @@ lmtp_tmle <- function(data, A, Y, history, shift,
 #' history <- list(c("W1", "W2"))
 #' lmtp_sub(df, "A", "Y", history, function(x) x + 2, "continuous",
 #'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_sub <- function(data, A, Y, history, shift,
+lmtp_sub <- function(data, A, Y, nodes, k = NULL, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, method = c("glm", "sl"),
                      learner_stack = NULL) {
@@ -109,10 +120,10 @@ lmtp_sub <- function(data, A, Y, history, shift,
   # setup
   n <- nrow(data)
   d <- shift_data(data, A, shift)
-  t <- length(history)
+  t <- length(nodes)
   m <- create_m(n, t, data[, Y])
   ot <- match.arg(outcome_type)
-  node_list <- create_node_list(A, history)
+  node_list <- create_node_list(A, nodes, k)
   family <- ifelse(ot == "continuous", "gaussian", "binomial")
   outcome_type = ifelse(ot == "continuous", "quasibinomial", "binomial")
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
@@ -150,16 +161,21 @@ lmtp_sub <- function(data, A, Y, history, shift,
 
 }
 
-#' lMTP IPW Estimator
+#' LMTP IPW Estimator
 #'
-#' @param data a data frame.
-#' @param A a vector of column names of treatment variables.
-#' @param Y the column name of the outcome variable.
-#' @param history a list of length tau with the column names for treatment history at each time point.
-#'  The list should be ordered following the time ordering of the model.
-#' @param shift a function that specifies how tratment variables should be shifted.
-#' @param outcome_type outcome variable type (i.e., continuous, binomial).
-#' @param learner_stack an \code{sl3} learner stack for estimation of the exposure mechanism.
+#' @param data A data frame.
+#' @param A A vector of column names of treatment variables.
+#' @param Y The column name of the outcome variable.
+#' @param nodes A list of length tau with the column names for new nodes to
+#'  be introduced at each time point. The list should be ordered following
+#'  the time ordering of the model.
+#' @param k An integer specifying how many previous time points nodes should be
+#'  used for estimation at the given time point. Default is \code{NULL},
+#'  all time points.
+#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param learner_stack An \code{sl3} learner stack for estimation of the
+#'  exposure mechanism.
 #'
 #' @return
 #' @export
@@ -175,13 +191,13 @@ lmtp_sub <- function(data, A, Y, history, shift,
 #' history <- list(c("W1", "W2"))
 #' lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "continuous",
 #'          learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_ipw <- function(data, A, Y, history, shift,
+lmtp_ipw <- function(data, A, Y, nodes, k = NULL, shift,
                      outcome_type = c("binomial", "continuous"),
                      learner_stack = NULL) {
 
   # setup
-  t <- length(history)
-  node_list <- create_node_list(A, history)
+  t <- length(nodes)
+  node_list <- create_node_list(A, nodes, k)
 
   # propensity estimation
   r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack)

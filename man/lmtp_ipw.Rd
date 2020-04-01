@@ -2,39 +2,46 @@
 % Please edit documentation in R/estimators.R
 \name{lmtp_ipw}
 \alias{lmtp_ipw}
-\title{lMTP IPW Estimator}
+\title{LMTP IPW Estimator}
 \usage{
 lmtp_ipw(
   data,
   A,
   Y,
-  history,
+  nodes,
+  k = NULL,
   shift,
   outcome_type = c("binomial", "continuous"),
   learner_stack = NULL
 )
 }
 \arguments{
-\item{data}{a data frame.}
+\item{data}{A data frame.}
 
-\item{A}{a vector of column names of treatment variables.}
+\item{A}{A vector of column names of treatment variables.}
 
-\item{Y}{the column name of the outcome variable.}
+\item{Y}{The column name of the outcome variable.}
 
-\item{history}{a list of length tau with the column names for treatment history at each time point.
-The list should be ordered following the time ordering of the model.}
+\item{nodes}{A list of length tau with the column names for new nodes to
+be introduced at each time point. The list should be ordered following
+the time ordering of the model.}
 
-\item{shift}{a function that specifies how tratment variables should be shifted.}
+\item{k}{An integer specifying how many previous time points nodes should be
+used for estimation at the given time point. Default is \code{NULL},
+all time points.}
 
-\item{outcome_type}{outcome variable type (i.e., continuous, binomial).}
+\item{shift}{A function that specifies how tratment variables should be shifted.}
 
-\item{learner_stack}{an \code{sl3} learner stack for estimation of the exposure mechanism.}
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
+
+\item{learner_stack}{An \code{sl3} learner stack for estimation of the
+exposure mechanism.}
 }
 \value{
 
 }
 \description{
-lMTP IPW Estimator
+LMTP IPW Estimator
 }
 \examples{
 # Estimating the effect of a point treatment

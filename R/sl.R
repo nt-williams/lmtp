@@ -37,22 +37,12 @@ learner_defaults <- function(outcome_type, learners) {
   # setting meta learner
   if (outcome_type %in% c("binomial", "quasibinomial", "continuous")) {
     meta <- sl3::make_learner("Lrnr_nnls")
-  } else if (outcome_type == "density") {
-    meta <- sl3::make_learner("Lrnr_solnp_density")
   }
-
   # setting candidate learners if not specified
   if (is.null(learners) & outcome_type %in% c("binomial", "quasibinomial", "continuous")) {
     learners <- c("Lrnr_glmnet", "Lrnr_glm", "Lrnr_mean")
     learners <- lapply(learners, sl3::make_learner)
     learners <- sl3::make_learner(sl3::Stack, learners)
-  } else if (is.null(learners) & outcome_type == "density") {
-    learners <- sl3::make_learner_stack(
-      list("Lrnr_haldensify",
-           n_bins = 5,
-           grid_type = "equal_mass",
-           lambda_seq = exp(seq(-1, -9, length = 300)))
-    )
   } else if (!is.null(learners)) {
     learners <- learners
   }

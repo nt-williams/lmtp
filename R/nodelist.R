@@ -1,28 +1,19 @@
 
-create_node_list <- function(A, history) {
+create_node_list <- function(A, nodes, k = NULL) {
 
   out <- list()
   tau <- length(A)
-  A <- Reduce(c, A, accumulate = T)
+  if (is.null(k) || k == 0) k <- Inf
+
   for (i in 1:tau) {
-      out[[i]] <- c(history[[i]], A[[i]])
+      out[[i]] <- c(nodes[[i]], A[i])
   }
+
+  out <- paste(lapply(out, function(x) paste(x, collapse = ",")))
+  out <- slider::slide(out, ~ .x, .before = k)
+  out <- sapply(out, function(x) unlist(strsplit(x, ",")))
 
   # returns
   out
 }
-
-# create_node_list <- function(A, history) {
-#
-#   out <- list()
-#   tau <- length(A)
-#   for (i in 1:tau) {
-#     out[[i]] <- c(history[[i]], A[[i]])
-#   }
-#
-#   # returns
-#   out
-# }
-
-
 
