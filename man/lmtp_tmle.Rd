@@ -22,6 +22,8 @@ lmtp_tmle(
 
 \item{A}{A vector of column names of treatment variables.}
 
+\item{Y}{The column name of the outcome variable.}
+
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
@@ -45,7 +47,7 @@ regression.}
 mechanism.}
 }
 \value{
-
+TODO
 }
 \description{
 LMTP Targeted Maximum Likelihood Estimator
@@ -58,8 +60,8 @@ W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
 A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
 Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 df <- data.frame(W, A, Y)
-history <- list(c("W1", "W2"))
-lmtp_tmle(df, "A", "Y", history, function(x) x + 2, "continuous",
+nodes <- list(c("W1", "W2"))
+lmtp_tmle(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
 }

@@ -38,7 +38,7 @@ all time points.}
 exposure mechanism.}
 }
 \value{
-
+TODO
 }
 \description{
 LMTP IPW Estimator
@@ -51,7 +51,7 @@ W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
 A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
 Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 df <- data.frame(W, A, Y)
-history <- list(c("W1", "W2"))
-lmtp_ipw(df, "A", "Y", history, function(x) x + 2, "continuous",
+nodes <- list(c("W1", "W2"))
+lmtp_ipw(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
          learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
 }
