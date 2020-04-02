@@ -61,5 +61,5 @@ Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2
 df <- data.frame(W, A, Y)
 nodes <- list(c("W1", "W2"))
 lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-         method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
+         method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 }

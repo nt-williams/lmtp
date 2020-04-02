@@ -33,8 +33,8 @@
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_tmle(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
-#'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
+#'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
+#'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
@@ -113,8 +113,8 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_sdr(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
-#'          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
+#'          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
+#'          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
@@ -189,7 +189,7 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
+#'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, method = c("glm", "sl"),
@@ -268,7 +268,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_ipw(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
+#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      learner_stack = NULL) {
