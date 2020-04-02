@@ -23,7 +23,8 @@ Imports:
     slider,
     Rsolnp,
     sl3 (>= 1.3.7),
-    stats
+    stats,
+    nnls
 Remotes: 
     tlverse/sl3
 Suggests: 

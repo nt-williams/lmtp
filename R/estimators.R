@@ -79,6 +79,42 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
   return(out)
 }
 
+#' LMTP Sequential Doubly Robust Estimator
+#'
+#' @param data A data frame.
+#' @param A A vector of column names of treatment variables.
+#' @param Y The column name of the outcome variable.
+#' @param nodes A list of length tau with the column names for new nodes to
+#'  be introduced at each time point. The list should be ordered following
+#'  the time ordering of the model.
+#' @param k An integer specifying how many previous time points nodes should be
+#'  used for estimation at the given time point. Default is \code{NULL},
+#'  all time points.
+#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
+#'   the bounds will be taken as the minimum and maximum of the observed data.
+#'   Ignored if outcome type is binary.
+#' @param learner_stack_Q An \code{sl3} learner stack for estimation of the outcome
+#'  regression.
+#' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
+#'  mechanism.
+#'
+#' @return TODO
+#' @export
+#'
+#' @examples
+#' #' # Estimating the effect of a point treatment
+#' set.seed(6246)
+#' n <- 500
+#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
+#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
+#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
+#' df <- data.frame(W, A, Y)
+#' nodes <- list(c("W1", "W2"))
+#' lmtp_sdr(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
+#'          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
+#'          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
 lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
