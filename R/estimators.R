@@ -8,7 +8,7 @@
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param k An integer specifying how many previous time points nodes should be
-#'  used for estimation at the given time point. Default is \code{NULL},
+#'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
@@ -88,7 +88,7 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param k An integer specifying how many previous time points nodes should be
-#'  used for estimation at the given time point. Default is \code{NULL},
+#'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
@@ -166,7 +166,7 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param k An integer specifying how many previous time points nodes should be
-#'  used for estimation at the given time point. Default is \code{NULL},
+#'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
@@ -248,7 +248,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param k An integer specifying how many previous time points nodes should be
-#'  used for estimation at the given time point. Default is \code{NULL},
+#'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).

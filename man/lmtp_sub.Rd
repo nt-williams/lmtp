@@ -29,7 +29,7 @@ be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
 
 \item{k}{An integer specifying how many previous time points nodes should be
-used for estimation at the given time point. Default is \code{NULL},
+used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
 \item{shift}{A function that specifies how tratment variables should be shifted.}

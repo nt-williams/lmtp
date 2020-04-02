@@ -24,7 +24,8 @@ Imports:
     Rsolnp,
     sl3 (>= 1.3.7),
     stats,
-    nnls
+    nnls,
+    glmnet
 Remotes: 
     tlverse/sl3
 Suggests: 

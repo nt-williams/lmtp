@@ -27,19 +27,19 @@ sub_sl <-
 ipw <-
   lmtp_ipw(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
-           learner_stack = sl3::make_learner_stack(sl3::Lrnr_glm_fast))
+           learner_stack = sl3::make_learner_stack(sl3::Lrnr_glm))
 
 tmle <-
   lmtp_tmle(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
             outcome_type = "binomial",
             learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
-            learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm_fast))
+            learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm))
 
 sdr <-
   lmtp_sdr(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
            learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
-           learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm_fast))
+           learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm))
 
 # tests
 test_that("time varying treatment fidelity", {
