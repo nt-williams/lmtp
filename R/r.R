@@ -1,7 +1,7 @@
 
 # engine for density ratio estimation by classification
-estimate_r_sl <- function(data, A, shift, tau,
-                          node_list, learner_stack = NULL) {
+estimate_r <- function(data, A, shift, tau,
+                       node_list, learner_stack = NULL) {
 
   # setup
   n <- nrow(data)
@@ -27,6 +27,11 @@ estimate_r_sl <- function(data, A, shift, tau,
     r$shifted[, t] <<- rat[d$shift_indicator == 1]
   })
 
+  # returns
+  return(r)
+}
+
+use_r_tmle <- function(r, tau, n) {
   rn <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
   rd <- rn / (r$natural * r$shifted)
 
@@ -34,6 +39,14 @@ estimate_r_sl <- function(data, A, shift, tau,
   out <- list(rn = rn,
               rd = rd)
 
+  return(out)
+}
+
+use_r_sdr <- function(r, tau, max) {
+  r <- r$natural
+  out <- matrix(t(apply(r[, (tau + 1):max, drop = FALSE], 1, cumprod)))
+
+  # returns
   return(out)
 }
 

@@ -14,7 +14,7 @@
 [1] "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
 
 
-> create_node_list(a, nodes, k = 0)
+> create_node_list(a, nodes, k = Inf)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -26,6 +26,20 @@
 
 [[4]]
 [1] "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
+
+
+> create_node_list(a, nodes, k = 0)
+[[1]]
+[1] "L_1" "A_1"
+
+[[2]]
+[1] "L_2" "A_2"
+
+[[3]]
+[1] "L_3" "A_3"
+
+[[4]]
+[1] "L_4" "A_4"
 
 
 > create_node_list(a, nodes, k = 1)

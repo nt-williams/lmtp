@@ -35,7 +35,7 @@
 #' lmtp_tmle(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
 #'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm_fast),
 #'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_tmle <- function(data, A, Y, nodes, k = NULL, shift,
+lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
                       learner_stack_g = NULL) {
@@ -52,7 +52,7 @@ lmtp_tmle <- function(data, A, Y, nodes, k = NULL, shift,
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
 
   # propensity estimation
-  r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack_g)
+  r <- use_r_tmle(estimate_r(data, A, shift, t, node_list, learner_stack_g), t, n)
 
   # tmle
   m_shifted <- estimate_tmle(data = data,
@@ -79,6 +79,47 @@ lmtp_tmle <- function(data, A, Y, nodes, k = NULL, shift,
   return(out)
 }
 
+lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
+                     outcome_type = c("binomial", "continuous"),
+                     bounds = NULL, learner_stack_Q = NULL,
+                     learner_stack_g = NULL) {
+
+  # setup
+  n <- nrow(data)
+  d <- shift_data(data, A, shift)
+  t <- length(nodes)
+  m <- matrix(nrow = n, ncol = t)
+  ot <- match.arg(outcome_type)
+  node_list <- create_node_list(A, nodes, k)
+  scaled <- scale_y_continuous(data[, Y], ot, bounds)
+  d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
+
+  # propensity estimation
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g)
+
+  # sdr
+  sdr <- estimate_sdr(data = data,
+                      shifted = d,
+                      Y = "y_scaled",
+                      node_list = node_list,
+                      tau = t,
+                      max = t,
+                      outcome_type = ot,
+                      learner_stack = learner_stack_Q,
+                      m_shifted = m,
+                      m_natural = m,
+                      r = r)
+
+  # estimates
+  eta <- list(m = sdr[, 1],
+              outcome_type = ot,
+              bounds = scaled$bounds)
+
+  out <- compute_theta(eta, "sdr")
+
+  # returns
+  return(out)
+}
 
 #' LMTP Substitution Estimator
 #'
@@ -113,7 +154,7 @@ lmtp_tmle <- function(data, A, Y, nodes, k = NULL, shift,
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
 #'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_sub <- function(data, A, Y, nodes, k = NULL, shift,
+lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, method = c("glm", "sl"),
                      learner_stack = NULL) {
@@ -149,7 +190,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = NULL, shift,
                                    learner_stack = learner_stack,
                                    m = m))
 
-  # estimation of theta
+  # estimates
   eta <- list(m = m[, 1],
               outcome_type = ot,
               bounds = scaled$bounds,
@@ -192,18 +233,19 @@ lmtp_sub <- function(data, A, Y, nodes, k = NULL, shift,
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_ipw(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
 #'          learner_stack = sl3::make_learner(sl3::Lrnr_glm_fast))
-lmtp_ipw <- function(data, A, Y, nodes, k = NULL, shift,
+lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      learner_stack = NULL) {
 
   # setup
   t <- length(nodes)
+  n <- nrow(data)
   node_list <- create_node_list(A, nodes, k)
 
   # propensity estimation
-  r <- estimate_r_sl(data, A, shift, t, node_list, learner_stack)
+  r <- use_r_tmle(estimate_r(data, A, shift, t, node_list, learner_stack), t, n)
 
-  # estimation of theta
+  # estimates
   eta <- list(r = r$rn,
               y = data[, Y],
               tau = t)

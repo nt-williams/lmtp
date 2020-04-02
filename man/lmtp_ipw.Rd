@@ -9,7 +9,7 @@ lmtp_ipw(
   A,
   Y,
   nodes,
-  k = NULL,
+  k = Inf,
   shift,
   outcome_type = c("binomial", "continuous"),
   learner_stack = NULL

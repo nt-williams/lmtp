@@ -9,7 +9,7 @@ lmtp_tmle(
   A,
   Y,
   nodes,
-  k = NULL,
+  k = Inf,
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
