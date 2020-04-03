@@ -235,6 +235,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
   out <- compute_theta(eta, "sub")
 
   # returns
+  no_stderr_warning("substitution")
   return(out)
 
 }
@@ -289,6 +290,7 @@ lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
   out <- compute_theta(eta, "ipw", NULL, NULL, NULL)
 
   # returns
+  no_stderr_warning("IPW")
   return(out)
 
 }
