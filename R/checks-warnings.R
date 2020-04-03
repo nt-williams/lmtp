@@ -4,7 +4,7 @@ check_for_sl3 <- function(test = FALSE) {
     if (isTRUE(test)) {
       stop()
     } else {
-      has_sl3 <- "sl3" %in% rownames(installed.packages())
+      has_sl3 <- "sl3" %in% rownames(utils::installed.packages())
       if (isFALSE(has_sl3)) stop()
       else on.exit()
     }, error = function(e) {

@@ -24,7 +24,8 @@ Imports:
     stats,
     nnls,
     glmnet,
-    cli
+    cli,
+    utils
 Remotes: 
     tlverse/sl3
 Suggests: 

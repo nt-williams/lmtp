@@ -223,7 +223,6 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                                    node_list = node_list,
                                    tau = t,
                                    outcome_type = outcome_type,
-                                   learner_stack = learner_stack,
                                    m = m))
 
   # estimates

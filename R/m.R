@@ -95,7 +95,7 @@ estimate_sdr <- function(data, shifted, Y, node_list,
 # the engine for the initial estimator of m through super learner
 estimate_m_sl <- function(data, shifted, Y, node_list,
                           tau, outcome_type, learner_stack = NULL,
-                          estimator, m_shifted) {
+                          estimator, m) {
 
   if (tau > 0) {
     # setup
@@ -108,7 +108,7 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
 
     # predict on shifted data
     pseudo <- paste0("m", tau)
-    m_shifted[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
+    m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
 
     # recursion
     estimate_m_sl(data = data,
@@ -118,11 +118,11 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
                   tau = tau - 1,
                   outcome_type = "quasibinomial",
                   learner_stack,
-                  m_shifted = m_shifted)
+                  m = m)
 
   } else {
     # when t = 1 return matrix m
-    return(m_shifted)
+    return(m)
   }
 }
 
