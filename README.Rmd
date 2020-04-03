@@ -30,4 +30,48 @@ The development version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp")
 ```
 
+# Example
+
+Simulate some data...
+
+```{r}
+set.seed(429)
+n_obs <- 1000
+L1 <- rbinom(n_obs, 1, 0.5)
+A1 <- rnorm(n_obs, mean = 2 * L1, sd = 1)
+L2 <- rbinom(n_obs, 1, plogis(A1 + L1 + rnorm(n_obs, mean = 0, sd = 1)))
+A2 <- rnorm(n_obs, mean = 2 * A1 + L2, sd = 1)
+Y <- rbinom(n_obs, 1, plogis(A2 + L2 + rnorm(n_obs, mean = 0, sd = 1)))
+df <- data.frame(L1, A1, L2, A2, Y)
+a <- c("A1", "A2")
+nodes <- list(c("L1"),
+              c("L2"))
+
+head(df)
+```
+
+An intervention where exposure is increased by 0.5 at all time points for all subjects. The true value under this intervetion is about 0.88
+
+```r
+library(lmtp)
+#> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
+#> Version: 0.0.1.9000
+
+lmtp_tmle(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
+          outcome_type = "binomial",
+          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
+          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
+#>   Estimating propensity [=====================================] 100%  0s
+#>   Estimating regression [=====================================] 100%  0s
+#> 
+#> Estimator: TMLE
+#> 
+#> Population intervention effect
+#>    Estimate: 0.8854
+#>  Std. error: 0.0098
+#>      95% CI: (0.8662, 0.9046)
+```
+
+
+
 

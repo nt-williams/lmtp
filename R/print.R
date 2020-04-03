@@ -6,7 +6,7 @@ welcome_msg <- function() {
 }
 
 #' @export
-print.lmtp <- function(x) {
+print.lmtp <- function(x, ...) {
   cat("\n")
   cli::cli_text("{.strong Estimator}: {x$estimator}")
   cat("\n")

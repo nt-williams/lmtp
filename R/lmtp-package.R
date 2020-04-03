@@ -1,4 +1,4 @@
-#' @importFrom stats as.formula coef glm plogis predict qlogis sd
+#' @importFrom stats as.formula coef glm plogis predict qlogis qnorm sd
 #' @keywords internal
 "_PACKAGE"
 
