@@ -31,23 +31,44 @@ estimate_r <- function(data, A, shift, tau,
   return(r)
 }
 
-use_r_tmle <- function(r, tau, n) {
-  rn <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
-  rd <- rn / (r$natural * r$shifted)
+use_dens_ratio <- function(r, tau, n, max, what) {
 
-  # returns
-  out <- list(rn = rn,
-              rd = rd)
+  switch(
+    what,
+    "tmle" = ratio_ite(r = r, tau = tau, n = n),
+    "ipw" = ratio_ite(r = r, tau = tau, n = n),
+    "eif" = ratio_ite(r = r, tau = tau, n = n),
+    "sdr" = ratio_sdr(r = r, tau = tau, max = max)
+  )
 
+}
+
+ratio_ite <- function(r = r, tau = tau, n = n) {
+  out <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
   return(out)
 }
 
-use_r_sdr <- function(r, tau, max) {
-  r <- r$natural
-  out <- matrix(t(apply(r[, (tau + 1):max, drop = FALSE], 1, cumprod)))
-
-  # returns
+ratio_sdr <- function(r = r, tau = tau, max = max) {
+  out <- matrix(t(apply(r$natural[, (tau + 1):max, drop = FALSE], 1, cumprod)))
   return(out)
 }
+
+# use_r_tmle <- function(r, tau, n) {
+#   rn <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
+#
+#   # returns
+#   out <- list(rn = rn,
+#               rd = rd)
+#
+#   return(out)
+# }
+#
+# use_r_sdr <- function(r, tau, max) {
+#   r <- r$natural
+#   out <- matrix(t(apply(r[, (tau + 1):max, drop = FALSE], 1, cumprod)))
+#
+#   # returns
+#   return(out)
+# }
 
 

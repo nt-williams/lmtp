@@ -52,24 +52,28 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
 
   # propensity estimation
-  r <- use_r_tmle(estimate_r(data, A, shift, t, node_list, learner_stack_g), t, n)
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g)
+  r <- use_dens_ratio(r, t, n, NULL, "tmle")
 
   # tmle
-  m_shifted <- estimate_tmle(data = data,
-                             shifted = d,
-                             Y = "y_scaled",
-                             node_list = node_list,
-                             tau = t,
-                             outcome_type = ot,
-                             m_natural = m,
-                             m_shifted = m,
-                             m_natural_initial = m,
-                             m_shifted_initial = m,
-                             r = r,
-                             learner_stack = learner_stack_Q)
+  m <- estimate_tmle(data = data,
+                     shifted = d,
+                     Y = "y_scaled",
+                     node_list = node_list,
+                     tau = t,
+                     max = t,
+                     outcome_type = ot,
+                     m_natural = m,
+                     m_shifted = m,
+                     m_natural_initial = m,
+                     m_shifted_initial = m,
+                     r = r,
+                     learner_stack = learner_stack_Q)
 
   # estimates
-  eta <- list(m = m_shifted[, 1],
+  eta <- list(m = m,
+              r = r,
+              tau = t,
               outcome_type = ot,
               bounds = scaled$bounds)
 
@@ -132,6 +136,7 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 
   # propensity estimation
   r <- estimate_r(data, A, shift, t, node_list, learner_stack_g)
+  z <- use_dens_ratio(r, t, n, NULL, "eif")
 
   # sdr
   sdr <- estimate_sdr(data = data,
@@ -147,7 +152,9 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                       r = r)
 
   # estimates
-  eta <- list(m = sdr[, 1],
+  eta <- list(m = sdr,
+              r = z,
+              tau = t,
               outcome_type = ot,
               bounds = scaled$bounds)
 
@@ -276,17 +283,19 @@ lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
   # setup
   t <- length(nodes)
   n <- nrow(data)
+  y <- data[, Y]
   node_list <- create_node_list(A, nodes, k)
 
   # propensity estimation
-  r <- use_r_tmle(estimate_r(data, A, shift, t, node_list, learner_stack), t, n)
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack)
+  r <- use_dens_ratio(r, t, n, NULL, "ipw")
 
   # estimates
-  eta <- list(r = r$rn,
-              y = data[, Y],
+  eta <- list(r = r,
+              y = y,
               tau = t)
 
-  out <- compute_theta(eta, "ipw", NULL, NULL, NULL)
+  out <- compute_theta(eta, "ipw")
 
   # returns
   no_stderr_warning("IPW")
