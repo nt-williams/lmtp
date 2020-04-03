@@ -1,7 +1,7 @@
 
 # engine for density ratio estimation by classification
 estimate_r <- function(data, A, shift, tau,
-                       node_list, learner_stack = NULL) {
+                       node_list, learner_stack = NULL, pb) {
 
   # setup
   n <- nrow(data)
@@ -9,6 +9,10 @@ estimate_r <- function(data, A, shift, tau,
             shifted = matrix(nrow = n, ncol = tau))
 
   lapply(1:tau, function(t) {
+
+    # progress bar
+    progress_progress_bar(pb)
+
     # setup
     shifted <- shift_data(data, A[[t]], shift)
     d <- rbind(data, shifted)
@@ -32,7 +36,6 @@ estimate_r <- function(data, A, shift, tau,
 }
 
 use_dens_ratio <- function(r, tau, n, max, what) {
-
   switch(
     what,
     "tmle" = ratio_ite(r = r, tau = tau, n = n),
@@ -40,7 +43,6 @@ use_dens_ratio <- function(r, tau, n, max, what) {
     "eif" = ratio_ite(r = r, tau = tau, n = n),
     "sdr" = ratio_sdr(r = r, tau = tau, max = max)
   )
-
 }
 
 ratio_ite <- function(r = r, tau = tau, n = n) {
@@ -52,23 +54,3 @@ ratio_sdr <- function(r = r, tau = tau, max = max) {
   out <- matrix(t(apply(r$natural[, (tau + 1):max, drop = FALSE], 1, cumprod)))
   return(out)
 }
-
-# use_r_tmle <- function(r, tau, n) {
-#   rn <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
-#
-#   # returns
-#   out <- list(rn = rn,
-#               rd = rd)
-#
-#   return(out)
-# }
-#
-# use_r_sdr <- function(r, tau, max) {
-#   r <- r$natural
-#   out <- matrix(t(apply(r[, (tau + 1):max, drop = FALSE], 1, cumprod)))
-#
-#   # returns
-#   return(out)
-# }
-
-

@@ -50,9 +50,11 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
+  pb_r <- check_time_pb(t, "Estimating propensity")
+  pb_m <- check_time_pb(t, "Estimating regression")
 
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g)
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
   r <- use_dens_ratio(r, t, n, NULL, "tmle")
 
   # tmle
@@ -68,7 +70,8 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
                      m_natural_initial = m,
                      m_shifted_initial = m,
                      r = r,
-                     learner_stack = learner_stack_Q)
+                     learner_stack = learner_stack_Q,
+                     pb = pb_m)
 
   # estimates
   eta <- list(m = m,
@@ -133,9 +136,11 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
+  pb_r <- check_time_pb(t, "Estimating propensity")
+  pb_m <- check_time_pb(t, "Estimating regression")
 
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g)
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
   z <- use_dens_ratio(r, t, n, NULL, "eif")
 
   # sdr
@@ -149,7 +154,8 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                       learner_stack = learner_stack_Q,
                       m_shifted = m,
                       m_natural = m,
-                      r = r)
+                      r = r,
+                      pb = pb_m)
 
   # estimates
   eta <- list(m = sdr,
@@ -214,6 +220,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   method <- match.arg(method)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
+  pb <- check_time_pb(t, "Estimating regression")
 
   # sequential regression
   m <- switch(method,
@@ -223,14 +230,16 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                                      node_list = node_list,
                                      tau = t,
                                      family = family,
-                                     m = m),
+                                     m = m,
+                                     pb = pb),
               "sl" = estimate_m_sl(data = data,
                                    shifted = d,
                                    Y = "y_scaled",
                                    node_list = node_list,
                                    tau = t,
                                    outcome_type = outcome_type,
-                                   m = m))
+                                   m = m,
+                                   pb = pb))
 
   # estimates
   eta <- list(m = m[, 1],
@@ -285,9 +294,10 @@ lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
   n <- nrow(data)
   y <- data[, Y]
   node_list <- create_node_list(A, nodes, k)
+  pb <- check_time_pb(t, "Estimating propensity")
 
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack)
+  r <- estimate_r(data, A, shift, t, node_list, learner_stack, pb)
   r <- use_dens_ratio(r, t, n, NULL, "ipw")
 
   # estimates

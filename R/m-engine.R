@@ -1,7 +1,7 @@
 
 # the engine for the parametric substitution estimator
-estimate_m_glm <- function(data, shifted, Y,
-                           node_list, tau, family, m) {
+estimate_m_glm <- function(data, shifted, Y, node_list,
+                           tau, family, m, pb) {
 
   if (tau > 0) {
     # setup
@@ -14,6 +14,9 @@ estimate_m_glm <- function(data, shifted, Y,
     pseudo <- paste0("m", tau)
     data[, pseudo] <- m[, tau] <- qlogis(bound(plogis(predict(fit, newdata = shifted))))
 
+    # progress bar
+    progress_progress_bar(pb)
+
     # recursion
     estimate_m_glm(data = data,
                    shifted = shifted,
@@ -21,9 +24,10 @@ estimate_m_glm <- function(data, shifted, Y,
                    node_list = node_list,
                    Y = pseudo,
                    m = m,
-                   family = "gaussian")
+                   family = "gaussian",
+                   pb = pb)
   } else {
-    # when t = 1 return matrix m
+    # returns
     return(m)
   }
 }
@@ -31,7 +35,7 @@ estimate_m_glm <- function(data, shifted, Y,
 # the engine for the initial estimator of m through super learner
 estimate_m_sl <- function(data, shifted, Y, node_list,
                           tau, outcome_type, learner_stack = NULL,
-                          estimator, m) {
+                          estimator, m, pb) {
 
   if (tau > 0) {
     # setup
@@ -46,6 +50,9 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
     pseudo <- paste0("m", tau)
     m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
 
+    # progress bar
+    progress_progress_bar(pb)
+
     # recursion
     estimate_m_sl(data = data,
                   shifted = shifted,
@@ -54,10 +61,11 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
                   tau = tau - 1,
                   outcome_type = "quasibinomial",
                   learner_stack,
-                  m = m)
+                  m = m,
+                  pb = pb)
 
   } else {
-    # when t = 1 return matrix m
+    # returns
     return(m)
   }
 }
@@ -66,7 +74,7 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
 estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
                           outcome_type, m_natural, m_shifted,
                           m_natural_initial, m_shifted_initial, r,
-                          learner_stack = NULL) {
+                          learner_stack = NULL, pb) {
 
   if (tau > 0) {
     # setup
@@ -100,6 +108,9 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
       data[, pseudo] <-
       bound(plogis(qlogis(m_shifted_initial[, tau]) + coef(fit)))
 
+    # progress bar
+    progress_progress_bar(pb)
+
     # recursion
     estimate_tmle(data = data,
                   shifted = shifted,
@@ -113,7 +124,8 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
                   m_natural_initial = m_natural_initial,
                   m_shifted_initial = m_shifted_initial,
                   r = r,
-                  learner_stack = learner_stack)
+                  learner_stack = learner_stack,
+                  pb = pb)
   } else {
     # returns
     out <- list(natural = m_natural,
@@ -127,12 +139,10 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
 # the engine for the sdr estimator
 estimate_sdr <- function(data, shifted, Y, node_list,
                          tau, max, outcome_type, learner_stack = NULL,
-                         m_shifted, m_natural, r) {
+                         m_shifted, m_natural, r, pb) {
 
   if (tau > 0) {
-
     if (tau == max) {
-
       # setup
       pseudo <- paste0("m", tau)
       fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
@@ -149,7 +159,6 @@ estimate_sdr <- function(data, shifted, Y, node_list,
       m_shifted[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
 
     } else if (tau < max) {
-
       # setup
       pseudo <- "y_sdr"
 
@@ -169,6 +178,9 @@ estimate_sdr <- function(data, shifted, Y, node_list,
 
     }
 
+    # progress bar
+    progress_progress_bar(pb)
+
     # recursion
     estimate_sdr(data = data,
                  shifted = shifted,
@@ -180,7 +192,8 @@ estimate_sdr <- function(data, shifted, Y, node_list,
                  learner_stack = learner_stack,
                  m_shifted = m_shifted,
                  m_natural = m_natural,
-                 r = r)
+                 r = r,
+                 pb = pb)
   } else {
     # returns
     out <- list(natural = m_natural,

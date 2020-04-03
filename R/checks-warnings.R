@@ -25,4 +25,13 @@ no_sl3 <- function() {
   cat("\n")
 }
 
+check_time_pb <- function(t, status) {
+  if (t > 1) {
+    pb <- initiate_progress_bar(status, tau = t)
+  } else {
+    pb <- NULL
+  }
+  return(pb)
+}
+
 

@@ -3,12 +3,6 @@
   packageStartupMessage(welcome_msg(), check_for_sl3())
 }
 
-welcome_msg <- function() {
-  cat("\n")
-  cli::cli_text("{.strong lmtp}: Causal Effects Based on Longitudinal Modified Treatment Policies")
-  cli::cli_text("{.strong Version}: ", as.character(utils::packageVersion("lmtp")))
-}
-
 shift_data <- function(data, A, .f) {
   out <- data
   sapply(A, function(x) {
