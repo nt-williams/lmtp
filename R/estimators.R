@@ -19,6 +19,7 @@
 #'  regression.
 #' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
+#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -38,7 +39,7 @@
 lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
-                      learner_stack_g = NULL) {
+                      learner_stack_g = NULL, pb = TRUE) {
 
 
   # setup
@@ -50,8 +51,8 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb_r <- check_time_pb(t, "Estimating propensity")
-  pb_m <- check_time_pb(t, "Estimating regression")
+  pb_r <- check_pb(pb, t, "Estimating propensity")
+  pb_m <- check_pb(pb, t, "Estimating regression")
 
   # propensity estimation
   r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
@@ -106,6 +107,7 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
 #'  regression.
 #' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
+#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -125,7 +127,7 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
 lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
-                     learner_stack_g = NULL) {
+                     learner_stack_g = NULL, pb = TRUE) {
 
   # setup
   n <- nrow(data)
@@ -136,8 +138,8 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb_r <- check_time_pb(t, "Estimating propensity")
-  pb_m <- check_time_pb(t, "Estimating regression")
+  pb_r <- check_pb(pb, t, "Estimating propensity")
+  pb_m <- check_pb(pb, t, "Estimating regression")
 
   # propensity estimation
   r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
@@ -185,10 +187,10 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'  the bounds will be taken as the minimum and maximum of the observed data.
-#' @param method Should estimation be through glm or Super Learner (using sl3).
-#'  Default is glm.
-#' @param learner_stack An optional \code{sl3} learner stack when method is
-#'  set to \code{sl}.
+#' @param learner_stack An \code{sl3} learner stack for estimation of the outcome
+#'  regression.
+#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
+#'
 #' @return TODO
 #' @export
 #'
@@ -202,11 +204,10 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
 #' lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, method = c("glm", "sl"),
-                     learner_stack = NULL) {
+                     bounds = NULL, learner_stack = NULL, pb = TRUE) {
 
   # setup
   n <- nrow(data)
@@ -215,42 +216,29 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
   m <- create_m(n, t, data[, Y])
   ot <- match.arg(outcome_type)
   node_list <- create_node_list(A, nodes, k)
-  family <- ifelse(ot == "continuous", "gaussian", "binomial")
   outcome_type = ifelse(ot == "continuous", "quasibinomial", "binomial")
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
-  method <- match.arg(method)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb <- check_time_pb(t, "Estimating regression")
+  pb <- check_pb(pb, t, "Estimating regression")
 
   # sequential regression
-  m <- switch(method,
-              "glm" = estimate_m_glm(data = data,
-                                     shifted = d,
-                                     Y = "y_scaled",
-                                     node_list = node_list,
-                                     tau = t,
-                                     family = family,
-                                     m = m,
-                                     pb = pb),
-              "sl" = estimate_m_sl(data = data,
-                                   shifted = d,
-                                   Y = "y_scaled",
-                                   node_list = node_list,
-                                   tau = t,
-                                   outcome_type = outcome_type,
-                                   m = m,
-                                   pb = pb))
+  m <- estimate_sub(data = data,
+                    shifted = d,
+                    Y = "y_scaled",
+                    node_list = node_list,
+                    tau = t,
+                    outcome_type = outcome_type,
+                    m = m,
+                    pb = pb)
 
   # estimates
-  eta <- list(m = m[, 1],
+  eta <- list(m = m,
               outcome_type = ot,
-              bounds = scaled$bounds,
-              method = method)
+              bounds = scaled$bounds)
 
   out <- compute_theta(eta, "sub")
 
   # returns
-  no_stderr_warning("substitution")
   return(out)
 
 }
@@ -270,6 +258,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param learner_stack An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
+#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -287,14 +276,14 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     learner_stack = NULL) {
+                     learner_stack = NULL, pb = TRUE) {
 
   # setup
   t <- length(nodes)
   n <- nrow(data)
   y <- data[, Y]
   node_list <- create_node_list(A, nodes, k)
-  pb <- check_time_pb(t, "Estimating propensity")
+  pb <- check_pb(pb, t, "Estimating propensity")
 
   # propensity estimation
   r <- estimate_r(data, A, shift, t, node_list, learner_stack, pb)
@@ -308,7 +297,6 @@ lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
   out <- compute_theta(eta, "ipw")
 
   # returns
-  no_stderr_warning("IPW")
   return(out)
 
 }

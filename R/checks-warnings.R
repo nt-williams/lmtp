@@ -14,8 +14,8 @@ check_for_sl3 <- function(test = FALSE) {
 }
 
 no_stderr_warning <- function(estimator) {
-  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
   cat("\n")
+  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
 }
 
 no_sl3 <- function() {
@@ -25,13 +25,23 @@ no_sl3 <- function() {
   cat("\n")
 }
 
-check_time_pb <- function(t, status) {
-  if (t > 1) {
-    pb <- initiate_progress_bar(status, tau = t)
-  } else {
+check_pb <- function(pb, t, status) {
+  if (isFALSE(pb) | t == 1) {
     pb <- NULL
+  } else {
+    pb <- initiate_progress_bar(status, tau = t)
   }
   return(pb)
+}
+
+check_sd <- function(x, learner_stack) {
+  if (sd(x) > .Machine$double.eps) {
+    out <- learner_stack
+  } else {
+    out <- sl3::Lrnr_mean
+  }
+
+  return(out)
 }
 
 

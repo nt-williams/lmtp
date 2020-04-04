@@ -12,7 +12,8 @@ lmtp_ipw(
   k = Inf,
   shift,
   outcome_type = c("binomial", "continuous"),
-  learner_stack = NULL
+  learner_stack = NULL,
+  pb = TRUE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ all time points.}
 
 \item{learner_stack}{An \code{sl3} learner stack for estimation of the
 exposure mechanism.}
+
+\item{pb}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO

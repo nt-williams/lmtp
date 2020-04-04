@@ -2,10 +2,48 @@
 compute_theta <- function(eta, estimator) {
 
   out <- switch(estimator,
-                "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds, method = eta$method),
                 "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
-                "tml" = theta_tml_sdr(estimator = "TMLE", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "sdr" = theta_tml_sdr(estimator = "SDR", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds))
+                "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds),
+                "tml" = theta_tml_sdr(estimator = "targeted minimum-loss based", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds),
+                "sdr" = theta_tml_sdr(estimator = "sequentially doubly robust", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds))
+
+  return(out)
+}
+
+theta_sub <- function(m, outcome_type, bounds = NULL) {
+
+  # rescale if necessary
+  if (outcome_type == "continuous") {
+    m <- rescale_y_continuous(m, bounds)
+  }
+
+  # calculate estimates
+  theta <- mean(m[, 1])
+
+  # returns
+  out <- list(estimator = "substitution",
+              theta = theta,
+              standard_error = NA_real_,
+              low = NA_real_,
+              high = NA_real_)
+
+  class(out) <- "lmtp"
+
+  return(out)
+}
+
+theta_ipw <- function(r, y, tau) {
+  # calculate estimates
+  theta <- mean(r[, tau]*y)
+
+  # returns
+  out <- list(estimator = "IPW",
+              theta = theta,
+              standard_error = NA_real_,
+              low = NA_real_,
+              high = NA_real_)
+
+  class(out) <- "lmtp"
 
   return(out)
 }
@@ -13,23 +51,6 @@ compute_theta <- function(eta, estimator) {
 eif <- function(r, tau, shifted, natural) {
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
   out <- rowSums(r * m) + shifted[, 1]
-  return(out)
-}
-
-theta_sub <- function(m, outcome_type, bounds = NULL, method) {
-  if (outcome_type == "continuous") {
-    rescaled <- rescale_y_continuous(m, bounds)
-    out <- mean(rescaled)
-  } else if (outcome_type == "binomial" & method == "glm") {
-    out <- mean(plogis(m))
-  } else if (outcome_type == "binomial" & method == "sl") {
-    out <- mean(m)
-  }
-  return(out)
-}
-
-theta_ipw <- function(r, y, tau) {
-  out <- mean(r[, tau]*y)
   return(out)
 }
 
@@ -49,6 +70,8 @@ theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL) {
     inflnce <- rescale_y_continuous(inflnce, bounds)
     theta <- rescale_y_continuous(theta, bounds)
     se <- rescale_y_continuous(se, bounds)
+    ci_low <- rescale_y_continuous(ci_low, bounds)
+    ci_high <- rescale_y_continuous(ci_high, bounds)
   }
 
   # returns

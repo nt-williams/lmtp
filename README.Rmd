@@ -32,46 +32,65 @@ devtools::install_github("nt-williams/lmtp")
 
 # Example
 
-Simulate some data...
+```{r}
+library(lmtp)
+```
+
+A data set with treatment nodes at 4 time points and a binary outcome at time 5.
 
 ```{r}
-set.seed(429)
-n_obs <- 1000
-L1 <- rbinom(n_obs, 1, 0.5)
-A1 <- rnorm(n_obs, mean = 2 * L1, sd = 1)
-L2 <- rbinom(n_obs, 1, plogis(A1 + L1 + rnorm(n_obs, mean = 0, sd = 1)))
-A2 <- rnorm(n_obs, mean = 2 * A1 + L2, sd = 1)
-Y <- rbinom(n_obs, 1, plogis(A2 + L2 + rnorm(n_obs, mean = 0, sd = 1)))
-df <- data.frame(L1, A1, L2, A2, Y)
-a <- c("A1", "A2")
-nodes <- list(c("L1"),
-              c("L2"))
-
-head(df)
+head(sim_t4)
 ```
 
-An intervention where exposure is increased by 0.5 at all time points for all subjects. The true value under this intervetion is about 0.88
+We're interested in the effect of an intervention where exposure is decreased by 1 at all time points for observations whose exposure won't go below 0 if shifted on the outcome Y. The true value under this intervention is about 0.48.
+
+```{r}
+# Define intervention function, treatment variables, and covariates
+d <- function(A) {
+  delta <- 1
+  return((A - delta) * (A - delta >= 0) + A * (A - delta < 0))
+}
+
+a <- c("A_1", "A_2", "A_3", "A_4")
+nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+```
+
+Using the TML estimator...
 
 ```r
-library(lmtp)
-#> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
-#> Version: 0.0.1.9000
-
-lmtp_tmle(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
+lmtp_tmle(sim_t4, a, "Y", nodes, k = 0, shift = d,
           outcome_type = "binomial",
-          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
-#>   Estimating propensity [=====================================] 100%  0s
-#>   Estimating regression [=====================================] 100%  0s
+          learner_stack_Q = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean),
+          learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean))
+
+#>   Estimating propensity [=====================================] 100%  2s
+#>   Estimating regression [=====================================] 100%  1s
 #> 
-#> Estimator: TMLE
+#> Estimator: targeted minimum-loss based
 #> 
 #> Population intervention effect
-#>    Estimate: 0.8854
-#>  Std. error: 0.0098
-#>      95% CI: (0.8662, 0.9046)
+#>    Estimate: 0.5172
+#>  Std. error: 0.0286
+#>      95% CI: (0.4611, 0.5733)
 ```
 
+Using the SDR estimator...
 
+```r
+lmtp_sdr(sim_t4, a, "Y", nodes, k = 0, shift = d,
+         outcome_type = "binomial",
+         learner_stack_Q = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean),
+         learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean))
+
+#>   Estimating propensity [=====================================] 100%  2s
+#>   Estimating regression [=====================================] 100%  1s
+#> 
+#> Estimator: sequentially doubly robust
+#> 
+#> Population intervention effect
+#>    Estimate: 0.4948
+#>  Std. error: 0.0294
+#>      95% CI: (0.4373, 0.5524)
+```
 
 

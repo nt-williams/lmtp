@@ -1,47 +1,17 @@
 
-# the engine for the parametric substitution estimator
-estimate_m_glm <- function(data, shifted, Y, node_list,
-                           tau, family, m, pb) {
-
-  if (tau > 0) {
-    # setup
-    form <- as.formula(paste(Y, paste(node_list[[tau]], collapse = " + "), sep = " ~ "))
-
-    # fit glm
-    fit <- glm(form, data = data, family = family)
-
-    # predict on shifted data
-    pseudo <- paste0("m", tau)
-    data[, pseudo] <- m[, tau] <- qlogis(bound(plogis(predict(fit, newdata = shifted))))
-
-    # progress bar
-    progress_progress_bar(pb)
-
-    # recursion
-    estimate_m_glm(data = data,
-                   shifted = shifted,
-                   tau = tau - 1,
-                   node_list = node_list,
-                   Y = pseudo,
-                   m = m,
-                   family = "gaussian",
-                   pb = pb)
-  } else {
-    # returns
-    return(m)
-  }
-}
-
 # the engine for the initial estimator of m through super learner
-estimate_m_sl <- function(data, shifted, Y, node_list,
-                          tau, outcome_type, learner_stack = NULL,
-                          estimator, m, pb) {
+estimate_sub <- function(data, shifted, Y, node_list,
+                         tau, outcome_type, learner_stack = NULL,
+                         estimator, m, pb) {
 
   if (tau > 0) {
     # setup
     fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
     pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
     ensemble <- initiate_ensemble(outcome_type, learner_stack)
+
+    # progress bar
+    progress_progress_bar(pb)
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
@@ -50,19 +20,16 @@ estimate_m_sl <- function(data, shifted, Y, node_list,
     pseudo <- paste0("m", tau)
     m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
 
-    # progress bar
-    progress_progress_bar(pb)
-
     # recursion
-    estimate_m_sl(data = data,
-                  shifted = shifted,
-                  Y = pseudo,
-                  node_list = node_list,
-                  tau = tau - 1,
-                  outcome_type = "quasibinomial",
-                  learner_stack,
-                  m = m,
-                  pb = pb)
+    estimate_sub(data = data,
+                 shifted = shifted,
+                 Y = pseudo,
+                 node_list = node_list,
+                 tau = tau - 1,
+                 outcome_type = "quasibinomial",
+                 learner_stack,
+                 m = m,
+                 pb = pb)
 
   } else {
     # returns
@@ -87,6 +54,9 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
     pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
     ensemble <- initiate_ensemble(outcome_type, learner_stack)
 
+    # progress bar
+    progress_progress_bar(pb)
+
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
 
@@ -107,9 +77,6 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
       shifted[, pseudo] <-
       data[, pseudo] <-
       bound(plogis(qlogis(m_shifted_initial[, tau]) + coef(fit)))
-
-    # progress bar
-    progress_progress_bar(pb)
 
     # recursion
     estimate_tmle(data = data,
@@ -142,6 +109,10 @@ estimate_sdr <- function(data, shifted, Y, node_list,
                          m_shifted, m_natural, r, pb) {
 
   if (tau > 0) {
+
+    # progress bar
+    progress_progress_bar(pb)
+
     if (tau == max) {
       # setup
       pseudo <- paste0("m", tau)
@@ -177,9 +148,6 @@ estimate_sdr <- function(data, shifted, Y, node_list,
       m_shifted[, tau] <- predict_sl3(fit, pred_task)
 
     }
-
-    # progress bar
-    progress_progress_bar(pb)
 
     # recursion
     estimate_sdr(data = data,

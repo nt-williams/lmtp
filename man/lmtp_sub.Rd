@@ -13,8 +13,8 @@ lmtp_sub(
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
-  method = c("glm", "sl"),
-  learner_stack = NULL
+  learner_stack = NULL,
+  pb = TRUE
 )
 }
 \arguments{
@@ -39,11 +39,10 @@ all time points.}
 \item{bounds}{An optional vector of the bounds for continuous outcomes. If NULL
 the bounds will be taken as the minimum and maximum of the observed data.}
 
-\item{method}{Should estimation be through glm or Super Learner (using sl3).
-Default is glm.}
+\item{learner_stack}{An \code{sl3} learner stack for estimation of the outcome
+regression.}
 
-\item{learner_stack}{An optional \code{sl3} learner stack when method is
-set to \code{sl}.}
+\item{pb}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO
@@ -61,5 +60,5 @@ Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2
 df <- data.frame(W, A, Y)
 nodes <- list(c("W1", "W2"))
 lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-         method = "sl", learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+         learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 }

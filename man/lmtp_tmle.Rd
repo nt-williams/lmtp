@@ -14,7 +14,8 @@ lmtp_tmle(
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
   learner_stack_Q = NULL,
-  learner_stack_g = NULL
+  learner_stack_g = NULL,
+  pb = TRUE
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ regression.}
 
 \item{learner_stack_g}{An \code{sl3} learner stack for estimation of the exposure
 mechanism.}
+
+\item{pb}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO

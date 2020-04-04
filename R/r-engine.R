@@ -45,12 +45,13 @@ use_dens_ratio <- function(r, tau, n, max, what) {
   )
 }
 
-ratio_ite <- function(r = r, tau = tau, n = n) {
+ratio_ite <- function(r, tau, n) {
   out <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
   return(out)
 }
 
-ratio_sdr <- function(r = r, tau = tau, max = max) {
-  out <- matrix(t(apply(r$natural[, (tau + 1):max, drop = FALSE], 1, cumprod)))
+ratio_sdr <- function(r, tau, max) {
+  out <- t(apply(r$natural[, (tau + 1):max, drop = FALSE], 1, cumprod))
+  if (tau == max - 1) out <- t(out)
   return(out)
 }

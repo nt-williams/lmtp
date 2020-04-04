@@ -14,6 +14,7 @@ print.lmtp <- function(x, ...) {
   cli::cli_text(cat("   "), "{.strong Estimate}: {round(x$theta, 4)}")
   cli::cli_text(cat(" "), "{.strong Std. error}: {round(x$standard_error, 4)}")
   cli::cli_text(cat("     "), "{.strong 95% CI}: ({round(x$low, 4)}, {round(x$high, 4)})")
+  if (x$estimator %in% c("substitution", "IPW")) no_stderr_warning(x$estimator)
 }
 
 # progress bar
@@ -23,7 +24,8 @@ initiate_progress_bar <- function(section, tau) {
   pb <- progress::progress_bar$new(
     format = form,
     total = tau,
-    clear = FALSE
+    clear = FALSE,
+    show_after = 0.05
   )
 
   return(pb)
@@ -35,6 +37,11 @@ progress_progress_bar <- function(pb) {
   } else {
     pb$tick()
   }
+}
+
+state_estimator <- function(estimator) {
+  cli::cli_text("{.strong Estimator}: {estimator}")
+  cat("\n")
 }
 
 
