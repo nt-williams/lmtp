@@ -45,6 +45,7 @@ test_that("time varying treatment fidelity, t = 2", {
   expect_equal(truth, sdr$theta, tolerance = 0.1)
 })
 
+
 # t = 4
 # a <- c("A_1", "A_2", "A_3", "A_4")
 # nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))

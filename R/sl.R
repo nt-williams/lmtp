@@ -15,7 +15,7 @@ initiate_ensemble <- function(outcome_type, learners = NULL) {
 }
 
 # general initiator of an sl3 task
-initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL) {
+initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL, drop = FALSE) {
 
   # general task
   task <-
@@ -24,7 +24,8 @@ initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL) {
       covariates = X,
       outcome = Y,
       outcome_type = outcome_type,
-      id = id
+      id = id,
+      drop_missing_outcome = drop
     )
 
   # returns

@@ -1,11 +1,14 @@
 
 # the engine for the initial estimator of m through super learner
-estimate_sub <- function(data, shifted, Y, node_list,
+estimate_sub <- function(data, shifted, Y, node_list, C,
                          tau, outcome_type, learner_stack = NULL,
-                         estimator, m, pb) {
+                         m, pb) {
 
   if (tau > 0) {
+
     # setup
+    data <- data[data[[C[tau]]] == 1, ]
+    shifted <- data[data[[C[tau]]] == 1, ]
     fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
     pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
     ensemble <- initiate_ensemble(outcome_type, learner_stack)
@@ -25,6 +28,7 @@ estimate_sub <- function(data, shifted, Y, node_list,
                  shifted = shifted,
                  Y = pseudo,
                  node_list = node_list,
+                 C = C,
                  tau = tau - 1,
                  outcome_type = "quasibinomial",
                  learner_stack,
@@ -38,20 +42,18 @@ estimate_sub <- function(data, shifted, Y, node_list,
 }
 
 # the engine for the TML estimator
-estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
+estimate_tmle <- function(data, shifted, Y, node_list, C, tau, max,
                           outcome_type, m_natural, m_shifted,
                           m_natural_initial, m_shifted_initial, r,
                           learner_stack = NULL, pb) {
 
   if (tau > 0) {
-    # setup
-    if (tau == max) {
-      m_natural <- cbind(m_natural, data[, Y])
-      m_shifted <- cbind(m_shifted, data[, Y])
-    }
 
-    fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
-    pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
+    # setup
+    i <- data[[C[tau]]] == 1
+    fit_task <- initiate_sl3_task(data[i, ], Y, node_list[[tau]], outcome_type)
+    cens_task <- suppressWarnings(initiate_sl3_task(data, Y, node_list[[tau]], outcome_type))
+    pred_task <- suppressWarnings(initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type))
     ensemble <- initiate_ensemble(outcome_type, learner_stack)
 
     # progress bar
@@ -62,12 +64,12 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
 
     # predict on data
     pseudo <- paste0("m", tau)
-    m_natural_initial[, tau] <- bound(predict_sl3(fit, fit_task))
+    m_natural_initial[, tau] <- bound(predict_sl3(fit, cens_task))
     m_shifted_initial[, tau] <- bound(predict_sl3(fit, pred_task))
 
     # tilt estimates
-    fit <- suppressWarnings(glm(data[, Y] ~ offset(qlogis(m_natural_initial[, tau])),
-                                weights = r[, tau], family = "binomial"))
+    fit <- suppressWarnings(glm(data[i, Y] ~ offset(qlogis(m_natural_initial[i, tau])),
+                                weights = r[i, tau], family = "binomial"))
 
     # updating the unshifted estimate
     m_natural[, tau] <- bound(plogis(qlogis(m_natural_initial[, tau]) + coef(fit)))
@@ -83,6 +85,7 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
                   shifted = shifted,
                   Y = pseudo,
                   node_list = node_list,
+                  C = C,
                   tau = tau - 1,
                   max = max,
                   outcome_type = "quasibinomial",

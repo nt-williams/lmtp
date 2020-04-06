@@ -34,7 +34,7 @@ theta_sub <- function(m, outcome_type, bounds = NULL) {
 
 theta_ipw <- function(r, y, tau) {
   # calculate estimates
-  theta <- mean(r[, tau]*y)
+  theta <- mean(r[, tau]*y, na.rm = T)
 
   # returns
   out <- list(estimator = "IPW",
@@ -50,7 +50,7 @@ theta_ipw <- function(r, y, tau) {
 
 eif <- function(r, tau, shifted, natural) {
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  out <- rowSums(r * m) + shifted[, 1]
+  out <- rowSums(r * m, na.r = TRUE) + shifted[, 1]
   return(out)
 }
 
@@ -60,8 +60,9 @@ theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL) {
   inflnce <- eif(r = r, tau = tau, shifted = m$shifted, natural = m$natural)
 
   # calculate estimates
+  n <- sum(!is.na(inflnce))
   theta <- mean(m$shifted[, 1])
-  se <- sd(inflnce) / sqrt(length(inflnce))
+  se <- sd(inflnce, na.rm = TRUE) / sqrt(n)
   ci_low <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
 

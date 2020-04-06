@@ -44,4 +44,17 @@ check_sd <- function(x, learner_stack) {
   return(out)
 }
 
+check_censoring <- function(data, C, Y) {
+
+  if (any(is.na(data[[Y]])) & is.null(C)) {
+    stop("Missing outcomes detected and censoring nodes not indicated")
+  } else if (!is.null(C)) {
+    out <- TRUE
+  } else if (is.null(C)) {
+    out <- FALSE
+  }
+
+  return(out)
+}
+
 

@@ -36,7 +36,7 @@
 #' lmtp_tmle(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
 #'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
 #'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
-lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
+lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
                       learner_stack_g = NULL, pb = TRUE) {
@@ -54,8 +54,11 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
   pb_r <- check_pb(pb, t, "Estimating propensity")
   pb_m <- check_pb(pb, t, "Estimating regression")
 
+  # censoring
+  ce <- estimate_c(data, cens, Y, t, node_list, learner_stack_g)
+
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
+  r <- estimate_r(data, A, ce, shift, t, node_list, learner_stack_g, pb_r)
   r <- use_dens_ratio(r, t, n, NULL, "tmle")
 
   # tmle
@@ -63,11 +66,12 @@ lmtp_tmle <- function(data, A, Y, nodes, k = Inf, shift,
                      shifted = d,
                      Y = "y_scaled",
                      node_list = node_list,
+                     C = cens,
                      tau = t,
                      max = t,
                      outcome_type = ot,
-                     m_natural = m,
-                     m_shifted = m,
+                     m_natural = cbind(m, data[, Y]),
+                     m_shifted = cbind(m, data[, Y]),
                      m_natural_initial = m,
                      m_shifted_initial = m,
                      r = r,
@@ -251,6 +255,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param cens A vector of column names of censoring indicators.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -264,7 +269,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' @export
 #'
 #' @examples
-#' # Estimating the effect of a point treatment
+#' # Estimating the effect of a point treatment w/no loss to follow-up
 #' set.seed(6246)
 #' n <- 500
 #' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
@@ -272,9 +277,9 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
 #' df <- data.frame(W, A, Y)
 #' nodes <- list(c("W1", "W2"))
-#' lmtp_ipw(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
+#' lmtp_ipw(df, "A", "Y", nodes, cens = NULL, k = NULL, function(x) x + 2, "continuous",
 #'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
-lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
+lmtp_ipw <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      learner_stack = NULL, pb = TRUE) {
 
@@ -285,8 +290,12 @@ lmtp_ipw <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   pb <- check_pb(pb, t, "Estimating propensity")
 
+  # censoring
+  cens <- suppressWarnings(estimate_c(data, cens, Y, t, node_list, learner_stack))
+
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack, pb)
+  r <- estimate_r(data, A, cens, shift, t, node_list, learner_stack, pb)
+  test <- matrix(t(apply(r$shifted, 1, cumprod)), nrow = n, ncol = t)
   r <- use_dens_ratio(r, t, n, NULL, "ipw")
 
   # estimates
