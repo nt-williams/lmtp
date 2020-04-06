@@ -44,14 +44,22 @@ check_sd <- function(x, learner_stack) {
   return(out)
 }
 
-check_censoring <- function(data, C, Y) {
+check_censoring <- function(data, C, Y, tau) {
 
   if (any(is.na(data[[Y]])) & is.null(C)) {
-    stop("Missing outcomes detected and censoring nodes not indicated")
+    stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
   } else if (!is.null(C)) {
-    out <- TRUE
+    check <- TRUE
   } else if (is.null(C)) {
-    out <- FALSE
+    check <- FALSE
+  }
+
+  out <- matrix(nrow = nrow(data), ncol = tau)
+
+  if (isFALSE(check)) {
+    lapply(1:tau, function(t) {
+      out[, t] <<- rep(1, nrow(data))
+    })
   }
 
   return(out)

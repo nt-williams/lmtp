@@ -52,8 +52,8 @@ estimate_tmle <- function(data, shifted, Y, node_list, C, tau, max,
     # setup
     i <- data[[C[tau]]] == 1
     fit_task <- initiate_sl3_task(data[i, ], Y, node_list[[tau]], outcome_type)
-    cens_task <- suppressWarnings(initiate_sl3_task(data, Y, node_list[[tau]], outcome_type))
-    pred_task <- suppressWarnings(initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type))
+    no_shift_task <- suppressWarnings(initiate_sl3_task(data, Y, node_list[[tau]], outcome_type))
+    shift_task <- suppressWarnings(initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type))
     ensemble <- initiate_ensemble(outcome_type, learner_stack)
 
     # progress bar
@@ -64,12 +64,11 @@ estimate_tmle <- function(data, shifted, Y, node_list, C, tau, max,
 
     # predict on data
     pseudo <- paste0("m", tau)
-    m_natural_initial[, tau] <- bound(predict_sl3(fit, cens_task))
-    m_shifted_initial[, tau] <- bound(predict_sl3(fit, pred_task))
+    m_natural_initial[, tau] <- bound(predict_sl3(fit, no_shift_task))
+    m_shifted_initial[, tau] <- bound(predict_sl3(fit, shift_task))
 
     # tilt estimates
-    fit <- suppressWarnings(glm(data[i, Y] ~ offset(qlogis(m_natural_initial[i, tau])),
-                                weights = r[i, tau], family = "binomial"))
+    fit <- suppressWarnings(glm(data[i, Y] ~ offset(qlogis(m_natural_initial[i, tau])), weights = r[i, tau], family = "binomial"))
 
     # updating the unshifted estimate
     m_natural[, tau] <- bound(plogis(qlogis(m_natural_initial[, tau]) + coef(fit)))

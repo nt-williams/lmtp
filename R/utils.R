@@ -11,17 +11,6 @@ shift_data <- function(data, A, .f) {
   return(out)
 }
 
-# shift_data <- function(data, A, C, .f) {
-#   out <- data
-#   sapply(A, function(x) {
-#     out[, x] <<- .f(data[[x]])
-#   }, simplify = TRUE)
-#   sapply(C, function(x) {
-#     out[, x] <<- rep(1, nrow(data))
-#   })
-#   return(out)
-# }
-
 create_m <- function(n, t, Y) {
   out <- matrix(nrow = n, ncol = t)
   out[, t] <- Y

@@ -14,7 +14,7 @@ lmtp_ipw(
   shift,
   outcome_type = c("binomial", "continuous"),
   learner_stack = NULL,
-  pb = TRUE
+  progress_bar = TRUE
 )
 }
 \arguments{
@@ -28,7 +28,7 @@ lmtp_ipw(
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
 
-\item{cens}{A vector of column names of censoring indicators.}
+\item{cens}{A vector of column names of censoring indicators the same length as \code{A}.}
 
 \item{k}{An integer specifying how many previous time points nodes should be
 used for estimation at the given time point. Default is \code{Inf},
@@ -41,7 +41,7 @@ all time points.}
 \item{learner_stack}{An \code{sl3} learner stack for estimation of the
 exposure mechanism.}
 
-\item{pb}{Should a progress bar be displayed? Default is \code{TRUE}.}
+\item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO
@@ -50,14 +50,5 @@ TODO
 LMTP IPW Estimator
 }
 \examples{
-# Estimating the effect of a point treatment w/no loss to follow-up
-set.seed(6246)
-n <- 500
-W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
-A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
-Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
-df <- data.frame(W, A, Y)
-nodes <- list(c("W1", "W2"))
-lmtp_ipw(df, "A", "Y", nodes, cens = NULL, k = NULL, function(x) x + 2, "continuous",
-         learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+# TO DO
 }

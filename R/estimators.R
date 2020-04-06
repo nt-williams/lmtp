@@ -7,6 +7,7 @@
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param cens A vector of column names of censoring indicators the same length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -19,27 +20,17 @@
 #'  regression.
 #' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
-#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
+#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
 #'
 #' @examples
-#' # Estimating the effect of a point treatment
-#' set.seed(6246)
-#' n <- 500
-#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
-#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
-#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
-#' df <- data.frame(W, A, Y)
-#' nodes <- list(c("W1", "W2"))
-#' lmtp_tmle(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-#'           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
+#' # TO DO
 lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
-                      learner_stack_g = NULL, pb = TRUE) {
+                      learner_stack_g = NULL, progress_bar = TRUE) {
 
 
   # setup
@@ -51,17 +42,17 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb_r <- check_pb(pb, t, "Estimating propensity")
-  pb_m <- check_pb(pb, t, "Estimating regression")
+  pb_r <- check_pb(progress_bar, t, "Estimating propensity")
+  pb_m <- check_pb(progress_bar, t, "Estimating regression")
 
   # censoring
   ce <- estimate_c(data, cens, Y, t, node_list, learner_stack_g)
 
   # propensity estimation
   r <- estimate_r(data, A, ce, shift, t, node_list, learner_stack_g, pb_r)
-  r <- use_dens_ratio(r, t, n, NULL, "tmle")
+  z <- use_dens_ratio(r, t, n, NULL, "tmle")
 
-  # tmle
+  # tmle engine
   m <- estimate_tmle(data = data,
                      shifted = d,
                      Y = "y_scaled",
@@ -74,13 +65,13 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                      m_shifted = cbind(m, data[, Y]),
                      m_natural_initial = m,
                      m_shifted_initial = m,
-                     r = r,
+                     r = z,
                      learner_stack = learner_stack_Q,
                      pb = pb_m)
 
   # estimates
   eta <- list(m = m,
-              r = r,
+              r = z,
               tau = t,
               outcome_type = ot,
               bounds = scaled$bounds)
@@ -111,27 +102,17 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #'  regression.
 #' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
-#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
+#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
 #'
 #' @examples
-#' #' # Estimating the effect of a point treatment
-#' set.seed(6246)
-#' n <- 500
-#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
-#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
-#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
-#' df <- data.frame(W, A, Y)
-#' nodes <- list(c("W1", "W2"))
-#' lmtp_sdr(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-#'          learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
+#' # TO DO
 lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
-                     learner_stack_g = NULL, pb = TRUE) {
+                     learner_stack_g = NULL, progress_bar = TRUE) {
 
   # setup
   n <- nrow(data)
@@ -142,14 +123,14 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
   node_list <- create_node_list(A, nodes, k)
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb_r <- check_pb(pb, t, "Estimating propensity")
-  pb_m <- check_pb(pb, t, "Estimating regression")
+  pb_r <- check_pb(progress_bar, t, "Estimating propensity")
+  pb_m <- check_pb(progress_bar, t, "Estimating regression")
 
   # propensity estimation
   r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
   z <- use_dens_ratio(r, t, n, NULL, "eif")
 
-  # sdr
+  # sdr engine
   sdr <- estimate_sdr(data = data,
                       shifted = d,
                       Y = "y_scaled",
@@ -193,25 +174,16 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #' @param learner_stack An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
-#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
+#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
 #'
 #' @examples
-#' # Estimating the effect of a point treatment
-#' set.seed(6246)
-#' n <- 500
-#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
-#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
-#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
-#' df <- data.frame(W, A, Y)
-#' nodes <- list(c("W1", "W2"))
-#' lmtp_sub(df, "A", "Y", nodes, k = NULL, function(x) x + 2, "continuous",
-#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+#' # TO DO
 lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learner_stack = NULL, pb = TRUE) {
+                     bounds = NULL, learner_stack = NULL, progress_bar = TRUE) {
 
   # setup
   n <- nrow(data)
@@ -223,9 +195,9 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
   outcome_type = ifelse(ot == "continuous", "quasibinomial", "binomial")
   scaled <- scale_y_continuous(data[, Y], ot, bounds)
   d[, "y_scaled"] <- data[, "y_scaled"] <- scaled$scaled
-  pb <- check_pb(pb, t, "Estimating regression")
+  pb <- check_pb(progress_bar, t, "Estimating regression")
 
-  # sequential regression
+  # substitution engine
   m <- estimate_sub(data = data,
                     shifted = d,
                     Y = "y_scaled",
@@ -255,7 +227,7 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
-#' @param cens A vector of column names of censoring indicators.
+#' @param cens A vector of column names of censoring indicators the same length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -263,43 +235,33 @@ lmtp_sub <- function(data, A, Y, nodes, k = Inf, shift,
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param learner_stack An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
-#' @param pb Should a progress bar be displayed? Default is \code{TRUE}.
+#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
 #'
 #' @examples
-#' # Estimating the effect of a point treatment w/no loss to follow-up
-#' set.seed(6246)
-#' n <- 500
-#' W <- data.frame(W1 = runif(n), W2 = rbinom(n, 1, 0.7))
-#' A <- rpois(n, lambda = exp(3 + .3*log(W$W1) - .2*exp(W$W1)*W$W2))
-#' Y <- rnorm(n, 1 + .5*A - .2*A*W$W2 + 2*A*tan(W$W1^2) - 2*W$W1*W$W2 + A*W$W1*W$W2, 1)
-#' df <- data.frame(W, A, Y)
-#' nodes <- list(c("W1", "W2"))
-#' lmtp_ipw(df, "A", "Y", nodes, cens = NULL, k = NULL, function(x) x + 2, "continuous",
-#'          learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+#' # TO DO
 lmtp_ipw <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     learner_stack = NULL, pb = TRUE) {
+                     learner_stack = NULL, progress_bar = TRUE) {
 
   # setup
   t <- length(nodes)
   n <- nrow(data)
   y <- data[, Y]
   node_list <- create_node_list(A, nodes, k)
-  pb <- check_pb(pb, t, "Estimating propensity")
+  pb <- check_pb(progress_bar, t, "Estimating propensity")
 
   # censoring
   cens <- suppressWarnings(estimate_c(data, cens, Y, t, node_list, learner_stack))
 
   # propensity estimation
   r <- estimate_r(data, A, cens, shift, t, node_list, learner_stack, pb)
-  test <- matrix(t(apply(r$shifted, 1, cumprod)), nrow = n, ncol = t)
-  r <- use_dens_ratio(r, t, n, NULL, "ipw")
+  z <- use_dens_ratio(r, t, n, NULL, "ipw")
 
   # estimates
-  eta <- list(r = r,
+  eta <- list(r = z,
               y = y,
               tau = t)
 
