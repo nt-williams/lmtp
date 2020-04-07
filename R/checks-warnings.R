@@ -22,7 +22,6 @@ no_sl3 <- function() {
   cat("\n")
   cli::cli_text("Recommended package, {.pkg sl3}, not detected.")
   cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
-  cat("\n")
 }
 
 check_pb <- function(pb, t, status) {
