@@ -62,3 +62,27 @@ predict_sl3 <- function(object, task) {
   out <- object$predict(task)
   return(out)
 }
+
+create_censoring_indicators <- function(data, C, tau) {
+
+  # when no censoring return TRUE for all obs
+  if (is.null(C)) {
+    i <- rep(TRUE, nrow(data))
+    j <- rep(TRUE, nrow(data))
+    out <- list(i = i, j = j)
+    return(out)
+  }
+
+  # other wise find censored observations
+  i <- data[[C[tau]]] == 1
+
+  if (tau > 1) {
+    j <- data[[C[tau - 1]]] == 1
+  } else {
+    j <- rep(TRUE, nrow(data))
+  }
+
+  out <- list(i = i, j = j)
+  return(out)
+}
+

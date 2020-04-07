@@ -1,14 +1,18 @@
 
 # the engine for the initial estimator of m through super learner
-estimate_sub <- function(data, shifted, Y, node_list,
+estimate_sub <- function(data, shifted, Y, node_list, C,
                          tau, outcome_type, learner_stack = NULL,
-                         estimator, m, pb) {
+                         m, pb) {
 
   if (tau > 0) {
+
     # setup
-    fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
-    pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
-    ensemble <- initiate_ensemble(outcome_type, learner_stack)
+    i          <- create_censoring_indicators(data, C, tau)$i
+    j          <- create_censoring_indicators(data, C, tau)$j
+    pseudo     <- paste0("m", tau)
+    fit_task   <- initiate_sl3_task(data[i, ], Y, node_list[[tau]], outcome_type)
+    shift_task <- suppressWarnings(initiate_sl3_task(shifted[j, ], Y, node_list[[tau]], outcome_type))
+    ensemble   <- initiate_ensemble(outcome_type, learner_stack)
 
     # progress bar
     progress_progress_bar(pb)
@@ -17,14 +21,17 @@ estimate_sub <- function(data, shifted, Y, node_list,
     fit <- run_ensemble(ensemble, fit_task)
 
     # predict on shifted data
-    pseudo <- paste0("m", tau)
-    m[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
+    m[j, tau]            <-
+      shifted[j, pseudo] <-
+      data[j, pseudo]    <-
+      bound(predict_sl3(fit, shift_task))
 
     # recursion
     estimate_sub(data = data,
                  shifted = shifted,
                  Y = pseudo,
                  node_list = node_list,
+                 C = C,
                  tau = tau - 1,
                  outcome_type = "quasibinomial",
                  learner_stack,
@@ -38,21 +45,21 @@ estimate_sub <- function(data, shifted, Y, node_list,
 }
 
 # the engine for the TML estimator
-estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
+estimate_tmle <- function(data, shifted, Y, node_list, C, tau, max,
                           outcome_type, m_natural, m_shifted,
                           m_natural_initial, m_shifted_initial, r,
                           learner_stack = NULL, pb) {
 
   if (tau > 0) {
-    # setup
-    if (tau == max) {
-      m_natural <- cbind(m_natural, data[, Y])
-      m_shifted <- cbind(m_shifted, data[, Y])
-    }
 
-    fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
-    pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
-    ensemble <- initiate_ensemble(outcome_type, learner_stack)
+    # setup
+    i             <- create_censoring_indicators(data, C, tau)$i
+    j             <- create_censoring_indicators(data, C, tau)$j
+    pseudo        <- paste0("m", tau)
+    fit_task      <- initiate_sl3_task(data[i, ], Y, node_list[[tau]], outcome_type)
+    no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], Y, node_list[[tau]], outcome_type))
+    shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], Y, node_list[[tau]], outcome_type))
+    ensemble      <- initiate_ensemble(outcome_type, learner_stack)
 
     # progress bar
     progress_progress_bar(pb)
@@ -61,21 +68,19 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
     fit <- run_ensemble(ensemble, fit_task)
 
     # predict on data
-    pseudo <- paste0("m", tau)
-    m_natural_initial[, tau] <- bound(predict_sl3(fit, fit_task))
-    m_shifted_initial[, tau] <- bound(predict_sl3(fit, pred_task))
+    m_natural_initial[j, tau] <- bound(predict_sl3(fit, no_shift_task))
+    m_shifted_initial[j, tau] <- bound(predict_sl3(fit, shift_task))
 
     # tilt estimates
-    fit <- suppressWarnings(glm(data[, Y] ~ offset(qlogis(m_natural_initial[, tau])),
-                                weights = r[, tau], family = "binomial"))
+    fit <- suppressWarnings(glm(data[i, Y] ~ offset(qlogis(m_natural_initial[i, tau])), weights = r[i, tau], family = "binomial"))
 
     # updating the unshifted estimate
     m_natural[, tau] <- bound(plogis(qlogis(m_natural_initial[, tau]) + coef(fit)))
 
     # updating the shifted estimate
-    m_shifted[, tau] <-
+    m_shifted[, tau]    <-
       shifted[, pseudo] <-
-      data[, pseudo] <-
+      data[, pseudo]    <-
       bound(plogis(qlogis(m_shifted_initial[, tau]) + coef(fit)))
 
     # recursion
@@ -83,6 +88,7 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
                   shifted = shifted,
                   Y = pseudo,
                   node_list = node_list,
+                  C = C,
                   tau = tau - 1,
                   max = max,
                   outcome_type = "quasibinomial",
@@ -104,48 +110,62 @@ estimate_tmle <- function(data, shifted, Y, node_list, tau, max,
 }
 
 # the engine for the sdr estimator
-estimate_sdr <- function(data, shifted, Y, node_list,
+estimate_sdr <- function(data, shifted, Y, node_list, C,
                          tau, max, outcome_type, learner_stack = NULL,
                          m_shifted, m_natural, r, pb) {
 
   if (tau > 0) {
 
+    # global setup
+    pseudo <- paste0("m", tau)
+
     # progress bar
     progress_progress_bar(pb)
 
     if (tau == max) {
+
       # setup
-      pseudo <- paste0("m", tau)
-      fit_task <- initiate_sl3_task(data, Y, node_list[[tau]], outcome_type)
-      pred_task <- initiate_sl3_task(shifted, Y, node_list[[tau]], outcome_type)
-      ensemble <- initiate_ensemble(outcome_type, learner_stack)
-      m_natural <- cbind(m_natural, data[, Y])
-      m_shifted <- cbind(m_shifted, data[, Y])
+      i             <- create_censoring_indicators(data, C, tau)$i
+      j             <- create_censoring_indicators(data, C, tau)$j
+      m_natural     <- cbind(m_natural, data[, Y])
+      m_shifted     <- cbind(m_shifted, data[, Y])
+      fit_task      <- initiate_sl3_task(data[i, ], Y, node_list[[tau]], outcome_type)
+      no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], Y, node_list[[tau]], outcome_type))
+      shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], Y, node_list[[tau]], outcome_type))
+      ensemble      <- initiate_ensemble(outcome_type, learner_stack)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
 
-      # predict on shifted data
-      m_natural[, tau] <- bound(predict_sl3(fit, fit_task))
-      m_shifted[, tau] <- shifted[, pseudo] <- data[, pseudo] <- bound(predict_sl3(fit, pred_task))
+      # predict
+      m_natural[j, tau]    <- bound(predict_sl3(fit, no_shift_task))
+      m_shifted[j, tau]    <-
+        shifted[j, pseudo] <-
+        data[j, pseudo]    <-
+        bound(predict_sl3(fit, shift_task))
 
     } else if (tau < max) {
+
       # setup
-      pseudo <- "y_sdr"
+      i <- create_censoring_indicators(data, C, tau + 1)$i
+      j <- create_censoring_indicators(data, C, tau)$j
 
       # outcome transformation
-      z <- use_dens_ratio(r, tau, NULL, max, "sdr")
-      ms <- m_shifted[, (tau + 2):(max + 1), drop = FALSE] - m_natural[, (tau + 1):max, drop = FALSE]
-      mt <- m_shifted[, tau + 1]
+      z              <- use_dens_ratio(r, tau, NULL, max, "sdr")
+      ms             <- m_shifted[, (tau + 2):(max + 1), drop = FALSE] - m_natural[, (tau + 1):max, drop = FALSE]
+      mt             <- m_shifted[, tau + 1]
       data[, pseudo] <- shifted[, pseudo] <- rowSums(z * ms) + mt
 
       # run SL on outcome transformation and get predictions
-      fit_task <- initiate_sl3_task(data, pseudo, node_list[[tau]], outcome_type)
-      pred_task <- initiate_sl3_task(shifted, pseudo, node_list[[tau]], outcome_type)
-      ensemble <- initiate_ensemble(outcome_type, learner_stack)
-      fit <- run_ensemble(ensemble, fit_task)
-      m_natural[, tau] <- predict_sl3(fit, fit_task)
-      m_shifted[, tau] <- predict_sl3(fit, pred_task)
+      fit_task      <- initiate_sl3_task(data[i, ], pseudo, node_list[[tau]], outcome_type)
+      no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], Y, node_list[[tau]], outcome_type))
+      shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], Y, node_list[[tau]], outcome_type))
+      ensemble      <- initiate_ensemble(outcome_type, learner_stack)
+      fit           <- run_ensemble(ensemble, fit_task)
+
+      # predictions
+      m_natural[j, tau] <- predict_sl3(fit, no_shift_task)
+      m_shifted[j, tau] <- predict_sl3(fit, shift_task)
 
     }
 
@@ -154,6 +174,7 @@ estimate_sdr <- function(data, shifted, Y, node_list,
                  shifted = shifted,
                  Y = pseudo,
                  node_list = node_list,
+                 C = C,
                  tau = tau - 1,
                  max = max,
                  outcome_type = "continuous",

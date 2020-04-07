@@ -1,6 +1,5 @@
 
 welcome_msg <- function() {
-  cat("\n")
   cli::cli_text("{.strong lmtp}: Causal Effects Based on Longitudinal Modified Treatment Policies")
   cli::cli_text("{.strong Version}: ", as.character(utils::packageVersion("lmtp")))
 }
@@ -8,13 +7,14 @@ welcome_msg <- function() {
 #' @export
 print.lmtp <- function(x, ...) {
   cat("\n")
-  cli::cli_text("{.strong Estimator}: {x$estimator}")
+  cli::cli_text("{.strong LMTP Estimator}: {x$estimator}")
   cat("\n")
   cli::cli_text("{.strong Population intervention effect}")
   cli::cli_text(cat("   "), "{.strong Estimate}: {round(x$theta, 4)}")
   cli::cli_text(cat(" "), "{.strong Std. error}: {round(x$standard_error, 4)}")
   cli::cli_text(cat("     "), "{.strong 95% CI}: ({round(x$low, 4)}, {round(x$high, 4)})")
   if (x$estimator %in% c("substitution", "IPW")) no_stderr_warning(x$estimator)
+  cat("\n")
 }
 
 # progress bar
@@ -38,11 +38,3 @@ progress_progress_bar <- function(pb) {
     pb$tick()
   }
 }
-
-state_estimator <- function(estimator) {
-  cli::cli_text("{.strong Estimator}: {estimator}")
-  cat("\n")
-}
-
-
-

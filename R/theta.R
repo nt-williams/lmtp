@@ -4,8 +4,8 @@ compute_theta <- function(eta, estimator) {
   out <- switch(estimator,
                 "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
                 "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "tml" = theta_tml_sdr(estimator = "targeted minimum-loss based", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "sdr" = theta_tml_sdr(estimator = "sequentially doubly robust", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds))
+                "tml" = theta_tml_sdr(estimator = "TMLE", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds),
+                "sdr" = theta_tml_sdr(estimator = "SDR", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds))
 
   return(out)
 }
@@ -34,7 +34,7 @@ theta_sub <- function(m, outcome_type, bounds = NULL) {
 
 theta_ipw <- function(r, y, tau) {
   # calculate estimates
-  theta <- mean(r[, tau]*y)
+  theta <- mean(r[, tau]*y, na.rm = T)
 
   # returns
   out <- list(estimator = "IPW",
@@ -49,8 +49,10 @@ theta_ipw <- function(r, y, tau) {
 }
 
 eif <- function(r, tau, shifted, natural) {
+  natural[is.na(natural)] <- -999
+  shifted[is.na(shifted)] <- -999
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  out <- rowSums(r * m) + shifted[, 1]
+  out <- rowSums(r * m, na.rm = TRUE) + shifted[, 1]
   return(out)
 }
 
@@ -60,8 +62,9 @@ theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL) {
   inflnce <- eif(r = r, tau = tau, shifted = m$shifted, natural = m$natural)
 
   # calculate estimates
+  n <- nrow(m$natural)
   theta <- mean(m$shifted[, 1])
-  se <- sd(inflnce) / sqrt(length(inflnce))
+  se <- sd(inflnce, na.rm = TRUE) / sqrt(n)
   ci_low <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
 

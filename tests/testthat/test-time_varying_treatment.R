@@ -26,13 +26,13 @@ ipw <-
            learner_stack = sl3::make_learner_stack(sl3::Lrnr_glm))
 
 tmle <-
-  lmtp_tmle(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
+  lmtp_tmle(df, a, "Y", nodes, cens = NULL, k = 0, shift = function(x) x + 0.5,
             outcome_type = "binomial",
             learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
             learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
 
 sdr <-
-  lmtp_sdr(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
+  lmtp_sdr(df, a, "Y", nodes, cens = NULL, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
            learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
            learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
@@ -44,6 +44,7 @@ test_that("time varying treatment fidelity, t = 2", {
   expect_equal(truth, tmle$theta, tolerance = 0.1)
   expect_equal(truth, sdr$theta, tolerance = 0.1)
 })
+
 
 # t = 4
 # a <- c("A_1", "A_2", "A_3", "A_4")
