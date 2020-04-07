@@ -14,25 +14,25 @@ estimate_r <- function(data, A, cens, C, shift, tau,
     progress_progress_bar(pb)
 
     # setup
-    i <- data[[cens[t]]] == 1
-    shifted <- shift_data(data, A[[t]], shift)
-    d <- rbind(data, shifted)
-    d$id <- rep(1:n, 2)
-    d$shift_indicator <- c(rep(0, n), rep(1, n))
-    d <- subset(d, rep(i, 2))
-    task <- initiate_sl3_task(d, "shift_indicator", node_list[[t]], "binomial", "id")
+    i        <- create_censoring_indicators(data, cens, tau)$i
+    shifted  <- shift_data(data, A[[t]], shift)
+    d        <- rbind(data, shifted)
+    d$id     <- rep(1:n, 2)
+    d$si     <- c(rep(0, n), rep(1, n))
+    d        <- subset(d, rep(i, 2))
+    task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
     ensemble <- initiate_ensemble("binomial", learner_stack)
 
     # run SL
     fit <- run_ensemble(ensemble, task)
 
     # ratios
-    pred <- bound(predict_sl3(fit, task), .Machine$double.eps)
-    rat <- pred / (1 - truncate(pred))
+    pred             <- bound(predict_sl3(fit, task), .Machine$double.eps)
+    rat              <- pred / (1 - truncate(pred))
     r$natural[!i, t] <<- 0
     r$shifted[!i, t] <<- 0
-    r$natural[i, t] <<- rat[d$shift_indicator == 0] * C[i, t]
-    r$shifted[i, t] <<- rat[d$shift_indicator == 1] * C[i, t]
+    r$natural[i, t]  <<- rat[d$si == 0] * C[i, t]
+    r$shifted[i, t]  <<- rat[d$si == 1] * C[i, t]
   })
 
   # returns
@@ -56,8 +56,8 @@ estimate_c <- function(data, C, Y, tau, node_list, learner_stack) {
       fit <- run_ensemble(ensemble, fit_task)
 
       # probability of not being censored
-      pred <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      rat <- mean(data[, C[[t]]]) / pred
+      pred      <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+      rat       <- mean(data[, C[[t]]]) / pred
       cens[, t] <<- rat
     })
   }
@@ -69,7 +69,7 @@ estimate_c <- function(data, C, Y, tau, node_list, learner_stack) {
 use_dens_ratio <- function(r, tau, n, max, what) {
   switch(
     what,
-    "tmle" = ratio_ite(r = r, tau = tau, n = n),
+    "tml" = ratio_ite(r = r, tau = tau, n = n),
     "ipw" = ratio_ite(r = r, tau = tau, n = n),
     "eif" = ratio_ite(r = r, tau = tau, n = n),
     "sdr" = ratio_sdr(r = r, tau = tau, max = max)
