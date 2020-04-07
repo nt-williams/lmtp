@@ -7,7 +7,8 @@
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
-#' @param cens A vector of column names of censoring indicators the same length as \code{A}.
+#' @param cens An optional vector of column names of censoring indicators the same
+#'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -90,6 +91,8 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param cens An optional vector of column names of censoring indicators the same
+#'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -169,6 +172,8 @@ lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param cens An optional vector of column names of censoring indicators the same
+#'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -231,7 +236,8 @@ lmtp_sub <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
-#' @param cens A vector of column names of censoring indicators the same length as \code{A}.
+#' @param cens An optional vector of column names of censoring indicators the same
+#'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.

@@ -9,6 +9,7 @@ lmtp_sub(
   A,
   Y,
   nodes,
+  cens = NULL,
   k = Inf,
   shift,
   outcome_type = c("binomial", "continuous"),
@@ -27,6 +28,9 @@ lmtp_sub(
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
+
+\item{cens}{An optional vector of column names of censoring indicators the same
+length as \code{A}.}
 
 \item{k}{An integer specifying how many previous time points nodes should be
 used for estimation at the given time point. Default is \code{Inf},

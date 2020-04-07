@@ -30,7 +30,8 @@ lmtp_tmle(
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
 
-\item{cens}{A vector of column names of censoring indicators the same length as \code{A}.}
+\item{cens}{An optional vector of column names of censoring indicators the same
+length as \code{A}.}
 
 \item{k}{An integer specifying how many previous time points nodes should be
 used for estimation at the given time point. Default is \code{Inf},
