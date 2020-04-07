@@ -116,7 +116,7 @@ foo <- function(n) {
 
 . <- replicate(50, foo(500))
 
-
+# tmle
 n_obs <- 1000
 W <- replicate(2, rbinom(n_obs, 1, 0.5))
 A <- rnorm(n_obs, mean = 2 * W, sd = 1)
@@ -170,29 +170,37 @@ foo <- function(n) {
 
   lmtp_tmle(df, a, "Y", nodes, cens, 0, function(x) x + 0.5,
             "binomial", NULL, sl3::make_learner(sl3::Lrnr_glm),
-            sl3::make_learner(sl3::Lrnr_glm), pb = F)$theta
+            sl3::make_learner(sl3::Lrnr_glm))
 }
 
-. <- replicate(1000, foo(100))
+. <- replicate(200, foo(1000), simplify = F)
 
 
-# tmle
+# sdr
 foo <- function(n) {
   n_obs <- n
-  W <- replicate(2, rbinom(n_obs, 1, 0.5))
-  A <- rnorm(n_obs, mean = 2 * W, sd = 1)
-  cens <- rbinom(n_obs, 1, plogis(A * 3))
-  Y <- rbinom(n_obs, 1, plogis(A + W + rnorm(n_obs, mean = 0, sd = 1)))
-  Y[cens == 0] <- NA
-  nodes <- list(c("X1", "X2"))
-  df <- data.frame(W, A, cens, Y)
-  lmtp_tmle(df, "A", "Y", nodes, "cens", 0, function(x) x + 0.5,
-            "binomial", NULL, sl3::make_learner(sl3::Lrnr_glm),
-            sl3::make_learner(sl3::Lrnr_glm))$theta
+  L1 <- rbinom(n_obs, 1, 0.5)
+  A1 <- rnorm(n_obs, mean = 2 * L1, sd = 1)
+  C1 <- rbinom(n_obs, 1, 1 - 0.1*L1)
+  L2 <- rbinom(n_obs, 1, plogis(A1 + L1 + rnorm(n_obs, mean = 0, sd = 1)))
+  A2 <- rnorm(n_obs, mean = 2 * A1 + L2, sd = 1)
+  C2 <- rbinom(n_obs, 1, 1 - 0.1*L2)
+  Y <- rbinom(n_obs, 1, plogis(A2 + L2 + rnorm(n_obs, mean = 0, sd = 1)))
+
+  L2[C1 == 0] <- NA
+  A2[C1 == 0] <- NA
+  C2[C1 == 0] <- 0
+  Y[C1 == 0] <- NA
+  Y[C2 == 0] <- NA
+
+  df <- data.frame(L1, A1, C1, L2, A2, C2, Y)
+  a <- c("A1", "A2")
+  nodes <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+
+  lmtp_sdr(df, a, "Y", nodes, cens, 0, function(x) x + 0.5,
+           "binomial", NULL, sl3::make_learner(sl3::Lrnr_glm),
+           sl3::make_learner(sl3::Lrnr_glm), progress_bar = F)
 }
 
-. <- replicate(50, foo(1000))
-
-lmtp_tmle(df, "A", "Y", nodes, "cens", 0, function(x) x + 0.5,
-          "binomial", NULL, sl3::make_learner(sl3::Lrnr_glm),
-          sl3::make_learner(sl3::Lrnr_glm))
+. <- replicate(100, foo(1000), simplify = F)

@@ -1,6 +1,6 @@
 
 # engine for density ratio estimation by classification
-estimate_r <- function(data, A, C, shift, tau,
+estimate_r <- function(data, A, cens, C, shift, tau,
                        node_list, learner_stack = NULL, pb) {
 
   # global setup
@@ -14,7 +14,7 @@ estimate_r <- function(data, A, C, shift, tau,
     progress_progress_bar(pb)
 
     # setup
-    i <- !is.na(data[[A[[t]]]])
+    i <- data[[cens[t]]] == 1
     shifted <- shift_data(data, A[[t]], shift)
     d <- rbind(data, shifted)
     d$id <- rep(1:n, 2)

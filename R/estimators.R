@@ -49,7 +49,7 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   ce <- estimate_c(data, cens, Y, t, node_list, learner_stack_g)
 
   # propensity estimation
-  r <- estimate_r(data, A, ce, shift, t, node_list, learner_stack_g, pb_r)
+  r <- estimate_r(data, A, cens, ce, shift, t, node_list, learner_stack_g, pb_r)
   z <- use_dens_ratio(r, t, n, NULL, "tmle")
 
   # tmle engine
@@ -109,7 +109,7 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #'
 #' @examples
 #' # TO DO
-lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
+lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
                      learner_stack_g = NULL, progress_bar = TRUE) {
@@ -126,8 +126,11 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
   pb_r <- check_pb(progress_bar, t, "Estimating propensity")
   pb_m <- check_pb(progress_bar, t, "Estimating regression")
 
+  # censoring
+  ce <- estimate_c(data, cens, Y, t, node_list, learner_stack_g)
+
   # propensity estimation
-  r <- estimate_r(data, A, shift, t, node_list, learner_stack_g, pb_r)
+  r <- estimate_r(data, A, cens, ce, shift, t, node_list, learner_stack_g, pb_r)
   z <- use_dens_ratio(r, t, n, NULL, "eif")
 
   # sdr engine
@@ -135,6 +138,7 @@ lmtp_sdr <- function(data, A, Y, nodes, k = Inf, shift,
                       shifted = d,
                       Y = "y_scaled",
                       node_list = node_list,
+                      C = cens,
                       tau = t,
                       max = t,
                       outcome_type = ot,
