@@ -9,6 +9,7 @@ lmtp_tmle(
   A,
   Y,
   nodes,
+  baseline = NULL,
   cens = NULL,
   k = Inf,
   shift,
@@ -22,13 +23,17 @@ lmtp_tmle(
 \arguments{
 \item{data}{A data frame.}
 
-\item{A}{A vector of column names of treatment variables.}
+\item{A}{A vector of column names for treatment variables.}
 
 \item{Y}{The column name of the outcome variable.}
 
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
+
+\item{baseline}{An optional vector of columns names for baseline covariates to be
+included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+and these variables should be added to the first index of \code{nodes}.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
 length as \code{A}.}

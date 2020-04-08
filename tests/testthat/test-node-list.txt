@@ -1,6 +1,7 @@
 > a <- c("A_1", "A_2", "A_3", "A_4")
+> bs <- c("W_1", "W_2")
 > nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-> create_node_list(a, nodes, k = NULL)
+> create_node_list(a, nodes, baseline = NULL, k = NULL)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -14,7 +15,7 @@
 [1] "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
 
 
-> create_node_list(a, nodes, k = Inf)
+> create_node_list(a, nodes, baseline = NULL, k = Inf)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -28,7 +29,7 @@
 [1] "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
 
 
-> create_node_list(a, nodes, k = 0)
+> create_node_list(a, nodes, baseline = NULL, k = 0)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -42,7 +43,7 @@
 [1] "L_4" "A_4"
 
 
-> create_node_list(a, nodes, k = 1)
+> create_node_list(a, nodes, baseline = NULL, k = 1)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -56,7 +57,7 @@
 [1] "L_3" "A_3" "L_4" "A_4"
 
 
-> create_node_list(a, nodes, k = 2)
+> create_node_list(a, nodes, baseline = NULL, k = 2)
 [[1]]
 [1] "L_1" "A_1"
 
@@ -69,4 +70,21 @@
 [[4]]
 [1] "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
 
+
+> create_node_list(a, nodes, bs, k = 1)
+[[1]]
+[1] "W_1" "W_2" "L_1" "A_1"
+
+[[2]]
+[1] "W_1" "W_2" "L_1" "A_1" "L_2" "A_2"
+
+[[3]]
+[1] "W_1" "W_2" "L_2" "A_2" "L_3" "A_3"
+
+[[4]]
+[1] "W_1" "W_2" "L_3" "A_3" "L_4" "A_4"
+
+
+> create_node_list(a, nodes, bs, k = Inf)
+Error: Non-Markov process, set `baseline = NULL` and add baseline covariates to `nodes[[1]]`
 

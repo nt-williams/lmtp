@@ -2,11 +2,14 @@
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
 #' @param data A data frame.
-#' @param A A vector of column names of treatment variables.
+#' @param A A vector of column names for treatment variables.
 #' @param Y The column name of the outcome variable.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param baseline An optional vector of columns names for baseline covariates to be
+#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+#'  and these variables should be added to the first index of \code{nodes}.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -28,7 +31,8 @@
 #'
 #' @examples
 #' # TO DO
-lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
+lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
+                      cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
                       learner_stack_g = NULL, progress_bar = TRUE) {
@@ -40,7 +44,7 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   t           <- length(nodes)
   m           <- matrix(nrow = n, ncol = t)
   ot          <- match.arg(outcome_type)
-  node_list   <- create_node_list(A, nodes, k)
+  node_list   <- create_node_list(A, nodes, baseline, k)
   scaled      <- scale_y_continuous(data[, Y], ot, bounds)
   shifted$xyz <- data$xyz <- scaled$scaled
   pb_r        <- check_pb(progress_bar, t, "Estimating propensity")
@@ -91,6 +95,9 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param baseline An optional vector of columns names for baseline covariates to be
+#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+#'  and these variables should be added to the first index of \code{nodes}.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -112,7 +119,8 @@ lmtp_tmle <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #'
 #' @examples
 #' # TO DO
-lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
+lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
+                     cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
                      learner_stack_g = NULL, progress_bar = TRUE) {
@@ -123,7 +131,7 @@ lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   t           <- length(nodes)
   m           <- matrix(nrow = n, ncol = t)
   ot          <- match.arg(outcome_type)
-  node_list   <- create_node_list(A, nodes, k)
+  node_list   <- create_node_list(A, nodes, baseline, k)
   scaled      <- scale_y_continuous(data[, Y], ot, bounds)
   shifted$xyz <- data$xyz <- scaled$scaled
   pb_r        <- check_pb(progress_bar, t, "Estimating propensity")
@@ -172,6 +180,9 @@ lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param baseline An optional vector of columns names for baseline covariates to be
+#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+#'  and these variables should be added to the first index of \code{nodes}.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -190,7 +201,8 @@ lmtp_sdr <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #'
 #' @examples
 #' # TO DO
-lmtp_sub <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
+lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
+                     cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack = NULL, progress_bar = TRUE) {
 
@@ -200,7 +212,7 @@ lmtp_sub <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   t           <- length(nodes)
   m           <- create_m(n, t, data[, Y])
   ot          <- match.arg(outcome_type)
-  node_list   <- create_node_list(A, nodes, k)
+  node_list   <- create_node_list(A, nodes, baseline, k)
   scaled      <- scale_y_continuous(data[, Y], ot, bounds)
   shifted$xyz <- data$xyz <- scaled$scaled
   pb          <- check_pb(progress_bar, t, "Estimating regression")
@@ -236,6 +248,9 @@ lmtp_sub <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
+#' @param baseline An optional vector of columns names for baseline covariates to be
+#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+#'  and these variables should be added to the first index of \code{nodes}.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -252,7 +267,8 @@ lmtp_sub <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
 #'
 #' @examples
 #' # TO DO
-lmtp_ipw <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
+lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
+                     cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      learner_stack = NULL, progress_bar = TRUE) {
 
@@ -260,7 +276,7 @@ lmtp_ipw <- function(data, A, Y, nodes, cens = NULL, k = Inf, shift,
   t         <- length(nodes)
   n         <- nrow(data)
   y         <- data[, Y]
-  node_list <- create_node_list(A, nodes, k)
+  node_list <- create_node_list(A, nodes, baseline, k)
   pb        <- check_pb(progress_bar, t, "Estimating propensity")
 
   # censoring

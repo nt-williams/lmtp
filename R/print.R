@@ -10,10 +10,23 @@ print.lmtp <- function(x, ...) {
   cli::cli_text("{.strong LMTP Estimator}: {x$estimator}")
   cat("\n")
   cli::cli_text("{.strong Population intervention effect}")
-  cli::cli_text(cat("   "), "{.strong Estimate}: {round(x$theta, 4)}")
-  cli::cli_text(cat(" "), "{.strong Std. error}: {round(x$standard_error, 4)}")
-  cli::cli_text(cat("     "), "{.strong 95% CI}: ({round(x$low, 4)}, {round(x$high, 4)})")
+  cli::cli_text(cat("      "), "{.strong Estimate}: {round(x$theta, 4)}")
+  cli::cli_text(cat("    "), "{.strong Std. error}: {round(x$standard_error, 4)}")
+  cli::cli_text(cat("        "), "{.strong 95% CI}: ({round(x$low, 4)}, {round(x$high, 4)})")
   if (x$estimator %in% c("substitution", "IPW")) no_stderr_warning(x$estimator)
+  cat("\n")
+}
+
+# TODO need to add some print method for the intervention explored
+
+print.lmtp_contrast <- function(x, ...) {
+  cat("\n")
+  cli::cli_text("{.strong LMTP Contrast}: {x$contrast}")
+  cat("\n")
+  cli::cli_text(cat("     "), "{.strong Estimate}: {round(x$theta, 4)}")
+  cli::cli_text(cat("   "), "{.strong Std. error}: {round(x$standard_error, 4)}")
+  cli::cli_text(cat("       "), "{.strong 95% CI}: ({round(x$low, 4)}, {round(x$high, 4)})")
+  cli::cli_text(cat("      "), "{.strong p-value}: {format.pval(x$p, eps = 0.00001)}")
   cat("\n")
 }
 

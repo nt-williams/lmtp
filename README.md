@@ -26,7 +26,7 @@ devtools::install_github("nt-williams/lmtp")
 ``` r
 library(lmtp)
 #> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
-#> Version: 0.0.1.9000
+#> Version: 0.0.3.9000
 #> 
 ```
 

@@ -4,7 +4,7 @@
 \alias{create_node_list}
 \title{Create a node list specification}
 \usage{
-create_node_list(A, nodes, k = Inf)
+create_node_list(A, nodes, baseline = NULL, k = Inf)
 }
 \arguments{
 \item{A}{A vector of column names of treatment variables.}
@@ -12,6 +12,10 @@ create_node_list(A, nodes, k = Inf)
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
+
+\item{baseline}{An optional vector of columns names for baseline covariates to be
+included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
+and these variables should be added to the first index of \code{nodes}.}
 
 \item{k}{An integer specifying how many previous time points nodes should be
 used for estimation at the given time point. Default is \code{Inf},
