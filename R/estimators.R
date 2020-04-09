@@ -44,30 +44,44 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
   pb_r      <- check_pb(progress_bar, meta$t, "Estimating propensity")
   pb_m      <- check_pb(progress_bar, meta$t, "Estimating regression")
 
-  # censoring ---------------------------------------------------------------
-
-  cens_ratio <- estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g)
-
   # propensity --------------------------------------------------------------
 
-  r <- estimate_r(data, A, cens, cens_ratio, shift, meta$t, node_list, learner_stack_g, pb_r)
-  z <- use_dens_ratio(r, meta$t, meta$n, NULL, "tml")
+ z <-
+    use_dens_ratio(
+      r = estimate_r(
+        data = data,
+        A = A,
+        cens = cens,
+        C = estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g),
+        shift = shift,
+        tau = meta$t,
+        node_list = node_list,
+        learner_stack = learner_stack_g,
+        pb = pb_r
+      ),
+      tau = meta$t,
+      n = meta$n,
+      max = NULL,
+      what = "tml"
+    )
 
   # tmle --------------------------------------------------------------------
 
-  m <- estimate_tmle(data = meta$data,
-                     shifted = meta$shifted_data,
-                     Y = "xyz",
-                     node_list = node_list,
-                     C = cens,
-                     tau = meta$t,
-                     max = meta$t,
-                     outcome_type = meta$outcome_type,
-                     m_natural = meta$m,
-                     m_shifted = meta$m,
-                     r = z,
-                     learner_stack = learner_stack_Q,
-                     pb = pb_m)
+  m <- estimate_tmle(
+    data = meta$data,
+    shifted = meta$shifted_data,
+    Y = "xyz",
+    node_list = node_list,
+    C = cens,
+    tau = meta$t,
+    max = meta$t,
+    outcome_type = meta$outcome_type,
+    m_natural = meta$m,
+    m_shifted = meta$m,
+    r = z,
+    learner_stack = learner_stack_Q,
+    pb = pb_m
+  )
 
   # return estimates --------------------------------------------------------
 
