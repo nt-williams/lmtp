@@ -20,5 +20,5 @@ TODO
 Estimate intervention contrast effects
 }
 \examples{
-TODO
+# TODO
 }

@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' TODO
+#' # TODO
 lmtp_contrast <- function(x, y,
                           contrast = c("additive", "relative risk", "odds ratio")) {
 
