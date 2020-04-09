@@ -4,16 +4,15 @@
 }
 
 shift_data <- function(data, A, .f) {
+
+  if (is.null(.f)) {
+    return(data)
+  }
+
   out <- data
   sapply(A, function(x) {
     out[, x] <<- .f(data[[x]])
   }, simplify = TRUE)
-  return(out)
-}
-
-create_m <- function(n, t, Y) {
-  out <- matrix(nrow = n, ncol = t)
-  out[, t] <- Y
   return(out)
 }
 

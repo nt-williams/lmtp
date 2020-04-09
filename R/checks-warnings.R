@@ -64,4 +64,21 @@ check_censoring <- function(data, C, Y, tau) {
   return(out)
 }
 
+check_scaled_conflict <- function(data) {
+  nn <- names(data)
+  check <- "xyz" %in% nn
 
+  tryCatch(
+    if (check) {
+      stop()
+    } else {
+      on.exit()
+    },
+    error = function(e) {
+      stop(
+        "A variable named `xyz` was detected in your data. This variable name is reserved for an interal `lmtp` process. Please rename this variable.",
+        call. = FALSE
+      )
+    }
+  )
+}

@@ -8,32 +8,49 @@ estimate_r <- function(data, A, cens, C, shift, tau,
   r <- list(natural = matrix(nrow = n, ncol = tau),
             shifted = matrix(nrow = n, ncol = tau))
 
-  lapply(1:tau, function(t) {
+  if (!is.null(shift)) {
+    lapply(1:tau, function(t) {
 
-    # progress bar
-    progress_progress_bar(pb)
+      # progress bar
+      progress_progress_bar(pb)
 
-    # setup
-    i        <- create_censoring_indicators(data, cens, tau)$i
-    shifted  <- shift_data(data, A[[t]], shift)
-    d        <- rbind(data, shifted)
-    d$id     <- rep(1:n, 2)
-    d$si     <- c(rep(0, n), rep(1, n))
-    d        <- subset(d, rep(i, 2))
-    task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
-    ensemble <- initiate_ensemble("binomial", learner_stack)
+      # setup
+      i        <- create_censoring_indicators(data, cens, tau)$i
+      shifted  <- shift_data(data, A[[t]], shift)
+      d        <- rbind(data, shifted)
+      d$id     <- rep(1:n, 2)
+      d$si     <- c(rep(0, n), rep(1, n))
+      d        <- subset(d, rep(i, 2))
+      task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
+      ensemble <- initiate_ensemble("binomial", learner_stack)
 
-    # run SL
-    fit <- run_ensemble(ensemble, task)
+      # run SL
+      fit <- run_ensemble(ensemble, task)
 
-    # ratios
-    pred             <- bound(predict_sl3(fit, task), .Machine$double.eps)
-    rat              <- pred / (1 - truncate(pred))
-    r$natural[!i, t] <<- 0
-    r$shifted[!i, t] <<- 0
-    r$natural[i, t]  <<- rat[d$si == 0] * C[i, t]
-    r$shifted[i, t]  <<- rat[d$si == 1] * C[i, t]
-  })
+      # ratios
+      pred             <- bound(predict_sl3(fit, task), .Machine$double.eps)
+      rat              <- pred / (1 - truncate(pred))
+      r$natural[!i, t] <<- 0
+      r$shifted[!i, t] <<- 0
+      r$natural[i, t]  <<- rat[d$si == 0] * C[i, t]
+      r$shifted[i, t]  <<- rat[d$si == 1] * C[i, t]
+    })
+  } else {
+    lapply(1:tau, function(t) {
+
+      # progress bar
+      progress_progress_bar(pb)
+
+      # setup
+      i <- create_censoring_indicators(data, cens, tau)$i
+
+      # propensity
+      r$natural[!i, t] <<- 0
+      r$shifted[!i, t] <<- 0
+      r$natural[i, t]  <<- C[i, t]
+      r$shifted[i, t]  <<- C[i, t]
+    })
+  }
 
   # returns
   return(r)

@@ -8,6 +8,7 @@ welcome_msg <- function() {
 print.lmtp <- function(x, ...) {
   cat("\n")
   cli::cli_text("{.strong LMTP Estimator}: {x$estimator}")
+  cli::cli_text(cat("   "), "{.strong Trt. Policy}: ", cli::col_blue(cli::style_italic("{x$shift}")))
   cat("\n")
   cli::cli_text("{.strong Population intervention effect}")
   cli::cli_text(cat("      "), "{.strong Estimate}: {round(x$theta, 4)}")
@@ -17,8 +18,7 @@ print.lmtp <- function(x, ...) {
   cat("\n")
 }
 
-# TODO need to add some print method for the intervention explored
-
+#' @export
 print.lmtp_contrast <- function(x, ...) {
   cat("\n")
   cli::cli_text("{.strong LMTP Contrast}: {x$contrast}")

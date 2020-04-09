@@ -19,7 +19,6 @@ sub <-
 
 ipw <-
   lmtp_ipw(df, "A", "Y", nodes, shift = function(x) x + 0.5,
-           outcome_type = "binomial",
            learner_stack = sl3::make_learner(sl3::Lrnr_glm))
 
 tmle <-

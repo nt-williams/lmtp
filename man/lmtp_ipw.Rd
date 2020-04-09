@@ -13,7 +13,6 @@ lmtp_ipw(
   cens = NULL,
   k = Inf,
   shift,
-  outcome_type = c("binomial", "continuous"),
   learner_stack = NULL,
   progress_bar = TRUE
 )
@@ -41,8 +40,6 @@ used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
 \item{shift}{A function that specifies how tratment variables should be shifted.}
-
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
 
 \item{learner_stack}{An \code{sl3} learner stack for estimation of the
 exposure mechanism.}

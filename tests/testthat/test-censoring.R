@@ -16,7 +16,6 @@ sub <-
 ipw <-
   lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = function(x) x + 0.5,
-           outcome_type = "binomial",
            learner_stack = sl3::make_learner(sl3::Lrnr_glm),
            progress_bar = FALSE)
 

@@ -4,8 +4,8 @@ compute_theta <- function(eta, estimator) {
   out <- switch(estimator,
                 "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
                 "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "tml" = theta_tml_sdr(estimator = "TMLE", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "sdr" = theta_tml_sdr(estimator = "SDR", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds))
+                "tml" = theta_tml_sdr(estimator = "TMLE", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds, shift = eta$shift),
+                "sdr" = theta_tml_sdr(estimator = "SDR", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds, shift = eta$shift))
 
   return(out)
 }
@@ -56,7 +56,8 @@ eif <- function(r, tau, shifted, natural) {
   return(out)
 }
 
-theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL) {
+theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL,
+                          shift) {
 
   # calculate eif
   inflnce <- eif(r = r, tau = tau, shifted = m$shifted, natural = m$natural)
@@ -79,7 +80,8 @@ theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL) {
               standard_error = se,
               low = ci_low,
               high = ci_high,
-              eif = inflnce)
+              eif = inflnce,
+              shift = shift)
 
   class(out) <- "lmtp"
 

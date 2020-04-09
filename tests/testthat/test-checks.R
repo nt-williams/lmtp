@@ -6,3 +6,8 @@ test_that("can't detect sl3", {
     check_for_sl3(test = TRUE)
   })
 })
+
+test_that("detects xyz", {
+  df <- data.frame(xyz = 1:5)
+  expect_error(check_scaled_conflict(df))
+})

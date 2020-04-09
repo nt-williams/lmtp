@@ -22,7 +22,6 @@ sub <-
 
 ipw <-
   lmtp_ipw(df, a, "Y", nodes, k = 0, shift = function(x) x + 0.5,
-           outcome_type = "binomial",
            learner_stack = sl3::make_learner_stack(sl3::Lrnr_glm))
 
 tmle <-
@@ -44,57 +43,3 @@ test_that("time varying treatment fidelity, t = 2", {
   expect_equal(truth, tmle$theta, tolerance = 0.1)
   expect_equal(truth, sdr$theta, tolerance = 0.1)
 })
-
-
-# t = 4
-# a <- c("A_1", "A_2", "A_3", "A_4")
-# nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-# d <- function(A) {
-#   delta <- 1
-#   return((A - delta) * (A - delta >= 0) + A * (A - delta < 0))
-# }
-#
-# lmtp_sub(sim_t4, a, "Y", nodes, k = 0, shift = d, learner_stack = sl3::make_learner(sl3::Lrnr_glm))
-#
-# tau <- 4
-# Ddag <- DAG.empty() +
-#   node("L", t = 1, distr = "rcat.b1",
-#        probs = c(0.5, 0.25, 0.25)) +
-#   node("A", t = 1, distr = "rbinom", size = 5,
-#        prob = (L[1] > 1) * 0.5 + (L[1] > 2) * 0.1) +
-#   node("L", t = 2:tau, distr = "rbern",
-#        prob = plogis(- 0.3 * L[t-1] + 0.5 * A[t-1])) +
-#   node("A", t = 2:tau, distr = "rbinom", size = 5,
-#        prob = plogis(1 / (1 + L[t] * 2 + A[t-1]))) +
-#   node("Y", t = (tau + 1), distr = "rbern",
-#        prob = plogis(1 / (1 - 1.2 * A[tau] + 0.3 * L[tau])), EFU = TRUE)
-#
-#
-# datagen <- function(n, tau, D = Ddag) {
-#
-#   D <- set.DAG(D)
-#   data <- sim(D, n = as.integer(n))
-#
-#   names(data)[substr(names(data), 1, 1) == 'Y'] <- 'Y'
-#
-#   return(data)
-# }
-#
-# foo <- function(n) {
-#   df <- suppressMessages(datagen(n, 4))
-#   lmtp_ipw(df, a, "Y", nodes, k = Inf, shift = d,
-#            outcome_type = "binomial",
-#            learner_stack = sl3::make_learner_stack(sl3::Lrnr_glm))
-# }
-#
-# foo(10000)
-#
-# . <- replicate(50, foo(1000), simplify = F)
-#
-# mean(map_dbl(., "theta"))
-# hist(map_dbl(., "theta"))
-#
-# x <- map(., "low")
-# y <- map(., "high")
-# mean(map2_lgl(x, y, ~ between(0.48, .x, .y)))
-
