@@ -41,12 +41,10 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   meta      <- prepare_mbased(data, A, Y, shift, match.arg(outcome_type), bounds)
   node_list <- create_node_list(A, nodes, baseline, k)
-  pb_r      <- check_pb(progress_bar, meta$t, "Estimating propensity")
-  pb_m      <- check_pb(progress_bar, meta$t, "Estimating regression")
 
   # propensity --------------------------------------------------------------
 
- z <-
+  z <-
     use_dens_ratio(
       ratio = estimate_r(
         data = data,
@@ -57,7 +55,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
         tau = meta$t,
         node_list = node_list,
         learner_stack = learner_stack_g,
-        pb = pb_r
+        pb = check_pb(progress_bar, meta$t, "Estimating propensity")
       ),
       tau = meta$t,
       n = meta$n,
@@ -80,7 +78,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
     m_shifted = meta$m,
     r = z,
     learner_stack = learner_stack_Q,
-    pb = pb_m
+    pb = check_pb(progress_bar, meta$t, "Estimating regression")
   )
 
   # return estimates --------------------------------------------------------
@@ -139,33 +137,46 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   meta      <- prepare_mbased(data, A, Y, shift, match.arg(outcome_type), bounds)
   node_list <- create_node_list(A, nodes, baseline, k)
-  pb_r      <- check_pb(progress_bar, meta$t, "Estimating propensity")
-  pb_m      <- check_pb(progress_bar, meta$t, "Estimating regression")
-
-  # censoring ---------------------------------------------------------------
-
-  cens_ratio <- estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g)
 
   # propensity --------------------------------------------------------------
 
-  r <- estimate_r(data, A, cens, cens_ratio, shift, meta$t, node_list, learner_stack_g, pb_r)
-  z <- use_dens_ratio(r, meta$t, meta$n, NULL, "eif")
+  r <- estimate_r(
+    data = data,
+    A = A,
+    cens = cens,
+    C = estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g),
+    shift = shift,
+    tau = meta$t,
+    node_list = node_list,
+    learner_stack = learner_stack_g,
+    pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+  )
+
+  z <- use_dens_ratio(
+    ratio = r,
+    tau = meta$t,
+    n = meta$n,
+    max_tau = NULL,
+    what_estim = "eif"
+  )
 
   # sdr ---------------------------------------------------------------------
 
-  sdr <- estimate_sdr(data = meta$data,
-                      shifted = meta$shifted_data,
-                      Y = "xyz",
-                      node_list = node_list,
-                      C = cens,
-                      tau = meta$t,
-                      max = meta$t,
-                      outcome_type = meta$outcome_type,
-                      learner_stack = learner_stack_Q,
-                      m_shifted = meta$m,
-                      m_natural = meta$m,
-                      r = r,
-                      pb = pb_m)
+  sdr <- estimate_sdr(
+    data = meta$data,
+    shifted = meta$shifted_data,
+    Y = "xyz",
+    node_list = node_list,
+    C = cens,
+    tau = meta$t,
+    max = meta$t,
+    outcome_type = meta$outcome_type,
+    learner_stack = learner_stack_Q,
+    m_shifted = meta$m,
+    m_natural = meta$m,
+    r = r,
+    pb = check_pb(progress_bar, meta$t, "Estimating regression")
+  )
 
   # return estimates --------------------------------------------------------
 
