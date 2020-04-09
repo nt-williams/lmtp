@@ -83,18 +83,18 @@ estimate_c <- function(data, C, Y, tau, node_list, learner_stack) {
   return(cens)
 }
 
-use_dens_ratio <- function(r, tau, n, max, what) {
+use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
   switch(
-    what,
-    "tml" = ratio_ite(r = r, tau = tau, n = n),
-    "ipw" = ratio_ite(r = r, tau = tau, n = n),
-    "eif" = ratio_ite(r = r, tau = tau, n = n),
-    "sdr" = ratio_sdr(r = r, tau = tau, max = max)
+    what_estim,
+    "tml" = ratio_ite(r = ratio, tau = tau, n = n),
+    "ipw" = ratio_ite(r = ratio, tau = tau, n = n),
+    "eif" = ratio_ite(r = ratio, tau = tau, n = n),
+    "sdr" = ratio_sdr(r = ratio, tau = tau, max = max_tau)
   )
 }
 
-ratio_ite <- function(r, tau, n) {
-  out <- matrix(t(apply(r$natural, 1, cumprod)), nrow = n, ncol = tau)
+ratio_ite <- function(ratio, tau, n) {
+  out <- matrix(t(apply(ratio$natural, 1, cumprod)), nrow = n, ncol = tau)
   return(out)
 }
 

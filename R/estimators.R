@@ -48,7 +48,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
  z <-
     use_dens_ratio(
-      r = estimate_r(
+      ratio = estimate_r(
         data = data,
         A = A,
         cens = cens,
@@ -61,8 +61,8 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
       ),
       tau = meta$t,
       n = meta$n,
-      max = NULL,
-      what = "tml"
+      max_tau = NULL,
+      what_estim = "tml"
     )
 
   # tmle --------------------------------------------------------------------
