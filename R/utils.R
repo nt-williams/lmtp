@@ -24,33 +24,34 @@ truncate <- function(x, p = 1e-2) {
   pmin(x, 1 - p)
 }
 
-scale_y_continuous <- function(x, outcome_type, bounds = NULL) {
-  if (outcome_type == "binomial") {
-    out <- list(scaled = x,
-                bounds = NULL)
-    return(out)
-  }
-
+scale_y_continuous <- function(y, bounds) {
+  out <- (y - bounds[1]) / (bounds[2] - bounds[1])
   if (is.null(bounds)) {
-    mi <- min(x)
-    ma <- max(x)
+    out <- y
+  }
+  return(out)
+}
+
+y_bounds <- function(y, outcome_type, bounds = NULL) {
+  if (outcome_type == "binomial" | is.null(outcome_type)) {
+    out <- NULL
+  } else if (is.null(bounds)) {
+    out <- c(min(y), max(y))
   } else {
-    mi <- bounds[1]
-    ma <- bounds[2]
+    out <- c(bounds[1], bounds[2])
   }
 
-  scaled <- (x - mi) / (ma - mi)
-  out <- list(scaled = scaled,
-              bounds = c(mi, ma))
   return(out)
 }
 
 rescale_y_continuous <- function(scaled, bounds) {
-  mi <- bounds[1]
-  ma <- bounds[2]
-
-  out <- (scaled*(ma - mi)) + mi
+  out <- (scaled*(bounds[2] - bounds[1])) + bounds[1]
   return(out)
+}
+
+add_scaled_y <- function(data, scaled) {
+  data$xyz <- scaled
+  return(data)
 }
 
 run_ensemble <- function(ensemble, task) {

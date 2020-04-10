@@ -39,7 +39,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta <- prepare_mbased(
+  meta <- Meta$new(
     data = data,
     A = A,
     Y = Y,
@@ -63,7 +63,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
       tau = meta$tau,
       node_list = meta$node_list,
       learner_stack = learner_stack_g,
-      pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
     ),
     tau = meta$tau,
     n = meta$n,
@@ -86,7 +86,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
     m_shifted = meta$m,
     r = z,
     learner_stack = learner_stack_Q,
-    pb = check_pb(progress_bar, meta$t, "Estimating regression")
+    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
 
   # return estimates --------------------------------------------------------
@@ -97,7 +97,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
       r = z,
       tau = meta$tau,
       outcome_type = meta$outcome_type,
-      bounds = meta$scale_meta$bounds,
+      bounds = meta$bounds,
       shift = deparse(substitute((shift)))
     ),
     estimator = "tml"
@@ -146,7 +146,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta <- prepare_mbased(
+  meta <- Meta$new(
     data = data,
     A = A,
     Y = Y,
@@ -169,7 +169,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
     tau = meta$tau,
     node_list = meta$node_list,
     learner_stack = learner_stack_g,
-    pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+    pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
   )
 
   z <- use_dens_ratio(
@@ -195,7 +195,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
     m_shifted = meta$m,
     m_natural = meta$m,
     r = r,
-    pb = check_pb(progress_bar, meta$t, "Estimating regression")
+    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
 
   # return estimates --------------------------------------------------------
@@ -206,7 +206,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
       r = z,
       tau = meta$tau,
       outcome_type = meta$outcome_type,
-      bounds = meta$scale_meta$bounds,
+      bounds = meta$bounds,
       shift = deparse(substitute((shift)))
     ),
     estimator = "sdr"
@@ -251,7 +251,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta <- prepare_mbased(
+  meta <- Meta$new(
     data = data,
     A = A,
     Y = Y,
@@ -274,7 +274,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
     tau = meta$tau,
     outcome_type = meta$outcome_type,
     m = meta$m,
-    pb = check_pb(progress_bar, meta$t, "Estimating regression")
+    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
 
   # return estimates --------------------------------------------------------
@@ -283,7 +283,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
     eta = list(
       m = m,
       outcome_type = meta$outcome_type,
-      bounds = meta$scale_meta$bounds,
+      bounds = meta$bounds,
       shift = deparse(substitute((shift)))
     ),
     estimator = "sub"
@@ -325,7 +325,17 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta <- prepare_rbased(data, A, Y, nodes, baseline, k, shift)
+  meta <- Meta$new(
+    data = data,
+    A = A,
+    Y = Y,
+    nodes = nodes,
+    baseline = baseline,
+    k = k,
+    shift = shift,
+    outcome_type = "binomial",
+    bounds = NULL
+  )
 
   # propensity --------------------------------------------------------------
 
@@ -334,12 +344,12 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
       data = data,
       A = A,
       cens = cens,
-      C = estimate_c(data, cens, Y, meta$t, meta$node_list, learner_stack),
+      C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack),
       shift = shift,
-      tau = meta$t,
+      tau = meta$tau,
       node_list = meta$node_list,
       learner_stack = learner_stack,
-      pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
     ),
     tau = meta$tau,
     n = meta$n,

@@ -27,7 +27,8 @@ Imports:
     glmnet,
     cli,
     utils,
-    progress
+    progress,
+    R6
 Remotes: 
     tlverse/sl3
 Suggests: 
