@@ -53,7 +53,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  z <- use_dens_ratio(
+  dens_ratio <- use_dens_ratio(
     ratio = estimate_r(
       data = data,
       trt = trt,
@@ -73,7 +73,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # tmle --------------------------------------------------------------------
 
-  m <- estimate_tmle(
+  estims <- estimate_tmle(
     data = meta$data,
     shifted = meta$shifted_data,
     outcome = "xyz",
@@ -84,7 +84,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = meta$outcome_type,
     m_natural = meta$m,
     m_shifted = meta$m,
-    r = z,
+    r = dens_ratio,
     learners = learners_outcome,
     pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
@@ -94,8 +94,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
   out <- compute_theta(
     estimator = "tml",
     eta = list(
-      m = m,
-      r = z,
+      m = estims,
+      r = dens_ratio,
       tau = meta$tau,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -159,7 +159,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  r <- estimate_r(
+  raw_ratio <- estimate_r(
     data = data,
     trt = trt,
     cens = cens,
@@ -171,8 +171,8 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
   )
 
-  z <- use_dens_ratio(
-    ratio = r,
+  dens_ratio <- use_dens_ratio(
+    ratio = raw_ratio,
     tau = meta$tau,
     n = meta$n,
     max_tau = NULL,
@@ -181,7 +181,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # sdr ---------------------------------------------------------------------
 
-  sdr <- estimate_sdr(
+  estims <- estimate_sdr(
     data = meta$data,
     shifted = meta$shifted_data,
     outcome = "xyz",
@@ -193,7 +193,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     learners = learners_outcome,
     m_shifted = meta$m,
     m_natural = meta$m,
-    r = r,
+    r = raw_ratio,
     pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
 
@@ -202,8 +202,8 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
   out <- compute_theta(
     estimator = "sdr",
     eta = list(
-      m = sdr,
-      r = z,
+      m = estims,
+      r = dens_ratio,
       tau = meta$tau,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -337,7 +337,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  z <- use_dens_ratio(
+  dens_ratio <- use_dens_ratio(
     ratio = estimate_r(
       data = data,
       trt = trt,
@@ -360,7 +360,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
   out <- compute_theta(
     estimator = "ipw",
     eta = list(
-      r = z,
+      r = dens_ratio,
       y = data[[outcome]],
       tau = meta$tau,
       shift = deparse(substitute((shift)))
