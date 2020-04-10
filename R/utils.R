@@ -33,7 +33,7 @@ scale_y_continuous <- function(y, bounds) {
 }
 
 y_bounds <- function(y, outcome_type, bounds = NULL) {
-  if (outcome_type == "binomial" | is.null(outcome_type)) {
+  if (outcome_type == "binomial" || is.null(outcome_type)) {
     out <- NULL
   } else if (is.null(bounds)) {
     out <- c(min(y), max(y))

@@ -333,7 +333,7 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
     baseline = baseline,
     k = k,
     shift = shift,
-    outcome_type = "binomial",
+    outcome_type = NULL,
     bounds = NULL
   )
 
