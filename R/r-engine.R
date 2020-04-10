@@ -9,8 +9,8 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
             shifted = matrix(nrow = n, ncol = tau))
 
   if (!is.null(shift)) {
-    lapply(1:tau, function(t) {
 
+    for (t in 1:tau) {
       # progress bar
       progress_progress_bar(pb)
 
@@ -30,14 +30,15 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       # ratios
       pred             <- bound(predict_sl3(fit, task), .Machine$double.eps)
       rat              <- pred / (1 - truncate(pred))
-      r$natural[!i, t] <<- 0
-      r$shifted[!i, t] <<- 0
-      r$natural[i, t]  <<- rat[d$si == 0] * C[i, t]
-      r$shifted[i, t]  <<- rat[d$si == 1] * C[i, t]
-    })
-  } else {
-    lapply(1:tau, function(t) {
+      r$natural[!i, t] <- 0
+      r$shifted[!i, t] <- 0
+      r$natural[i, t]  <- rat[d$si == 0] * C[i, t]
+      r$shifted[i, t]  <- rat[d$si == 1] * C[i, t]
+    }
 
+  } else {
+
+    for (t in 1:tau) {
       # progress bar
       progress_progress_bar(pb)
 
@@ -45,11 +46,12 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       i <- create_censoring_indicators(data, cens, tau)$i
 
       # propensity
-      r$natural[!i, t] <<- 0
-      r$shifted[!i, t] <<- 0
-      r$natural[i, t]  <<- C[i, t]
-      r$shifted[i, t]  <<- C[i, t]
-    })
+      r$natural[!i, t] <- 0
+      r$shifted[!i, t] <- 0
+      r$natural[i, t]  <- C[i, t]
+      r$shifted[i, t]  <- C[i, t]
+    }
+
   }
 
   # returns
@@ -63,20 +65,20 @@ estimate_c <- function(data, C, outcome, tau, node_list, learners) {
   cens <- check_censoring(data, C, outcome, tau)
 
   if (all(is.na(cens))) {
-    lapply(1:tau, function(t) {
-
+    for (t in 1:tau) {
       # setup
-      fit_task <- suppressWarnings(initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      fit_task <- suppressWarnings(
+        initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE)
+      )
       ensemble <- initiate_ensemble("binomial", learners)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
 
       # probability of not being censored
-      pred      <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      rat       <- mean(data[, C[[t]]]) / pred
-      cens[, t] <<- rat
-    })
+      cens[, t] <- mean(data[, C[[t]]]) /
+        bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+    }
   }
 
   # returns
