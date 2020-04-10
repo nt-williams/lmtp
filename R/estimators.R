@@ -2,8 +2,8 @@
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
 #' @param data A data frame.
-#' @param A A vector of column names for treatment variables.
-#' @param Y The column name of the outcome variable.
+#' @param trt A vector of column names for treatment variables.
+#' @param outcome The column name of the outcome variable.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
@@ -31,7 +31,7 @@
 #'
 #' @examples
 #' # TO DO
-lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
+lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learner_stack_Q = NULL,
@@ -41,8 +41,8 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   meta <- Meta$new(
     data = data,
-    A = A,
-    Y = Y,
+    trt = trt,
+    outcome = outcome,
     nodes = nodes,
     baseline = baseline,
     k = k,
@@ -56,9 +56,9 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
   z <- use_dens_ratio(
     ratio = estimate_r(
       data = data,
-      A = A,
+      trt = trt,
       cens = cens,
-      C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
+      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack_g),
       shift = shift,
       tau = meta$tau,
       node_list = meta$node_list,
@@ -76,7 +76,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
   m <- estimate_tmle(
     data = meta$data,
     shifted = meta$shifted_data,
-    Y = "xyz",
+    outcome = "xyz",
     node_list = meta$node_list,
     C = cens,
     tau = meta$tau,
@@ -108,8 +108,8 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 #' LMTP Sequential Doubly Robust Estimator
 #'
 #' @param data A data frame.
-#' @param A A vector of column names of treatment variables.
-#' @param Y The column name of the outcome variable.
+#' @param trt A vector of column names of treatment variables.
+#' @param outcome The column name of the outcome variable.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
@@ -137,7 +137,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 #'
 #' @examples
 #' # TO DO
-lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
+lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack_Q = NULL,
@@ -147,8 +147,8 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   meta <- Meta$new(
     data = data,
-    A = A,
-    Y = Y,
+    trt = trt,
+    outcome = outcome,
     nodes = nodes,
     baseline = baseline,
     k = k,
@@ -161,9 +161,9 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   r <- estimate_r(
     data = data,
-    A = A,
+    trt = trt,
     cens = cens,
-    C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
+    C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack_g),
     shift = shift,
     tau = meta$tau,
     node_list = meta$node_list,
@@ -184,7 +184,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
   sdr <- estimate_sdr(
     data = meta$data,
     shifted = meta$shifted_data,
-    Y = "xyz",
+    outcome = "xyz",
     node_list = meta$node_list,
     C = cens,
     tau = meta$tau,
@@ -216,8 +216,8 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 #' LMTP Substitution Estimator
 #'
 #' @param data A data frame.
-#' @param A A vector of column names of treatment variables.
-#' @param Y The column name of the outcome variable.
+#' @param trt A vector of column names of treatment variables.
+#' @param outcome The column name of the outcome variable.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
@@ -242,7 +242,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 #'
 #' @examples
 #' # TO DO
-lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
+lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learner_stack = NULL, progress_bar = TRUE) {
@@ -251,8 +251,8 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 
   meta <- Meta$new(
     data = data,
-    A = A,
-    Y = Y,
+    trt = trt,
+    outcome = outcome,
     nodes = nodes,
     baseline = baseline,
     k = k,
@@ -266,7 +266,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
   m <- estimate_sub(
     data = meta$data,
     shifted = meta$shifted_data,
-    Y = "xyz",
+    outcome = "xyz",
     node_list = meta$node_list,
     C = cens,
     tau = meta$tau,
@@ -293,8 +293,8 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 #' LMTP IPW Estimator
 #'
 #' @param data A data frame.
-#' @param A A vector of column names of treatment variables.
-#' @param Y The column name of the outcome variable.
+#' @param trt A vector of column names of treatment variables.
+#' @param outcome The column name of the outcome variable.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
@@ -316,7 +316,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 #'
 #' @examples
 #' # TO DO
-lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
+lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      learner_stack = NULL, progress_bar = TRUE) {
 
@@ -324,8 +324,8 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
 
   meta <- Meta$new(
     data = data,
-    A = A,
-    Y = Y,
+    trt = trt,
+    outcome = outcome,
     nodes = nodes,
     baseline = baseline,
     k = k,
@@ -339,9 +339,9 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
   z <- use_dens_ratio(
     ratio = estimate_r(
       data = data,
-      A = A,
+      trt = trt,
       cens = cens,
-      C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack),
+      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack),
       shift = shift,
       tau = meta$tau,
       node_list = meta$node_list,
@@ -360,7 +360,7 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
     estimator = "ipw",
     eta = list(
       r = z,
-      y = data[[Y]],
+      y = data[[outcome]],
       tau = meta$tau,
       shift = deparse(substitute((shift)))
     ))

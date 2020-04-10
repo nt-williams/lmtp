@@ -6,8 +6,8 @@
 \usage{
 lmtp_ipw(
   data,
-  A,
-  Y,
+  trt,
+  outcome,
   nodes,
   baseline = NULL,
   cens = NULL,
@@ -20,9 +20,9 @@ lmtp_ipw(
 \arguments{
 \item{data}{A data frame.}
 
-\item{A}{A vector of column names of treatment variables.}
+\item{trt}{A vector of column names of treatment variables.}
 
-\item{Y}{The column name of the outcome variable.}
+\item{outcome}{The column name of the outcome variable.}
 
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following

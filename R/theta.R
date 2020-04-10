@@ -1,6 +1,5 @@
 
 compute_theta <- function(estimator, eta) {
-
   out <- switch(estimator,
                 "ipw" = theta_ipw(eta),
                 "sub" = theta_sub(eta),

@@ -10,25 +10,28 @@ Meta <- R6::R6Class(
     tau = NULL,
     outcome_type = NULL,
     bounds = NULL,
-    initialize = function(data, A, Y, nodes, baseline,
+    initialize = function(data, trt, outcome, nodes, baseline,
                           k, shift, outcome_type = NULL, bounds = NULL) {
       self$n <- nrow(data)
       self$tau <- length(nodes)
-      self$node_list <- create_node_list(A, nodes, baseline, k)
+      self$node_list <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
-      self$bounds <- y_bounds(data[[Y]], outcome_type, bounds)
-      self$m <-
-        cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[Y]])
+      self$bounds <- y_bounds(data[[outcome]], outcome_type, bounds)
+      self$m <- cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[outcome]])
       self$data <- add_scaled_y(data,
-                                scale_y_continuous(data[[Y]],
-                                                   y_bounds(data[[Y]],
-                                                            outcome_type,
-                                                            bounds)))
-      self$shifted_data <- add_scaled_y(shift_data(data, A, shift),
-                                        scale_y_continuous(data[[Y]],
-                                                           y_bounds(data[[Y]],
-                                                                    outcome_type,
-                                                                    bounds)))
+                                scale_y_continuous(
+                                  data[[outcome]],
+                                  y_bounds(data[[outcome]],
+                                           outcome_type,
+                                           bounds)
+                                  ))
+      self$shifted_data <- add_scaled_y(shift_data(data, trt, shift),
+                                        scale_y_continuous(
+                                          data[[outcome]],
+                                          y_bounds(data[[outcome]],
+                                                   outcome_type,
+                                                   bounds)
+                                          ))
     }
   )
 )

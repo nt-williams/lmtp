@@ -1,6 +1,6 @@
 
 # engine for density ratio estimation by classification
-estimate_r <- function(data, A, cens, C, shift, tau,
+estimate_r <- function(data, trt, cens, C, shift, tau,
                        node_list, learner_stack = NULL, pb) {
 
   # global setup
@@ -16,7 +16,7 @@ estimate_r <- function(data, A, cens, C, shift, tau,
 
       # setup
       i        <- create_censoring_indicators(data, cens, tau)$i
-      shifted  <- shift_data(data, A[[t]], shift)
+      shifted  <- shift_data(data, trt[[t]], shift)
       d        <- rbind(data, shifted)
       d$id     <- rep(1:n, 2)
       d$si     <- c(rep(0, n), rep(1, n))
@@ -57,10 +57,10 @@ estimate_r <- function(data, A, cens, C, shift, tau,
 }
 
 # engine for estimation of censoring mechanism
-estimate_c <- function(data, C, Y, tau, node_list, learner_stack) {
+estimate_c <- function(data, C, outcome, tau, node_list, learner_stack) {
 
   # global setup
-  cens <- check_censoring(data, C, Y, tau)
+  cens <- check_censoring(data, C, outcome, tau)
 
   if (all(is.na(cens))) {
     lapply(1:tau, function(t) {
