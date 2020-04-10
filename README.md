@@ -58,42 +58,37 @@ d <- function(A) {
 
 a <- c("A_1", "A_2", "A_3", "A_4")
 nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+# Define a set of sl3 learners
+lrnrs <- sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean)
 ```
 
 Using the TML estimator…
 
 ``` r
-lmtp_tmle(sim_t4, a, "Y", nodes, k = 0, shift = d,
-          outcome_type = "binomial",
-          learner_stack_Q = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean),
-          learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean))
+lmtp_tmle(sim_t4, a, "Y", nodes, k = 0, shift = d, outcome_type = "binomial",
+          learners_outcome = lrnrs, learners_trt = lrnrs)
 
-#>   Estimating propensity [=====================================] 100%  2s
-#>   Estimating regression [=====================================] 100%  1s
-#> 
-#> Estimator: targeted minimum-loss based
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (d)
 #> 
 #> Population intervention effect
-#>    Estimate: 0.5172
-#>  Std. error: 0.0286
-#>      95% CI: (0.4611, 0.5733)
+#>       Estimate: 0.5169
+#>     Std. error: 0.0285
+#>         95% CI: (0.4611, 0.5728)
 ```
 
 Using the SDR estimator…
 
 ``` r
-lmtp_sdr(sim_t4, a, "Y", nodes, k = 0, shift = d,
-         outcome_type = "binomial",
-         learner_stack_Q = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean),
-         learner_stack_g = sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean))
-
-#>   Estimating propensity [=====================================] 100%  2s
-#>   Estimating regression [=====================================] 100%  1s
-#> 
-#> Estimator: sequentially doubly robust
+lmtp_sdr(sim_t4, a, "Y", nodes, k = 0, shift = d, outcome_type = "binomial",
+         learners_outcome = lrnrs, learners_trt = lrnrs)
+         
+#> LMTP Estimator: SDR
+#>    Trt. Policy: (d)
 #> 
 #> Population intervention effect
-#>    Estimate: 0.4948
-#>  Std. error: 0.0294
-#>      95% CI: (0.4373, 0.5524)
+#>       Estimate: 0.4934
+#>     Std. error: 0.0293
+#>         95% CI: (0.4359, 0.5509)
 ```
