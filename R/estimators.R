@@ -39,7 +39,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta  <- prepare_mbased(
+  meta <- prepare_mbased(
     data = data,
     A = A,
     Y = Y,
@@ -53,24 +53,23 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  z <-
-    use_dens_ratio(
-      ratio = estimate_r(
-        data = data,
-        A = A,
-        cens = cens,
-        C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
-        shift = shift,
-        tau = meta$tau,
-        node_list = meta$node_list,
-        learner_stack = learner_stack_g,
-        pb = check_pb(progress_bar, meta$t, "Estimating propensity")
-      ),
+  z <- use_dens_ratio(
+    ratio = estimate_r(
+      data = data,
+      A = A,
+      cens = cens,
+      C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
+      shift = shift,
       tau = meta$tau,
-      n = meta$n,
-      max_tau = NULL,
-      what_estim = "tml"
-    )
+      node_list = meta$node_list,
+      learner_stack = learner_stack_g,
+      pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+    ),
+    tau = meta$tau,
+    n = meta$n,
+    max_tau = NULL,
+    what_estim = "tml"
+  )
 
   # tmle --------------------------------------------------------------------
 
@@ -92,14 +91,17 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   # return estimates --------------------------------------------------------
 
-  eta <- list(m = m,
-              r = z,
-              tau = meta$tau,
-              outcome_type = meta$outcome_type,
-              bounds = meta$scale_meta$bounds,
-              shift = deparse(substitute((shift))))
-
-  out <- compute_theta(eta, "tml")
+  out <- compute_theta(
+    eta = list(
+      m = m,
+      r = z,
+      tau = meta$tau,
+      outcome_type = meta$outcome_type,
+      bounds = meta$scale_meta$bounds,
+      shift = deparse(substitute((shift)))
+    ),
+    estimator = "tml"
+  )
 
   return(out)
 }
@@ -186,8 +188,8 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
     Y = "xyz",
     node_list = meta$node_list,
     C = cens,
-    tau = meta$t,
-    max = meta$t,
+    tau = meta$tau,
+    max = meta$tau,
     outcome_type = meta$outcome_type,
     learner_stack = learner_stack_Q,
     m_shifted = meta$m,
@@ -198,14 +200,17 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   # return estimates --------------------------------------------------------
 
-  eta <- list(m = sdr,
-              r = z,
-              tau = meta$t,
-              outcome_type = meta$outcome_type,
-              bounds = meta$scale_meta$bounds,
-              shift = deparse(substitute((shift))))
-
-  out <- compute_theta(eta, "sdr")
+  out <- compute_theta(
+    eta = list(
+      m = sdr,
+      r = z,
+      tau = meta$tau,
+      outcome_type = meta$outcome_type,
+      bounds = meta$scale_meta$bounds,
+      shift = deparse(substitute((shift)))
+    ),
+    estimator = "sdr"
+  )
 
   return(out)
 }
@@ -246,7 +251,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta  <- prepare_mbased(
+  meta <- prepare_mbased(
     data = data,
     A = A,
     Y = Y,
@@ -266,7 +271,7 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
     Y = "xyz",
     node_list = meta$node_list,
     C = cens,
-    tau = meta$t,
+    tau = meta$tau,
     outcome_type = meta$outcome_type,
     m = meta$m,
     pb = check_pb(progress_bar, meta$t, "Estimating regression")
@@ -274,12 +279,15 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 
   # return estimates --------------------------------------------------------
 
-  eta <- list(m = m,
-              outcome_type = meta$outcome_type,
-              bounds = meta$scale_meta$bounds,
-              shift = deparse(substitute((shift))))
-
-  out <- compute_theta(eta, "sub")
+  out <- compute_theta(
+    eta = list(
+      m = m,
+      outcome_type = meta$outcome_type,
+      bounds = meta$scale_meta$bounds,
+      shift = deparse(substitute((shift)))
+    ),
+    estimator = "sub"
+  )
 
   return(out)
 
@@ -333,7 +341,7 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
       learner_stack = learner_stack,
       pb = check_pb(progress_bar, meta$t, "Estimating propensity")
     ),
-    tau = meta$t,
+    tau = meta$tau,
     n = meta$n,
     max_tau = NULL,
     what_estim = "ipw"
@@ -341,12 +349,15 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
 
   # return estimates --------------------------------------------------------
 
-  eta <- list(r = z,
-              y = data[[Y]],
-              tau = meta$t,
-              shift = deparse(substitute((shift))))
-
-  out <- compute_theta(eta, "ipw")
+  out <- compute_theta(
+    eta = list(
+      r = z,
+      y = data[[Y]],
+      tau = meta$tau,
+      shift = deparse(substitute((shift)))
+    ),
+    estimator = "ipw"
+  )
 
   return(out)
 
