@@ -19,7 +19,6 @@ no_stderr_warning <- function(estimator) {
 }
 
 no_sl3 <- function() {
-  cat("\n")
   cli::cli_text("Recommended package, {.pkg sl3}, not detected.")
   cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
 }
@@ -54,11 +53,10 @@ check_censoring <- function(data, C, Y, tau) {
   }
 
   out <- matrix(nrow = nrow(data), ncol = tau)
-
   if (isFALSE(check)) {
-    lapply(1:tau, function(t) {
-      out[, t] <<- rep(1, nrow(data))
-    })
+    for (t in 1:tau) {
+      out[, t] <- rep(1, nrow(data))
+    }
   }
 
   return(out)
