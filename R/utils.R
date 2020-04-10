@@ -4,16 +4,16 @@
 }
 
 shift_data <- function(data, A, .f) {
-
   if (is.null(.f)) {
     return(data)
   }
 
-  out <- data
-  sapply(A, function(x) {
-    out[, x] <<- .f(data[[x]])
-  }, simplify = TRUE)
-  return(out)
+  out <- as.list(data)
+  for (a in A) {
+    out[[a]] <- .f(out[[a]])
+  }
+
+  return(as.data.frame(out))
 }
 
 bound <- function(x, p = 1e-5) {
