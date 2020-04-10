@@ -1,7 +1,7 @@
 
 # the engine for the initial estimator of m through super learner
 estimate_sub <- function(data, shifted, outcome, node_list, C,
-                         tau, outcome_type, learner_stack = NULL,
+                         tau, outcome_type, learners = NULL,
                          m, pb) {
 
   if (tau > 0) {
@@ -12,7 +12,7 @@ estimate_sub <- function(data, shifted, outcome, node_list, C,
     pseudo     <- paste0("m", tau)
     fit_task   <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
     shift_task <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-    ensemble   <- initiate_ensemble(outcome_type, learner_stack)
+    ensemble   <- initiate_ensemble(outcome_type, learners)
 
     # progress bar
     progress_progress_bar(pb)
@@ -34,7 +34,7 @@ estimate_sub <- function(data, shifted, outcome, node_list, C,
                  C = C,
                  tau = tau - 1,
                  outcome_type = "quasibinomial",
-                 learner_stack,
+                 learners,
                  m = m,
                  pb = pb)
 
@@ -47,7 +47,7 @@ estimate_sub <- function(data, shifted, outcome, node_list, C,
 # the engine for the TML estimator
 estimate_tmle <- function(data, shifted, outcome, node_list, C, tau, max,
                           outcome_type, m_natural, m_shifted, r,
-                          learner_stack = NULL, pb) {
+                          learners = NULL, pb) {
 
   if (tau > 0) {
 
@@ -58,7 +58,7 @@ estimate_tmle <- function(data, shifted, outcome, node_list, C, tau, max,
     fit_task      <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
     no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
     shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-    ensemble      <- initiate_ensemble(outcome_type, learner_stack)
+    ensemble      <- initiate_ensemble(outcome_type, learners)
 
     # progress bar
     progress_progress_bar(pb)
@@ -94,7 +94,7 @@ estimate_tmle <- function(data, shifted, outcome, node_list, C, tau, max,
                   m_natural = m_natural,
                   m_shifted = m_shifted,
                   r = r,
-                  learner_stack = learner_stack,
+                  learners = learners,
                   pb = pb)
   } else {
     # returns
@@ -108,7 +108,7 @@ estimate_tmle <- function(data, shifted, outcome, node_list, C, tau, max,
 
 # the engine for the sdr estimator
 estimate_sdr <- function(data, shifted, outcome, node_list, C,
-                         tau, max, outcome_type, learner_stack = NULL,
+                         tau, max, outcome_type, learners = NULL,
                          m_shifted, m_natural, r, pb) {
 
   if (tau > 0) {
@@ -127,7 +127,7 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
       fit_task      <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
       no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
       shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-      ensemble      <- initiate_ensemble(outcome_type, learner_stack)
+      ensemble      <- initiate_ensemble(outcome_type, learners)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
@@ -155,7 +155,7 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
       fit_task      <- initiate_sl3_task(data[i, ], pseudo, node_list[[tau]], outcome_type)
       no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
       shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-      ensemble      <- initiate_ensemble(outcome_type, learner_stack)
+      ensemble      <- initiate_ensemble(outcome_type, learners)
       fit           <- run_ensemble(ensemble, fit_task)
 
       # predictions
@@ -173,7 +173,7 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
                  tau = tau - 1,
                  max = max,
                  outcome_type = "continuous",
-                 learner_stack = learner_stack,
+                 learners = learners,
                  m_shifted = m_shifted,
                  m_natural = m_natural,
                  r = r,

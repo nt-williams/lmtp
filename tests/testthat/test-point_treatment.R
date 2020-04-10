@@ -15,23 +15,23 @@ truth <- 0.76451
 sub <-
   lmtp_sub(df, "A", "Y", nodes, shift = function(x) x + 0.5,
            outcome_type = "binomial",
-           learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+           learners = sl3::make_learner(sl3::Lrnr_glm))
 
 ipw <-
   lmtp_ipw(df, "A", "Y", nodes, shift = function(x) x + 0.5,
-           learner_stack = sl3::make_learner(sl3::Lrnr_glm))
+           learners = sl3::make_learner(sl3::Lrnr_glm))
 
 tmle <-
   lmtp_tmle(df, "A", "Y", nodes, shift = function(x) x + 0.5,
             outcome_type = "binomial",
-            learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-            learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
+            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+            learners_trt = sl3::make_learner(sl3::Lrnr_glm))
 
 sdr <-
   lmtp_sdr(df, "A", "Y", nodes, shift = function(x) x + 0.5,
            outcome_type = "binomial",
-           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm))
+           learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+           learners_trt = sl3::make_learner(sl3::Lrnr_glm))
 
 # tests
 test_that("point treatment fidelity", {

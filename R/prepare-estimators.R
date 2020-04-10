@@ -19,19 +19,16 @@ Meta <- R6::R6Class(
       self$bounds <- y_bounds(data[[outcome]], outcome_type, bounds)
       self$m <- cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[outcome]])
       self$data <- add_scaled_y(data,
-                                scale_y_continuous(
-                                  data[[outcome]],
-                                  y_bounds(data[[outcome]],
-                                           outcome_type,
-                                           bounds)
-                                  ))
-      self$shifted_data <- add_scaled_y(shift_data(data, trt, shift),
-                                        scale_y_continuous(
-                                          data[[outcome]],
-                                          y_bounds(data[[outcome]],
-                                                   outcome_type,
-                                                   bounds)
-                                          ))
+                                scale_y_continuous(data[[outcome]],
+                                                   y_bounds(data[[outcome]],
+                                                            outcome_type,
+                                                            bounds)))
+      self$shifted_data <-
+        add_scaled_y(shift_data(data, trt, shift),
+                     scale_y_continuous(data[[outcome]],
+                                        y_bounds(data[[outcome]],
+                                                 outcome_type,
+                                                 bounds)))
     }
   )
 )

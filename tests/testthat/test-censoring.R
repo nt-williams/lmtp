@@ -10,29 +10,29 @@ sub <-
   lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
-           learner_stack = sl3::make_learner(sl3::Lrnr_glm),
+           learners = sl3::make_learner(sl3::Lrnr_glm),
            progress_bar = FALSE)
 
 ipw <-
   lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = function(x) x + 0.5,
-           learner_stack = sl3::make_learner(sl3::Lrnr_glm),
+           learners = sl3::make_learner(sl3::Lrnr_glm),
            progress_bar = FALSE)
 
 tmle <-
   lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
             cens, k = 0, shift = function(x) x + 0.5,
             outcome_type = "binomial",
-            learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-            learner_stack_g = sl3::make_learner(sl3::Lrnr_glm),
+            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+            learners_trt = sl3::make_learner(sl3::Lrnr_glm),
             progress_bar = FALSE)
 
 sdr <-
   lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
-           learner_stack_Q = sl3::make_learner(sl3::Lrnr_glm),
-           learner_stack_g = sl3::make_learner(sl3::Lrnr_glm),
+           learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+           learners_trt = sl3::make_learner(sl3::Lrnr_glm),
            progress_bar = FALSE)
 
 # tests

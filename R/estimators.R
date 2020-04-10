@@ -20,9 +20,9 @@
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'   the bounds will be taken as the minimum and maximum of the observed data.
 #'   Ignored if outcome type is binary.
-#' @param learner_stack_Q An \code{sl3} learner stack for estimation of the outcome
+#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
-#' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
+#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
@@ -34,8 +34,8 @@
 lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
-                      bounds = NULL, learner_stack_Q = NULL,
-                      learner_stack_g = NULL, progress_bar = TRUE) {
+                      bounds = NULL, learners_outcome = NULL,
+                      learners_trt = NULL, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -58,11 +58,11 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
       data = data,
       trt = trt,
       cens = cens,
-      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack_g),
+      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learners_trt),
       shift = shift,
       tau = meta$tau,
       node_list = meta$node_list,
-      learner_stack = learner_stack_g,
+      learners = learners_trt,
       pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
     ),
     tau = meta$tau,
@@ -85,7 +85,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     m_natural = meta$m,
     m_shifted = meta$m,
     r = z,
-    learner_stack = learner_stack_Q,
+    learners = learners_outcome,
     pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
 
@@ -126,9 +126,9 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'   the bounds will be taken as the minimum and maximum of the observed data.
 #'   Ignored if outcome type is binary.
-#' @param learner_stack_Q An \code{sl3} learner stack for estimation of the outcome
+#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
-#' @param learner_stack_g An \code{sl3} learner stack for estimation of the exposure
+#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
@@ -140,8 +140,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learner_stack_Q = NULL,
-                     learner_stack_g = NULL, progress_bar = TRUE) {
+                     bounds = NULL, learners_outcome = NULL,
+                     learners_trt = NULL, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -163,11 +163,11 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     data = data,
     trt = trt,
     cens = cens,
-    C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack_g),
+    C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learners_trt),
     shift = shift,
     tau = meta$tau,
     node_list = meta$node_list,
-    learner_stack = learner_stack_g,
+    learners = learners_trt,
     pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
   )
 
@@ -190,7 +190,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     tau = meta$tau,
     max = meta$tau,
     outcome_type = meta$outcome_type,
-    learner_stack = learner_stack_Q,
+    learners = learners_outcome,
     m_shifted = meta$m,
     m_natural = meta$m,
     r = r,
@@ -233,7 +233,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'  the bounds will be taken as the minimum and maximum of the observed data.
-#' @param learner_stack An \code{sl3} learner stack for estimation of the outcome
+#' @param learners An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
@@ -245,7 +245,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learner_stack = NULL, progress_bar = TRUE) {
+                     bounds = NULL, learners = NULL, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -263,7 +263,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # substitution ------------------------------------------------------------
 
-  m <- estimate_sub(
+  estims <- estimate_sub(
     data = meta$data,
     shifted = meta$shifted_data,
     outcome = "xyz",
@@ -271,6 +271,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     C = cens,
     tau = meta$tau,
     outcome_type = meta$outcome_type,
+    learners = learners,
     m = meta$m,
     pb = check_pb(progress_bar, meta$tau, "Estimating regression")
   )
@@ -280,7 +281,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
   out <- compute_theta(
     estimator = "sub",
     eta = list(
-      m = m,
+      m = estims,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift)))
@@ -307,7 +308,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how tratment variables should be shifted.
-#' @param learner_stack An \code{sl3} learner stack for estimation of the
+#' @param learners An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
@@ -318,7 +319,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' # TO DO
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
-                     learner_stack = NULL, progress_bar = TRUE) {
+                     learners = NULL, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -341,11 +342,11 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
       data = data,
       trt = trt,
       cens = cens,
-      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learner_stack),
+      C = estimate_c(data, cens, outcome, meta$tau, meta$node_list, learners),
       shift = shift,
       tau = meta$tau,
       node_list = meta$node_list,
-      learner_stack = learner_stack,
+      learners = learners,
       pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
     ),
     tau = meta$tau,

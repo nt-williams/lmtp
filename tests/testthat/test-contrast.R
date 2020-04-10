@@ -9,15 +9,15 @@ stack <- sl3::make_learner(sl3::Lrnr_glm)
 trt <- lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
                  cens, k = 0, shift = function(x) x + 0.5,
                  outcome_type = "binomial",
-                 learner_stack_Q = stack,
-                 learner_stack_g = stack,
+                 learners_outcome = stack,
+                 learners_trt = stack,
                  progress_bar = FALSE)
 
 cntrl <- lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
                    cens, k = 0, shift = NULL,
                    outcome_type = "binomial",
-                   learner_stack_Q = stack,
-                   learner_stack_g = stack,
+                   learners_outcome = stack,
+                   learners_trt = stack,
                    progress_bar = FALSE)
 
 lmtp_contrast(trt, cntrl, "additive")

@@ -1,7 +1,7 @@
 
 # engine for density ratio estimation by classification
 estimate_r <- function(data, trt, cens, C, shift, tau,
-                       node_list, learner_stack = NULL, pb) {
+                       node_list, learners = NULL, pb) {
 
   # global setup
   n <- nrow(data)
@@ -22,7 +22,7 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       d$si     <- c(rep(0, n), rep(1, n))
       d        <- subset(d, rep(i, 2))
       task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
-      ensemble <- initiate_ensemble("binomial", learner_stack)
+      ensemble <- initiate_ensemble("binomial", learners)
 
       # run SL
       fit <- run_ensemble(ensemble, task)
@@ -57,7 +57,7 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
 }
 
 # engine for estimation of censoring mechanism
-estimate_c <- function(data, C, outcome, tau, node_list, learner_stack) {
+estimate_c <- function(data, C, outcome, tau, node_list, learners) {
 
   # global setup
   cens <- check_censoring(data, C, outcome, tau)
@@ -67,7 +67,7 @@ estimate_c <- function(data, C, outcome, tau, node_list, learner_stack) {
 
       # setup
       fit_task <- suppressWarnings(initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE))
-      ensemble <- initiate_ensemble("binomial", learner_stack)
+      ensemble <- initiate_ensemble("binomial", learners)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
