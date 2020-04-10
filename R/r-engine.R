@@ -86,10 +86,10 @@ estimate_c <- function(data, C, Y, tau, node_list, learner_stack) {
 use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
   switch(
     what_estim,
-    "tml" = ratio_ite(r = ratio, tau = tau, n = n),
-    "ipw" = ratio_ite(r = ratio, tau = tau, n = n),
-    "eif" = ratio_ite(r = ratio, tau = tau, n = n),
-    "sdr" = ratio_sdr(r = ratio, tau = tau, max = max_tau)
+    "tml" = ratio_ite(ratio = ratio, tau = tau, n = n),
+    "ipw" = ratio_ite(ratio = ratio, tau = tau, n = n),
+    "eif" = ratio_ite(ratio = ratio, tau = tau, n = n),
+    "sdr" = ratio_sdr(ratio = ratio, tau = tau, max_tau = max_tau)
   )
 }
 
@@ -98,8 +98,8 @@ ratio_ite <- function(ratio, tau, n) {
   return(out)
 }
 
-ratio_sdr <- function(r, tau, max) {
-  out <- t(apply(r$natural[, (tau + 1):max, drop = FALSE], 1, cumprod))
-  if (tau == max - 1) out <- t(out)
+ratio_sdr <- function(ratio, tau, max_tau) {
+  out <- t(apply(ratio$natural[, (tau + 1):max_tau, drop = FALSE], 1, cumprod))
+  if (tau == max_tau - 1) out <- t(out)
   return(out)
 }

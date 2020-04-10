@@ -39,8 +39,17 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta      <- prepare_mbased(data, A, Y, shift, match.arg(outcome_type), bounds)
-  node_list <- create_node_list(A, nodes, baseline, k)
+  meta  <- prepare_mbased(
+    data = data,
+    A = A,
+    Y = Y,
+    nodes = nodes,
+    baseline = baseline,
+    k = k,
+    shift = shift,
+    outcome_type = match.arg(outcome_type),
+    bounds = bounds
+  )
 
   # propensity --------------------------------------------------------------
 
@@ -50,14 +59,14 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
         data = data,
         A = A,
         cens = cens,
-        C = estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g),
+        C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
         shift = shift,
-        tau = meta$t,
-        node_list = node_list,
+        tau = meta$tau,
+        node_list = meta$node_list,
         learner_stack = learner_stack_g,
         pb = check_pb(progress_bar, meta$t, "Estimating propensity")
       ),
-      tau = meta$t,
+      tau = meta$tau,
       n = meta$n,
       max_tau = NULL,
       what_estim = "tml"
@@ -69,10 +78,10 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
     data = meta$data,
     shifted = meta$shifted_data,
     Y = "xyz",
-    node_list = node_list,
+    node_list = meta$node_list,
     C = cens,
-    tau = meta$t,
-    max = meta$t,
+    tau = meta$tau,
+    max = meta$tau,
     outcome_type = meta$outcome_type,
     m_natural = meta$m,
     m_shifted = meta$m,
@@ -85,7 +94,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
 
   eta <- list(m = m,
               r = z,
-              tau = meta$t,
+              tau = meta$tau,
               outcome_type = meta$outcome_type,
               bounds = meta$scale_meta$bounds,
               shift = deparse(substitute((shift))))
@@ -135,8 +144,17 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta      <- prepare_mbased(data, A, Y, shift, match.arg(outcome_type), bounds)
-  node_list <- create_node_list(A, nodes, baseline, k)
+  meta <- prepare_mbased(
+    data = data,
+    A = A,
+    Y = Y,
+    nodes = nodes,
+    baseline = baseline,
+    k = k,
+    shift = shift,
+    outcome_type = match.arg(outcome_type),
+    bounds = bounds
+  )
 
   # propensity --------------------------------------------------------------
 
@@ -144,17 +162,17 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
     data = data,
     A = A,
     cens = cens,
-    C = estimate_c(data, cens, Y, meta$t, node_list, learner_stack_g),
+    C = estimate_c(data, cens, Y, meta$tau, meta$node_list, learner_stack_g),
     shift = shift,
-    tau = meta$t,
-    node_list = node_list,
+    tau = meta$tau,
+    node_list = meta$node_list,
     learner_stack = learner_stack_g,
     pb = check_pb(progress_bar, meta$t, "Estimating propensity")
   )
 
   z <- use_dens_ratio(
     ratio = r,
-    tau = meta$t,
+    tau = meta$tau,
     n = meta$n,
     max_tau = NULL,
     what_estim = "eif"
@@ -166,7 +184,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
     data = meta$data,
     shifted = meta$shifted_data,
     Y = "xyz",
-    node_list = node_list,
+    node_list = meta$node_list,
     C = cens,
     tau = meta$t,
     max = meta$t,
@@ -228,21 +246,31 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta      <- prepare_mbased(data, A, Y, shift, match.arg(outcome_type), bounds)
-  node_list <- create_node_list(A, nodes, baseline, k)
-  pb        <- check_pb(progress_bar, meta$t, "Estimating regression")
+  meta  <- prepare_mbased(
+    data = data,
+    A = A,
+    Y = Y,
+    nodes = nodes,
+    baseline = baseline,
+    k = k,
+    shift = shift,
+    outcome_type = match.arg(outcome_type),
+    bounds = bounds
+  )
 
   # substitution ------------------------------------------------------------
 
-  m <- estimate_sub(data = meta$data,
-                    shifted = meta$shifted_data,
-                    Y = "xyz",
-                    node_list = node_list,
-                    C = cens,
-                    tau = meta$t,
-                    outcome_type = meta$outcome_type,
-                    m = meta$m,
-                    pb = pb)
+  m <- estimate_sub(
+    data = meta$data,
+    shifted = meta$shifted_data,
+    Y = "xyz",
+    node_list = meta$node_list,
+    C = cens,
+    tau = meta$t,
+    outcome_type = meta$outcome_type,
+    m = meta$m,
+    pb = check_pb(progress_bar, meta$t, "Estimating regression")
+  )
 
   # return estimates --------------------------------------------------------
 
@@ -289,23 +317,32 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
 
   # setup -------------------------------------------------------------------
 
-  meta      <- prepare_rbased(data, A, Y, shift)
-  node_list <- create_node_list(A, nodes, baseline, k)
-  pb        <- check_pb(progress_bar, meta$t, "Estimating propensity")
-
-  # censoring ---------------------------------------------------------------
-
-  cens_ratio <- estimate_c(data, cens, Y, meta$t, node_list, learner_stack)
+  meta <- prepare_rbased(data, A, Y, nodes, baseline, k, shift)
 
   # propensity --------------------------------------------------------------
 
-  r <- estimate_r(data, A, cens, cens_ratio, shift, meta$t, node_list, learner_stack, pb)
-  z <- use_dens_ratio(r, meta$t, meta$n, NULL, "ipw")
+  z <- use_dens_ratio(
+    ratio = estimate_r(
+      data = data,
+      A = A,
+      cens = cens,
+      C = estimate_c(data, cens, Y, meta$t, meta$node_list, learner_stack),
+      shift = shift,
+      tau = meta$t,
+      node_list = meta$node_list,
+      learner_stack = learner_stack,
+      pb = check_pb(progress_bar, meta$t, "Estimating propensity")
+    ),
+    tau = meta$t,
+    n = meta$n,
+    max_tau = NULL,
+    what_estim = "ipw"
+  )
 
   # return estimates --------------------------------------------------------
 
   eta <- list(r = z,
-              y = data[, Y],
+              y = data[[Y]],
               tau = meta$t,
               shift = deparse(substitute((shift))))
 
