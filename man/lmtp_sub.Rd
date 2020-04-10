@@ -15,7 +15,7 @@ lmtp_sub(
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
-  learner_stack = NULL,
+  learners = NULL,
   progress_bar = TRUE
 )
 }
@@ -48,7 +48,7 @@ all time points.}
 \item{bounds}{An optional vector of the bounds for continuous outcomes. If NULL
 the bounds will be taken as the minimum and maximum of the observed data.}
 
-\item{learner_stack}{An \code{sl3} learner stack for estimation of the outcome
+\item{learners}{An \code{sl3} learner stack for estimation of the outcome
 regression.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}

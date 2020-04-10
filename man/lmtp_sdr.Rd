@@ -15,8 +15,8 @@ lmtp_sdr(
   shift,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
-  learner_stack_Q = NULL,
-  learner_stack_g = NULL,
+  learners_outcome = NULL,
+  learners_trt = NULL,
   progress_bar = TRUE
 )
 }
@@ -50,10 +50,10 @@ all time points.}
 the bounds will be taken as the minimum and maximum of the observed data.
 Ignored if outcome type is binary.}
 
-\item{learner_stack_Q}{An \code{sl3} learner stack for estimation of the outcome
+\item{learners_outcome}{An \code{sl3} learner stack for estimation of the outcome
 regression.}
 
-\item{learner_stack_g}{An \code{sl3} learner stack for estimation of the exposure
+\item{learners_trt}{An \code{sl3} learner stack for estimation of the exposure
 mechanism.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}

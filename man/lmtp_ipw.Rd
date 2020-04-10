@@ -13,7 +13,7 @@ lmtp_ipw(
   cens = NULL,
   k = Inf,
   shift,
-  learner_stack = NULL,
+  learners = NULL,
   progress_bar = TRUE
 )
 }
@@ -41,7 +41,7 @@ all time points.}
 
 \item{shift}{A function that specifies how tratment variables should be shifted.}
 
-\item{learner_stack}{An \code{sl3} learner stack for estimation of the
+\item{learners}{An \code{sl3} learner stack for estimation of the
 exposure mechanism.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
