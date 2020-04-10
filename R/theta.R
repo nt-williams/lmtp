@@ -1,47 +1,49 @@
 
-compute_theta <- function(eta, estimator) {
+compute_theta <- function(estimator, eta) {
 
   out <- switch(estimator,
-                "ipw" = theta_ipw(r = eta$r, y = eta$y, tau = eta$tau),
-                "sub" = theta_sub(m = eta$m, outcome_type = eta$outcome_type, bounds = eta$bounds),
-                "tml" = theta_tml_sdr(estimator = "TMLE", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds, shift = eta$shift),
-                "sdr" = theta_tml_sdr(estimator = "SDR", m = eta$m, r = eta$r, tau = eta$tau, outcome_type = eta$outcome_type, bounds = eta$bounds, shift = eta$shift))
+                "ipw" = theta_ipw(eta),
+                "sub" = theta_sub(eta),
+                "tml" = theta_tml(eta),
+                "sdr" = theta_sdr(eta))
 
   return(out)
 }
 
-theta_sub <- function(m, outcome_type, bounds = NULL) {
+theta_sub <- function(eta) {
 
   # rescale if necessary
-  if (outcome_type == "continuous") {
-    m <- rescale_y_continuous(m, bounds)
+  if (eta$outcome_type == "continuous") {
+    eta$m <- rescale_y_continuous(eta$m, eta$bounds)
   }
 
   # calculate estimates
-  theta <- mean(m[, 1])
+  theta <- mean(eta$m[, 1])
 
   # returns
   out <- list(estimator = "substitution",
               theta = theta,
               standard_error = NA_real_,
               low = NA_real_,
-              high = NA_real_)
+              high = NA_real_,
+              shift = eta$shift)
 
   class(out) <- "lmtp"
 
   return(out)
 }
 
-theta_ipw <- function(r, y, tau) {
+theta_ipw <- function(eta) {
   # calculate estimates
-  theta <- mean(r[, tau]*y, na.rm = T)
+  theta <- mean(eta$r[, eta$tau]*eta$y, na.rm = T)
 
   # returns
   out <- list(estimator = "IPW",
               theta = theta,
               standard_error = NA_real_,
               low = NA_real_,
-              high = NA_real_)
+              high = NA_real_,
+              shift = eta$shift)
 
   class(out) <- "lmtp"
 
@@ -56,36 +58,67 @@ eif <- function(r, tau, shifted, natural) {
   return(out)
 }
 
-theta_tml_sdr <- function(estimator, m, r, tau, outcome_type, bounds = NULL,
-                          shift) {
+theta_tml <- function(eta) {
 
   # calculate eif
-  inflnce <- eif(r = r, tau = tau, shifted = m$shifted, natural = m$natural)
+  inflnce <- eif(r = eta$r, tau = eta$tau,
+                 shifted = eta$m$shifted, natural = eta$m$natural)
 
   # rescale if necessary and calculate estimates
-  theta <- mean(m$shifted[, 1])
+  theta <- mean(eta$m$shifted[, 1])
 
-  if (outcome_type == "continuous") {
-    theta <- rescale_y_continuous(theta, bounds)
+  if (eta$outcome_type == "continuous") {
+    theta <- rescale_y_continuous(theta, eta$bounds)
   }
 
-  n <- nrow(m$natural)
-  se <- sd(inflnce, na.rm = TRUE) / sqrt(n)
-  ci_low <- theta - (qnorm(0.975) * se)
+  n       <- nrow(eta$m$natural)
+  se      <- sd(inflnce, na.rm = TRUE) / sqrt(n)
+  ci_low  <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
 
   # returns
-  out <- list(estimator = estimator,
+  out <- list(estimator = "TMLE",
               theta = theta,
               standard_error = se,
               low = ci_low,
               high = ci_high,
               eif = inflnce,
-              shift = shift)
+              shift = eta$shift)
 
   class(out) <- "lmtp"
 
   return(out)
 }
 
+theta_sdr <- function(eta) {
 
+  # calculate eif
+  inflnce <- eif(r = eta$r, tau = eta$tau,
+                 shifted = eta$m$shifted, natural = eta$m$natural)
+
+  # rescale if necessary and calculate estimates
+  theta <- mean(eta$m$shifted[, 1])
+
+  if (eta$outcome_type == "continuous") {
+    inflnce <- rescale_y_continuous(inflnce, eta$bounds)
+    theta   <- rescale_y_continuous(theta, eta$bounds)
+  }
+
+  n       <- nrow(eta$m$natural)
+  se      <- sd(inflnce, na.rm = TRUE) / sqrt(n)
+  ci_low  <- theta - (qnorm(0.975) * se)
+  ci_high <- theta + (qnorm(0.975) * se)
+
+  # returns
+  out <- list(estimator = "SDR",
+              theta = theta,
+              standard_error = se,
+              low = ci_low,
+              high = ci_high,
+              eif = inflnce,
+              shift = eta$shift)
+
+  class(out) <- "lmtp"
+
+  return(out)
+}

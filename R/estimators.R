@@ -92,6 +92,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
+    estimator = "tml",
     eta = list(
       m = m,
       r = z,
@@ -99,9 +100,7 @@ lmtp_tmle <- function(data, A, Y, nodes, baseline = NULL,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift)))
-    ),
-    estimator = "tml"
-  )
+    ))
 
   return(out)
 }
@@ -201,6 +200,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
+    estimator = "sdr",
     eta = list(
       m = sdr,
       r = z,
@@ -208,9 +208,7 @@ lmtp_sdr <- function(data, A, Y, nodes, baseline = NULL,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift)))
-    ),
-    estimator = "sdr"
-  )
+    ))
 
   return(out)
 }
@@ -280,14 +278,13 @@ lmtp_sub <- function(data, A, Y, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
+    estimator = "sub",
     eta = list(
       m = m,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift)))
-    ),
-    estimator = "sub"
-  )
+    ))
 
   return(out)
 
@@ -360,14 +357,13 @@ lmtp_ipw <- function(data, A, Y, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
+    estimator = "ipw",
     eta = list(
       r = z,
       y = data[[Y]],
       tau = meta$tau,
       shift = deparse(substitute((shift)))
-    ),
-    estimator = "ipw"
-  )
+    ))
 
   return(out)
 
