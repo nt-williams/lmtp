@@ -1,9 +1,6 @@
 
 library(lmtp)
 
-# A data set with treatment nodes at 4 time points and a binary outcome at time 5
-head(sim_t4)
-
 # Define treatment variables, covariates, and a treatment policy
 a <- c("A_1", "A_2", "A_3", "A_4")
 nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
