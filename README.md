@@ -42,4 +42,22 @@ treatment is decreased by 1 at all time points for observations whose
 treatment value won’t go below 0 if intervened upon. The true value
 under this intervention is about 0.48.
 
-![](https://gist.githubusercontent.com/nt-williams/2488fef9e94c7ef1a3920c2682433980/raw/2a339c10d651aa18dc48188b4017c605c30e2405/lmtp-readme-example.svg?sanitize=true)
+``` asciicast
+library(lmtp)
+
+# Define treatment variables, covariates, and a treatment policy
+a <- c("A_1", "A_2", "A_3", "A_4")
+nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+d <- function(A) {
+  delta <- 1
+  return((A - delta) * (A - delta >= 0) + A * (A - delta < 0))
+}
+
+# Define a set of sl3 learners
+lrnrs <- sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean)
+
+# calculate estimates!
+lmtp_tmle(sim_t4, a, "Y", nodes, k = 0, shift = d, outcome_type = "binomial",
+          learners_outcome = lrnrs, learners_trt = lrnrs)
+```

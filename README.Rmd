@@ -40,6 +40,7 @@ head(lmtp::sim_t4)
 
 We're interested in the effect of an intervention on outcome `Y` where treatment is decreased by 1 at all time points for observations whose treatment value won't go below 0 if intervened upon. The true value under this intervention is about 0.48.
 
+```{asciicast, code = readLines("inst/examples/readme-example.R"), cache = TRUE}
+```
 
-![](https://gist.githubusercontent.com/nt-williams/2488fef9e94c7ef1a3920c2682433980/raw/2a339c10d651aa18dc48188b4017c605c30e2405/lmtp-readme-example.svg?sanitize=true)
 

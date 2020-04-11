@@ -1,4 +1,3 @@
-
 library(lmtp)
 
 # Define treatment variables, covariates, and a treatment policy
