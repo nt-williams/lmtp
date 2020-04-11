@@ -58,6 +58,8 @@ nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 lrnrs <- sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean)
 ```
 
+![](https://raw.githubusercontent.com/nt-williams/lmtp/master/inst/examples/readme-example.svg?token=AHZNGYR4FYCZWQZXJNMZBT26TOBIS)
+
 Using the TML estimator...
 
 ```r
