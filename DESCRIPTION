@@ -24,7 +24,6 @@ Imports:
     sl3 (>= 1.3.7),
     stats,
     nnls,
-    glmnet,
     cli,
     utils,
     progress,

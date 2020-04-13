@@ -41,9 +41,7 @@ learner_defaults <- function(outcome_type, learners) {
   }
   # setting candidate learners if not specified
   if (is.null(learners) & outcome_type %in% c("binomial", "quasibinomial", "continuous")) {
-    learners <- c("Lrnr_glmnet", "Lrnr_glm", "Lrnr_mean")
-    learners <- lapply(learners, sl3::make_learner)
-    learners <- sl3::make_learner(sl3::Stack, learners)
+    learners <- sl3::make_learner_stack(sl3::Lrnr_glm, sl3::Lrnr_mean)
   } else if (!is.null(learners)) {
     learners <- learners
   }
