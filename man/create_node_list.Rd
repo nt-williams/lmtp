@@ -4,10 +4,10 @@
 \alias{create_node_list}
 \title{Create a node list specification}
 \usage{
-create_node_list(A, nodes, baseline = NULL, k = Inf)
+create_node_list(trt, nodes, baseline = NULL, k = Inf)
 }
 \arguments{
-\item{A}{A vector of column names of treatment variables.}
+\item{trt}{A vector of column names of treatment variables.}
 
 \item{nodes}{A list of length tau with the column names for new nodes to
 be introduced at each time point. The list should be ordered following

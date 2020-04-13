@@ -1,7 +1,7 @@
 
 #' Create a node list specification
 #'
-#' @param A A vector of column names of treatment variables.
+#' @param trt A vector of column names of treatment variables.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
@@ -14,10 +14,10 @@
 #'
 #' @return TODO
 #' @export
-create_node_list <- function(A, nodes, baseline = NULL, k = Inf) {
+create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
 
   out <- list()
-  tau <- length(A)
+  tau <- length(trt)
 
   if (is.null(k)) {
     k <- Inf
@@ -33,7 +33,7 @@ create_node_list <- function(A, nodes, baseline = NULL, k = Inf) {
   }
 
   for (i in 1:tau) {
-    out[[i]] <- c(nodes[[i]], A[i])
+    out[[i]] <- c(nodes[[i]], trt[i])
   }
 
   out <- paste(lapply(out, function(x) paste(x, collapse = ",")))
