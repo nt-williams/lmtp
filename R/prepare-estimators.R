@@ -12,6 +12,9 @@ Meta <- R6::R6Class(
     bounds = NULL,
     initialize = function(data, trt, outcome, nodes, baseline,
                           k, shift, outcome_type = NULL, bounds = NULL) {
+
+      check_scaled_conflict(data)
+
       self$n <- nrow(data)
       self$tau <- length(nodes)
       self$node_list <- create_node_list(trt, nodes, baseline, k)
