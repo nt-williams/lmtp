@@ -3,7 +3,6 @@
 S3method(print,lmtp)
 S3method(print,lmtp_contrast)
 export(create_node_list)
-export(lmtp_contrast)
 export(lmtp_ipw)
 export(lmtp_sdr)
 export(lmtp_sub)
