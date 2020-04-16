@@ -10,7 +10,7 @@ Meta <- R6::R6Class(
     tau = NULL,
     outcome_type = NULL,
     bounds = NULL,
-    initialize = function(data, trt, outcome, nodes, baseline,
+    initialize = function(data, trt, outcome, nodes, baseline, cens,
                           k, shift, outcome_type = NULL, bounds = NULL) {
 
       check_scaled_conflict(data)
@@ -21,17 +21,24 @@ Meta <- R6::R6Class(
       self$outcome_type <- outcome_type
       self$bounds <- y_bounds(data[[outcome]], outcome_type, bounds)
       self$m <- cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[outcome]])
-      self$data <- add_scaled_y(data,
-                                scale_y_continuous(data[[outcome]],
-                                                   y_bounds(data[[outcome]],
-                                                            outcome_type,
-                                                            bounds)))
+      self$data <-
+        fix_censoring_ind(
+          add_scaled_y(data,
+                       scale_y_continuous(data[[outcome]],
+                                          y_bounds(data[[outcome]],
+                                                   outcome_type,
+                                                   bounds))),
+          cens, length(nodes)
+        )
       self$shifted_data <-
-        add_scaled_y(shift_data(data, trt, shift),
-                     scale_y_continuous(data[[outcome]],
-                                        y_bounds(data[[outcome]],
-                                                 outcome_type,
-                                                 bounds)))
+        fix_censoring_ind(
+          add_scaled_y(shift_data(data, trt, shift),
+                       scale_y_continuous(data[[outcome]],
+                                          y_bounds(data[[outcome]],
+                                                   outcome_type,
+                                                   bounds))),
+          cens, length(nodes)
+        )
     }
   )
 )

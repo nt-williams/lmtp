@@ -62,6 +62,19 @@ check_censoring <- function(data, C, Y, tau) {
   return(out)
 }
 
+fix_censoring_ind <- function(data, C = NULL, tau) {
+
+  if (!is.null(C)) {
+    out <- as.list(data)
+    for (t in 1:tau) {
+      out[[C[[t]]]] <- ifelse(is.na(out[[C[[t]]]]), 0, out[[C[[t]]]])
+    }
+    return(as.data.frame(out))
+  }
+
+  return(data)
+}
+
 check_scaled_conflict <- function(data) {
   nn <- names(data)
   check <- "xyz" %in% nn

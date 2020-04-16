@@ -67,9 +67,7 @@ estimate_c <- function(data, C, outcome, tau, node_list, learners) {
   if (all(is.na(cens))) {
     for (t in 1:tau) {
       # setup
-      fit_task <- suppressWarnings(
-        initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE)
-      )
+      fit_task <- suppressWarnings(initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE))
       ensemble <- initiate_ensemble("binomial", learners)
 
       # run SL

@@ -146,10 +146,10 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
       j <- create_censoring_indicators(data, C, tau)$j
 
       # outcome transformation
-      z              <- use_dens_ratio(r, tau, NULL, max, "sdr")
-      ms             <- m_shifted[, (tau + 2):(max + 1), drop = FALSE] - m_natural[, (tau + 1):max, drop = FALSE]
-      mt             <- m_shifted[, tau + 1]
-      data[, pseudo] <- shifted[, pseudo] <- rowSums(z * ms) + mt
+      z                   <- use_dens_ratio(r, tau, NULL, max, "sdr")
+      data[, pseudo]      <-
+        shifted[, pseudo] <-
+        transform_sdr(z, tau, max, m_shifted, m_natural)
 
       # run SL on outcome transformation and get predictions
       fit_task      <- initiate_sl3_task(data[i, ], pseudo, node_list[[tau]], outcome_type)

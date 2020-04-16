@@ -86,3 +86,10 @@ create_censoring_indicators <- function(data, C, tau) {
   return(out)
 }
 
+transform_sdr <- function(r, tau, max, shifted, natural) {
+  natural[is.na(natural)] <- -999
+  shifted[is.na(shifted)] <- -999
+  m <- shifted[, (tau + 2):(max + 1), drop = FALSE] - natural[, (tau + 1):max, drop = FALSE]
+  out <- rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
+  return(out)
+}
