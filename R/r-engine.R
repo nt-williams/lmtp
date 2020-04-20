@@ -17,9 +17,10 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       # setup
       i        <- create_censoring_indicators(data, cens, tau)$i
       shifted  <- shift_data(data, trt[[t]], shift)
-      d        <- rbind(data, shifted)
-      d$id     <- rep(1:n, 2)
-      d$si     <- c(rep(0, n), rep(1, n))
+      d        <- prepare_r_engine(data, shifted, n)
+      # d        <- rbind(data, shifted)
+      # d$id     <- rep(1:n, 2)
+      # d$si     <- c(rep(0, n), rep(1, n))
       d        <- subset(d, rep(i, 2))
       task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
       ensemble <- initiate_ensemble("binomial", learners)

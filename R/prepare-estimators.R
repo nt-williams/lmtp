@@ -42,3 +42,10 @@ Meta <- R6::R6Class(
     }
   )
 )
+
+prepare_r_engine <- function(data, shifted, n) {
+  out    <- rbind(data, shifted)
+  out$id <- rep(1:n, 2)
+  out$si <- c(rep(0, n), rep(1, n))
+  return(out)
+}
