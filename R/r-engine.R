@@ -15,26 +15,21 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       progress_progress_bar(pb)
 
       # setup
-      i        <- create_censoring_indicators(data, cens, tau)$i
-      shifted  <- shift_data(data, trt[[t]], shift)
-      d        <- prepare_r_engine(data, shifted, n)
-      # d        <- rbind(data, shifted)
-      # d$id     <- rep(1:n, 2)
-      # d$si     <- c(rep(0, n), rep(1, n))
-      d        <- subset(d, rep(i, 2))
-      task     <- initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id")
-      ensemble <- initiate_ensemble("binomial", learners)
+      shifted   <- shift_data(data, trt[[t]], shift)
+      d         <- prepare_r_engine(data, shifted, n)
+      i         <- create_censoring_indicators(data, cens, tau)$i
+      fit_task  <- initiate_sl3_task(subset(d, rep(i, 2)), "si", node_list[[t]], "binomial", "id")
+      pred_task <- suppressWarnings(initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id"))
+      ensemble  <- initiate_ensemble("binomial", learners)
 
       # run SL
-      fit <- run_ensemble(ensemble, task)
+      fit <- run_ensemble(ensemble, fit_task)
 
       # ratios
-      pred             <- bound(predict_sl3(fit, task), .Machine$double.eps)
-      rat              <- pred / (1 - truncate(pred))
-      r$natural[!i, t] <- 0
-      r$shifted[!i, t] <- 0
-      r$natural[i, t]  <- rat[d$si == 0] * C[i, t]
-      r$shifted[i, t]  <- rat[d$si == 1] * C[i, t]
+      pred           <- bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      rat            <- pred / (1 - truncate(pred))
+      r$natural[, t] <- rat[d$si == 0] * C[, t]
+      r$shifted[, t] <- rat[d$si == 1] * C[, t]
     }
 
   } else {
@@ -43,14 +38,9 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       # progress bar
       progress_progress_bar(pb)
 
-      # setup
-      i <- create_censoring_indicators(data, cens, tau)$i
-
       # propensity
-      r$natural[!i, t] <- 0
-      r$shifted[!i, t] <- 0
-      r$natural[i, t]  <- C[i, t]
-      r$shifted[i, t]  <- C[i, t]
+      r$natural[, t] <- C[, t]
+      r$shifted[, t] <- C[, t]
     }
 
   }
