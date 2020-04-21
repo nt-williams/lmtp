@@ -93,3 +93,7 @@ check_scaled_conflict <- function(data) {
     }
   )
 }
+
+check_extreme_ratio <- function(ratio) {
+  return(apply(ratio, 2, function(x) pmin(x, quantile(x, 0.999))))
+}

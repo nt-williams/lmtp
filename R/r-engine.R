@@ -45,6 +45,9 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
 
   }
 
+  r$natural <- check_extreme_ratio(r$natural)
+  r$shifted <- check_extreme_ratio(r$shifted)
+
   # returns
   return(r)
 }
