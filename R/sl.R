@@ -8,7 +8,8 @@ initiate_ensemble <- function(outcome_type, learners = NULL) {
   # building learner stack
   out <- sl3::make_learner(sl3::Lrnr_sl,
                            learners = sl3_profile$learners,
-                           metalearner = sl3_profile$metalearner)
+                           metalearner = sl3_profile$metalearner,
+                           keep_extra = FALSE)
 
   # returns
   return(out)
@@ -37,7 +38,8 @@ learner_defaults <- function(outcome_type, learners) {
 
   # setting meta learner
   if (outcome_type %in% c("binomial", "quasibinomial", "continuous")) {
-    meta <- sl3::make_learner("Lrnr_nnls")
+    meta <- sl3::make_learner("Lrnr_nnls",
+                              convex = TRUE)
   }
   # setting candidate learners if not specified
   if (is.null(learners) & outcome_type %in% c("binomial", "quasibinomial", "continuous")) {
