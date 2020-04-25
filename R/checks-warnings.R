@@ -97,3 +97,10 @@ check_scaled_conflict <- function(data) {
 check_extreme_ratio <- function(ratio) {
   return(apply(ratio, 2, function(x) pmin(x, quantile(x, 0.999))))
 }
+
+check_variation <- function(data, outcome, learners) {
+  if (sd(data[, outcome]) < .Machine$double.eps) {
+    learners <- sl3::make_learner(sl3::Lrnr_mean)
+  }
+  return(learners)
+}

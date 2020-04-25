@@ -12,7 +12,7 @@ estimate_sub <- function(data, shifted, outcome, node_list, C,
     pseudo     <- paste0("m", tau)
     fit_task   <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
     shift_task <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-    ensemble   <- initiate_ensemble(outcome_type, learners)
+    ensemble   <- initiate_ensemble(outcome_type, check_variation(data[i, ], outcome, learners))
 
     # progress bar
     progress_progress_bar(pb)
@@ -58,7 +58,7 @@ estimate_tmle <- function(data, shifted, outcome, node_list, C, tau, max,
     fit_task      <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
     no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
     shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-    ensemble      <- initiate_ensemble(outcome_type, learners)
+    ensemble      <- initiate_ensemble(outcome_type, check_variation(data[i, ], outcome, learners))
 
     # progress bar
     progress_progress_bar(pb)
@@ -127,7 +127,7 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
       fit_task      <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
       no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
       shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-      ensemble      <- initiate_ensemble(outcome_type, learners)
+      ensemble      <- initiate_ensemble(outcome_type, check_variation(data[i, ], outcome, learners))
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
@@ -155,7 +155,7 @@ estimate_sdr <- function(data, shifted, outcome, node_list, C,
       fit_task      <- initiate_sl3_task(data[i, ], pseudo, node_list[[tau]], outcome_type)
       no_shift_task <- suppressWarnings(initiate_sl3_task(data[j, ], outcome, node_list[[tau]], outcome_type))
       shift_task    <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-      ensemble      <- initiate_ensemble(outcome_type, learners)
+      ensemble      <- initiate_ensemble(outcome_type, check_variation(data[i, ], outcome, learners))
       fit           <- run_ensemble(ensemble, fit_task)
 
       # predictions
