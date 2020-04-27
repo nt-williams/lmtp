@@ -88,7 +88,7 @@ use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
   switch(
     what_estim,
     "tml" = ratio_ite(ratio = ratio, tau = tau, n = n),
-    "ipw" = ratio_ite(ratio = ratio, tau = tau, n = n),
+    "ipw" = ratio_ipw(ratio = ratio, tau = tau, n = n),
     "eif" = ratio_ite(ratio = ratio, tau = tau, n = n),
     "sdr" = ratio_sdr(ratio = ratio, tau = tau, max_tau = max_tau)
   )
@@ -96,6 +96,11 @@ use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
 
 ratio_ite <- function(ratio, tau, n) {
   out <- matrix(t(apply(ratio$natural, 1, cumprod)), nrow = n, ncol = tau)
+  return(out)
+}
+
+ratio_ipw <- function(ratio, tau, n) {
+  out <- matrix(t(apply(ratio, 1, cumprod)), nrow = n, ncol = tau)
   return(out)
 }
 

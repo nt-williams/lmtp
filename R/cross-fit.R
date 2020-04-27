@@ -13,3 +13,27 @@ get_folded_data <- function(data, folds) {
   }
   return(out)
 }
+
+cf_cens <- function(data, folded, V, C, outcome, tau, node_list, learners) {
+  out <- list()
+  for (i in 1:V) {
+    out[[i]] <- estimate_c(data, folded[[i]]$train, folded[[i]]$valid, C,
+                           outcome, tau, node_list, learners)
+  }
+  return(out)
+}
+
+cf_r <- function(data, shift, V, trt, cens, C,
+                 tau, node_list, learners, pb) {
+
+  out <- list()
+  for (i in 1:V) {
+    out[[i]] <- estimate_r(data[[i]]$train, data[[i]]$valid, trt,
+                           cens, C[[i]], shift, tau, node_list, learners, pb)
+  }
+  return(out)
+}
+
+recombine_ipw <- function(r) {
+  Reduce(rbind, Reduce(rbind, r)[, "natural"])
+}

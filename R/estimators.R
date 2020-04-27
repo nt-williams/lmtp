@@ -322,7 +322,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' # TO DO
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
-                     learners = NULL, progress_bar = TRUE) {
+                     learners = NULL, V = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -336,28 +336,41 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = NULL,
+    V = V,
     bounds = NULL
   )
 
   # propensity --------------------------------------------------------------
 
-  dens_ratio <- use_dens_ratio(
-    ratio = estimate_r(
-      data = meta$data,
-      trt = trt,
-      cens = cens,
-      C = estimate_c(meta$data, cens, outcome, meta$tau, meta$node_list, learners),
-      shift = shift,
-      tau = meta$tau,
-      node_list = meta$node_list,
-      learners = learners,
-      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
+  cens_rat <-
+    cf_cens(data,
+            meta$data,
+            V,
+            cens,
+            outcome,
+            meta$tau,
+            meta$node_list,
+            learners)
+
+  dens_ratio <-
+    use_dens_ratio(recombine_ipw(
+      cf_r(
+        meta$data,
+        shift,
+        V,
+        trt,
+        cens,
+        cens_rat,
+        meta$tau,
+        meta$node_list,
+        learners,
+        check_pb(progress_bar, meta$tau, "Estimating propensity")
+      )
     ),
-    tau = meta$tau,
-    n = meta$n,
-    max_tau = NULL,
-    what_estim = "ipw"
-  )
+    meta$tau,
+    meta$n,
+    NULL,
+    "ipw")
 
   # return estimates --------------------------------------------------------
 
