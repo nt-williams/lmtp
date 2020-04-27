@@ -1,12 +1,13 @@
 
 # engine for density ratio estimation by classification
-estimate_r <- function(data, trt, cens, C, shift, tau,
-                       node_list, learners = NULL, pb) {
+estimate_r <- function(training, validation, trt, cens, C,
+                       shift, tau, node_list, learners = NULL, pb) {
 
   # global setup
-  n <- nrow(data)
-  r <- list(natural = matrix(nrow = n, ncol = tau),
-            shifted = matrix(nrow = n, ncol = tau))
+  nt <- nrow(training)
+  nv <- nrow(validation)
+  r  <- list(natural = matrix(nrow = nv, ncol = tau),
+             shifted = matrix(nrow = nv, ncol = tau))
 
   if (!is.null(shift)) {
 
@@ -15,11 +16,15 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       progress_progress_bar(pb)
 
       # setup
-      shifted   <- shift_data(data, trt[[t]], shift)
-      d         <- prepare_r_engine(data, shifted, n)
-      i         <- create_censoring_indicators(data, cens, tau)$i
-      fit_task  <- initiate_sl3_task(subset(d, rep(i, 2)), "si", node_list[[t]], "binomial", "id")
-      pred_task <- suppressWarnings(initiate_sl3_task(d, "si", node_list[[t]], "binomial", "id"))
+      train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], shift), nt)
+      valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], shift), nt)
+
+      # create sl3 tasks for training and validation sets
+      fit_task  <-
+        initiate_sl3_task(subset(train_stck, rep(
+          create_censoring_indicators(training, cens, tau)$i, 2
+        )), "si", node_list[[t]], "binomial", "id")
+      pred_task <- suppressWarnings(initiate_sl3_task(valid_stck, "si", node_list[[t]], "binomial", "id"))
       ensemble  <- initiate_ensemble("binomial", learners)
 
       # run SL
@@ -28,8 +33,8 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
       # ratios
       pred           <- bound(predict_sl3(fit, pred_task), .Machine$double.eps)
       rat            <- pred / (1 - truncate(pred))
-      r$natural[, t] <- rat[d$si == 0] * C[, t]
-      r$shifted[, t] <- rat[d$si == 1] * C[, t]
+      r$natural[, t] <- rat[valid_stck$si == 0] * C[, t]
+      r$shifted[, t] <- rat[valid_stck$si == 1] * C[, t]
     }
 
   } else {
@@ -53,23 +58,25 @@ estimate_r <- function(data, trt, cens, C, shift, tau,
 }
 
 # engine for estimation of censoring mechanism
-estimate_c <- function(data, C, outcome, tau, node_list, learners) {
+estimate_c <- function(data, training, validation, C,
+                       outcome, tau, node_list, learners) {
 
   # global setup
-  cens <- check_censoring(data, C, outcome, tau)
+  cens <- check_censoring(data, validation, C, outcome, tau)
 
   if (all(is.na(cens))) {
     for (t in 1:tau) {
       # setup
-      fit_task <- suppressWarnings(initiate_sl3_task(data, C[[t]], node_list[[t]], "binomial", drop = TRUE))
-      ensemble <- initiate_ensemble("binomial", learners)
+      fit_task  <- suppressWarnings(initiate_sl3_task(training, C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      pred_task <- suppressWarnings(initiate_sl3_task(validation, C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      ensemble  <- initiate_ensemble("binomial", learners)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
 
       # probability of not being censored
       cens[, t] <- mean(data[, C[[t]]]) /
-        bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+        bound(predict_sl3(fit, pred_task), .Machine$double.eps)
     }
   }
 

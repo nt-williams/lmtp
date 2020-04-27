@@ -6,10 +6,10 @@ setup_cv <- function(data, V = 10) {
 
 get_folded_data <- function(data, folds) {
   out <- list()
-  for (i in 1:length(fold_index)) {
+  for (i in 1:length(folds)) {
     out[[i]] <- list()
-    out[[i]][["train"]] <- data[fold_index[[i]]$training_set, ]
-    out[[i]][["valid"]] <- data[fold_index[[i]]$validation_set, ]
+    out[[i]][["train"]] <- data[folds[[i]]$training_set, ]
+    out[[i]][["valid"]] <- data[folds[[i]]$validation_set, ]
   }
   return(out)
 }
