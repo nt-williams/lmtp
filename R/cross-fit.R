@@ -35,5 +35,19 @@ cf_r <- function(data, shift, V, trt, cens, C,
 }
 
 recombine_ipw <- function(r) {
-  Reduce(rbind, Reduce(rbind, r)[, "natural"])
+  return(Reduce(rbind, Reduce(rbind, r)[, "natural"]))
+}
+
+cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
+                   outcome_type, learners, m, pb) {
+
+  out <- list()
+  for (i in 1:V) {
+    out[[i]] <-
+      estimate_sub(data[[i]]$train, shifted[[i]]$train, shifted[[i]]$valid,
+                   outcome, node_list, C, tau, outcome_type,
+                   learners, m[[i]]$valid, pb)
+  }
+  return(Reduce(rbind, out))
+
 }

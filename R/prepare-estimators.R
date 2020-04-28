@@ -20,8 +20,12 @@ Meta <- R6::R6Class(
       self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)
-      self$m            <- cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[outcome]])
       folds             <- setup_cv(data, V = V)
+      self$m <-
+        get_folded_data(cbind(matrix(
+          nrow = nrow(data), ncol = length(nodes)
+        ), data[[outcome]]),
+        folds)
       self$data <-
         get_folded_data(
           fix_censoring_ind(

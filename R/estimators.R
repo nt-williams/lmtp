@@ -247,7 +247,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learners = NULL, progress_bar = TRUE) {
+                     bounds = NULL, learners = NULL, V = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -261,23 +261,15 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = match.arg(outcome_type),
+    V = V,
     bounds = bounds
   )
 
   # substitution ------------------------------------------------------------
 
-  estims <- estimate_sub(
-    data = meta$data,
-    shifted = meta$shifted_data,
-    outcome = "xyz",
-    node_list = meta$node_list,
-    C = cens,
-    tau = meta$tau,
-    outcome_type = meta$outcome_type,
-    learners = learners,
-    m = meta$m,
-    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
-  )
+  estims <- cf_sub(meta$data, meta$shifted_data, V, "xyz", meta$node_list,
+                   cens, meta$tau, meta$outcome_type, learners, meta$m,
+                   check_pb(progress_bar, meta$tau, "Estimating regression"))
 
   # return estimates --------------------------------------------------------
 

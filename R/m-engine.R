@@ -1,18 +1,19 @@
 
 # the engine for the initial estimator of m through super learner
-estimate_sub <- function(data, shifted, outcome, node_list, C,
-                         tau, outcome_type, learners = NULL,
-                         m, pb) {
+estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
+                         tau, outcome_type, learners = NULL, m, pb) {
 
   if (tau > 0) {
 
     # setup
-    i          <- create_censoring_indicators(data, C, tau)$i
-    j          <- create_censoring_indicators(data, C, tau)$j
+    i          <- create_censoring_indicators(training, C, tau)$i
+    js         <- create_censoring_indicators(shifted, C, tau)$j
+    jv         <- create_censoring_indicators(validation, C, tau)$j
     pseudo     <- paste0("m", tau)
-    fit_task   <- initiate_sl3_task(data[i, ], outcome, node_list[[tau]], outcome_type)
-    shift_task <- suppressWarnings(initiate_sl3_task(shifted[j, ], outcome, node_list[[tau]], outcome_type))
-    ensemble   <- initiate_ensemble(outcome_type, check_variation(data[i, ], outcome, learners))
+    fit_task   <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
+    shift_task <- suppressWarnings(initiate_sl3_task(shifted[js, ], outcome, node_list[[tau]], outcome_type))
+    valid_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], outcome, node_list[[tau]], outcome_type))
+    ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
     progress_progress_bar(pb)
@@ -20,15 +21,20 @@ estimate_sub <- function(data, shifted, outcome, node_list, C,
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
 
-    # predict on shifted data
-    m[j, tau]            <-
-      shifted[j, pseudo] <-
-      data[j, pseudo]    <-
+    # predict on shifted data for training
+    shifted[js, pseudo]    <-
+      training[js, pseudo] <-
       bound(predict_sl3(fit, shift_task))
 
+    # predict on validation shifted data
+    m[jv, tau]               <-
+      validation[jv, pseudo] <-
+      bound(predict_sl3(fit, valid_task))
+
     # recursion
-    estimate_sub(data = data,
+    estimate_sub(training = training,
                  shifted = shifted,
+                 validation = validation,
                  outcome = pseudo,
                  node_list = node_list,
                  C = C,
