@@ -10,6 +10,7 @@ Meta <- R6::R6Class(
     tau = NULL,
     outcome_type = NULL,
     bounds = NULL,
+    folds = NULL,
     initialize = function(data, trt, outcome, nodes, baseline, cens,
                           k, shift, outcome_type = NULL, V = 10, bounds = NULL) {
 
@@ -20,7 +21,7 @@ Meta <- R6::R6Class(
       self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)
-      folds             <- setup_cv(data, V = V)
+      self$folds        <- folds <- setup_cv(data, V = V)
       self$m <-
         get_folded_data(cbind(matrix(
           nrow = nrow(data), ncol = length(nodes)

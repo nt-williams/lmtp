@@ -359,6 +359,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     eta = list(
       r = dens_ratio,
       y = data[[outcome]],
+      folds = meta$folds,
       tau = meta$tau,
       shift = deparse(substitute((shift)))
     ))
