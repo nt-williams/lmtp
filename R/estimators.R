@@ -35,7 +35,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learners_outcome = NULL,
-                      learners_trt = NULL, progress_bar = TRUE) {
+                      learners_trt = NULL, V = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -49,46 +49,31 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = match.arg(outcome_type),
+    V = V,
     bounds = bounds
   )
 
   # propensity --------------------------------------------------------------
 
-  dens_ratio <- use_dens_ratio(
-    ratio = estimate_r(
-      data = meta$data,
-      trt = trt,
-      cens = cens,
-      C = estimate_c(meta$data, cens, outcome, meta$tau, meta$node_list, learners_trt),
-      shift = shift,
-      tau = meta$tau,
-      node_list = meta$node_list,
-      learners = learners_trt,
-      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
-    ),
-    tau = meta$tau,
-    n = meta$n,
-    max_tau = NULL,
-    what_estim = "tml"
+  cens_rat <- cf_cens(
+    data, meta$data, V, cens, outcome,
+    meta$tau, meta$node_list, learners_trt
+  )
+
+  dens_ratio <- ratio_tml(
+    cf_r(meta$data, shift, V, trt, cens, cens_rat,
+         meta$tau, meta$node_list, learners_trt,
+         check_pb(progress_bar, meta$tau, "Estimating propensity")),
+    V
   )
 
   # tmle --------------------------------------------------------------------
 
-  estims <- estimate_tmle(
-    data = meta$data,
-    shifted = meta$shifted_data,
-    outcome = "xyz",
-    node_list = meta$node_list,
-    C = cens,
-    tau = meta$tau,
-    max = meta$tau,
-    outcome_type = meta$outcome_type,
-    m_natural = meta$m,
-    m_shifted = meta$m,
-    r = dens_ratio,
-    learners = learners_outcome,
-    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
-  )
+  estims <-
+    cf_tmle(meta$data, meta$shifted_data, V, "xyz", meta$node_list,
+            cens, meta$tau, meta$max, meta$outcome_type, meta$m,
+            meta$m, dens_ratio, learners_outcome,
+            check_pb(progress_bar, meta$tau, "Estimating regression"))
 
   # return estimates --------------------------------------------------------
 
@@ -96,7 +81,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     estimator = "tml",
     eta = list(
       m = estims,
-      r = dens_ratio,
+      r = Reduce(rbind, lapply(dens_ratio, function(x) x[["valid"]])),
       tau = meta$tau,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -335,34 +320,37 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
   # propensity --------------------------------------------------------------
 
   cens_rat <-
-    cf_cens(data,
-            meta$data,
-            V,
-            cens,
-            outcome,
-            meta$tau,
-            meta$node_list,
-            learners)
+    cf_cens(
+      data,
+      meta$data,
+      V,
+      cens,
+      outcome,
+      meta$tau,
+      meta$node_list,
+      learners
+    )
 
   dens_ratio <-
-    use_dens_ratio(recombine_ipw(
-      cf_r(
-        meta$data,
-        shift,
-        V,
-        trt,
-        cens,
-        cens_rat,
-        meta$tau,
-        meta$node_list,
-        learners,
-        check_pb(progress_bar, meta$tau, "Estimating propensity")
-      )
-    ),
-    meta$tau,
-    meta$n,
-    NULL,
-    "ipw")
+    use_dens_ratio(
+      recombine_ipw(
+        cf_r(
+          meta$data,
+          shift,
+          V,
+          trt,
+          cens,
+          cens_rat,
+          meta$tau,
+          meta$node_list,
+          learners,
+          check_pb(progress_bar, meta$tau, "Estimating propensity")
+        )
+      ),
+      meta$tau,
+      meta$n,
+      NULL,
+      "ipw")
 
   # return estimates --------------------------------------------------------
 

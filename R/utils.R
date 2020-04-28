@@ -93,3 +93,8 @@ transform_sdr <- function(r, tau, max, shifted, natural) {
   out <- rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
   return(out)
 }
+
+recombine_ipw <- function(r) {
+  out <- lapply(r, function(x) x[["valid"]])
+  return(Reduce(rbind, Reduce(rbind, out)[, "natural"]))
+}

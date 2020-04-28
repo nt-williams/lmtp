@@ -6,12 +6,15 @@ estimate_r <- function(training, validation, trt, cens, C,
   # global setup
   nt <- nrow(training)
   nv <- nrow(validation)
-  r  <- list(natural = matrix(nrow = nv, ncol = tau),
+  rt <- list(natural = matrix(nrow = nt, ncol = tau),
+             shifted = matrix(nrow = nt, ncol = tau))
+  rv <- list(natural = matrix(nrow = nv, ncol = tau),
              shifted = matrix(nrow = nv, ncol = tau))
 
   if (!is.null(shift)) {
 
     for (t in 1:tau) {
+
       # progress bar
       progress_progress_bar(pb)
 
@@ -21,9 +24,10 @@ estimate_r <- function(training, validation, trt, cens, C,
 
       # create sl3 tasks for training and validation sets
       fit_task  <-
-        initiate_sl3_task(subset(train_stck, rep(
-          create_censoring_indicators(training, cens, tau)$i, 2
-        )), "si", node_list[[t]], "binomial", "id")
+        initiate_sl3_task(
+          subset(train_stck, rep(create_censoring_indicators(training, cens, tau)$i, 2)),
+          "si", node_list[[t]], "binomial", "id"
+        )
       pred_task <- suppressWarnings(initiate_sl3_task(valid_stck, "si", node_list[[t]], "binomial", "id"))
       ensemble  <- initiate_ensemble("binomial", learners)
 
@@ -31,12 +35,16 @@ estimate_r <- function(training, validation, trt, cens, C,
       fit <- run_ensemble(ensemble, fit_task)
 
       # ratios
-      pred           <- bound(predict_sl3(fit, pred_task), .Machine$double.eps)
-      rat            <- pred / (1 - truncate(pred))
-      r$natural[, t] <- rat[valid_stck$si == 0] * C[, t]
-      r$shifted[, t] <- rat[valid_stck$si == 1] * C[, t]
-    }
+      pred            <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+      rat             <- pred / (1 - truncate(pred))
+      rt$natural[, t] <- rat[train_stck$si == 0] * C$train[, t]
+      rt$shifted[, t] <- rat[train_stck$si == 1] * C$train[, t]
 
+      pred            <- bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      rat             <- pred / (1 - truncate(pred))
+      rv$natural[, t] <- rat[valid_stck$si == 0] * C$valid[, t]
+      rv$shifted[, t] <- rat[valid_stck$si == 1] * C$valid[, t]
+    }
   } else {
 
     for (t in 1:tau) {
@@ -44,17 +52,18 @@ estimate_r <- function(training, validation, trt, cens, C,
       progress_progress_bar(pb)
 
       # propensity
-      r$natural[, t] <- C[, t]
-      r$shifted[, t] <- C[, t]
+      rt$natural[, t] <- C$train[, t]
+      rt$shifted[, t] <- C$train[, t]
+      rv$natural[, t] <- C$valid[, t]
+      rv$shifted[, t] <- C$valid[, t]
     }
-
   }
 
-  r$natural <- check_extreme_ratio(r$natural)
-  r$shifted <- check_extreme_ratio(r$shifted)
+  out <- list(train = rt,
+              valid = rv)
 
   # returns
-  return(r)
+  return(out)
 }
 
 # engine for estimation of censoring mechanism
@@ -62,9 +71,9 @@ estimate_c <- function(data, training, validation, C,
                        outcome, tau, node_list, learners) {
 
   # global setup
-  cens <- check_censoring(data, validation, C, outcome, tau)
+  out <- check_censoring(data, training, validation, C, outcome, tau)
 
-  if (all(is.na(cens))) {
+  if (all(is.na(out$valid))) {
     for (t in 1:tau) {
       # setup
       fit_task  <- suppressWarnings(initiate_sl3_task(training, C[[t]], node_list[[t]], "binomial", drop = TRUE))
@@ -74,14 +83,14 @@ estimate_c <- function(data, training, validation, C,
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
 
-      # probability of not being censored
-      cens[, t] <- mean(data[, C[[t]]]) /
-        bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      # probability of not being censored training
+      out$train[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+      out$valid[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
     }
   }
 
   # returns
-  return(cens)
+  return(out)
 }
 
 use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
@@ -94,8 +103,22 @@ use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
   )
 }
 
-ratio_ite <- function(ratio, tau, n) {
-  out <- matrix(t(apply(ratio$natural, 1, cumprod)), nrow = n, ncol = tau)
+# ratio_ite <- function(ratio, tau, n) {
+#   out <- matrix(t(apply(ratio$natural, 1, cumprod)), nrow = n, ncol = tau)
+#   return(out)
+# }
+
+ratio_tml <- function(ratios, V) {
+  out <- list()
+  for (i in 1:V) {
+      out[[i]] <- list()
+      out[[i]]$train <- matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
+                               nrow = nrow(ratios[[i]]$train$natural),
+                               ncol = ncol(ratios[[i]]$train$natural))
+      out[[i]]$valid <- matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
+                               nrow = nrow(ratios[[i]]$valid$natural),
+                               ncol = ncol(ratios[[i]]$valid$natural))
+  }
   return(out)
 }
 

@@ -31,11 +31,8 @@ cf_r <- function(data, shift, V, trt, cens, C,
     out[[i]] <- estimate_r(data[[i]]$train, data[[i]]$valid, trt,
                            cens, C[[i]], shift, tau, node_list, learners, pb)
   }
-  return(out)
-}
 
-recombine_ipw <- function(r) {
-  return(Reduce(rbind, Reduce(rbind, r)[, "natural"]))
+  return(out)
 }
 
 cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
@@ -51,3 +48,21 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
   return(Reduce(rbind, out))
 
 }
+
+cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, max,
+                    outcome_type, m_natural, m_shifted, r, learners, pb) {
+
+  m <- list()
+  for (i in 1:V) {
+    m[[i]] <-
+      estimate_tmle(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid,
+                    shifted[[i]]$valid, outcome, node_list, C, tau, max,
+                    outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
+                    learners, pb)
+  }
+
+  out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
+              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
+  return(out)
+}
+
