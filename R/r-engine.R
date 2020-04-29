@@ -108,7 +108,7 @@ use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
 #   return(out)
 # }
 
-ratio_tml <- function(ratios, V) {
+ratio_dr <- function(ratios, V) {
   out <- list()
   for (i in 1:V) {
       out[[i]] <- list()

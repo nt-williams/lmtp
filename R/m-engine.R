@@ -48,7 +48,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 
 # the engine for the TML estimator
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
-                          outcome, node_list, C, tau, max, outcome_type,
+                          outcome, node_list, C, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb) {
 
   if (tau > 0) {
@@ -97,7 +97,6 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                   node_list = node_list,
                   C = C,
                   tau = tau - 1,
-                  max = max,
                   outcome_type = "continuous",
                   m_natural = m_natural,
                   m_shifted = m_shifted,

@@ -49,14 +49,14 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
 
 }
 
-cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, max,
+cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau,
                     outcome_type, m_natural, m_shifted, r, learners, pb) {
 
   m <- list()
   for (i in 1:V) {
     m[[i]] <-
       estimate_tmle(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid,
-                    shifted[[i]]$valid, outcome, node_list, C, tau, max,
+                    shifted[[i]]$valid, outcome, node_list, C, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
                     learners, pb)
   }
@@ -66,3 +66,18 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, max,
   return(out)
 }
 
+cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau,
+                   outcome_type, m_natural, m_shifted, r, learners, pb) {
+  m <- list()
+  for (i in 1:V) {
+    m[[i]] <-
+      estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
+                   shifted[[i]]$valid,outcome, node_list, C, tau, tau,
+                   outcome_type, learners,m_natural[[i]], m_shifted[[i]],
+                   r[[i]], pb)
+  }
+
+  out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
+              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
+  return(out)
+}

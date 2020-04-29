@@ -98,3 +98,7 @@ recombine_ipw <- function(r) {
   out <- lapply(r, function(x) x[["valid"]])
   return(Reduce(rbind, Reduce(rbind, out)[, "natural"]))
 }
+
+recombine_dens_ratio <- function(r) {
+  Reduce(rbind, lapply(r, function(x) x[["valid"]]))
+}
