@@ -93,21 +93,6 @@ estimate_c <- function(data, training, validation, C,
   return(out)
 }
 
-use_dens_ratio <- function(ratio, tau, n, max_tau, what_estim) {
-  switch(
-    what_estim,
-    "tml" = ratio_ite(ratio = ratio, tau = tau, n = n),
-    "ipw" = ratio_ipw(ratio = ratio, tau = tau, n = n),
-    "eif" = ratio_ite(ratio = ratio, tau = tau, n = n),
-    "sdr" = ratio_sdr(ratio = ratio, tau = tau, max_tau = max_tau)
-  )
-}
-
-# ratio_ite <- function(ratio, tau, n) {
-#   out <- matrix(t(apply(ratio$natural, 1, cumprod)), nrow = n, ncol = tau)
-#   return(out)
-# }
-
 ratio_dr <- function(ratios, V) {
   out <- list()
   for (i in 1:V) {
