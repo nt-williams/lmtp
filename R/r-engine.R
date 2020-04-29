@@ -97,23 +97,27 @@ ratio_dr <- function(ratios, V) {
   out <- list()
   for (i in 1:V) {
       out[[i]] <- list()
-      out[[i]]$train <- matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
-                               nrow = nrow(ratios[[i]]$train$natural),
-                               ncol = ncol(ratios[[i]]$train$natural))
-      out[[i]]$valid <- matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
-                               nrow = nrow(ratios[[i]]$valid$natural),
-                               ncol = ncol(ratios[[i]]$valid$natural))
+      out[[i]]$train <- check_extreme_ratio(
+        matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
+               nrow = nrow(ratios[[i]]$train$natural),
+               ncol = ncol(ratios[[i]]$train$natural))
+      )
+      out[[i]]$valid <- check_extreme_ratio(
+        matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
+               nrow = nrow(ratios[[i]]$valid$natural),
+               ncol = ncol(ratios[[i]]$valid$natural))
+      )
   }
   return(out)
 }
 
 ratio_ipw <- function(ratio) {
   out <- matrix(t(apply(ratio, 1, cumprod)), nrow = nrow(ratio), ncol = ncol(ratio))
-  return(out)
+  return(check_extreme_ratio(out))
 }
 
 ratio_sdr <- function(ratio, tau, max_tau) {
   out <- t(apply(ratio$natural[, (tau + 1):max_tau, drop = FALSE], 1, cumprod))
   if (tau == max_tau - 1) out <- t(out)
-  return(out)
+  return(check_extreme_ratio(out))
 }
