@@ -301,38 +301,18 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  cens_rat <-
-    cf_cens(
-      data,
-      meta$data,
-      folds,
-      cens,
-      outcome,
-      meta$tau,
-      meta$node_list,
-      learners
-    )
+  cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
+                      meta$tau, meta$node_list, learners)
 
   dens_ratio <-
-    use_dens_ratio(
+    ratio_ipw(
       recombine_ipw(
-        cf_r(
-          meta$data,
-          shift,
-          folds,
-          trt,
-          cens,
-          cens_rat,
-          meta$tau,
-          meta$node_list,
-          learners,
-          check_pb(progress_bar, meta$tau*folds, "Estimating")
+        cf_r(meta$data, shift, folds, trt, cens, cens_rat,
+             meta$tau, meta$node_list, learners,
+             check_pb(progress_bar, meta$tau*folds, "Estimating")
         )
-      ),
-      meta$tau,
-      meta$n,
-      NULL,
-      "ipw")
+      )
+    )
 
   # return estimates --------------------------------------------------------
 

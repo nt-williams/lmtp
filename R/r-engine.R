@@ -122,8 +122,8 @@ ratio_dr <- function(ratios, V) {
   return(out)
 }
 
-ratio_ipw <- function(ratio, tau, n) {
-  out <- matrix(t(apply(ratio, 1, cumprod)), nrow = n, ncol = tau)
+ratio_ipw <- function(ratio) {
+  out <- matrix(t(apply(ratio, 1, cumprod)), nrow = nrow(ratio), ncol = ncol(ratio))
   return(out)
 }
 
