@@ -28,7 +28,8 @@ Imports:
     utils,
     progress,
     R6,
-    generics
+    generics,
+    origami
 Remotes: 
     tlverse/sl3
 Suggests: 
