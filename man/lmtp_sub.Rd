@@ -16,6 +16,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
   learners = NULL,
+  folds = 10,
   progress_bar = TRUE
 )
 }
@@ -50,6 +51,8 @@ the bounds will be taken as the minimum and maximum of the observed data.}
 
 \item{learners}{An \code{sl3} learner stack for estimation of the outcome
 regression.}
+
+\item{folds}{The number of folds to be used for cross-validation.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }

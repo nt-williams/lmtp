@@ -17,6 +17,7 @@ lmtp_sdr(
   bounds = NULL,
   learners_outcome = NULL,
   learners_trt = NULL,
+  folds = 10,
   progress_bar = TRUE
 )
 }
@@ -55,6 +56,8 @@ regression.}
 
 \item{learners_trt}{An \code{sl3} learner stack for estimation of the exposure
 mechanism.}
+
+\item{folds}{The number of folds to be used for cross-validation.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }

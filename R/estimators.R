@@ -24,6 +24,7 @@
 #'  regression.
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
+#' @param folds The number of folds to be used for cross-validation.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
@@ -35,7 +36,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learners_outcome = NULL,
-                      learners_trt = NULL, progress_bar = TRUE) {
+                      learners_trt = NULL, folds = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -49,46 +50,31 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = match.arg(outcome_type),
+    V = folds,
     bounds = bounds
   )
 
+  pb <- check_pb(progress_bar, meta$tau*folds*2, "Estimating")
+
   # propensity --------------------------------------------------------------
 
-  dens_ratio <- use_dens_ratio(
-    ratio = estimate_r(
-      data = meta$data,
-      trt = trt,
-      cens = cens,
-      C = estimate_c(meta$data, cens, outcome, meta$tau, meta$node_list, learners_trt),
-      shift = shift,
-      tau = meta$tau,
-      node_list = meta$node_list,
-      learners = learners_trt,
-      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
-    ),
-    tau = meta$tau,
-    n = meta$n,
-    max_tau = NULL,
-    what_estim = "tml"
+  cens_rat <- cf_cens(
+    data, meta$data, folds, cens, outcome,
+    meta$tau, meta$node_list, learners_trt
+  )
+
+  dens_ratio <- ratio_dr(
+    cf_r(meta$data, shift, folds, trt, cens, cens_rat,
+         meta$tau, meta$node_list, learners_trt, pb),
+    folds
   )
 
   # tmle --------------------------------------------------------------------
 
-  estims <- estimate_tmle(
-    data = meta$data,
-    shifted = meta$shifted_data,
-    outcome = "xyz",
-    node_list = meta$node_list,
-    C = cens,
-    tau = meta$tau,
-    max = meta$tau,
-    outcome_type = meta$outcome_type,
-    m_natural = meta$m,
-    m_shifted = meta$m,
-    r = dens_ratio,
-    learners = learners_outcome,
-    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
-  )
+  estims <-
+    cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+            cens, meta$tau, meta$outcome_type, meta$m,
+            meta$m, dens_ratio, learners_outcome, pb)
 
   # return estimates --------------------------------------------------------
 
@@ -96,7 +82,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     estimator = "tml",
     eta = list(
       m = estims,
-      r = dens_ratio,
+      r = recombine_dens_ratio(dens_ratio),
       tau = meta$tau,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -131,6 +117,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  regression.
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
+#' @param folds The number of folds to be used for cross-validation.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
@@ -142,7 +129,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners_outcome = NULL,
-                     learners_trt = NULL, progress_bar = TRUE) {
+                     learners_trt = NULL, folds = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -156,48 +143,26 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = match.arg(outcome_type),
+    V = folds,
     bounds = bounds
   )
 
+  pb <- check_pb(progress_bar, meta$tau*folds*2, "Estimating")
+
   # propensity --------------------------------------------------------------
 
-  raw_ratio <- estimate_r(
-    data = meta$data,
-    trt = trt,
-    cens = cens,
-    C = estimate_c(meta$data, cens, outcome, meta$tau, meta$node_list, learners_trt),
-    shift = shift,
-    tau = meta$tau,
-    node_list = meta$node_list,
-    learners = learners_trt,
-    pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
-  )
+  cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
+                      meta$tau, meta$node_list, learners_trt)
 
-  dens_ratio <- use_dens_ratio(
-    ratio = raw_ratio,
-    tau = meta$tau,
-    n = meta$n,
-    max_tau = NULL,
-    what_estim = "eif"
-  )
+  raw_ratio <- cf_r(meta$data, shift, folds, trt, cens, cens_rat,
+                    meta$tau, meta$node_list, learners_trt, pb)
 
   # sdr ---------------------------------------------------------------------
 
-  estims <- estimate_sdr(
-    data = meta$data,
-    shifted = meta$shifted_data,
-    outcome = "xyz",
-    node_list = meta$node_list,
-    C = cens,
-    tau = meta$tau,
-    max = meta$tau,
-    outcome_type = meta$outcome_type,
-    learners = learners_outcome,
-    m_shifted = meta$m,
-    m_natural = meta$m,
-    r = raw_ratio,
-    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
-  )
+  estims <-
+    cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+           cens, meta$tau, meta$outcome_type, meta$m, meta$m, raw_ratio,
+           learners_outcome, pb)
 
   # return estimates --------------------------------------------------------
 
@@ -205,7 +170,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     estimator = "sdr",
     eta = list(
       m = estims,
-      r = dens_ratio,
+      r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
       tau = meta$tau,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -237,6 +202,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #' @param learners An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
+#' @param folds The number of folds to be used for cross-validation.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
@@ -247,7 +213,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learners = NULL, progress_bar = TRUE) {
+                     bounds = NULL, learners = NULL, folds = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -261,23 +227,15 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = match.arg(outcome_type),
+    V = folds,
     bounds = bounds
   )
 
   # substitution ------------------------------------------------------------
 
-  estims <- estimate_sub(
-    data = meta$data,
-    shifted = meta$shifted_data,
-    outcome = "xyz",
-    node_list = meta$node_list,
-    C = cens,
-    tau = meta$tau,
-    outcome_type = meta$outcome_type,
-    learners = learners,
-    m = meta$m,
-    pb = check_pb(progress_bar, meta$tau, "Estimating regression")
-  )
+  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+                   cens, meta$tau, meta$outcome_type, learners, meta$m,
+                   check_pb(progress_bar, meta$tau*folds, "Estimating"))
 
   # return estimates --------------------------------------------------------
 
@@ -313,6 +271,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param learners An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
+#' @param folds The number of folds to be used for cross-validation.
 #' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
@@ -322,7 +281,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' # TO DO
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
-                     learners = NULL, progress_bar = TRUE) {
+                     learners = NULL, folds = 10, progress_bar = TRUE) {
 
   # setup -------------------------------------------------------------------
 
@@ -336,28 +295,24 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     k = k,
     shift = shift,
     outcome_type = NULL,
+    V = folds,
     bounds = NULL
   )
 
   # propensity --------------------------------------------------------------
 
-  dens_ratio <- use_dens_ratio(
-    ratio = estimate_r(
-      data = meta$data,
-      trt = trt,
-      cens = cens,
-      C = estimate_c(meta$data, cens, outcome, meta$tau, meta$node_list, learners),
-      shift = shift,
-      tau = meta$tau,
-      node_list = meta$node_list,
-      learners = learners,
-      pb = check_pb(progress_bar, meta$tau, "Estimating propensity")
-    ),
-    tau = meta$tau,
-    n = meta$n,
-    max_tau = NULL,
-    what_estim = "ipw"
-  )
+  cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
+                      meta$tau, meta$node_list, learners)
+
+  dens_ratio <-
+    ratio_ipw(
+      recombine_ipw(
+        cf_r(meta$data, shift, folds, trt, cens, cens_rat,
+             meta$tau, meta$node_list, learners,
+             check_pb(progress_bar, meta$tau*folds, "Estimating")
+        )
+      )
+    )
 
   # return estimates --------------------------------------------------------
 
@@ -366,6 +321,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     eta = list(
       r = dens_ratio,
       y = data[[outcome]],
+      folds = meta$folds,
       tau = meta$tau,
       shift = deparse(substitute((shift)))
     ))

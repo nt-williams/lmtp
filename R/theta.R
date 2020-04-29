@@ -34,7 +34,8 @@ theta_sub <- function(eta) {
 
 theta_ipw <- function(eta) {
   # calculate estimates
-  theta <- mean(eta$r[, eta$tau]*eta$y, na.rm = T)
+  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
+  theta <- mean(eta$r[, eta$tau]*eta$y[i], na.rm = T)
 
   # returns
   out <- list(estimator = "IPW",
@@ -50,8 +51,8 @@ theta_ipw <- function(eta) {
 }
 
 eif <- function(r, tau, shifted, natural) {
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
+  natural[is.na(natural)] <- 0
+  shifted[is.na(shifted)] <- 0
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
   out <- rowSums(r * m, na.rm = TRUE) + shifted[, 1]
   return(out)

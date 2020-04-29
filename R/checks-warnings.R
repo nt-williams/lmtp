@@ -27,7 +27,7 @@ check_pb <- function(pb, t, status) {
   if (isFALSE(pb) | t == 1) {
     pb <- NULL
   } else {
-    pb <- initiate_progress_bar(status, tau = t)
+    pb <- initiate_progress_bar(status, total = t)
   }
   return(pb)
 }
@@ -42,22 +42,27 @@ check_sd <- function(x, learner_stack) {
   return(out)
 }
 
-check_censoring <- function(data, C, Y, tau) {
+check_censoring <- function(data, training, validation, C, Y, tau) {
 
   if (any(is.na(data[[Y]])) & is.null(C)) {
     stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
   } else if (!is.null(C)) {
     check <- TRUE
-  } else if (is.null(C)) {
+  } else if (is.null(C) | !any(is.na(data[[Y]]))) {
     check <- FALSE
   }
 
-  out <- matrix(nrow = nrow(data), ncol = tau)
+  ct <- matrix(nrow = nrow(training), ncol = tau)
+  cv <- matrix(nrow = nrow(validation), ncol = tau)
   if (isFALSE(check)) {
     for (t in 1:tau) {
-      out[, t] <- rep(1, nrow(data))
+      ct[, t] <- rep(1, nrow(training))
+      cv[, t] <- rep(1, nrow(validation))
     }
   }
+
+  out <- list(train = ct,
+              valid = cv)
 
   return(out)
 }

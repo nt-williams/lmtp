@@ -10,34 +10,45 @@ Meta <- R6::R6Class(
     tau = NULL,
     outcome_type = NULL,
     bounds = NULL,
+    folds = NULL,
     initialize = function(data, trt, outcome, nodes, baseline, cens,
-                          k, shift, outcome_type = NULL, bounds = NULL) {
+                          k, shift, outcome_type = NULL, V = 10, bounds = NULL) {
 
       check_scaled_conflict(data)
 
-      self$n <- nrow(data)
-      self$tau <- length(nodes)
-      self$node_list <- create_node_list(trt, nodes, baseline, k)
+      self$n            <- nrow(data)
+      self$tau          <- length(nodes)
+      self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
-      self$bounds <- y_bounds(data[[outcome]], outcome_type, bounds)
-      self$m <- cbind(matrix(nrow = nrow(data), ncol = length(nodes)), data[[outcome]])
+      self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)
+      self$folds        <- folds <- setup_cv(data, V = V)
+      self$m <-
+        get_folded_data(cbind(matrix(
+          nrow = nrow(data), ncol = length(nodes)
+        ), data[[outcome]]),
+        folds)
       self$data <-
-        fix_censoring_ind(
-          add_scaled_y(data,
-                       scale_y_continuous(data[[outcome]],
-                                          y_bounds(data[[outcome]],
-                                                   outcome_type,
-                                                   bounds))),
-          cens, length(nodes)
+        get_folded_data(
+          fix_censoring_ind(
+            add_scaled_y(data,
+                         scale_y_continuous(data[[outcome]],
+                                            y_bounds(data[[outcome]],
+                                                     outcome_type,
+                                                     bounds))),
+            cens, length(nodes)
+          ), folds
         )
+
       self$shifted_data <-
-        fix_censoring_ind(
-          add_scaled_y(shift_data(data, trt, shift),
-                       scale_y_continuous(data[[outcome]],
-                                          y_bounds(data[[outcome]],
-                                                   outcome_type,
-                                                   bounds))),
-          cens, length(nodes)
+        get_folded_data(
+          fix_censoring_ind(
+            add_scaled_y(shift_data(data, trt, shift),
+                         scale_y_continuous(data[[outcome]],
+                                            y_bounds(data[[outcome]],
+                                                     outcome_type,
+                                                     bounds))),
+            cens, length(nodes)
+          ), folds
         )
     }
   )
