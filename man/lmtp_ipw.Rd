@@ -14,6 +14,7 @@ lmtp_ipw(
   k = Inf,
   shift,
   learners = NULL,
+  folds = 10,
   progress_bar = TRUE
 )
 }
@@ -43,6 +44,8 @@ all time points.}
 
 \item{learners}{An \code{sl3} learner stack for estimation of the
 exposure mechanism.}
+
+\item{folds}{The number of folds to be used for cross-validation.}
 
 \item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
