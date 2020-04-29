@@ -27,7 +27,7 @@ check_pb <- function(pb, t, status) {
   if (isFALSE(pb) | t == 1) {
     pb <- NULL
   } else {
-    pb <- initiate_progress_bar(status, tau = t)
+    pb <- initiate_progress_bar(status, total = t)
   }
   return(pb)
 }

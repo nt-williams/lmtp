@@ -31,13 +31,13 @@ print.lmtp_contrast <- function(x, ...) {
 }
 
 # progress bar
-initiate_progress_bar <- function(section, tau) {
+initiate_progress_bar <- function(section, total) {
 
   pb <- progress::progress_bar$new(
     format = paste(" ",
                    cli::col_white(section),
                    cli::col_white("[:bar] :percent :elapsed")),
-    total = tau,
+    total = total,
     clear = FALSE,
     show_after = 0.05
   )

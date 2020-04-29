@@ -53,6 +53,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     bounds = bounds
   )
 
+  pb <- check_pb(progress_bar, meta$tau*V*2, "Estimating")
+
   # propensity --------------------------------------------------------------
 
   cens_rat <- cf_cens(
@@ -62,8 +64,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   dens_ratio <- ratio_tml(
     cf_r(meta$data, shift, V, trt, cens, cens_rat,
-         meta$tau, meta$node_list, learners_trt,
-         check_pb(progress_bar, meta$tau, "Estimating propensity")),
+         meta$tau, meta$node_list, learners_trt, pb),
     V
   )
 
@@ -72,8 +73,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
   estims <-
     cf_tmle(meta$data, meta$shifted_data, V, "xyz", meta$node_list,
             cens, meta$tau, meta$max, meta$outcome_type, meta$m,
-            meta$m, dens_ratio, learners_outcome,
-            check_pb(progress_bar, meta$tau, "Estimating regression"))
+            meta$m, dens_ratio, learners_outcome, pb)
 
   # return estimates --------------------------------------------------------
 
@@ -254,7 +254,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 
   estims <- cf_sub(meta$data, meta$shifted_data, V, "xyz", meta$node_list,
                    cens, meta$tau, meta$outcome_type, learners, meta$m,
-                   check_pb(progress_bar, meta$tau, "Estimating regression"))
+                   check_pb(progress_bar, meta$tau*V, "Estimating"))
 
   # return estimates --------------------------------------------------------
 
@@ -344,7 +344,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
           meta$tau,
           meta$node_list,
           learners,
-          check_pb(progress_bar, meta$tau, "Estimating propensity")
+          check_pb(progress_bar, meta$tau*V, "Estimating")
         )
       ),
       meta$tau,
