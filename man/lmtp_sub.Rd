@@ -16,8 +16,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
   learners = NULL,
-  folds = 10,
-  progress_bar = TRUE
+  folds = 10
 )
 }
 \arguments{
@@ -53,8 +52,6 @@ the bounds will be taken as the minimum and maximum of the observed data.}
 regression.}
 
 \item{folds}{The number of folds to be used for cross-validation.}
-
-\item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO

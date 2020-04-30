@@ -31,7 +31,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
     ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
-    progress_progress_bar(pb)
+    pb()
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
@@ -99,7 +99,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
-    progress_progress_bar(pb)
+    pb()
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
@@ -176,7 +176,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     pseudo <- paste0("m", tau)
 
     # progress bar
-    progress_progress_bar(pb)
+    pb()
 
     if (tau == max) {
 

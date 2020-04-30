@@ -29,24 +29,3 @@ print.lmtp_contrast <- function(x, ...) {
   cli::cli_text(cat("      "), "{.strong p-value}: {format.pval(x$p, eps = 0.00001)}")
   cat("\n")
 }
-
-# progress bar
-initiate_progress_bar <- function(section, total) {
-
-  pb <- progress::progress_bar$new(
-    format = paste(" ", section, "[:bar] :percent :elapsed"),
-    total = total,
-    clear = FALSE,
-    show_after = 0.05
-  )
-
-  return(pb)
-}
-
-progress_progress_bar <- function(pb) {
-  if (is.null(pb)) {
-    on.exit()
-  } else {
-    pb$tick()
-  }
-}

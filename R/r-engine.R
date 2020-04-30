@@ -30,7 +30,7 @@ estimate_r <- function(training, validation, trt, cens, C,
     for (t in 1:tau) {
 
       # progress bar
-      progress_progress_bar(pb)
+      pb()
 
       # setup
       train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], shift), nt)
@@ -63,7 +63,7 @@ estimate_r <- function(training, validation, trt, cens, C,
 
     for (t in 1:tau) {
       # progress bar
-      progress_progress_bar(pb)
+      # pb()
 
       # propensity
       rt$natural[, t] <- C$train[, t]
