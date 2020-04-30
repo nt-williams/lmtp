@@ -7,25 +7,25 @@ cens <- c("C1", "C2")
 truth <- 0.88
 
 sub <-
-  lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
-           cens, k = 1, shift = function(x) x + 0.5,
-           outcome_type = "binomial",
-           learners = sl3::make_learner(sl3::Lrnr_glm),
-           folds = 2, progress_bar = FALSE)
+    lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
+             cens, k = 1, shift = function(x) x + 0.5,
+             outcome_type = "binomial",
+             learners = sl3::make_learner(sl3::Lrnr_glm),
+             folds = 2, progress_bar = FALSE)
 
 ipw <-
   lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = function(x) x + 0.5,
            learners = sl3::make_learner(sl3::Lrnr_glm),
-           folds = 2, progress_bar = FALSE)
+           folds = 2, progress_bar = T)
 
 tmle <-
-  lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
-            cens, k = 0, shift = function(x) x + 0.5,
-            outcome_type = "binomial",
-            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-            learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-            folds = 2, progress_bar = FALSE)
+    lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
+              cens, k = 0, shift = function(x) x + 0.5,
+              outcome_type = "binomial",
+              learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+              learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+              folds = 2, progress_bar = FALSE)
 
 sdr <-
   lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,

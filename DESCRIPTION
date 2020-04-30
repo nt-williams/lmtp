@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies
-Version: 0.0.4.9000
+Version: 0.0.5.9000
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -29,7 +29,8 @@ Imports:
     progress,
     R6,
     generics,
-    origami
+    origami,
+    future (>= 1.17.0)
 Remotes: 
     tlverse/sl3
 Suggests: 
