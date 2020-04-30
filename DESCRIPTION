@@ -30,7 +30,7 @@ Imports:
     R6,
     generics,
     origami,
-    future
+    future (>= 1.17.0)
 Remotes: 
     tlverse/sl3
 Suggests: 

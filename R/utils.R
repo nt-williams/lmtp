@@ -102,3 +102,7 @@ recombine_ipw <- function(r) {
 recombine_dens_ratio <- function(r) {
   Reduce(rbind, lapply(r, function(x) x[["valid"]]))
 }
+
+get_future_result <- function(out) {
+  return(lapply(lapply(out, function(x) x$result), function(x) x$value))
+}
