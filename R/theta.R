@@ -60,6 +60,8 @@ eif <- function(r, tau, shifted, natural) {
 
 theta_tml <- function(eta) {
 
+  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
+
   # calculate eif
   inflnce <- eif(r = eta$r, tau = eta$tau,
                  shifted = eta$m$shifted, natural = eta$m$natural)
@@ -82,7 +84,7 @@ theta_tml <- function(eta) {
               standard_error = se,
               low = ci_low,
               high = ci_high,
-              eif = inflnce,
+              eif = inflnce[order(i)],
               shift = eta$shift)
 
   class(out) <- "lmtp"
@@ -91,6 +93,8 @@ theta_tml <- function(eta) {
 }
 
 theta_sdr <- function(eta) {
+
+  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
 
   # calculate eif
   inflnce <- eif(r = eta$r, tau = eta$tau,
@@ -115,7 +119,7 @@ theta_sdr <- function(eta) {
               standard_error = se,
               low = ci_low,
               high = ci_high,
-              eif = inflnce,
+              eif = inflnce[order(i)],
               shift = eta$shift)
 
   class(out) <- "lmtp"
