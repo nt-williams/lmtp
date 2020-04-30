@@ -1,5 +1,20 @@
 
-# the engine for the initial estimator of m through super learner
+#' Substitution Estimator Engine
+
+#' @param training Unshifted training data.
+#' @param shifted Shifted training data.
+#' @param validation Shifted validation data.
+#' @param outcome Name of outcome variable.
+#' @param node_list Node list created by \code{create_node_list()}.
+#' @param C Names of censoring indicators.
+#' @param tau Max time point.
+#' @param outcome_type Outcome variable type.
+#' @param learners An \code{sl3} learner stack.
+#' @param m Empty matrices to contain predictions.
+#' @param pb Progress bar.
+#'
+#' @keywords internal
+#' @export
 estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
                          tau, outcome_type, learners = NULL, m, pb) {
 
@@ -46,7 +61,25 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
   }
 }
 
-# the engine for the TML estimator
+#' TML Estimator Engine
+#'
+#' @param training Unshifted training data.
+#' @param shifted Shifted training data.
+#' @param validation Unshifted validation data.
+#' @param validation_shifted Shifted validation data.
+#' @param outcome Name of outcome variable.
+#' @param node_list Node list created by \code{create_node_list()}.
+#' @param C Names of censoring indicators.
+#' @param tau Max time point.
+#' @param outcome_type Outcome variable type.
+#' @param m_natural Empty matrices to contain predictions.
+#' @param m_shifted Empty matrices to contain predictions.
+#' @param r Density ratios.
+#' @param learners An \code{sl3} learner stack.
+#' @param pb Progress bar.
+#'
+#' @keywords internal
+#' @export
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb) {
@@ -113,7 +146,26 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
 }
 
-# the engine for the sdr estimator
+#' SDR Estimator Engine
+#'
+#' @param training Unshifted training data.
+#' @param shifted Shifted training data.
+#' @param validation Unshifted validation data.
+#' @param validation_shifted Shifted validation data.
+#' @param outcome Name of outcome variable.
+#' @param node_list Node list created by \code{create_node_list()}.
+#' @param C Names of censoring indicators.
+#' @param tau Current time point.
+#' @param max Max time point.
+#' @param outcome_type Outcome variable type.
+#' @param learners An \code{sl3} learner stack.
+#' @param m_natural Empty matrices to contain predictions.
+#' @param m_shifted Empty matrices to contain predictions.
+#' @param r Density ratios.
+#' @param pb Progress bar.
+#'
+#' @keywords internal
+#' @export
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb) {

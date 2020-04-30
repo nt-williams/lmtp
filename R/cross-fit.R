@@ -22,7 +22,7 @@ cf_cens <- function(data, folded, V, C, outcome, tau, node_list, learners) {
                  C, outcome, tau, node_list, learners)
       }, packages = "lmtp")
   }
-  out <- get_future_result(out)
+  out <- future::values(out)
   return(out)
 }
 
@@ -33,10 +33,10 @@ cf_r <- function(data, shift, V, trt, cens, C,
   for (i in 1:V) {
     out[[i]] <- future::future({
       estimate_r(data[[i]]$train, data[[i]]$valid, trt,
-                           cens, C[[i]], shift, tau, node_list, learners, pb)
+                 cens, C[[i]], shift, tau, node_list, learners, pb)
     }, packages = "lmtp")
   }
-  out <- get_future_result(out)
+  out <- future::values(out)
   return(out)
 }
 
@@ -51,7 +51,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
                    learners, m[[i]]$valid, pb)
     }, packages = "lmtp")
   }
-  out <- get_future_result(out)
+  out <- future::values(out)
   return(Reduce(rbind, out))
 
 }
@@ -68,7 +68,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau,
                     learners, pb)
     }, packages = "lmtp")
   }
-  m <- get_future_result(m)
+  m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
               shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
   return(out)
@@ -85,7 +85,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau,
                    r[[i]], pb)
     }, packages = "lmtp")
   }
-  m <- get_future_result(m)
+  m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
               shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
   return(out)
