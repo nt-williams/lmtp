@@ -23,15 +23,6 @@ no_sl3 <- function() {
   cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
 }
 
-check_pb <- function(pb, t, status) {
-  if (isFALSE(pb) | t == 1) {
-    pb <- NULL
-  } else {
-    pb <- initiate_progress_bar(status, total = t)
-  }
-  return(pb)
-}
-
 check_sd <- function(x, learner_stack) {
   if (sd(x) > .Machine$double.eps) {
     out <- learner_stack

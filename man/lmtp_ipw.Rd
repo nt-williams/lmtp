@@ -14,8 +14,7 @@ lmtp_ipw(
   k = Inf,
   shift,
   learners = NULL,
-  folds = 10,
-  progress_bar = TRUE
+  folds = 10
 )
 }
 \arguments{
@@ -46,8 +45,6 @@ all time points.}
 exposure mechanism.}
 
 \item{folds}{The number of folds to be used for cross-validation.}
-
-\item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO

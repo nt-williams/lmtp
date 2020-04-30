@@ -17,8 +17,7 @@ lmtp_sdr(
   bounds = NULL,
   learners_outcome = NULL,
   learners_trt = NULL,
-  folds = 10,
-  progress_bar = TRUE
+  folds = 10
 )
 }
 \arguments{
@@ -58,8 +57,6 @@ regression.}
 mechanism.}
 
 \item{folds}{The number of folds to be used for cross-validation.}
-
-\item{progress_bar}{Should a progress bar be displayed? Default is \code{TRUE}.}
 }
 \value{
 TODO

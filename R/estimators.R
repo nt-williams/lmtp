@@ -25,7 +25,6 @@
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param folds The number of folds to be used for cross-validation.
-#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -36,7 +35,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learners_outcome = NULL,
-                      learners_trt = NULL, folds = 10, progress_bar = TRUE) {
+                      learners_trt = NULL, folds = 10) {
 
   # setup -------------------------------------------------------------------
 
@@ -54,7 +53,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     bounds = bounds
   )
 
-  pb <- check_pb(progress_bar, meta$tau*folds*2, "Estimating")
+  pb <- progressr::progressor(meta$tau*folds*2)
 
   # propensity --------------------------------------------------------------
 
@@ -119,7 +118,6 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param folds The number of folds to be used for cross-validation.
-#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -130,7 +128,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners_outcome = NULL,
-                     learners_trt = NULL, folds = 10, progress_bar = TRUE) {
+                     learners_trt = NULL, folds = 10) {
 
   # setup -------------------------------------------------------------------
 
@@ -148,7 +146,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     bounds = bounds
   )
 
-  pb <- check_pb(progress_bar, meta$tau*folds*2, "Estimating")
+  pb <- progressr::progressor(meta$tau*folds*2)
 
   # propensity --------------------------------------------------------------
 
@@ -205,7 +203,6 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
 #' @param folds The number of folds to be used for cross-validation.
-#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -215,7 +212,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learners = NULL, folds = 10, progress_bar = TRUE) {
+                     bounds = NULL, learners = NULL, folds = 10) {
 
   # setup -------------------------------------------------------------------
 
@@ -233,11 +230,12 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     bounds = bounds
   )
 
+  pb <- progressr::progressor(meta$tau*folds)
+
   # substitution ------------------------------------------------------------
 
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-                   cens, meta$tau, meta$outcome_type, learners, meta$m,
-                   check_pb(progress_bar, meta$tau*folds, "Estimating"))
+                   cens, meta$tau, meta$outcome_type, learners, meta$m, pb)
 
   # return estimates --------------------------------------------------------
 
@@ -274,7 +272,6 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
 #' @param folds The number of folds to be used for cross-validation.
-#' @param progress_bar Should a progress bar be displayed? Default is \code{TRUE}.
 #'
 #' @return TODO
 #' @export
@@ -282,8 +279,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @examples
 #' # TO DO
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
-                     cens = NULL, k = Inf, shift,
-                     learners = NULL, folds = 10, progress_bar = TRUE) {
+                     cens = NULL, k = Inf, shift, learners = NULL,
+                     folds = 10) {
 
   # setup -------------------------------------------------------------------
 
@@ -301,6 +298,8 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     bounds = NULL
   )
 
+  pb <- progressr::progressor(meta$tau*folds)
+
   # propensity --------------------------------------------------------------
 
   cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
@@ -310,8 +309,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     ratio_ipw(
       recombine_ipw(
         cf_r(meta$data, shift, folds, trt, cens, cens_rat,
-             meta$tau, meta$node_list, learners,
-             check_pb(progress_bar, meta$tau*folds, "Estimating")
+             meta$tau, meta$node_list, learners, pb
         )
       )
     )
