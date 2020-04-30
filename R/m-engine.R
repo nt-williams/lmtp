@@ -1,5 +1,6 @@
 
 # the engine for the initial estimator of m through super learner
+#' @export
 estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
                          tau, outcome_type, learners = NULL, m, pb) {
 
@@ -47,6 +48,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 }
 
 # the engine for the TML estimator
+#' @export
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb) {
@@ -114,6 +116,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 }
 
 # the engine for the sdr estimator
+#' @export
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb) {

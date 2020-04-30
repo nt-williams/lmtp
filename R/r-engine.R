@@ -1,5 +1,6 @@
 
 # engine for density ratio estimation by classification
+#' @export
 estimate_r <- function(training, validation, trt, cens, C,
                        shift, tau, node_list, learners = NULL, pb) {
 
@@ -67,6 +68,7 @@ estimate_r <- function(training, validation, trt, cens, C,
 }
 
 # engine for estimation of censoring mechanism
+#' @export
 estimate_c <- function(data, training, validation, C,
                        outcome, tau, node_list, learners) {
 
