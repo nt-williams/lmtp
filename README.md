@@ -42,6 +42,10 @@ machine learning for estimation.
 devtools::install_github("nt-williams/lmtp")
 ```
 
+For an in-depth look at the package’s functionality, please consult the
+accompying
+[vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
+
 ## Example
 
 ``` r
