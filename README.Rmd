@@ -23,10 +23,43 @@ knitr::opts_chunk$set(
 
 > Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies
 
-# Installation
+[Nick Williams](https://nicholastwilliams.com) and [Ivan Diaz](https://idiaz.xyz)
 
-The development version can be installed from GitHub with: 
+---
+
+## Scope
+
+### Installation
+
+`lmtp` can be installed from GitHub with: 
 
 ```r
 devtools::install_github("nt-williams/lmtp")
 ```
+
+### Minimal example
+
+### Features
+
+| Feature                         |    Status   |
+|---------------------------------|:-----------:|
+| Point treatment                 |   &check;   |
+| Longitudinal treatment          |   &check;   |
+| Modified treatment intervention |   &check;   |
+| Static intervention             |   &check;   |
+| Dynamic intervention            | In progress |
+| Continuous treatment            |   &check;   |
+| Binary treatment                | In progress |
+| Continuous outcome              |   &check;   |
+| Binary outcome                  |   &check;   |
+| Censored outcome                |   &check;   |
+| Super learner                   |   &check;   |
+| Clustered data                  | In progress |
+| Parallel processing             |   &check;   |
+| Progress bars                   |   &check;   |
+
+---
+
+### References
+
+

@@ -15,10 +15,42 @@ license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://openso
 > Non-parametric Causal Effects Based on Longitudinal Modified Treatment
 > Policies
 
-# Installation
+[Nick Williams](https://nicholastwilliams.com) and [Ivan
+Diaz](https://idiaz.xyz)
 
-The development version can be installed from GitHub with:
+-----
+
+## Scope
+
+### Installation
+
+`lmtp` can be installed from GitHub with:
 
 ``` r
 devtools::install_github("nt-williams/lmtp")
 ```
+
+### Minimal example
+
+### Features
+
+| Feature                         |   Status    |
+| ------------------------------- | :---------: |
+| Point treatment                 |      ✓      |
+| Longitudinal treatment          |      ✓      |
+| Modified treatment intervention |      ✓      |
+| Static intervention             |      ✓      |
+| Dynamic intervention            | In progress |
+| Continuous treatment            |      ✓      |
+| Binary treatment                | In progress |
+| Continuous outcome              |      ✓      |
+| Binary outcome                  |      ✓      |
+| Censored outcome                |      ✓      |
+| Super learner                   |      ✓      |
+| Clustered data                  | In progress |
+| Parallel processing             |      ✓      |
+| Progress bars                   |      ✓      |
+
+-----
+
+### References
