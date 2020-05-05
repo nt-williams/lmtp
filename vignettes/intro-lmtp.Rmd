@@ -1,5 +1,10 @@
 ---
 title: "Using LMTP"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{try}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -94,7 +99,10 @@ How these nodes are specified depends on the specific data generating mechanism 
 
 This is best understood through demonstration. The following DAG specifies 1 baseline node, `W`, 3 treatment nodes, `A1`, `A2`, `A3`, 3 time-varying nodes, `L1`, `L2`, `L3`, and an outcome, `Y`. 
 
-![](dag-1.png)
+```{r out.width="80%", echo=FALSE}
+knitr::include_graphics("dag-1.png")
+```
+
 According to the DAG, `Y` is directly affected by all nodes in the model, `k = Inf` would be the correct instructions for creating this node list. 
 
 ```{r}
@@ -109,7 +117,9 @@ create_node_list(a, nodes, baseline = NULL, k = Inf)
 
 What if we modify the DAG so that `Y` is only directly affected by `A2`, `L2`, and `W`. We could say this data generating mechanism is now semi-Markov and the correct `k` would be `k = 1`. 
 
-![](dag-2.png)
+```{r out.width="80%", echo=FALSE}
+knitr::include_graphics("dag-2.png")
+```
 
 ```{r}
 a <- c("A1", "A2", "A3")

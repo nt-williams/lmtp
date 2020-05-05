@@ -37,4 +37,6 @@ Suggests:
     testthat (>= 2.1.0),
     covr,
     tibble,
-    rmarkdown
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
