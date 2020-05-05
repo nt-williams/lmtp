@@ -22,7 +22,7 @@ Diaz](https://idiaz.xyz)
 
 ## Scope
 
-### Installation
+## Installation
 
 `lmtp` can be installed from GitHub with:
 
@@ -30,7 +30,7 @@ Diaz](https://idiaz.xyz)
 devtools::install_github("nt-williams/lmtp")
 ```
 
-### Minimal example
+## Example
 
 ``` r
 library(lmtp)
@@ -97,7 +97,7 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 #>         95% CI: (0.2863, 0.3315)
 ```
 
-### Features
+## Features
 
 | Feature                         |   Status    |
 | ------------------------------- | :---------: |
@@ -115,7 +115,5 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 | Clustered data                  | In progress |
 | Parallel processing             |      ✓      |
 | Progress bars                   |      ✓      |
-
------
 
 ### References
