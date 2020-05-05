@@ -22,6 +22,18 @@ Diaz](https://idiaz.xyz)
 
 ## Scope
 
+`lmtp` is an R package that provides an estimation framework for the
+casual effects of longitudinal modified treatment policies described in
+\[INSERT IVAN PAPER\]. Two primary estimators are supported, a Targeted
+Maximum Likelihood (TML) estimator and a Sequentially Doubly Robust
+(SDR) estimator (a substitution and an IPW estimator are provided for
+the sake of being thorough but their use is recommended against in favor
+of the TML and SDR estimators). In addition to longitudinal effects,
+point treatments are naturally supported and both binary and continuous
+outcome (both with censoring) are allowed. `lmtp` is built atop the
+[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
+machine learning for estimation.
+
 ## Installation
 
 `lmtp` can be installed from GitHub with:
