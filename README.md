@@ -12,8 +12,8 @@ Status](https://travis-ci.com/nt-williams/lmtp.svg?token=DA4a53nWMx6q9LisKdRD&br
 license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
-> Non-parametric Causal Effects Based on Longitudinal Modified Treatment
-> Policies
+> Cross-Validated, Non-parametric Causal Effects Based on Longitudinal
+> Modified Treatment Policies
 
 [Nick Williams](https://nicholastwilliams.com) and [Ivan
 Diaz](https://idiaz.xyz)
