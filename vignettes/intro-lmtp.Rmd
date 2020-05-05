@@ -144,32 +144,6 @@ create_node_list(a, nodes, baseline = baseline, k = 1)
 
 ### Binary treatment
 
-```{r}
-data("iptwExWide", package = "twang")
-head(iptwExWide)
-```
-
-```{r, eval = F}
-a <- c("tx1", "tx2", "tx3")
-tv <- list(c("gender", "age", "use0"), 
-           c("use1"), 
-           c("use2"))
-y <- "outcome"
-d <- function(x) 1
-
-lrnrs <- make_learner_stack(Lrnr_glm, Lrnr_mean)
-
-lmtp_tmle(iptwExWide, a, y, tv, shift = d, outcome_type = "continuous", 
-          learners_outcome = lrnrs, learners_trt = lrnrs)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (d)
-#> 
-#> Population intervention effect
-#>       Estimate: -0.2881
-#>     Std. error: 0.0724
-#>         95% CI: (-0.43, -0.1462)
-```
-
 ## Extra features
 
 > The goal of this section is to identify extra features supported by `lmtp` that can improve user experience. 
