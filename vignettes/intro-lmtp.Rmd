@@ -1,0 +1,193 @@
+---
+title: "Using LMTP"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+<style type="text/css">
+.table {
+
+    width: 50%;
+    margin: 0 auto;  
+
+}
+</style>
+
+__Authors__: [Nick Williams](https://nicholastwilliams.com) and [Ivan Diaz](https://idiaz.xyz)  
+__Updated__: `r Sys.Date()` 
+
+This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the casual effects of longitudinal modified treatment policies using ensemble machine learning. However, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary treatments in both point treatment and time-varying situations. 
+
+```{r}
+library(lmtp)
+```
+
+## Functions & parameters
+
+> The goal of this section is to introduce the main `lmtp` functions and develop a basic understanding of required and useful function parameters.
+
+### Required vs. optional
+
+The following table describes `lmtp` parameter requirements across the provided estimators: 
+
+| Parameter        |   TMLE  |   SDR   | Substitution |   IPW   | Required |
+|------------------|:-------:|:-------:|:------------:|:-------:|:--------:|
+| data             | &check; | &check; |    &check;   | &check; |  &check; |
+| trt              | &check; | &check; |    &check;   | &check; |  &check; |
+| outcome          | &check; | &check; |    &check;   | &check; |  &check; |
+| nodes            | &check; | &check; |    &check;   | &check; |  &check; |
+| baseline         | &check; | &check; |    &check;   | &check; |          |
+| cens             | &check; | &check; |    &check;   | &check; |          |
+| k                | &check; | &check; |    &check;   | &check; |          |
+| shift            | &check; | &check; |    &check;   | &check; |  &check; |
+| outcome_type     | &check; | &check; |    &check;   |         |          |
+| bounds           | &check; | &check; |    &check;   |         |          |
+| learners         |         |         |    &check;   | &check; |          |
+| learners_outcome | &check; | &check; |              |         |          |
+| learners_trt     | &check; | &check; |              |         |          |
+| folds            | &check; | &check; |    &check;   | &check; |          |
+
+<br>
+
+While many parameters aren't required, the default options will likely give subpar (or incorrect) results. Special attention should be given to the `k` parameter which is fully described in the [Node lists & Markov processes] section.
+
+### sl3
+
+`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the estimators supplied by `lmtp` users must create and then pass to `lmtp` estimators `sl3` learner stacks.  `sl3` learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
+
+The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
+
+```{r, eval = F}
+library(sl3)
+
+# using learner defaults
+lrnrs <- make_learner_stack(Lrnr_mean, 
+                            Lrnr_glm, 
+                            Lrnr_ranger)
+
+# specifying learner parameters
+lrnrs <- 
+  make_learner_stack(
+    Lrnr_mean, 
+    Lrnr_glm
+    list(Lrnr_ranger, 
+         num.trees = 1000)
+  )
+```
+
+The outcome type should guide users on selecting the appropriate learners for a stack when specifying `learners` with `lmtp_sub()` or `learners_outcome` with `lmtp_tmle()` and `lmtp_sdr()`. Regardless of whether an exposure/treatment is continuous or binary, the exposure mechanism is estimated through classification, thus users should only use `sl3` learners that can handle a binary outcome when specifying `learners` with `lmtp_ipw()` or `learners_trt` with `lmtp_tmle()` or `lmtp_sdr()`. 
+
+The ensemble meta-learner is always set to `Lrnr_nnls`. If learner stacks aren't provided, `lmtp` estimators default to an ensemble only made of `Lrnr_mean` and `Lrnr_glm`. 
+
+**It is recommended the user reads through the `sl3` [documentation](https://tlverse.org/sl3/index.html) to fully utilize `lmtp`.**
+
+### Node lists & Markov processes
+
+Estimating causal effects in longitudinal settings requires paying special attention to the time-ordering and relationship among covariates. In the `lmtp` framework, there are 5 types of variable nodes: treatment, outcome, baseline, time-varying, and censoring. Treatment and outcome nodes are self-explanatory, baseline nodes are variables that are observed pre-treatment allocation and don't change (i.e., age at treatment assignment), time-varying nodes are variables that (you guessed it...) change over time, censoring nodes indicate if an observation is observed (or censored) at the next time-point. 
+
+How these nodes are specified depends on the specific data generating mechanism and should be pre-specified based on a conceptual model (i.e, a DAG). How these nodes are used by `lmtp` estimators is specified by what we're calling a node list. The user doesn't explicitly create the node list themself, instead the user supplies the ingredients and instructions on how to combine. These node list *cooking* instructions are specified through the `k` parameter. 
+
+This is best understood through demonstration. The following DAG specifies 1 baseline node, `W`, 3 treatment nodes, `A1`, `A2`, `A3`, 3 time-varying nodes, `L1`, `L2`, `L3`, and an outcome, `Y`. 
+
+![](dag-1.png)
+According to the DAG, `Y` is directly affected by all nodes in the model, `k = Inf` would be the correct instructions for creating this node list. 
+
+```{r}
+a <- c("A1", "A2", "A3")
+nodes <- list(c("W", "L1"), 
+              c("L2"), 
+              c("L3"))
+
+# we can make sure our specification is correct by checking create_node_list()
+create_node_list(a, nodes, baseline = NULL, k = Inf)
+```
+
+What if we modify the DAG so that `Y` is only directly affected by `A2`, `L2`, and `W`. We could say this data generating mechanism is now semi-Markov and the correct `k` would be `k = 1`. 
+
+![](dag-2.png)
+
+```{r}
+a <- c("A1", "A2", "A3")
+baseline <- c("W")
+nodes <- list(c("L1"), 
+              c("L2"), 
+              c("L3"))
+
+# again checking or specification
+create_node_list(a, nodes, baseline = baseline, k = 1)
+```
+
+## Causal effects
+
+> The goal of this section is to identify how to estimate different causal effects in `lmtp`.
+
+### Traditional 
+
+### Modified treatment policies
+
+### Censored outcomes
+
+### Binary treatment
+
+```{r}
+data("iptwExWide", package = "twang")
+head(iptwExWide)
+```
+
+```{r, eval = F}
+a <- c("tx1", "tx2", "tx3")
+tv <- list(c("gender", "age", "use0"), 
+           c("use1"), 
+           c("use2"))
+y <- "outcome"
+d <- function(x) 1
+
+lrnrs <- make_learner_stack(Lrnr_glm, Lrnr_mean)
+
+lmtp_tmle(iptwExWide, a, y, tv, shift = d, outcome_type = "continuous", 
+          learners_outcome = lrnrs, learners_trt = lrnrs)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (d)
+#> 
+#> Population intervention effect
+#>       Estimate: -0.2881
+#>     Std. error: 0.0724
+#>         95% CI: (-0.43, -0.1462)
+```
+
+## Extra features
+
+> The goal of this section is to identify extra features supported by `lmtp` that can improve user experience. 
+
+### Tidy results
+
+`lmtp` automatically provides a `tidy` method as described in the [`broom`](https://cran.r-project.org/web/packages/broom/index.html) package: 
+
+```{r, eval = F}
+tidy()
+```
+
+### Parallel processing with future
+
+Computation time can quickly increase in situations with lots of time points, complex ensemble learners, and large datasets. In response, `lmtp` provides support for parallel processing using the [`future`](https://cran.r-project.org/web/packages/future/index.html) package. The simplest way to use `lmtp` estimators in parallel is set `plan(mulitprocess)`: 
+
+We recommend consulting the `future` [documentation](https://cran.r-project.org/web/packages/future/future.pdf) for more information.
+
+### Progress bars with progressr
+
+In the presence of long computation time, a lack of user feedback can become very frustrating. To address this, `lmtp` supports the use of progress bars during computation through the [`progressr`](https://cran.r-project.org/web/packages/progressr/index.html) package.
+
+```{r, eval = F}
+library(progressr)
+
+with_progress({
+  fit <- lmtp_tmle()
+})
+```
+
+We recommend consulting the `progressr` [documentation](https://cran.r-project.org/web/packages/progressr/progressr.pdf) for more information. 
