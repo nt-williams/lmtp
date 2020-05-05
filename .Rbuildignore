@@ -6,3 +6,4 @@
 ^\.travis\.yml$
 ^\.github$
 ^vignettes/articles$
+^vignettes/intro-lmtp.html$
