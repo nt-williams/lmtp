@@ -4,7 +4,7 @@
 \name{sim_t4}
 \alias{sim_t4}
 \title{Simulated longitudinal data}
-\format{A data frame with 1000 rows and 10 variables:
+\format{A data frame with 5000 rows and 10 variables:
 \describe{
 \item{ID}{observation ID}
 \item{L_1}{Time varying covariate time 1}
