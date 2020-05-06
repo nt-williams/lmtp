@@ -16,7 +16,7 @@
 #' @keywords internal
 #' @export
 estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
-                         tau, outcome_type, learners = NULL, m, pb) {
+                         tau, outcome_type, learners = NULL, m, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -35,6 +35,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
+    sl_weights[tau, ] <- extract_sl_weights(fit)
 
     # predict on shifted data for training
     training[js, pseudo] <- bound(predict_sl3(fit, shift_task))
@@ -53,11 +54,14 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
                  outcome_type = "continuous",
                  learners,
                  m = m,
-                 pb = pb)
+                 pb = pb,
+                 sl_weights = sl_weights)
 
   } else {
+    out <- list(m = m,
+                sl_weights = sl_weights)
     # returns
-    return(m)
+    return(out)
   }
 }
 

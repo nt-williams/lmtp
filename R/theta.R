@@ -25,7 +25,8 @@ theta_sub <- function(eta) {
               standard_error = NA_real_,
               low = NA_real_,
               high = NA_real_,
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_m = eta$weights_m)
 
   class(out) <- "lmtp"
 

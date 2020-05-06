@@ -246,8 +246,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     V = folds,
     bounds = bounds,
     bound = bound,
-    count_learners_outcome = length(learners_outcome),
-    count_learners_trt = length(learners_trt)
+    count_lrnrs_outcome = count_lrnrs(learners),
+    count_lrnrs_trt = 0
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -255,17 +255,18 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
   # substitution ------------------------------------------------------------
 
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-                   cens, meta$tau, meta$outcome_type, learners, meta$m, pb)
+                   cens, meta$tau, meta$outcome_type, learners, meta$m, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
     estimator = "sub",
     eta = list(
-      m = estims,
+      m = estims$m,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
-      shift = deparse(substitute((shift)))
+      shift = deparse(substitute((shift))),
+      weights_m = pluck_weights("m", estims)
     ))
 
   return(out)

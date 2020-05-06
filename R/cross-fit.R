@@ -45,7 +45,7 @@ cf_r <- function(data, shift, V, trt, cens, C, tau,
 }
 
 cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
-                   outcome_type, learners, m, pb) {
+                   outcome_type, learners, m, pb, weights_m) {
   fopts <- options("lmtp.bound")
   out <- list()
   for (i in 1:V) {
@@ -53,11 +53,13 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
       options(fopts)
       estimate_sub(data[[i]]$train, shifted[[i]]$train, shifted[[i]]$valid,
                    outcome, node_list, C, tau, outcome_type,
-                   learners, m[[i]]$valid, pb)
+                   learners, m[[i]]$valid, pb, weights_m[[i]])
     }, packages = "lmtp")
   }
   out <- future::values(out)
-  return(Reduce(rbind, out))
+  out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
+              sl_weights = lapply(out, function(x) x[["sl_weights"]]))
+  return(out)
 
 }
 
