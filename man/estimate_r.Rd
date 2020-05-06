@@ -14,7 +14,8 @@ estimate_r(
   tau,
   node_list,
   learners = NULL,
-  pb
+  pb,
+  sl_weights
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ estimate_r(
 \item{learners}{An \code{sl3} learner stack.}
 
 \item{pb}{Progress bar.}
+
+\item{sl_weights}{Empty matrices to contain super learner weights.}
 }
 \description{
 Density Ratio Engine

@@ -11,6 +11,7 @@
 #' @param node_list Node list created by \code{create_node_list()}.
 #' @param learners An \code{sl3} learner stack.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
@@ -91,6 +92,7 @@ estimate_r <- function(training, validation, trt, cens, C, shift,
 #' @param outcome Name of outcome node.
 #' @param node_list Node list created by \code{create_node_list()}.
 #' @param learners An \code{sl3} learner stack.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export

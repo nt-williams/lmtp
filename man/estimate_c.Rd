@@ -4,7 +4,17 @@
 \alias{estimate_c}
 \title{Censoring Mechanism Engine}
 \usage{
-estimate_c(data, training, validation, C, outcome, tau, node_list, learners)
+estimate_c(
+  data,
+  training,
+  validation,
+  C,
+  outcome,
+  tau,
+  node_list,
+  learners,
+  sl_weights
+)
 }
 \arguments{
 \item{data}{Full data set.}
@@ -20,6 +30,8 @@ estimate_c(data, training, validation, C, outcome, tau, node_list, learners)
 \item{node_list}{Node list created by \code{create_node_list()}.}
 
 \item{learners}{An \code{sl3} learner stack.}
+
+\item{sl_weights}{Empty matrices to contain super learner weights.}
 }
 \description{
 Censoring Mechanism Engine

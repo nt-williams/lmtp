@@ -15,7 +15,8 @@ estimate_sub(
   outcome_type,
   learners = NULL,
   m,
-  pb
+  pb,
+  sl_weights
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ estimate_sub(
 \item{m}{Empty matrices to contain predictions.}
 
 \item{pb}{Progress bar.}
+
+\item{sl_weights}{Empty matrices to contain super learner weights.}
 }
 \description{
 Substitution Estimator Engine

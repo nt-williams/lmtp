@@ -12,6 +12,7 @@
 #' @param learners An \code{sl3} learner stack.
 #' @param m Empty matrices to contain predictions.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
@@ -81,6 +82,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 #' @param r Density ratios.
 #' @param learners An \code{sl3} learner stack.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
@@ -170,6 +172,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 #' @param m_shifted Empty matrices to contain predictions.
 #' @param r Density ratios.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
