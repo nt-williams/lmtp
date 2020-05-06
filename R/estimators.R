@@ -18,14 +18,15 @@
 #' @param shift A function that specifies how tratment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
-#'   the bounds will be taken as the minimum and maximum of the observed data.
-#'   Ignored if outcome type is binary.
+#'  the bounds will be taken as the minimum and maximum of the observed data.
+#'  Ignored if outcome type is binary.
 #' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param folds The number of folds to be used for cross-validation.
-#'
+#' @param bound Determines that maximum and minimum values (scaled) predictions
+#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @return TODO
 #' @export
 #'
@@ -35,7 +36,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learners_outcome = NULL,
-                      learners_trt = NULL, folds = 10) {
+                      learners_trt = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -50,7 +51,9 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     shift = shift,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    bounds = bounds
+    bounds = bounds,
+    bound = bound,
+    trunc = trunc
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -118,6 +121,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
 #'  mechanism.
 #' @param folds The number of folds to be used for cross-validation.
+#' @param bound Determines that maximum and minimum values (scaled) predictions
+#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
 #' @return TODO
 #' @export
@@ -128,7 +133,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners_outcome = NULL,
-                     learners_trt = NULL, folds = 10) {
+                     learners_trt = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -143,7 +148,9 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     shift = shift,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    bounds = bounds
+    bounds = bounds,
+    bound = bound,
+    trunc = trunc
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -203,6 +210,8 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners An \code{sl3} learner stack for estimation of the outcome
 #'  regression.
 #' @param folds The number of folds to be used for cross-validation.
+#' @param bound Determines that maximum and minimum values (scaled) predictions
+#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
 #' @return TODO
 #' @export
@@ -212,7 +221,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
-                     bounds = NULL, learners = NULL, folds = 10) {
+                     bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -227,7 +236,9 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     shift = shift,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    bounds = bounds
+    bounds = bounds,
+    bound = bound,
+    trunc = trunc
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -272,6 +283,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param learners An \code{sl3} learner stack for estimation of the
 #'  exposure mechanism.
 #' @param folds The number of folds to be used for cross-validation.
+#' @param bound Determines that maximum and minimum values (scaled) predictions
+#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
 #' @return TODO
 #' @export
@@ -280,7 +293,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' # TO DO
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift, learners = NULL,
-                     folds = 10) {
+                     folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -295,7 +308,9 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     shift = shift,
     outcome_type = NULL,
     V = folds,
-    bounds = NULL
+    bounds = NULL,
+    bound = bound,
+    trunc = trunc
   )
 
   pb <- progressr::progressor(meta$tau*folds)
