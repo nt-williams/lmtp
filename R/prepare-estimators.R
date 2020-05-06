@@ -11,9 +11,12 @@ Meta <- R6::R6Class(
     outcome_type = NULL,
     bounds = NULL,
     folds = NULL,
+    weights_m = NULL,
+    weights_r = NULL,
+    weights_c = NULL,
     initialize = function(data, trt, outcome, nodes, baseline, cens, k,
                           shift, outcome_type = NULL, V = 10, bounds = NULL,
-                          bound = NULL) {
+                          bound = NULL, count_learners_outcome, count_learners_trt) {
 
       check_scaled_conflict(data)
 
@@ -55,6 +58,11 @@ Meta <- R6::R6Class(
             cens, length(nodes)
           ), folds
         )
+
+      self$weights_m <- create_lrnr_matrix(V, length(nodes), count_lrnrs_outcome)
+      self$weights_r   <-
+        self$weights_c <-
+        create_lrnr_matrix(V, length(nodes), count_lrnrs_trt)
     }
   )
 )
