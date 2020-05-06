@@ -32,6 +32,7 @@ While not possible to cover everything, this document should equip users of `lmt
 
 ```{r}
 library(lmtp)
+library(sl3)
 ```
 
 ## Functions & parameters
@@ -158,8 +159,16 @@ Censoring nodes are discussed in the [Censored outcomes] section.
 
 `lmtp` automatically provides a `tidy` method as described in the [`broom`](https://cran.r-project.org/web/packages/broom/index.html) package: 
 
-```{r, eval = F}
-tidy()
+```{r tidy}
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+lrnrs <- make_learner_stack(Lrnr_glm)
+
+fit <- lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d, 
+                 learners_outcome = lrnrs, learners_trt = lrnrs, folds = 2)
+
+tidy(fit)
 ```
 
 ### Parallel processing with future
@@ -203,7 +212,7 @@ In the presence of long computation time, a lack of user feedback can become ver
 library(progressr)
 
 with_progress({
-  fit <- lmtp_tmle()
+  fit <- lmtp_tmle(...)
 })
 ```
 
