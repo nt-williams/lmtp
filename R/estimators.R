@@ -154,26 +154,26 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     V = folds,
     bounds = bounds,
     bound = bound,
-    count_learners_outcome = length(learners_outcome),
-    count_learners_trt = length(learners_trt)
+    count_lrnrs_outcome = count_lrnrs(learners_outcome),
+    count_lrnrs_trt = count_lrnrs(learners_trt)
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
   # propensity --------------------------------------------------------------
 
-  cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
-                      meta$tau, meta$node_list, learners_trt)
+  cens_ratio <- cf_cens(data, meta$data, folds, cens, outcome, meta$tau,
+                        meta$node_list, learners_trt, meta$weights_c)
 
-  raw_ratio <- cf_r(meta$data, shift, folds, trt, cens, cens_rat,
-                    meta$tau, meta$node_list, learners_trt, pb)
+  raw_ratio <- cf_r(meta$data, shift, folds, trt, cens, cens_ratio, meta$tau,
+                    meta$node_list, learners_trt, pb, meta$weights_r)
 
   # sdr ---------------------------------------------------------------------
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
            cens, meta$tau, meta$outcome_type, meta$m, meta$m, raw_ratio,
-           learners_outcome, pb)
+           learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 
@@ -186,7 +186,10 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
       folds = meta$folds,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
-      shift = deparse(substitute((shift)))
+      shift = deparse(substitute((shift))),
+      weights_m = pluck_weights("m", estims),
+      weights_r = pluck_weights("r", raw_ratio),
+      weights_c = pluck_weights("r", cens_ratio)
     ))
 
   return(out)

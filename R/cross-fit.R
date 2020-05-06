@@ -82,8 +82,8 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
   return(out)
 }
 
-cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau,
-                   outcome_type, m_natural, m_shifted, r, learners, pb) {
+cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
+                   m_natural, m_shifted, r, learners, pb, weights_m) {
 
   fopts <- options("lmtp.bound")
   m <- list()
@@ -93,11 +93,12 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau,
       estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
                    shifted[[i]]$valid,outcome, node_list, C, tau, tau,
                    outcome_type, learners,m_natural[[i]], m_shifted[[i]],
-                   r[[i]], pb)
+                   r[[i]], pb, weights_m[[i]])
     }, packages = "lmtp")
   }
   m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
-              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
+              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])),
+              sl_weights = lapply(m, function(x) x[["sl_weights"]]))
   return(out)
 }

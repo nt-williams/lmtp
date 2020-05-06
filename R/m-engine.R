@@ -171,7 +171,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 #' @export
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb) {
+                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -196,6 +196,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[tau, ] <- extract_sl_weights(fit)
 
       # predict on training data
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -231,6 +232,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[tau, ] <- extract_sl_weights(fit)
 
       # predictions
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -255,11 +257,13 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                  m_shifted = m_shifted,
                  m_natural = m_natural,
                  r = r,
-                 pb = pb)
+                 pb = pb,
+                 sl_weights = sl_weights)
   } else {
     # returns
     out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid)
+                shifted = m_shifted$valid,
+                sl_weights = sl_weights)
 
     return(out)
   }
