@@ -30,10 +30,6 @@ bound <- function(x, p = getOption("lmtp.bound")) {
   pmax(pmin(x, 1 - p), p)
 }
 
-truncate <- function(x, p = getOption("lmtp.trunc")) {
-  pmin(x, p)
-}
-
 scale_y_continuous <- function(y, bounds) {
   out <- (y - bounds[1]) / (bounds[2] - bounds[1])
   if (is.null(bounds)) {

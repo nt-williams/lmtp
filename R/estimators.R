@@ -52,8 +52,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    trunc = trunc
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -149,8 +148,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    trunc = trunc
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -237,8 +235,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    trunc = trunc
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -309,8 +306,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
-    bound = bound,
-    trunc = trunc
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
