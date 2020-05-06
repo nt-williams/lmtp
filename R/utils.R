@@ -123,3 +123,17 @@ create_lrnr_matrix <- function(folds, tau, lrnrs) {
 
   return(out)
 }
+
+extract_sl_weights <- function(fit) {
+  fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$coefficients
+}
+
+count_lrnrs <- function(lrnr) {
+  length(lapply(lrnr$params$learners, function(x) x$name))
+}
+
+pluck_weights <- function(type, x) {
+  switch(type,
+         "m" = x$sl_weights,
+         "r" = lapply(x, function(x) x$sl_weights))
+}

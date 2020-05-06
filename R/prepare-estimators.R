@@ -16,7 +16,7 @@ Meta <- R6::R6Class(
     weights_c = NULL,
     initialize = function(data, trt, outcome, nodes, baseline, cens, k,
                           shift, outcome_type = NULL, V = 10, bounds = NULL,
-                          bound = NULL, count_learners_outcome, count_learners_trt) {
+                          bound = NULL, count_lrnrs_outcome, count_lrnrs_trt) {
 
       check_scaled_conflict(data)
 

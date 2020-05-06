@@ -14,8 +14,8 @@
 #'
 #' @keywords internal
 #' @export
-estimate_r <- function(training, validation, trt, cens, C,
-                       shift, tau, node_list, learners = NULL, pb) {
+estimate_r <- function(training, validation, trt, cens, C, shift,
+                       tau, node_list, learners = NULL, pb, sl_weights) {
 
   # global setup
   nt <- nrow(training)
@@ -47,6 +47,7 @@ estimate_r <- function(training, validation, trt, cens, C,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[t, ] <- extract_sl_weights(fit)
 
       # ratios
       pred            <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
@@ -74,7 +75,8 @@ estimate_r <- function(training, validation, trt, cens, C,
   }
 
   out <- list(train = rt,
-              valid = rv)
+              valid = rv,
+              sl_weights = sl_weights)
 
   # returns
   return(out)
@@ -92,8 +94,8 @@ estimate_r <- function(training, validation, trt, cens, C,
 #'
 #' @keywords internal
 #' @export
-estimate_c <- function(data, training, validation, C,
-                       outcome, tau, node_list, learners) {
+estimate_c <- function(data, training, validation, C, outcome,
+                       tau, node_list, learners, sl_weights) {
 
   # global setup
   out <- check_censoring(data, training, validation, C, outcome, tau)
@@ -107,6 +109,7 @@ estimate_c <- function(data, training, validation, C,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[t, ] <- extract_sl_weights(fit)
 
       # probability of not being censored training
       out$train[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
@@ -115,6 +118,7 @@ estimate_c <- function(data, training, validation, C,
   }
 
   # returns
+  out$sl_weights <- sl_weights
   return(out)
 }
 
@@ -132,6 +136,7 @@ ratio_dr <- function(ratios, V) {
                nrow = nrow(ratios[[i]]$valid$natural),
                ncol = ncol(ratios[[i]]$valid$natural))
       )
+      out[[i]]$sl_weights <- ratios[[i]]$sl_weights
   }
   return(out)
 }

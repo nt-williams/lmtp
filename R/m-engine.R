@@ -82,7 +82,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 #' @export
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb) {
+                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -103,6 +103,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
+    sl_weights[tau, ] <- extract_sl_weights(fit)
 
     # predict on data
     m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -135,11 +136,13 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                   m_shifted = m_shifted,
                   r = r,
                   learners = learners,
-                  pb = pb)
+                  pb = pb,
+                  sl_weights = sl_weights)
   } else {
     # returns
     out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid)
+                shifted = m_shifted$valid,
+                sl_weights = sl_weights)
 
     return(out)
   }

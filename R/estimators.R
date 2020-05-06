@@ -52,21 +52,23 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = bound,
+    count_lrnrs_outcome = count_lrnrs(learners_outcome),
+    count_lrnrs_trt = count_lrnrs(learners_trt)
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
   # propensity --------------------------------------------------------------
 
-  cens_rat <- cf_cens(
-    data, meta$data, folds, cens, outcome,
-    meta$tau, meta$node_list, learners_trt
+  cens_ratio <- cf_cens(
+    data, meta$data, folds, cens, outcome, meta$tau,
+    meta$node_list, learners_trt, meta$weights_c
   )
 
   dens_ratio <- ratio_dr(
-    cf_r(meta$data, shift, folds, trt, cens, cens_rat,
-         meta$tau, meta$node_list, learners_trt, pb),
+    cf_r(meta$data, shift, folds, trt, cens, cens_ratio, meta$tau,
+         meta$node_list, learners_trt, pb, meta$weights_r),
     folds
   )
 
@@ -74,8 +76,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-            cens, meta$tau, meta$outcome_type, meta$m,
-            meta$m, dens_ratio, learners_outcome, pb)
+            cens, meta$tau, meta$outcome_type, meta$m, meta$m,
+            dens_ratio, learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 
@@ -88,7 +90,10 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
       folds = meta$folds,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
-      shift = deparse(substitute((shift)))
+      shift = deparse(substitute((shift))),
+      weights_m = pluck_weights("m", estims),
+      weights_r = pluck_weights("r", dens_ratio),
+      weights_c = pluck_weights("r", cens_ratio)
     ))
 
   return(out)
@@ -148,7 +153,9 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = bound,
+    count_learners_outcome = length(learners_outcome),
+    count_learners_trt = length(learners_trt)
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -235,7 +242,9 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = bound,
+    count_learners_outcome = length(learners_outcome),
+    count_learners_trt = length(learners_trt)
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -306,7 +315,9 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
-    bound = bound
+    bound = bound,
+    count_learners_outcome = length(learners_outcome),
+    count_learners_trt = length(learners_trt)
   )
 
   pb <- progressr::progressor(meta$tau*folds)

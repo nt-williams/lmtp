@@ -85,7 +85,10 @@ theta_tml <- function(eta) {
               low = ci_low,
               high = ci_high,
               eif = inflnce[order(i)],
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_m = eta$weights_m,
+              weights_r = eta$weights_r,
+              weights_c = eta$weights_c)
 
   class(out) <- "lmtp"
 

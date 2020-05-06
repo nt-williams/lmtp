@@ -14,29 +14,30 @@ get_folded_data <- function(data, folds) {
   return(out)
 }
 
-cf_cens <- function(data, folded, V, C, outcome, tau, node_list, learners) {
+cf_cens <- function(data, folded, V, C, outcome, tau,
+                    node_list, learners, weights_c) {
   out <- list()
   fopts <- options("lmtp.bound")
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
       estimate_c(data, folded[[i]]$train, folded[[i]]$valid,
-                 C, outcome, tau, node_list, learners)
+                 C, outcome, tau, node_list, learners, weights_c[[i]])
       }, packages = "lmtp")
   }
   out <- future::values(out)
   return(out)
 }
 
-cf_r <- function(data, shift, V, trt, cens, C,
-                 tau, node_list, learners, pb) {
+cf_r <- function(data, shift, V, trt, cens, C, tau,
+                 node_list, learners, pb, weights_r) {
   fopts <- options("lmtp.bound")
   out <- list()
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_r(data[[i]]$train, data[[i]]$valid, trt,
-                 cens, C[[i]], shift, tau, node_list, learners, pb)
+      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, C[[i]],
+                 shift, tau, node_list, learners, pb, weights_r[[i]])
     }, packages = "lmtp")
   }
   out <- future::values(out)
@@ -60,8 +61,8 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
 
 }
 
-cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau,
-                    outcome_type, m_natural, m_shifted, r, learners, pb) {
+cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
+                    m_natural, m_shifted, r, learners, pb, weights_m) {
 
   fopts <- options("lmtp.bound")
   m <- list()
@@ -71,12 +72,13 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau,
       estimate_tmle(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid,
                     shifted[[i]]$valid, outcome, node_list, C, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
-                    learners, pb)
+                    learners, pb, weights_m[[i]])
     }, packages = "lmtp")
   }
   m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
-              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])))
+              shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])),
+              sl_weights = lapply(m, function(x) x[["sl_weights"]]))
   return(out)
 }
 
