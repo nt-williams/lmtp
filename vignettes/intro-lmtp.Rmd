@@ -221,15 +221,43 @@ head(sim_cens[sim_cens$C2 == 0, ])
 
 ```{r, eval = F}
 # estimating an effect when there is censoring
-lmtp_tmle(...)
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+lrnrs <- make_learner(Lrnr_glm)
+
+lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1, 
+          shift = function(x) x + 0.5, learners_outcome = lrnrs,
+          learners_trt = lrnrs)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (function(x) x + 0.5)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.8869
+#>     Std. error: 0.0149
+#>         95% CI: (0.8577, 0.916)
 ```
 
 #### Population mean outcome
 
-In certain situtations, the user may be interested in the population mean outcome under no intervention. In the presence of censoring, this can be estimated by setting `trt = NULL` and by indicating censoring nodes. 
+In certain situtations, the user may be interested in the population mean outcome under no intervention. In the presence of censoring, this can be estimated by setting `shift = NULL` and indicating censoring nodes. 
 
-```{r}
-# population mean outcome example
+```{r, eval = F}
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+lrnrs <- make_learner(Lrnr_glm)
+
+lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1, 
+          shift = NULL, learners_outcome = lrnrs,
+          learners_trt = lrnrs)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (NULL)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.7978
+#>     Std. error: 0.0142
+#>         95% CI: (0.7701, 0.8256)
 ```
 
 ### Calculating contrasts
