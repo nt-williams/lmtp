@@ -32,12 +32,23 @@ While not possible to cover everything, this document should equip users of `lmt
 
 ```{r}
 library(lmtp)
-library(sl3)
 ```
 
 ## Functions & parameters
 
 > The goal of this section is to introduce the main `lmtp` functions and develop a basic understanding of required and useful function parameters.
+
+### The estimators
+
+`lmtp` supplies 2 main estimators: 
+
+- a targeted maximum likelihood (TML) estimator: `lmtp_tmle()`
+- a sequentially doubly robust (SDR) estimator: `lmtp_sdr()`
+
+Two auxillary estimators are also provided, however, the use of these estimators is recommended against in favors of the TML or SDR estimators: 
+
+- a substitution estimator: `lmtp_sub()`
+- an IPW estimator: `lmtp_ipw()`
 
 ### Required vs. optional
 
@@ -70,7 +81,7 @@ While many parameters aren't required, the default options will likely give subp
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
-```{r, eval = F}
+```{r}
 library(sl3)
 
 # using learner defaults
@@ -82,7 +93,7 @@ lrnrs <- make_learner_stack(Lrnr_mean,
 lrnrs <- 
   make_learner_stack(
     Lrnr_mean, 
-    Lrnr_glm
+    Lrnr_glm,
     list(Lrnr_ranger, 
          num.trees = 1000)
   )
@@ -147,18 +158,107 @@ $$d_t(a_t, h_t) = a_t - \delta_t$$
 
 ### Modified treatment policies
 
+Consider a hypothetical intervention where a treatment/exposure is shifted for a set of user-given regimes. The regime only depends upon the natural value of treatment/exposure and other covariate history.
+
 $$
 d_t(a_t, h_t)=\left\{ \begin{array}{l}
     a_t - \delta_t & \text{if $a_t>u_t(h_t) + \delta_t$}\\
     a_t & \text{if $a_t \leq u_t(h_t) + \delta_t$}\\
   \end{array} \right.
 $$
+This intervention differs from the traditional counterparts in that it only considers a hypothetical intervention where treatment/exposure is shifted, $\delta_t$, for observations where this shift is realistic (what's realistic in this case is defined by $a_t>u_t(h_t) + \delta_t$).
+
+### Shift functions
+
+To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. A shift function for a traditional intervention where the exposure is increased by 7 units for all observations at every time point would look like: 
+
+```{r}
+shift <- function(x) {
+  x + 7
+}
+```
+
+In contrast, we may interested in the effect of a modified treatment policy where exposure is only increased by 7 units at all time points for observations who are below some threshold, such as 50:
+
+```{r}
+shift <- function(x) {
+  (x + 7) * (x < 50) + x * (x >= 50)
+}
+```
+
+Shift functions are passed to lmtp estimators through the `shift` argument. Currently, shift functions can only depend on the value of the current treatment node. However, the ability evaluate dynamic treatment regimes will be established in a future version.
+
+```{r, eval = F}
+# using a shift function in an estimator
+lmtp_sdr(...)
+```
+
+#### Binary treatment
+
+In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest:
+
+```{r}
+# set exposure to 1 for all observations
+shift <- function(x) 1
+
+# set exposure to 0 for all observations
+shift_0 <- function(x) 0
+```
 
 ### Censored outcomes
 
-### Binary treatment
+In the (likely) case of missing outcomes, `lmtp` can estimate the effect of a hypothetical treatment regime where all observations remained uncensored at end of follow-up. To do this, the user must supply a character vector of censoring nodes for each treatment time point to `lmtp` estimators through the `cens` argument. Censoring nodes should be defined such that at any time, $t$, if an observation is observed at time $t + 1$ they receive a 1 and a 0 otherwise.
+
+**Note: Censoring nodes must be provided if there are missing outcomes.**
+
+```{r}
+head(sim_cens[sim_cens$C1 == 1, ])
+
+head(sim_cens[sim_cens$C1 == 0, ])
+
+head(sim_cens[sim_cens$C2 == 0, ])
+```
+
+```{r, eval = F}
+# estimating an effect when there is censoring
+lmtp_tmle(...)
+```
+
+#### Population mean outcome
+
+In certain situtations, the user may be interested in the population mean outcome under no intervention. In the presence of censoring, this can be estimated by setting `trt = NULL` and by indicating censoring nodes. 
+
+```{r}
+# population mean outcome example
+```
+
+### Calculating contrasts
 
 ### Bootstrap for sub & IPW
+
+There is no theory to provide standard errors for the substitution or IPW estimator when using data adaptive estimation procedures such as the super learner. Standard errors are thus not provided for the substution and IPW estimators. However, if using a pre-specified parametric model for estimation, (i.e., only including `Lrnr_glm`), inference can be performed using the non-parametric boostrap.
+
+```{r bootstrap, eval = F}
+resamples <- list()
+for (i in 1:50) {
+  resamples[[i]] <- sim_t4[1:100, ][sample(1:100, replace = T), ]
+}
+
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+lrnrs <- make_learner(Lrnr_glm)
+
+theta <- list()
+for (i in 1:50) {
+  theta[[i]] <- lmtp_ipw(resamples[[i]], a, "Y", time_varying, 
+                         k = 1, shift = d, learners = lrnrs, folds = 2)$theta
+}
+
+quantile(unlist(theta), c(0.025, 0.975))
+#>       2.5%      97.5% 
+#> 0.07720175 0.40026962 
+```
 
 ## Extra features
 
@@ -226,3 +326,5 @@ with_progress({
 ```
 
 We recommend consulting the `progressr` [documentation](https://cran.r-project.org/web/packages/progressr/progressr.pdf) for more information. 
+
+## References
