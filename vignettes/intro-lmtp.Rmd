@@ -143,7 +143,16 @@ Censoring nodes are discussed in the [Censored outcomes] section.
 
 ### Traditional causal effects
 
+$$d_t(a_t, h_t) = a_t - \delta_t$$
+
 ### Modified treatment policies
+
+$$
+d_t(a_t, h_t)=\left\{ \begin{array}{l}
+    a_t - \delta_t & \text{if $a_t>u_t(h_t) + \delta_t$}\\
+    a_t & \text{if $a_t \leq u_t(h_t) + \delta_t$}\\
+  \end{array} \right.
+$$
 
 ### Censored outcomes
 
