@@ -16,12 +16,18 @@ shift_data <- function(data, A, .f) {
   return(as.data.frame(out))
 }
 
-bound <- function(x, p = 1e-5) {
-  pmax(pmin(x, 1 - p), p)
+set_lmtp_options <- function(option, val) {
+
+  if (option == "bound") {
+    options(lmtp.bound = val)
+  } else if (option == "trunc") {
+    option(lmtp.trunc = val)
+  }
+
 }
 
-truncate <- function(x, p = 1e-2) {
-  pmin(x, 1 - p)
+bound <- function(x, p = getOption("lmtp.bound")) {
+  pmax(pmin(x, 1 - p), p)
 }
 
 scale_y_continuous <- function(y, bounds) {

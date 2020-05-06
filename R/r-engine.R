@@ -50,12 +50,12 @@ estimate_r <- function(training, validation, trt, cens, C,
 
       # ratios
       pred            <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      rat             <- pred / (1 - truncate(pred))
+      rat             <- pred / (1 - bound(pred))
       rt$natural[, t] <- rat[train_stck$si == 0] * C$train[, t]
       rt$shifted[, t] <- rat[train_stck$si == 1] * C$train[, t]
 
       pred            <- bound(predict_sl3(fit, pred_task), .Machine$double.eps)
-      rat             <- pred / (1 - truncate(pred))
+      rat             <- pred / (1 - bound(pred))
       rv$natural[, t] <- rat[valid_stck$si == 0] * C$valid[, t]
       rv$shifted[, t] <- rat[valid_stck$si == 1] * C$valid[, t]
     }
@@ -63,7 +63,7 @@ estimate_r <- function(training, validation, trt, cens, C,
 
     for (t in 1:tau) {
       # progress bar
-      # pb()
+      pb()
 
       # propensity
       rt$natural[, t] <- C$train[, t]

@@ -14,7 +14,8 @@ lmtp_ipw(
   k = Inf,
   shift,
   learners = NULL,
-  folds = 10
+  folds = 10,
+  bound = 1e-05
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ all time points.}
 exposure mechanism.}
 
 \item{folds}{The number of folds to be used for cross-validation.}
+
+\item{bound}{Determines that maximum and minimum values (scaled) predictions
+will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 }
 \value{
 TODO
