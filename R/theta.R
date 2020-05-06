@@ -25,7 +25,8 @@ theta_sub <- function(eta) {
               standard_error = NA_real_,
               low = NA_real_,
               high = NA_real_,
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_m = eta$weights_m)
 
   class(out) <- "lmtp"
 
@@ -43,7 +44,9 @@ theta_ipw <- function(eta) {
               standard_error = NA_real_,
               low = NA_real_,
               high = NA_real_,
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_r = eta$weights_r,
+              weights_c = eta$weights_c)
 
   class(out) <- "lmtp"
 
@@ -85,7 +88,10 @@ theta_tml <- function(eta) {
               low = ci_low,
               high = ci_high,
               eif = inflnce[order(i)],
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_m = eta$weights_m,
+              weights_r = eta$weights_r,
+              weights_c = eta$weights_c)
 
   class(out) <- "lmtp"
 
@@ -120,7 +126,10 @@ theta_sdr <- function(eta) {
               low = ci_low,
               high = ci_high,
               eif = inflnce[order(i)],
-              shift = eta$shift)
+              shift = eta$shift,
+              weights_m = eta$weights_m,
+              weights_r = eta$weights_r,
+              weights_c = eta$weights_c)
 
   class(out) <- "lmtp"
 

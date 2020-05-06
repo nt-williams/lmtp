@@ -11,11 +11,12 @@
 #' @param node_list Node list created by \code{create_node_list()}.
 #' @param learners An \code{sl3} learner stack.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
-estimate_r <- function(training, validation, trt, cens, C,
-                       shift, tau, node_list, learners = NULL, pb) {
+estimate_r <- function(training, validation, trt, cens, C, shift,
+                       tau, node_list, learners = NULL, pb, sl_weights) {
 
   # global setup
   nt <- nrow(training)
@@ -47,6 +48,7 @@ estimate_r <- function(training, validation, trt, cens, C,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[t, ] <- extract_sl_weights(fit)
 
       # ratios
       pred            <- bound(predict_sl3(fit, fit_task), .Machine$double.eps)
@@ -74,7 +76,8 @@ estimate_r <- function(training, validation, trt, cens, C,
   }
 
   out <- list(train = rt,
-              valid = rv)
+              valid = rv,
+              sl_weights = sl_weights)
 
   # returns
   return(out)
@@ -89,11 +92,12 @@ estimate_r <- function(training, validation, trt, cens, C,
 #' @param outcome Name of outcome node.
 #' @param node_list Node list created by \code{create_node_list()}.
 #' @param learners An \code{sl3} learner stack.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
-estimate_c <- function(data, training, validation, C,
-                       outcome, tau, node_list, learners) {
+estimate_c <- function(data, training, validation, C, outcome,
+                       tau, node_list, learners, sl_weights) {
 
   # global setup
   out <- check_censoring(data, training, validation, C, outcome, tau)
@@ -107,6 +111,7 @@ estimate_c <- function(data, training, validation, C,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[t, ] <- extract_sl_weights(fit)
 
       # probability of not being censored training
       out$train[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
@@ -115,6 +120,7 @@ estimate_c <- function(data, training, validation, C,
   }
 
   # returns
+  out$sl_weights <- sl_weights
   return(out)
 }
 
@@ -132,13 +138,20 @@ ratio_dr <- function(ratios, V) {
                nrow = nrow(ratios[[i]]$valid$natural),
                ncol = ncol(ratios[[i]]$valid$natural))
       )
+      out[[i]]$sl_weights <- ratios[[i]]$sl_weights
   }
   return(out)
 }
 
 ratio_ipw <- function(ratio) {
-  out <- matrix(t(apply(ratio, 1, cumprod)), nrow = nrow(ratio), ncol = ncol(ratio))
-  return(check_extreme_ratio(out))
+  out <-
+    list(r = check_extreme_ratio(matrix(
+      t(apply(ratio$r, 1, cumprod)),
+      nrow = nrow(ratio$r),
+      ncol = ncol(ratio$r)
+    )),
+    sl_weights = ratio$sl_weights)
+  return(out)
 }
 
 ratio_sdr <- function(ratio, tau, max_tau) {

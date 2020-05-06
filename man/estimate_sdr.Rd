@@ -19,7 +19,8 @@ estimate_sdr(
   m_shifted,
   m_natural,
   r,
-  pb
+  pb,
+  sl_weights
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ estimate_sdr(
 \item{r}{Density ratios.}
 
 \item{pb}{Progress bar.}
+
+\item{sl_weights}{Empty matrices to contain super learner weights.}
 }
 \description{
 SDR Estimator Engine

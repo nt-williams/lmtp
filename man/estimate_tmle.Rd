@@ -18,7 +18,8 @@ estimate_tmle(
   m_shifted,
   r,
   learners = NULL,
-  pb
+  pb,
+  sl_weights
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ estimate_tmle(
 \item{learners}{An \code{sl3} learner stack.}
 
 \item{pb}{Progress bar.}
+
+\item{sl_weights}{Empty matrices to contain super learner weights.}
 }
 \description{
 TML Estimator Engine

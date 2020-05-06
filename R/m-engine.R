@@ -12,11 +12,12 @@
 #' @param learners An \code{sl3} learner stack.
 #' @param m Empty matrices to contain predictions.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
 estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
-                         tau, outcome_type, learners = NULL, m, pb) {
+                         tau, outcome_type, learners = NULL, m, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -35,6 +36,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
+    sl_weights[tau, ] <- extract_sl_weights(fit)
 
     # predict on shifted data for training
     training[js, pseudo] <- bound(predict_sl3(fit, shift_task))
@@ -53,11 +55,14 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
                  outcome_type = "continuous",
                  learners,
                  m = m,
-                 pb = pb)
+                 pb = pb,
+                 sl_weights = sl_weights)
 
   } else {
+    out <- list(m = m,
+                sl_weights = sl_weights)
     # returns
-    return(m)
+    return(out)
   }
 }
 
@@ -77,12 +82,13 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 #' @param r Density ratios.
 #' @param learners An \code{sl3} learner stack.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb) {
+                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -103,6 +109,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
+    sl_weights[tau, ] <- extract_sl_weights(fit)
 
     # predict on data
     m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -135,11 +142,13 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                   m_shifted = m_shifted,
                   r = r,
                   learners = learners,
-                  pb = pb)
+                  pb = pb,
+                  sl_weights = sl_weights)
   } else {
     # returns
     out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid)
+                shifted = m_shifted$valid,
+                sl_weights = sl_weights)
 
     return(out)
   }
@@ -163,12 +172,13 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 #' @param m_shifted Empty matrices to contain predictions.
 #' @param r Density ratios.
 #' @param pb Progress bar.
+#' @param sl_weights Empty matrices to contain super learner weights.
 #'
 #' @keywords internal
 #' @export
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb) {
+                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -193,6 +203,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[tau, ] <- extract_sl_weights(fit)
 
       # predict on training data
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -228,6 +239,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
+      sl_weights[tau, ] <- extract_sl_weights(fit)
 
       # predictions
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -252,11 +264,13 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                  m_shifted = m_shifted,
                  m_natural = m_natural,
                  r = r,
-                 pb = pb)
+                 pb = pb,
+                 sl_weights = sl_weights)
   } else {
     # returns
     out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid)
+                shifted = m_shifted$valid,
+                sl_weights = sl_weights)
 
     return(out)
   }
