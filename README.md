@@ -50,9 +50,8 @@ accompying
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects Based on Longitudinal Modified Treatment
-#> Policies
-#> Version: 0.0.6.9000
+#> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
+#> Version: 0.0.7.9000
 #> 
 library(sl3)
 library(future)
@@ -123,7 +122,7 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 | Static intervention             |      ✓      |
 | Dynamic intervention            | In progress |
 | Continuous treatment            |      ✓      |
-| Binary treatment                | In progress |
+| Binary treatment                |      ✓      |
 | Continuous outcome              |      ✓      |
 | Binary outcome                  |      ✓      |
 | Censored outcome                |      ✓      |

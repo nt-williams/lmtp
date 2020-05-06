@@ -100,7 +100,7 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 | Static intervention             |   &check;   |
 | Dynamic intervention            | In progress |
 | Continuous treatment            |   &check;   |
-| Binary treatment                | In progress |
+| Binary treatment                |   &check;   |
 | Continuous outcome              |   &check;   |
 | Binary outcome                  |   &check;   |
 | Censored outcome                |   &check;   |
