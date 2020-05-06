@@ -142,8 +142,14 @@ ratio_dr <- function(ratios, V) {
 }
 
 ratio_ipw <- function(ratio) {
-  out <- matrix(t(apply(ratio, 1, cumprod)), nrow = nrow(ratio), ncol = ncol(ratio))
-  return(check_extreme_ratio(out))
+  out <-
+    list(r = check_extreme_ratio(matrix(
+      t(apply(ratio$r, 1, cumprod)),
+      nrow = nrow(ratio$r),
+      ncol = ncol(ratio$r)
+    )),
+    sl_weights = ratio$sl_weights)
+  return(out)
 }
 
 ratio_sdr <- function(ratio, tau, max_tau) {

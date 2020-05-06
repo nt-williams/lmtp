@@ -320,22 +320,22 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     V = folds,
     bounds = NULL,
     bound = bound,
-    count_learners_outcome = length(learners_outcome),
-    count_learners_trt = length(learners_trt)
+    count_lrnrs_outcome = 0,
+    count_lrnrs_trt = count_lrnrs(learners)
   )
 
   pb <- progressr::progressor(meta$tau*folds)
 
   # propensity --------------------------------------------------------------
 
-  cens_rat <- cf_cens(data, meta$data, folds, cens, outcome,
-                      meta$tau, meta$node_list, learners)
+  cens_ratio <- cf_cens(data, meta$data, folds, cens, outcome,
+                        meta$tau, meta$node_list, learners, meta$weights_c)
 
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
-        cf_r(meta$data, shift, folds, trt, cens, cens_rat,
-             meta$tau, meta$node_list, learners, pb
+        cf_r(meta$data, shift, folds, trt, cens, cens_ratio,
+             meta$tau, meta$node_list, learners, pb, meta$weights_r
         )
       )
     )
@@ -345,11 +345,13 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
   out <- compute_theta(
     estimator = "ipw",
     eta = list(
-      r = dens_ratio,
+      r = dens_ratio$r,
       y = data[[outcome]],
       folds = meta$folds,
       tau = meta$tau,
-      shift = deparse(substitute((shift)))
+      shift = deparse(substitute((shift))),
+      weights_r = dens_ratio$sl_weights,
+      weights_c = pluck_weights("r", cens_ratio)
     ))
 
   return(out)

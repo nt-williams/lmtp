@@ -101,12 +101,13 @@ transform_sdr <- function(r, tau, max, shifted, natural) {
 }
 
 recombine_ipw <- function(r) {
-  out <- lapply(r, function(x) x[["valid"]])
-  return(Reduce(rbind, Reduce(rbind, out)[, "natural"]))
+  out <- list(r = Reduce(rbind, Reduce(rbind, lapply(r, function(x) x[["valid"]]))[, "natural"]),
+              sl_weights = lapply(r, function(x) x[["sl_weights"]]))
+  return(out)
 }
 
 recombine_dens_ratio <- function(r) {
-  Reduce(rbind, lapply(r, function(x) x[["valid"]]))
+  return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
 }
 
 create_lrnr_matrix <- function(folds, tau, lrnrs) {
@@ -129,7 +130,16 @@ extract_sl_weights <- function(fit) {
 }
 
 count_lrnrs <- function(lrnr) {
-  length(lapply(lrnr$params$learners, function(x) x$name))
+
+  if (is.null(lrnr)) {
+    return(2)
+  }
+
+  out <- length(lapply(lrnr$params$learners, function(x) x$name))
+  if (out == 0) {
+    out <- 1
+  }
+  return(out)
 }
 
 pluck_weights <- function(type, x) {
