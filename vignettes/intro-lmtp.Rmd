@@ -95,7 +95,7 @@ The ensemble meta-learner is always set to `Lrnr_nnls`. If learner stacks aren't
 
 ### Node lists & Markov processes
 
-Estimating causal effects in longitudinal settings requires paying special attention to the time-ordering and relationship among covariates. In the `lmtp` framework, there are 5 types of variable nodes: treatment, outcome, baseline, time-varying, and censoring. Treatment and outcome nodes are self-explanatory, baseline nodes are variables that are observed pre-treatment allocation and don't change (i.e., age at treatment assignment), time-varying nodes are variables that (you guessed it...) change over time, censoring nodes indicate if an observation is observed (or censored) at the next time-point. 
+Estimating causal effects in longitudinal settings requires paying special attention to the time-ordering and relationship among covariates. In the `lmtp` framework, there are 5 types of variable nodes: treatment, outcome, baseline, time-varying, and censoring. Treatment and outcome nodes are self-explanatory, baseline nodes are variables that are observed pre-treatment allocation and don't change (i.e., age at treatment assignment), time-varying nodes are variables that (you guessed it...) change over time, censoring nodes indicate if an observation is observed (or censored) at the next time-point.
 
 How these nodes are specified depends on the specific data generating mechanism and should be pre-specified based on a conceptual model (i.e, a DAG). How these nodes are used by `lmtp` estimators is specified by what we're calling a node list. The user doesn't explicitly create the node list themself, instead the user supplies the ingredients and instructions on how to combine. These node list *cooking* instructions are specified through the `k` parameter. 
 
@@ -134,6 +134,8 @@ nodes <- list(c("L1"),
 create_node_list(a, nodes, baseline = baseline, k = 1)
 ```
 
+Censoring nodes are discussed in the [Censored outcomes] section.
+
 ## The estimators
 
 > The goal of this section is to identify how to estimate different causal effects using `lmtp` estimators.
@@ -162,7 +164,34 @@ tidy()
 
 ### Parallel processing with future
 
-Computation time can quickly increase in situations with lots of time points, complex ensemble learners, and large datasets. In response, `lmtp` provides support for parallel processing using the [`future`](https://cran.r-project.org/web/packages/future/index.html) package. The simplest way to use `lmtp` estimators in parallel is set `plan(multiprocess)`: 
+Computation time can quickly increase in situations with lots of time points, complex ensemble learners, and large datasets. In response, `lmtp` provides support for parallel processing using the [`future`](https://cran.r-project.org/web/packages/future/index.html) package. The simplest way to use `lmtp` estimators in parallel is set `plan(multiprocess)`. 
+
+```{r, eval = F}
+library(future)
+
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+lrnrs <- make_learner_stack(Lrnr_mean, 
+                            Lrnr_glm, 
+                            Lrnr_ranger)
+
+system.time(
+  lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d, 
+            learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
+)
+#>      user  system  elapsed 
+#>  1371.914  34.843  634.613 
+
+plan(multiprocess)
+
+system.time(
+  lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d, 
+            learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
+)
+#>   user  system elapsed 
+#>  2.353   0.301 194.322 
+```
 
 We recommend consulting the `future` [documentation](https://cran.r-project.org/web/packages/future/future.pdf) for more information.
 
