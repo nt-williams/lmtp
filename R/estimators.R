@@ -93,7 +93,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", dens_ratio),
-      weights_c = pluck_weights("r", cens_ratio)
+      weights_c = pluck_weights("r", cens_ratio),
+      outcome_type = meta$outcome_type
     ))
 
   return(out)
@@ -189,7 +190,8 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", raw_ratio),
-      weights_c = pluck_weights("r", cens_ratio)
+      weights_c = pluck_weights("r", cens_ratio),
+      outcome_type = meta$outcome_type
     ))
 
   return(out)
@@ -266,7 +268,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
-      weights_m = pluck_weights("m", estims)
+      weights_m = pluck_weights("m", estims),
+      outcome_type = meta$outcome_type
     ))
 
   return(out)

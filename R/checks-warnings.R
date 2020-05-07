@@ -100,3 +100,32 @@ check_variation <- function(data, outcome, learners) {
   }
   return(learners)
 }
+
+check_outcome_type <- function(fits, ref, type) {
+  if (type == "additive") {
+    check <- TRUE
+  } else if (type %in% c("rr", "or")) {
+    fits[["ref"]] <- ref
+    types <- lapply(fits, function(x) x[["outcome_type"]])
+    check <- all(types == "binomial")
+  }
+
+  if (isFALSE(check)) {
+    stop(toupper(type), " contrast specified but one or more outcome types are non-binary.",
+         call. = F)
+  }
+}
+
+check_lmtp_type <- function(fits, ref) {
+  fits[["ref"]] <- ref
+  types <- lapply(fits, function(x) x[["estimator"]])
+  check <- all(types %in% c("TMLE", "SDR"))
+
+  if (isFALSE(check)) {
+    stop("Contrasts not implemented for substitution/IPW estimators.",
+         call. = F)
+  }
+
+}
+
+

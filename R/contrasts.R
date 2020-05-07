@@ -12,6 +12,10 @@
 lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
 
   fits <- list(...)
+
+  check_lmtp_type(fits, ref)
+  check_outcome_type(fits, ref, match.arg(type))
+
   switch(match.arg(type),
          "additive" = contrast_additive(fits = fits, ref = ref),
          "rr"       = contrast_rr(fits = fits, ref = ref),
