@@ -25,7 +25,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
     i          <- create_censoring_indicators(training, C, tau)$i
     js         <- create_censoring_indicators(shifted, C, tau)$j
     jv         <- create_censoring_indicators(validation, C, tau)$j
-    pseudo     <- paste0("m", tau)
+    pseudo     <- paste0("psi", tau)
     fit_task   <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
     shift_task <- suppressWarnings(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL))
     valid_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
@@ -96,7 +96,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     i            <- create_censoring_indicators(training, C, tau)$i
     jt           <- create_censoring_indicators(training, C, tau)$j
     jv           <- create_censoring_indicators(validation, C, tau)$j
-    pseudo       <- paste0("m", tau)
+    pseudo       <- paste0("psi", tau)
     fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
     nshift_task  <- suppressWarnings(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
     shift_task   <- suppressWarnings(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
@@ -183,7 +183,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
   if (tau > 0) {
 
     # global setup
-    pseudo <- paste0("m", tau)
+    pseudo <- paste0("psi", tau + 1)
 
     # progress bar
     pb()
