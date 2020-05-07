@@ -27,9 +27,19 @@ knitr::opts_chunk$set(
 
 ---
 
+## Installation
+
+`lmtp` can be installed from GitHub with: 
+
+```r
+devtools::install_github("nt-williams/lmtp")
+```
+
 ## Scope
 
 `lmtp` is an R package that provides an estimation framework for the casual effects of longitudinal modified treatment policies described in [INSERT IVAN PAPER]. Two primary estimators are supported, a Targeted Maximum Likelihood (TML) estimator and a Sequentially Doubly Robust (SDR) estimator (a substitution and an IPW estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). In addition to longitudinal effects, point treatments are naturally supported and both binary and continuous outcome (both with censoring) are allowed. `lmtp` is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. 
+
+For an in-depth look at the package's functionality, please consult the accompying [vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
 
 ### Features
 
@@ -51,16 +61,6 @@ knitr::opts_chunk$set(
 | Clustered data                  |   Planned   |
 | Parallel processing             |   &check;   |
 | Progress bars                   |   &check;   |
-
-## Installation
-
-`lmtp` can be installed from GitHub with: 
-
-```r
-devtools::install_github("nt-williams/lmtp")
-```
-
-For an in-depth look at the package's functionality, please consult the accompying [vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
 
 ## Example
 
@@ -111,6 +111,6 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 #>         95% CI: (0.2863, 0.3315)
 ```
 
-### References
+## References
 
 

@@ -20,6 +20,14 @@ Diaz](https://idiaz.xyz)
 
 -----
 
+## Installation
+
+`lmtp` can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp")
+```
+
 ## Scope
 
 `lmtp` is an R package that provides an estimation framework for the
@@ -33,6 +41,10 @@ point treatments are naturally supported and both binary and continuous
 outcome (both with censoring) are allowed. `lmtp` is built atop the
 [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
 machine learning for estimation.
+
+For an in-depth look at the package’s functionality, please consult the
+accompying
+[vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
 
 ### Features
 
@@ -54,18 +66,6 @@ machine learning for estimation.
 | Clustered data                  | Planned |
 | Parallel processing             |    ✓    |
 | Progress bars                   |    ✓    |
-
-## Installation
-
-`lmtp` can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp")
-```
-
-For an in-depth look at the package’s functionality, please consult the
-accompying
-[vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
 
 ## Example
 
@@ -133,4 +133,4 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 #>         95% CI: (0.2863, 0.3315)
 ```
 
-### References
+## References
