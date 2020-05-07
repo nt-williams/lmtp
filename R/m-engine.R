@@ -235,7 +235,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       shift_task   <- suppressWarnings(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
       vnshift_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
       vshift_task  <- suppressWarnings(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
-      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
+      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], pseudo, learners))
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
