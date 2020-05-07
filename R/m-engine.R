@@ -207,10 +207,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # predict on training data
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
-
-      training[jt, pseudo]       <-
-        m_shifted$train[jt, tau] <-
-        bound(predict_sl3(fit, shift_task))
+      m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task))
 
       # predict on validation data
       m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task))
