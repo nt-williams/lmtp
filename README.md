@@ -34,6 +34,27 @@ outcome (both with censoring) are allowed. `lmtp` is built atop the
 [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
 machine learning for estimation.
 
+### Features
+
+| Feature                         | Status  |
+| ------------------------------- | :-----: |
+| Point treatment                 |    ✓    |
+| Longitudinal treatment          |    ✓    |
+| Modified treatment intervention |    ✓    |
+| Static intervention             |    ✓    |
+| Dynamic intervention            | Planned |
+| Continuous treatment            |    ✓    |
+| Binary treatment                |    ✓    |
+| Missingness in treatment        |         |
+| Continuous outcome              |    ✓    |
+| Binary outcome                  |    ✓    |
+| Censored outcome                |    ✓    |
+| Mediation                       |         |
+| Super learner                   |    ✓    |
+| Clustered data                  | Planned |
+| Parallel processing             |    ✓    |
+| Progress bars                   |    ✓    |
+
 ## Installation
 
 `lmtp` can be installed from GitHub with:
@@ -111,24 +132,5 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 #>     Std. error: 0.0115
 #>         95% CI: (0.2863, 0.3315)
 ```
-
-## Features
-
-| Feature                         |   Status    |
-| ------------------------------- | :---------: |
-| Point treatment                 |      ✓      |
-| Longitudinal treatment          |      ✓      |
-| Modified treatment intervention |      ✓      |
-| Static intervention             |      ✓      |
-| Dynamic intervention            | In progress |
-| Continuous treatment            |      ✓      |
-| Binary treatment                |      ✓      |
-| Continuous outcome              |      ✓      |
-| Binary outcome                  |      ✓      |
-| Censored outcome                |      ✓      |
-| Super learner                   |      ✓      |
-| Clustered data                  | In progress |
-| Parallel processing             |      ✓      |
-| Progress bars                   |      ✓      |
 
 ### References
