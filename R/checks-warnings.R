@@ -100,3 +100,60 @@ check_variation <- function(data, outcome, learners) {
   }
   return(learners)
 }
+
+check_outcome_type <- function(fits, ref, type) {
+  if (type == "additive") {
+    check <- TRUE
+  } else if (type %in% c("rr", "or")) {
+
+    if (is.lmtp(ref)) {
+      fits[["ref"]] <- ref
+    }
+
+    types <- lapply(fits, function(x) x[["outcome_type"]])
+    check <- all(types == "binomial")
+  }
+
+  if (isFALSE(check)) {
+    stop(toupper(type), " contrast specified but one or more outcome types are non-binary.",
+         call. = F)
+  }
+}
+
+check_lmtp_type <- function(fits, ref) {
+
+  if (is.lmtp(ref)) {
+    fits[["ref"]] <- ref
+  }
+
+  types <- lapply(fits, function(x) x[["estimator"]])
+  check <- all(types %in% c("TMLE", "SDR"))
+
+  if (isFALSE(check)) {
+    stop("Contrasts not implemented for substitution/IPW estimators.",
+         call. = F)
+  }
+
+}
+
+check_ref_type <- function(ref, type) {
+  if (!is.lmtp(ref)) {
+    if (class(ref) %in% c("numeric", "integer", "double")) {
+      if (length(ref) != 1) {
+        stop("Reference value should be a single object.",
+             call. = F)
+      }
+      message("Non-estimated reference value, defaulting type = 'additive'.")
+      out <- "additive"
+    } else {
+      stop("Reference must either be a single numeric value or another lmtp object.",
+           call. = F)
+    }
+  } else {
+    out <- type
+  }
+
+  return(out)
+}
+
+
