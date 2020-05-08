@@ -38,5 +38,6 @@ Suggests:
     covr,
     tibble,
     rmarkdown,
-    knitr
+    knitr, 
+    ranger
 VignetteBuilder: knitr

@@ -77,7 +77,7 @@ While many parameters aren't required, the default options will likely give subp
 
 ### sl3
 
-`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the estimators supplied by `lmtp` users must create and then pass to `lmtp` estimators `sl3` learner stacks.  `sl3` learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
+`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the estimators supplied by `lmtp`, users must create and then pass to `lmtp` estimators `sl3` learner stacks.  `sl3` learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
@@ -148,7 +148,7 @@ create_node_list(a, nodes, baseline = baseline, k = 1)
 
 Censoring nodes are discussed in the [Censored outcomes] section.
 
-## The estimators
+## Calculating effects
 
 > The goal of this section is to identify how to estimate different causal effects using `lmtp` estimators.
 

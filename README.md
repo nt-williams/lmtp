@@ -114,9 +114,9 @@ lrnrs <- make_learner_stack(Lrnr_mean,
                             Lrnr_ranger)
 ```
 
-We’re now ready to estimate the effect of our treatment policy, `d`. In
-this example, we’ll use the cross-validated TML estimator with 10 folds.
-To speed up computation, we can use parallel processing supported by the
+We can now estimate the effect of our treatment policy, `d`. In this
+example, we’ll use the cross-validated TML estimator with 10 folds. To
+speed up computation, we can use parallel processing supported by the
 `future` package.
 
 ``` r
