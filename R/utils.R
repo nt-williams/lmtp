@@ -147,3 +147,7 @@ pluck_weights <- function(type, x) {
          "m" = x$sl_weights,
          "r" = lapply(x, function(x) x$sl_weights))
 }
+
+is.lmtp <- function(x) {
+  class(x) == "lmtp"
+}

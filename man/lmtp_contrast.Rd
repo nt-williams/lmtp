@@ -9,7 +9,7 @@ lmtp_contrast(..., ref, type = c("additive", "rr", "or"))
 \arguments{
 \item{...}{One or more objects of class lmtp.}
 
-\item{ref}{A reference lmtp fit to compare all other fits against.}
+\item{ref}{A reference value or another lmtp fit to compare all other fits against.}
 
 \item{type}{The contrasts of interest. Options are "additive" (the default),
 "rr", and "or".}

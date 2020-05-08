@@ -2,7 +2,7 @@
 #' Perform Contrasts of LMTP Fits
 #'
 #' @param ... One or more objects of class lmtp.
-#' @param ref A reference lmtp fit to compare all other fits against.
+#' @param ref A reference value or another lmtp fit to compare all other fits against.
 #' @param type The contrasts of interest. Options are "additive" (the default),
 #'  "rr", and "or".
 #'
@@ -16,7 +16,7 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   check_lmtp_type(fits, ref)
   check_outcome_type(fits, ref, match.arg(type))
 
-  switch(match.arg(type),
+  switch(check_ref_type(ref, match.arg(type)),
          "additive" = contrast_additive(fits = fits, ref = ref),
          "rr"       = contrast_rr(fits = fits, ref = ref),
          "or"       = contrast_or(fits = fits, ref = ref))
@@ -38,8 +38,14 @@ contrast_additive <- function(fits, ref) {
 
 contrast_additive_single <- function(fit, ref) {
 
-  theta     <- fit$theta - ref$theta
-  eif       <- fit$eif - ref$eif
+  if (is.lmtp(ref)) {
+    theta <- fit$theta - ref$theta
+    eif   <- fit$eif - ref$eif
+  } else {
+    theta <- fit$theta - ref
+    eif   <- fit$eif
+  }
+
   std.error <- sd(eif) / sqrt(length(eif))
   conf.low  <- theta - qnorm(0.975) * std.error
   conf.high <- theta + qnorm(0.975) * std.error
@@ -49,7 +55,7 @@ contrast_additive_single <- function(fit, ref) {
     list(vals = data.frame(
       theta = theta,
       shift = fit$theta,
-      ref = ref$theta,
+      ref = ifelse(is.lmtp(ref), ref$theta, ref),
       std.error = std.error,
       conf.low = conf.low,
       conf.high = conf.high,
