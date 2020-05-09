@@ -170,39 +170,71 @@ This intervention differs from the traditional counterparts in that it only cons
 
 ### Shift functions
 
-To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. A shift function for a traditional intervention where the exposure is increased by 7 units for all observations at every time point would look like: 
+To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. A shift function for a traditional intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
 
 ```{r}
-shift <- function(x) {
-  x + 7
+shift <- function(trt) {
+  trt - 1
 }
 ```
 
-In contrast, we may interested in the effect of a modified treatment policy where exposure is only increased by 7 units at all time points for observations who are below some threshold, such as 50:
+In contrast, we may interested in the effect of a modified treatment policy where exposure is decreased by 1 unit only among subjects whose exposure won’t go below 1 if intervened upon:
 
 ```{r}
-shift <- function(x) {
-  (x + 7) * (x < 50) + x * (x >= 50)
+shift <- function(trt) {
+  (trt - 1) * (trt - 1 >= 1) + trt * (trt - 1 < 1)
 }
 ```
 
 Shift functions are passed to lmtp estimators through the `shift` argument. Currently, shift functions can only depend on the value of the current treatment node. However, the ability evaluate dynamic treatment regimes will be established in a future version.
 
 ```{r, eval = F}
-# using a shift function in an estimator
-lmtp_sdr(...)
+# using the previous shift function with sdr
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
+
+lmtp_sdr(sim_t4, a, "Y", time_varying, k = 1, shift = shift, 
+         learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
+#> LMTP Estimator: SDR
+#>    Trt. Policy: (shift)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.2563
+#>     Std. error: 0.0165
+#>         95% CI: (0.2241, 0.2886)
 ```
 
 #### Binary treatment
 
 In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest:
 
-```{r}
-# set exposure to 1 for all observations
+```{r, eval = F}
+# set exposure to 1 for all observations at all time points
 shift <- function(x) 1
 
-# set exposure to 0 for all observations
+# set exposure to 0 for all observations at all time points
 shift_0 <- function(x) 0
+
+# a binary trt example
+data("iptwExWide", package = "twang")
+
+a <- paste0("tx", 1:3)
+nodes <- list(c("gender", "age", "use0"), 
+              c("use1"), 
+              c("use2"))
+lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
+
+lmtp_tmle(iptwExWide, a, "outcome", nodes, shift = shift, 
+          outcome_type = "continuous",
+          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (shift)
+#> 
+#> Population intervention effect
+#>       Estimate: -0.287
+#>     Std. error: 0.07
+#>         95% CI: (-0.4242, -0.1497)
 ```
 
 ### Censored outcomes
