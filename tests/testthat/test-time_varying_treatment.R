@@ -3,7 +3,7 @@ context("Fidelity of estimators for time-varying treatment")
 
 # data generation, t = 2
 set.seed(429)
-n_obs <- 1000
+n_obs <- 200
 L1 <- rbinom(n_obs, 1, 0.5)
 A1 <- rnorm(n_obs, mean = 2 * L1, sd = 1)
 L2 <- rbinom(n_obs, 1, plogis(A1 + L1 + rnorm(n_obs, mean = 0, sd = 1)))

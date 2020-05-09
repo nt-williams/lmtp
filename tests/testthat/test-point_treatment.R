@@ -3,7 +3,7 @@ context("Fidelity of estimators for a point treatment")
 
 # data generation
 set.seed(429153)
-n_obs <- 1000
+n_obs <- 200
 W <- replicate(2, rbinom(n_obs, 1, 0.5))
 A <- rnorm(n_obs, mean = 2 * W, sd = 1)
 Y <- rbinom(n_obs, 1, plogis(A + W + rnorm(n_obs, mean = 0, sd = 1)))
@@ -14,23 +14,23 @@ truth <- 0.76451
 # estimators
 sub <-
   lmtp_sub(df, "A", "Y", nodes, shift = function(x) x + 0.5,
-           outcome_type = "binomial", folds = 5)
+           outcome_type = "binomial", folds = 2)
 
 ipw <-
   lmtp_ipw(df, "A", "Y", nodes, shift = function(x) x + 0.5,
-           learners = sl3::make_learner(sl3::Lrnr_glm), folds = 5)
+           learners = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 tmle <-
   lmtp_tmle(df, "A", "Y", nodes, shift = function(x) x + 0.5,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-            learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 5)
+            learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 sdr <-
   lmtp_sdr(df, "A", "Y", nodes, shift = function(x) x + 0.5,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-           learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 5)
+           learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 # tests
 test_that("point treatment fidelity", {
