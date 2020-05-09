@@ -294,6 +294,53 @@ lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1,
 
 ### Calculating contrasts
 
+The effects returned by the base `lmtp` functions are population intervention effects, that is the expected mean outcome in the population under the hypothetical intervention. Often, however, we are interested also in the comparison of different interventions to each other or to no intervention at all. This is the role of `lmtp_contrast()`. 
+
+```{r, eval = F}
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+lrnrs <- make_learner(Lrnr_glm)
+
+fit_shift <- 
+  lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1, 
+            shift = function(x) x + 0.5, learners_outcome = lrnrs,
+            learners_trt = lrnrs, folds = 2)
+
+fit_noshift <- 
+  lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1, 
+            shift = NULL, learners_outcome = lrnrs,
+            learners_trt = lrnrs, folds = 2)
+
+lmtp_contrast(fit_shift, ref = fit_noshift, type = "additive")
+#>   LMTP Contrast: additive
+#> Null hypothesis: theta == 0
+#> 
+#>    theta shift   ref std.error conf.low conf.high p.value
+#> 1 0.0995 0.897 0.797   0.00985   0.0802     0.119  <0.001
+
+lmtp_contrast(fit_shift, ref = fit_noshift, type = "rr")
+#>   LMTP Contrast: relative risk
+#> Null hypothesis: theta == 1
+#> 
+#>   theta shift   ref std.error conf.low conf.high p.value
+#> 1  1.12 0.897 0.797    0.0117      1.1      1.15  <0.001
+```
+
+Any number of `lmtp` fits can specified in `lmtp_contrast()` to be compared to either single reference fit or a known scalar. 
+
+```{r, eval = F}
+lmtp_contrast(fit_shift, fit_noshift, ref = 0.787)
+#> Non-estimated reference value, defaulting type = 'additive'.
+#> 
+#>   LMTP Contrast: additive
+#> Null hypothesis: theta == 0
+#> 
+#>    theta shift   ref std.error conf.low conf.high p.value
+#> 1 0.1099 0.897 0.787    0.0150   0.0805    0.1393  <0.001
+#> 2 0.0104 0.797 0.787    0.0142  -0.0174    0.0382   0.464
+```
+
 ### Bootstrap for sub & IPW
 
 There is no theory to provide standard errors for the substitution or IPW estimator when using data adaptive estimation procedures such as the super learner. Standard errors are thus not provided for the substution and IPW estimators. However, if using a pre-specified parametric model for estimation, (i.e., only including `Lrnr_glm`), inference can be performed using the non-parametric boostrap.
