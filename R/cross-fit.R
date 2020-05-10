@@ -93,7 +93,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
     m[[i]] <- future::future({
       options(fopts)
       estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
-                   shifted[[i]]$valid,outcome, node_list, C, tau, tau,
+                   shifted[[i]]$valid, outcome, node_list, C, tau, tau,
                    outcome_type, learners,m_natural[[i]], m_shifted[[i]],
                    r[[i]], pb, weights_m[[i]])
     }, packages = "lmtp")

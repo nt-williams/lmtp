@@ -74,7 +74,8 @@ theta_tml <- function(eta) {
   theta <- mean(eta$m$shifted[, 1])
 
   if (eta$outcome_type == "continuous") {
-    theta <- rescale_y_continuous(theta, eta$bounds)
+    inflnce <- rescale_y_continuous(inflnce, eta$bounds)
+    theta   <- rescale_y_continuous(theta, eta$bounds)
   }
 
   n       <- nrow(eta$m$natural)

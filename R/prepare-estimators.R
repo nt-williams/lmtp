@@ -33,7 +33,10 @@ Meta <- R6::R6Class(
       self$m <-
         get_folded_data(cbind(matrix(
           nrow = nrow(data), ncol = length(nodes)
-        ), data[[outcome]]),
+        ), scale_y_continuous(data[[outcome]],
+                             y_bounds(data[[outcome]],
+                                      outcome_type,
+                                      bounds))),
         folds)
       self$data <-
         get_folded_data(

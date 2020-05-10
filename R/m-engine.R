@@ -216,6 +216,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     } else if (tau < max) {
 
       # setup
+      # it <- create_censoring_indicators(training, C, max)$i
       i  <- create_censoring_indicators(training, C, tau + 1)$i
       jt <- create_censoring_indicators(training, C, tau)$j
       jv <- create_censoring_indicators(validation, C, tau)$j
