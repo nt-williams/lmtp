@@ -14,21 +14,6 @@ get_folded_data <- function(data, folds) {
   return(out)
 }
 
-cf_cens <- function(data, folded, V, C, outcome, tau,
-                    node_list, learners, weights_c) {
-  out <- list()
-  fopts <- options("lmtp.bound")
-  for (i in 1:V) {
-    out[[i]] <- future::future({
-      options(fopts)
-      estimate_c(data, folded[[i]]$train, folded[[i]]$valid,
-                 C, outcome, tau, node_list, learners, weights_c[[i]])
-      })
-  }
-  out <- future::values(out)
-  return(out)
-}
-
 cf_r <- function(data, shift, V, trt, cens, tau,
                  node_list, learners, pb, weights_r) {
   fopts <- options("lmtp.bound")

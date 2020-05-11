@@ -9,7 +9,6 @@ estimate_r(
   validation,
   trt,
   cens,
-  C,
   shift,
   tau,
   node_list,
@@ -26,8 +25,6 @@ estimate_r(
 \item{trt}{Name of exposure variable.}
 
 \item{cens}{Names of cnesoring indicators.}
-
-\item{C}{Matrices of censoring ratios.}
 
 \item{shift}{Shift function.}
 
