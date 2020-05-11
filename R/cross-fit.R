@@ -29,14 +29,14 @@ cf_cens <- function(data, folded, V, C, outcome, tau,
   return(out)
 }
 
-cf_r <- function(data, shift, V, trt, cens, C, tau,
+cf_r <- function(data, shift, V, trt, cens, tau,
                  node_list, learners, pb, weights_r) {
   fopts <- options("lmtp.bound")
   out <- list()
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, C[[i]],
+      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens,
                  shift, tau, node_list, learners, pb, weights_r[[i]])
     })
   }

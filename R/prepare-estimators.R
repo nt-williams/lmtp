@@ -13,7 +13,6 @@ Meta <- R6::R6Class(
     folds = NULL,
     weights_m = NULL,
     weights_r = NULL,
-    weights_c = NULL,
     initialize = function(data, trt, outcome, nodes, baseline, cens, k,
                           shift, outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL, count_lrnrs_outcome, count_lrnrs_trt) {
@@ -63,9 +62,7 @@ Meta <- R6::R6Class(
         )
 
       self$weights_m <- create_lrnr_matrix(V, length(nodes), count_lrnrs_outcome)
-      self$weights_r   <-
-        self$weights_c <-
-        create_lrnr_matrix(V, length(nodes), count_lrnrs_trt)
+      self$weights_r <- create_lrnr_matrix(V, length(nodes), count_lrnrs_trt)
     }
   )
 )
