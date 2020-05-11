@@ -9,8 +9,8 @@ truth <- 0.88
 set.seed(58)
 
 fit1 <-
-  lmtp_tmle(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
-            cens, k = 0, shift = function(x) x + 0.5,
+  lmtp_tmle(sim_cens[1:500, ], a, "Y", nodes, baseline = NULL,
+            cens, k = 1, shift = function(x) x + 0.5,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
             learners_trt = sl3::make_learner(sl3::Lrnr_glm),
@@ -19,8 +19,8 @@ fit1 <-
 set.seed(679)
 
 fit0 <-
-  lmtp_tmle(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
-            cens, k = 0, shift = NULL,
+  lmtp_tmle(sim_cens[1:500, ], a, "Y", nodes, baseline = NULL,
+            cens, k = 1, shift = NULL,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
             learners_trt = sl3::make_learner(sl3::Lrnr_glm),
