@@ -23,7 +23,7 @@ cf_cens <- function(data, folded, V, C, outcome, tau,
       options(fopts)
       estimate_c(data, folded[[i]]$train, folded[[i]]$valid,
                  C, outcome, tau, node_list, learners, weights_c[[i]])
-      }, packages = "lmtp")
+      })
   }
   out <- future::values(out)
   return(out)
@@ -38,7 +38,7 @@ cf_r <- function(data, shift, V, trt, cens, C, tau,
       options(fopts)
       estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, C[[i]],
                  shift, tau, node_list, learners, pb, weights_r[[i]])
-    }, packages = "lmtp")
+    })
   }
   out <- future::values(out)
   return(out)
@@ -54,7 +54,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
       estimate_sub(data[[i]]$train, shifted[[i]]$train, shifted[[i]]$valid,
                    outcome, node_list, C, tau, outcome_type,
                    learners, m[[i]]$valid, pb, weights_m[[i]])
-    }, packages = "lmtp")
+    })
   }
   out <- future::values(out)
   out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
@@ -75,7 +75,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
                     shifted[[i]]$valid, outcome, node_list, C, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
                     learners, pb, weights_m[[i]])
-    }, packages = "lmtp")
+    })
   }
   m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
@@ -93,10 +93,10 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
     m[[i]] <- future::future({
       options(fopts)
       estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
-                   shifted[[i]]$valid,outcome, node_list, C, tau, tau,
+                   shifted[[i]]$valid, outcome, node_list, C, tau, tau,
                    outcome_type, learners,m_natural[[i]], m_shifted[[i]],
                    r[[i]], pb, weights_m[[i]])
-    }, packages = "lmtp")
+    })
   }
   m <- future::values(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),

@@ -34,15 +34,13 @@ estimate_r <- function(training, validation, trt, cens, C, shift,
       pb()
 
       # setup
+      it         <- rep(create_censoring_indicators(training, cens, t)$i, 2)
+      iv         <- rep(create_censoring_indicators(validation, cens, t)$i, 2)
       train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], shift), nt)
       valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], shift), nv)
 
       # create sl3 tasks for training and validation sets
-      fit_task  <-
-        initiate_sl3_task(
-          subset(train_stck, rep(create_censoring_indicators(training, cens, t)$i, 2)),
-          "si", node_list[[t]], "binomial", "id"
-        )
+      fit_task   <- initiate_sl3_task(subset(train_stck, it), "si", node_list[[t]], "binomial", "id")
       tpred_task <- suppressWarnings(initiate_sl3_task(train_stck, "si", node_list[[t]], "binomial", "id"))
       vpred_task <- suppressWarnings(initiate_sl3_task(valid_stck, "si", node_list[[t]], "binomial", "id"))
       ensemble   <- initiate_ensemble("binomial", learners)
@@ -53,12 +51,12 @@ estimate_r <- function(training, validation, trt, cens, C, shift,
 
       # ratios
       pred            <- bound(predict_sl3(fit, tpred_task), .Machine$double.eps)
-      rat             <- pred / (1 - bound(pred))
+      rat             <- pred * it / (1 - bound(pred))
       rt$natural[, t] <- rat[train_stck$si == 0] * C$train[, t]
       rt$shifted[, t] <- rat[train_stck$si == 1] * C$train[, t]
 
       pred            <- bound(predict_sl3(fit, vpred_task), .Machine$double.eps)
-      rat             <- pred / (1 - bound(pred))
+      rat             <- pred * iv / (1 - bound(pred))
       rv$natural[, t] <- rat[valid_stck$si == 0] * C$valid[, t]
       rv$shifted[, t] <- rat[valid_stck$si == 1] * C$valid[, t]
     }
@@ -114,9 +112,9 @@ estimate_c <- function(data, training, validation, C, outcome,
       fit <- run_ensemble(ensemble, fit_task)
       sl_weights[t, ] <- extract_sl_weights(fit)
 
-      # probability of not being censored training
-      out$train[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      out$valid[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      # inverse probability of not being censored training
+      out$train[, t] <- 1 / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+      out$valid[, t] <- 1 / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
     }
   }
 
