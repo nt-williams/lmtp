@@ -157,3 +157,7 @@ pluck_weights <- function(type, x) {
 is.lmtp <- function(x) {
   class(x) == "lmtp"
 }
+
+sw <- function(x) {
+  suppressWarnings(x)
+}

@@ -34,8 +34,8 @@ estimate_r <- function(training, validation, trt, cens, shift,
 
     # create sl3 tasks for training and validation sets
     fit_task   <- initiate_sl3_task(subset(train_stck, i), "si", c(node_list[[t]], cens[[t]]), "binomial", "id")
-    tpred_task <- suppressWarnings(initiate_sl3_task(train_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
-    vpred_task <- suppressWarnings(initiate_sl3_task(valid_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # same here
+    tpred_task <- sw(initiate_sl3_task(train_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
+    vpred_task <- sw(initiate_sl3_task(valid_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # same here
     ensemble   <- initiate_ensemble("binomial", learners)
 
     # run SL

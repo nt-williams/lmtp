@@ -27,8 +27,8 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
     jv         <- create_censoring_indicators(validation, C, tau)$j
     pseudo     <- paste0("psi", tau)
     fit_task   <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
-    shift_task <- suppressWarnings(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL))
-    valid_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
+    shift_task <- sw(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL))
+    valid_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
     ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
@@ -98,10 +98,10 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     jv           <- create_censoring_indicators(validation, C, tau)$j
     pseudo       <- paste0("psi", tau)
     fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
-    nshift_task  <- suppressWarnings(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-    shift_task   <- suppressWarnings(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-    vnshift_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-    vshift_task  <- suppressWarnings(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+    nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
+    shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
+    vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
+    vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
     ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
@@ -118,7 +118,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
 
     # tilt estimates
-    fit <- suppressWarnings(glm(training[i, outcome] ~ offset(qlogis(m_natural$train[i, tau])),
+    fit <- sw(glm(training[i, outcome] ~ offset(qlogis(m_natural$train[i, tau])),
                                 weights = r$train[i, tau], family = "binomial"))
 
     # update training estimates
@@ -195,10 +195,10 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       jt           <- create_censoring_indicators(training, C, tau)$j
       jv           <- create_censoring_indicators(validation, C, tau)$j
       fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
-      nshift_task  <- suppressWarnings(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-      shift_task   <- suppressWarnings(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-      vnshift_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-      vshift_task  <- suppressWarnings(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
+      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
+      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
+      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
       ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
       # run SL
@@ -228,10 +228,10 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL on outcome transformation and get predictions
       fit_task     <- initiate_sl3_task(training[i, ], pseudo, node_list[[tau]], outcome_type)
-      nshift_task  <- suppressWarnings(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-      shift_task   <- suppressWarnings(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-      vnshift_task <- suppressWarnings(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-      vshift_task  <- suppressWarnings(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
+      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
+      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
+      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
       ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], pseudo, learners))
 
       # run SL
