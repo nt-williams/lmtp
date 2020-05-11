@@ -72,7 +72,7 @@ accompying
 ``` r
 library(lmtp)
 #> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
-#> Version: 0.0.7.9000
+#> Version: 0.0.8.9000
 #> 
 library(sl3)
 library(future)
