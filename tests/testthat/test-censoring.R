@@ -7,29 +7,29 @@ cens <- c("C1", "C2")
 truth <- 0.88
 
 sub <-
-    lmtp_sub(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
+    lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
              cens, k = 1, shift = function(x) x + 0.5,
              outcome_type = "binomial",
              learners = sl3::make_learner(sl3::Lrnr_glm),
              folds = 2)
 
 ipw <-
-  lmtp_ipw(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
-           cens, k = 0, shift = function(x) x + 0.5,
+  lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
+           cens, k = 1, shift = function(x) x + 0.5,
            learners = sl3::make_learner(sl3::Lrnr_glm),
            folds = 2)
 
 tmle <-
-    lmtp_tmle(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
-              cens, k = 0, shift = function(x) x + 0.5,
+    lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
+              cens, k = 1, shift = function(x) x + 0.5,
               outcome_type = "binomial",
               learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
               learners_trt = sl3::make_learner(sl3::Lrnr_glm),
               folds = 2)
 
 sdr <-
-  lmtp_sdr(sim_cens[1:200, ], a, "Y", nodes, baseline = NULL,
-           cens, k = 0, shift = function(x) x + 0.5,
+  lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
+           cens, k = 1, shift = function(x) x + 0.5,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
            learners_trt = sl3::make_learner(sl3::Lrnr_glm),
@@ -37,8 +37,8 @@ sdr <-
 
 # tests
 test_that("estimator fidelity with censoring", {
-  expect_equal(truth, sub$theta, tolerance = 0.1)
-  expect_equal(truth, ipw$theta, tolerance = 0.1)
-  expect_equal(truth, tmle$theta, tolerance = 0.1)
-  expect_equal(truth, sdr$theta, tolerance = 0.1)
+  expect_equal(truth, sub$theta, tolerance = 0.15)
+  expect_equal(truth, ipw$theta, tolerance = 0.15)
+  expect_equal(truth, tmle$theta, tolerance = 0.15)
+  expect_equal(truth, sdr$theta, tolerance = 0.15)
 })

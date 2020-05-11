@@ -112,9 +112,9 @@ estimate_c <- function(data, training, validation, C, outcome,
       fit <- run_ensemble(ensemble, fit_task)
       sl_weights[t, ] <- extract_sl_weights(fit)
 
-      # probability of not being censored training
-      out$train[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      out$valid[, t] <- mean(data[, C[[t]]]) / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      # inverse probability of not being censored training
+      out$train[, t] <- 1 / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
+      out$valid[, t] <- 1 / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
     }
   }
 

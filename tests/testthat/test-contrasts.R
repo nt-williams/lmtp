@@ -4,7 +4,6 @@ context("Use of contrast function")
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-truth <- 0.88
 
 set.seed(58)
 
