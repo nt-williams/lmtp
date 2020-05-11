@@ -1,19 +1,4 @@
 
-#' Density Ratio Engine
-#'
-#' @param training Training data.
-#' @param validation Validation data.
-#' @param trt Name of exposure variable.
-#' @param cens Names of cnesoring indicators.
-#' @param shift Shift function.
-#' @param tau Max time point.
-#' @param node_list Node list created by \code{create_node_list()}.
-#' @param learners An \code{sl3} learner stack.
-#' @param pb Progress bar.
-#' @param sl_weights Empty matrices to contain super learner weights.
-#'
-#' @keywords internal
-#' @export
 estimate_r <- function(training, validation, trt, cens, shift,
                        tau, node_list, learners = NULL, pb, sl_weights) {
 
