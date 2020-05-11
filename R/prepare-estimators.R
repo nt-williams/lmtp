@@ -53,7 +53,7 @@ Meta <- R6::R6Class(
       self$shifted_data <-
         get_folded_data(
           fix_censoring_ind(
-            add_scaled_y(shift_data(data, trt, shift),
+            add_scaled_y(shift_data(data, trt, cens, shift),
                          scale_y_continuous(data[[outcome]],
                                             y_bounds(data[[outcome]],
                                                      outcome_type,
