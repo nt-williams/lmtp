@@ -6,10 +6,16 @@
 \alias{lmtp-package}
 \title{lmtp: Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies}
 \description{
-TO DO.
+Cross-validated estimators for casual effects based on longitudinal modified treatment 
+  policies as described in ... (2020) <arXiv:...>, traditional point treatment, 
+  and traditional longitudinal effects. Both continuous and binary treatments are allowed as well are 
+  censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
+  whether treatment is continuous or binary. Estimation is performed using the Super Learner from `sl3`. 
+  For both continuous and binary outcomes, additive treatment effects can be calculated and relative 
+  risks and odds ratios may be calculated for binary outcomes.
 }
 \author{
-\strong{Maintainer}: Nicholas Williams \email{niw4001@med.cornell.edu} (\href{https://orcid.org/0000-0002-1378-4831}{ORCID})
+\strong{Maintainer}: Nicholas Williams \email{niw4001@med.cornell.edu} (\href{https://orcid.org/0000-0002-1378-4831}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
