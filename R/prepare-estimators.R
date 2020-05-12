@@ -17,6 +17,9 @@ Meta <- R6::R6Class(
                           shift, outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL, count_lrnrs_outcome, count_lrnrs_trt) {
 
+      # initial checks
+      check_censoring(data, cens, outcome)
+      check_missing_data(data, trt, nodes, baseline, cens, length(nodes))
       check_scaled_conflict(data)
 
       # general setup

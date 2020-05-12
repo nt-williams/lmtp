@@ -33,33 +33,23 @@ check_sd <- function(x, learner_stack) {
   return(out)
 }
 
-check_censoring <- function(data, training, validation, C, Y, tau) {
-
+check_censoring <- function(data, C, Y) {
   if (any(is.na(data[[Y]])) & is.null(C)) {
     stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
-  } else if (!is.null(C)) {
-    check <- TRUE
-  } else if (is.null(C) | !any(is.na(data[[Y]]))) {
-    check <- FALSE
   }
+}
 
-  ct <- matrix(nrow = nrow(training), ncol = tau)
-  cv <- matrix(nrow = nrow(validation), ncol = tau)
-  if (isFALSE(check)) {
-    for (t in 1:tau) {
-      ct[, t] <- rep(1, nrow(training))
-      cv[, t] <- rep(1, nrow(validation))
+check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
+  for (t in 1:tau) {
+    i <- create_censoring_indicators(data, cens, t)$j
+    if (any(is.na(as.matrix(data[i, c(trt[t], baseline, unlist(nodes[t]))])))) {
+      stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
+           call. = F)
     }
   }
-
-  out <- list(train = ct,
-              valid = cv)
-
-  return(out)
 }
 
 fix_censoring_ind <- function(data, C = NULL, tau) {
-
   if (!is.null(C)) {
     out <- as.list(data)
     for (t in 1:tau) {
@@ -121,7 +111,6 @@ check_outcome_type <- function(fits, ref, type) {
 }
 
 check_lmtp_type <- function(fits, ref) {
-
   if (is.lmtp(ref)) {
     fits[["ref"]] <- ref
   }
