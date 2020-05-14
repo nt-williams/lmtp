@@ -62,7 +62,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
   # propensity --------------------------------------------------------------
 
   dens_ratio <- ratio_dr(
-    cf_r(meta$data, shift, folds, meta$trt, cens, meta$tau,
+    cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
          meta$node_list, learners_trt, pb, meta$weights_r),
     folds
   )
@@ -71,7 +71,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-            cens, meta$tau, meta$outcome_type, meta$m, meta$m,
+            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
             dens_ratio, learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------

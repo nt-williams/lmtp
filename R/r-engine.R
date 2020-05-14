@@ -1,5 +1,5 @@
 
-estimate_r <- function(training, validation, trt, cens, shift,
+estimate_r <- function(training, validation, trt, cens, deterministic, shift,
                        tau, node_list, learners = NULL, pb, sl_weights) {
 
   # global setup
@@ -16,15 +16,6 @@ estimate_r <- function(training, validation, trt, cens, shift,
     i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
     d     <- rep(create_determ_indicators(training, deterministic, t), 2)
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
-
-    # point treatment survival check
-    # if (getOption("lmtp.trt.length") == "standard" | t == 1) {
-    #   train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
-    #   valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
-    # } else if (getOption("lmtp.trt.length") == "point.wise" & t > 1) {
-    #   train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
-    #   valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
-    # }
 
     # create sl3 tasks for training and validation sets
     fit_task   <- initiate_sl3_task(subset(stcks$train, i & !d), "si", c(node_list[[t]], cens[[t]]), "binomial", "id")

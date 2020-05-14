@@ -50,7 +50,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 }
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
-                          outcome, node_list, C, tau, outcome_type,
+                          outcome, node_list, C, deterministic, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
 
   if (tau > 0) {
