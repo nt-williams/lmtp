@@ -247,7 +247,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
   # substitution ------------------------------------------------------------
 
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-                   cens, meta$tau, meta$outcome_type, learners, meta$m, pb, meta$weights_m)
+                   cens, meta$determ, meta$tau, meta$outcome_type,
+                   learners, meta$m, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 

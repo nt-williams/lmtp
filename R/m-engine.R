@@ -1,6 +1,7 @@
 
-estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
-                         tau, outcome_type, learners = NULL, m, pb, sl_weights) {
+estimate_sub <- function(training, shifted, validation, outcome,
+                         node_list, C, deterministic, tau, outcome_type,
+                         learners = NULL, m, pb, sl_weights) {
 
   if (tau > 0) {
 
@@ -8,8 +9,10 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
     i          <- create_censoring_indicators(training, C, tau)$i
     js         <- create_censoring_indicators(shifted, C, tau)$j
     jv         <- create_censoring_indicators(validation, C, tau)$j
+    dt         <- create_determ_indicators(training, deterministic, tau)
+    dv         <- create_determ_indicators(validation, deterministic, tau)
     pseudo     <- paste0("psi", tau)
-    fit_task   <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
+    fit_task   <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
     shift_task <- sw(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL))
     valid_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
     ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
@@ -23,9 +26,11 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 
     # predict on shifted data for training
     training[js, pseudo] <- bound(predict_sl3(fit, shift_task))
+    training[dt, pseudo] <- 1
 
     # predict on validation shifted data
     m[jv, tau] <- bound(predict_sl3(fit, valid_task))
+    m[dv, tau] <- 1
 
     # recursion
     estimate_sub(training = training,
@@ -34,6 +39,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
                  outcome = pseudo,
                  node_list = node_list,
                  C = C,
+                 deterministic = deterministic,
                  tau = tau - 1,
                  outcome_type = "continuous",
                  learners,
