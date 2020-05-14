@@ -98,10 +98,6 @@ create_censoring_indicators <- function(data, C, tau) {
   return(out)
 }
 
-create_determ_indicators <- function(data, determ, tau) {
-  return(data[[determ[tau]]] == 1 & !is.na(data[[determ[tau]]]))
-}
-
 transform_sdr <- function(r, tau, max, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999

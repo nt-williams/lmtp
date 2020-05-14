@@ -50,7 +50,7 @@ estimate_sub <- function(training, shifted, validation, outcome, node_list, C,
 }
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
-                          outcome, node_list, C, deterministic, tau, outcome_type,
+                          outcome, node_list, C, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
 
   if (tau > 0) {
@@ -59,9 +59,8 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     i            <- create_censoring_indicators(training, C, tau)$i
     jt           <- create_censoring_indicators(training, C, tau)$j
     jv           <- create_censoring_indicators(validation, C, tau)$j
-    d            <- create_determ_indicators(training, deterministic, tau)
     pseudo       <- paste0("psi", tau)
-    fit_task     <- initiate_sl3_task(training[i & !d, ], outcome, node_list[[tau]], outcome_type)
+    fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
     nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
     shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
     vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
@@ -82,18 +81,15 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
 
     # tilt estimates
-    fit <- sw(glm(training[i & !d, outcome] ~ offset(qlogis(m_natural$train[i & !d, tau])),
-                                weights = r$train[i & !d, tau], family = "binomial"))
+    fit <- sw(glm(training[i, outcome] ~ offset(qlogis(m_natural$train[i, tau])),
+                                weights = r$train[i, tau], family = "binomial"))
 
     # update training estimates
     training[, pseudo] <- bound(plogis(qlogis(m_shifted$train[, tau]) + coef(fit)))
-    training[d, pseudo] <- 1
 
     # update validation estiamtes
     m_natural$valid[, tau] <- bound(plogis(qlogis(m_natural$valid[, tau]) + coef(fit)))
     m_shifted$valid[, tau] <- bound(plogis(qlogis(m_shifted$valid[, tau]) + coef(fit)))
-    m_natural$valid[d, tau] <- 1
-    m_shifted$valid[d, tau] <- 1
 
     # recursion
     estimate_tmle(training = training,
@@ -103,7 +99,6 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                   outcome = pseudo,
                   node_list = node_list,
                   C = C,
-                  deterministic = deterministic,
                   tau = tau - 1,
                   outcome_type = "continuous",
                   m_natural = m_natural,
