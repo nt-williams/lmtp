@@ -16,7 +16,7 @@ get_folded_data <- function(data, folds) {
 
 cf_r <- function(data, shift, V, trt, cens, tau,
                  node_list, learners, pb, weights_r) {
-  fopts <- options("lmtp.bound")
+  fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
   for (i in 1:V) {
     out[[i]] <- future::future({

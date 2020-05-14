@@ -13,20 +13,22 @@ estimate_r <- function(training, validation, trt, cens, shift,
   for (t in 1:tau) {
 
     # setup
-    i          <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
+    i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
+    stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
 
-    if (t == 1) {
-      train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
-      valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
-    } else {
-      train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
-      valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
-    }
+    # point treatment survival check
+    # if (getOption("lmtp.trt.length") == "standard" | t == 1) {
+    #   train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
+    #   valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
+    # } else if (getOption("lmtp.trt.length") == "point.wise" & t > 1) {
+    #   train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
+    #   valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
+    # }
 
     # create sl3 tasks for training and validation sets
-    fit_task   <- initiate_sl3_task(subset(train_stck, i), "si", c(node_list[[t]], cens[[t]]), "binomial", "id")
-    tpred_task <- sw(initiate_sl3_task(train_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
-    vpred_task <- sw(initiate_sl3_task(valid_stck, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # same here
+    fit_task   <- initiate_sl3_task(subset(stcks$train, i), "si", c(node_list[[t]], cens[[t]]), "binomial", "id")
+    tpred_task <- sw(initiate_sl3_task(stcks$train, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
+    vpred_task <- sw(initiate_sl3_task(stcks$valid, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # same here
     ensemble   <- initiate_ensemble("binomial", learners)
 
     # run SL
@@ -36,14 +38,14 @@ estimate_r <- function(training, validation, trt, cens, shift,
     # ratios training
     pred            <- bound(predict_sl3(fit, tpred_task), .Machine$double.eps)
     rat             <- pred * rep(create_censoring_indicators(training, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
-    rt$natural[, t] <- rat[train_stck$si == 0]
-    rt$shifted[, t] <- rat[train_stck$si == 1]
+    rt$natural[, t] <- rat[stcks$train$si == 0]
+    rt$shifted[, t] <- rat[stcks$train$si == 1]
 
     # ratios validation
     pred            <- bound(predict_sl3(fit, vpred_task), .Machine$double.eps)
     rat             <- pred * rep(create_censoring_indicators(validation, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
-    rv$natural[, t] <- rat[valid_stck$si == 0]
-    rv$shifted[, t] <- rat[valid_stck$si == 1]
+    rv$natural[, t] <- rat[stcks$valid$si == 0]
+    rv$shifted[, t] <- rat[stcks$valid$si == 1]
 
     # update progress bar
     pb()

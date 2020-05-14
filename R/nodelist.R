@@ -17,7 +17,7 @@
 create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
 
   out <- list()
-  tau <- length(trt)
+  tau <- length(nodes)
 
   if (is.null(k)) {
     k <- Inf
@@ -32,8 +32,14 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
          call. = FALSE)
   }
 
-  for (i in 1:tau) {
-    out[[i]] <- c(nodes[[i]], trt[i])
+  if (length(trt) == tau) {
+    for (i in 1:tau) {
+      out[[i]] <- c(nodes[[i]], trt[i])
+    }
+  } else {
+    for (i in 1:tau) {
+      out[[i]] <- c(nodes[[i]], trt)
+    }
   }
 
   out <- paste(lapply(out, function(x) paste(x, collapse = ",")))

@@ -42,7 +42,7 @@ check_censoring <- function(data, C, Y) {
 check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
   for (t in 1:tau) {
     i <- create_censoring_indicators(data, cens, t)$j
-    if (any(is.na(as.matrix(data[i, c(trt[t], baseline, unlist(nodes[t]))])))) {
+    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau), baseline, unlist(nodes[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
@@ -145,4 +145,15 @@ check_ref_type <- function(ref, type) {
   return(out)
 }
 
-
+check_trt_length <- function(trt, tau) {
+  if (length(trt) == tau) {
+    set_lmtp_options("trt", "standard")
+    return(trt)
+  } else if (length(trt) == 1) {
+    set_lmtp_options("trt", "point.wise")
+    return(rep(trt, tau))
+  } else {
+    stop("Treatment nodes should either be the same length as nodes, or of length 1.",
+         call. = F)
+  }
+}

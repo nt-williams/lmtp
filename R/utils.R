@@ -27,6 +27,8 @@ shift_data <- function(data, A, C, .f) {
 set_lmtp_options <- function(option, val) {
   if (option == "bound") {
     options(lmtp.bound = val)
+  } else if (option == "trt") {
+    options(lmtp.trt.length = val)
   } else {
     stop("Unknown lmtp option.", call. = F)
   }

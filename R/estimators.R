@@ -62,7 +62,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
   # propensity --------------------------------------------------------------
 
   dens_ratio <- ratio_dr(
-    cf_r(meta$data, shift, folds, trt, cens, meta$tau,
+    cf_r(meta$data, shift, folds, meta$trt, cens, meta$tau,
          meta$node_list, learners_trt, pb, meta$weights_r),
     folds
   )
@@ -157,7 +157,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  raw_ratio <- cf_r(meta$data, shift, folds, trt, cens, meta$tau,
+  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$tau,
                     meta$node_list, learners_trt, pb, meta$weights_r)
 
   # sdr ---------------------------------------------------------------------
@@ -324,7 +324,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
-        cf_r(meta$data, shift, folds, trt, cens, meta$tau,
+        cf_r(meta$data, shift, folds, meta$trt, cens, meta$tau,
              meta$node_list, learners, pb, meta$weights_r
         )
       )

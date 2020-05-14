@@ -4,6 +4,7 @@ Meta <- R6::R6Class(
   public = list(
     data = NULL,
     shifted_data = NULL,
+    trt = NULL,
     m = NULL,
     node_list = NULL,
     n = NULL,
@@ -25,6 +26,7 @@ Meta <- R6::R6Class(
       # general setup
       self$n            <- nrow(data)
       self$tau          <- length(nodes)
+      self$trt          <- check_trt_length(trt, length(nodes))
       self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)
@@ -74,5 +76,18 @@ prepare_r_engine <- function(data, shifted, n) {
   out    <- rbind(data, shifted)
   out$id <- rep(1:n, 2)
   out$si <- c(rep(0, n), rep(1, n))
+  return(out)
+}
+
+create_r_stacks <- function(training, validation, trt, cens, shift, t, nt, nv) {
+  if (getOption("lmtp.trt.length") == "standard" || t == 1) {
+    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
+    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
+  } else if (getOption("lmtp.trt.length") == "point.wise" && t > 1) {
+    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
+    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
+  }
+  out <- list(train = train_stck,
+              valid = valid_stck)
   return(out)
 }
