@@ -5,6 +5,7 @@ Meta <- R6::R6Class(
     data = NULL,
     shifted_data = NULL,
     trt = NULL,
+    determ = NULL,
     m = NULL,
     node_list = NULL,
     n = NULL,
@@ -27,6 +28,7 @@ Meta <- R6::R6Class(
       self$n            <- nrow(data)
       self$tau          <- length(nodes)
       self$trt          <- check_trt_length(trt, length(nodes))
+      self$determ       <- check_deterministic(outcome, tau)
       self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)

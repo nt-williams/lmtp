@@ -157,3 +157,14 @@ check_trt_length <- function(trt, tau) {
          call. = F)
   }
 }
+
+check_deterministic <- function(outcomes, tau) {
+  if (length(outcomes) == 1) {
+    return(NULL)
+  } else if (length(outcomes) == tau + 1) {
+    return(outcomes[1:tau])
+  } else {
+    stop("Outcome argument must be of length 1, or in the case of survival analyis, of length tau + 1, with nodes 1 through tau set to the intermediate outcomes.",
+         call. = F)
+  }
+}
