@@ -171,3 +171,8 @@ is.lmtp <- function(x) {
 sw <- function(x) {
   suppressWarnings(x)
 }
+
+final_outcome <- function(outcomes) {
+  max(outcomes)
+}
+

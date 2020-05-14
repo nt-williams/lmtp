@@ -20,7 +20,7 @@ Meta <- R6::R6Class(
                           bound = NULL, count_lrnrs_outcome, count_lrnrs_trt) {
 
       # initial checks
-      check_censoring(data, cens, outcome)
+      check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, nodes, baseline, cens, length(nodes))
       check_scaled_conflict(data)
 
@@ -31,16 +31,16 @@ Meta <- R6::R6Class(
       self$determ       <- check_deterministic(outcome, tau)
       self$node_list    <- create_node_list(trt, nodes, baseline, k)
       self$outcome_type <- outcome_type
-      self$bounds       <- y_bounds(data[[outcome]], outcome_type, bounds)
+      self$bounds       <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
       set_lmtp_options("bound", bound)
 
       # cross validation setup
-      self$folds        <- folds <- setup_cv(data, V = V)
+      self$folds <- folds <- setup_cv(data, V = V)
       self$m <-
         get_folded_data(cbind(matrix(
           nrow = nrow(data), ncol = length(nodes)
-        ), scale_y_continuous(data[[outcome]],
-                             y_bounds(data[[outcome]],
+        ), scale_y_continuous(data[[final_outcome(outcome)]],
+                             y_bounds(data[[final_outcome(outcome)]],
                                       outcome_type,
                                       bounds))),
         folds)
@@ -48,8 +48,8 @@ Meta <- R6::R6Class(
         get_folded_data(
           fix_censoring_ind(
             add_scaled_y(data,
-                         scale_y_continuous(data[[outcome]],
-                                            y_bounds(data[[outcome]],
+                         scale_y_continuous(data[[final_outcome(outcome)]],
+                                            y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
             cens, length(nodes)
@@ -60,8 +60,8 @@ Meta <- R6::R6Class(
         get_folded_data(
           fix_censoring_ind(
             add_scaled_y(shift_data(data, trt, cens, shift),
-                         scale_y_continuous(data[[outcome]],
-                                            y_bounds(data[[outcome]],
+                         scale_y_continuous(data[[final_outcome(outcome)]],
+                                            y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
             cens, length(nodes)
