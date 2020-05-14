@@ -62,7 +62,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     dt           <- create_determ_indicators(training, deterministic, tau)
     dv           <- create_determ_indicators(validation, deterministic, tau)
     pseudo       <- paste0("psi", tau)
-    fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
+    fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
     nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
     shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
     vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
@@ -83,15 +83,18 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
 
     # tilt estimates
-    fit <- sw(glm(training[i, outcome] ~ offset(qlogis(m_natural$train[i, tau])),
-                                weights = r$train[i, tau], family = "binomial"))
+    fit <- sw(glm(training[i & !dt, outcome] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
+                                weights = r$train[i & !dt, tau], family = "binomial"))
 
     # update training estimates
     training[, pseudo] <- bound(plogis(qlogis(m_shifted$train[, tau]) + coef(fit)))
+    training[dt, pseudo] <- 1
 
     # update validation estiamtes
     m_natural$valid[, tau] <- bound(plogis(qlogis(m_natural$valid[, tau]) + coef(fit)))
     m_shifted$valid[, tau] <- bound(plogis(qlogis(m_shifted$valid[, tau]) + coef(fit)))
+    m_natural$valid[dv, tau] <- 1
+    m_shifted$valid[dv, tau] <- 1
 
     # recursion
     estimate_tmle(training = training,
