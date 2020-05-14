@@ -59,6 +59,8 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     i            <- create_censoring_indicators(training, C, tau)$i
     jt           <- create_censoring_indicators(training, C, tau)$j
     jv           <- create_censoring_indicators(validation, C, tau)$j
+    dt           <- create_determ_indicators(training, deterministic, tau)
+    dv           <- create_determ_indicators(validation, deterministic, tau)
     pseudo       <- paste0("psi", tau)
     fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
     nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
