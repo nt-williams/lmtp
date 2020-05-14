@@ -42,7 +42,7 @@ check_censoring <- function(data, C, Y) {
 check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
   for (t in 1:tau) {
     i <- create_censoring_indicators(data, cens, t)$j
-    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau), baseline, unlist(nodes[t]))])))) {
+    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau)[t], baseline, unlist(nodes[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
