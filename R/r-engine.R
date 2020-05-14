@@ -14,6 +14,7 @@ estimate_r <- function(training, validation, trt, cens, shift,
 
     # setup
     i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
+    d     <- rep(create_determ_indicators(training, deterministic, t), 2)
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
 
     # point treatment survival check
