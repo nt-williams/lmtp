@@ -104,17 +104,19 @@ estimate_c <- function(data, training, validation, C, outcome,
   if (all(is.na(out$valid))) {
     for (t in 1:tau) {
       # setup
-      fit_task  <- suppressWarnings(initiate_sl3_task(training, C[[t]], node_list[[t]], "binomial", drop = TRUE))
-      pred_task <- suppressWarnings(initiate_sl3_task(validation, C[[t]], node_list[[t]], "binomial", drop = TRUE))
-      ensemble  <- initiate_ensemble("binomial", learners)
+      i           <- rep(create_censoring_indicators(training, C, t)$j, 2)
+      fit_task    <- suppressWarnings(initiate_sl3_task(training[i, ], C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      tpred_task  <- suppressWarnings(initiate_sl3_task(training, C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      vpred_task  <- suppressWarnings(initiate_sl3_task(validation, C[[t]], node_list[[t]], "binomial", drop = TRUE))
+      ensemble   <- initiate_ensemble("binomial", learners)
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
       sl_weights[t, ] <- extract_sl_weights(fit)
 
       # inverse probability of not being censored training
-      out$train[, t] <- 1 / bound(predict_sl3(fit, fit_task), .Machine$double.eps)
-      out$valid[, t] <- 1 / bound(predict_sl3(fit, pred_task), .Machine$double.eps)
+      out$train[, t] <- 1 / bound(predict_sl3(fit, tpred_task), .Machine$double.eps)
+      out$valid[, t] <- 1 / bound(predict_sl3(fit, vpred_task), .Machine$double.eps)
     }
   }
 
