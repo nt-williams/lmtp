@@ -176,3 +176,22 @@ final_outcome <- function(outcomes) {
   max(outcomes)
 }
 
+#' Time To Event Last Outcome Carried Forward
+#'
+#' @param data The dataset to modify.
+#' @param outcomes A vector of outcome nodes ordered by time.
+#'
+#' @return A modified dataset with future outcome nodes set to 1 if an observation
+#'  experienced an event at any previous time point.
+#' @export
+event_locf <- function(data, outcomes) {
+  tau <- length(outcomes)
+  for (i in outcomes[1:(tau - 1)]) {
+    modify <- setdiff(outcomes[match(i, outcomes):tau], i) # find all outcomes at later time
+    for (j in 1:nrow(data)) {
+      if (data[j, i] == 1) data[j, modify] <- 1 # if the event is observed at the current time, set all later events to 1
+    }
+  }
+  return(data)
+}
+
