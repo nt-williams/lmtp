@@ -14,29 +14,14 @@ get_folded_data <- function(data, folds) {
   return(out)
 }
 
-cf_cens <- function(data, folded, V, C, outcome, tau,
-                    node_list, learners, weights_c) {
-  out <- list()
-  fopts <- options("lmtp.bound")
-  for (i in 1:V) {
-    out[[i]] <- future::future({
-      options(fopts)
-      estimate_c(data, folded[[i]]$train, folded[[i]]$valid,
-                 C, outcome, tau, node_list, learners, weights_c[[i]])
-      })
-  }
-  out <- future::values(out)
-  return(out)
-}
-
-cf_r <- function(data, shift, V, trt, cens, C, tau,
+cf_r <- function(data, shift, V, trt, cens, deterministic, tau,
                  node_list, learners, pb, weights_r) {
-  fopts <- options("lmtp.bound")
+  fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, C[[i]],
+      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, deterministic,
                  shift, tau, node_list, learners, pb, weights_r[[i]])
     })
   }
@@ -44,7 +29,7 @@ cf_r <- function(data, shift, V, trt, cens, C, tau,
   return(out)
 }
 
-cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
+cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                    outcome_type, learners, m, pb, weights_m) {
   fopts <- options("lmtp.bound")
   out <- list()
@@ -52,7 +37,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
     out[[i]] <- future::future({
       options(fopts)
       estimate_sub(data[[i]]$train, shifted[[i]]$train, shifted[[i]]$valid,
-                   outcome, node_list, C, tau, outcome_type,
+                   outcome, node_list, C, deterministic, tau, outcome_type,
                    learners, m[[i]]$valid, pb, weights_m[[i]])
     })
   }
@@ -63,8 +48,8 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, tau,
 
 }
 
-cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
-                    m_natural, m_shifted, r, learners, pb, weights_m) {
+cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
+                    outcome_type, m_natural, m_shifted, r, learners, pb, weights_m) {
 
   fopts <- options("lmtp.bound")
   m <- list()
@@ -72,7 +57,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
     m[[i]] <- future::future({
       options(fopts)
       estimate_tmle(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid,
-                    shifted[[i]]$valid, outcome, node_list, C, tau,
+                    shifted[[i]]$valid, outcome, node_list, C, deterministic, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
                     learners, pb, weights_m[[i]])
     })
@@ -84,8 +69,8 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
   return(out)
 }
 
-cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
-                   m_natural, m_shifted, r, learners, pb, weights_m) {
+cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
+                   tau, outcome_type, m_natural, m_shifted, r, learners, pb, weights_m) {
 
   fopts <- options("lmtp.bound")
   m <- list()
@@ -93,7 +78,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, tau, outcome_type,
     m[[i]] <- future::future({
       options(fopts)
       estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
-                   shifted[[i]]$valid, outcome, node_list, C, tau, tau,
+                   shifted[[i]]$valid, outcome, node_list, C, deterministic, tau, tau,
                    outcome_type, learners,m_natural[[i]], m_shifted[[i]],
                    r[[i]], pb, weights_m[[i]])
     })

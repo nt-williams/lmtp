@@ -10,7 +10,7 @@ Message: Null hypothesis: theta == 0
 
 
   theta shift   ref std.error conf.low conf.high p.value
-1 0.118 0.905 0.787    0.0127   0.0928     0.143  <0.001
+1 0.118 0.905 0.787    0.0126   0.0931     0.143  <0.001
 
 > lmtp_contrast(fit1, fit0, ref = 0.787)
 Message: Non-estimated reference value, defaulting type = 'additive'.
@@ -24,8 +24,8 @@ Message: Null hypothesis: theta == 0
 
 
     theta shift   ref std.error conf.low conf.high p.value
-1 0.11767 0.905 0.787    0.0127   0.0928    0.1426  <0.001
-2 0.00556 0.793 0.787    0.0221  -0.0378    0.0489   0.801
+1 0.11790 0.905 0.787    0.0126   0.0931    0.1427  <0.001
+2 0.00581 0.793 0.787    0.0183  -0.0301    0.0418   0.752
 
 > lmtp_contrast(fit1, ref = fit0)
 
@@ -37,7 +37,7 @@ Message: Null hypothesis: theta == 0
 
 
   theta shift   ref std.error conf.low conf.high p.value
-1 0.112 0.905 0.793    0.0163   0.0801     0.144  <0.001
+1 0.112 0.905 0.793   0.00893   0.0946      0.13  <0.001
 
 > lmtp_contrast(fit1, ref = fit0, type = "rr")
 
@@ -49,7 +49,7 @@ Message: Null hypothesis: theta == 1
 
 
   theta shift   ref std.error conf.low conf.high p.value
-1  1.14 0.905 0.793     0.021      1.1      1.19  <0.001
+1  1.14 0.905 0.793    0.0122     1.11      1.17  <0.001
 
 > lmtp_contrast(fit1, ref = fit0, type = "or")
 
@@ -61,5 +61,5 @@ Message: Null hypothesis: theta == 1
 
 
   theta shift   ref std.error conf.low conf.high p.value
-1  2.48 0.905 0.793     0.113     1.99       3.1  <0.001
+1  2.49 0.905 0.793    0.0677     2.18      2.84  <0.001
 

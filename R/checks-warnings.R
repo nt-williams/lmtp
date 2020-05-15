@@ -33,33 +33,24 @@ check_sd <- function(x, learner_stack) {
   return(out)
 }
 
-check_censoring <- function(data, training, validation, C, Y, tau) {
-
+check_censoring <- function(data, C, Y) {
   if (any(is.na(data[[Y]])) & is.null(C)) {
     stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
-  } else if (!is.null(C)) {
-    check <- TRUE
-  } else if (is.null(C) | !any(is.na(data[[Y]]))) {
-    check <- FALSE
   }
+}
 
-  ct <- matrix(nrow = nrow(training), ncol = tau)
-  cv <- matrix(nrow = nrow(validation), ncol = tau)
-  if (isFALSE(check)) {
-    for (t in 1:tau) {
-      ct[, t] <- rep(1, nrow(training))
-      cv[, t] <- rep(1, nrow(validation))
+check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
+  for (t in 1:tau) {
+    i <- create_censoring_indicators(data, cens, t)$i
+    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau)[t], baseline, unlist(nodes[t]))])))) {
+      browser()
+      stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
+           call. = F)
     }
   }
-
-  out <- list(train = ct,
-              valid = cv)
-
-  return(out)
 }
 
 fix_censoring_ind <- function(data, C = NULL, tau) {
-
   if (!is.null(C)) {
     out <- as.list(data)
     for (t in 1:tau) {
@@ -121,7 +112,6 @@ check_outcome_type <- function(fits, ref, type) {
 }
 
 check_lmtp_type <- function(fits, ref) {
-
   if (is.lmtp(ref)) {
     fits[["ref"]] <- ref
   }
@@ -156,4 +146,26 @@ check_ref_type <- function(ref, type) {
   return(out)
 }
 
+check_trt_length <- function(trt, tau) {
+  if (length(trt) == tau) {
+    set_lmtp_options("trt", "standard")
+    return(trt)
+  } else if (length(trt) == 1) {
+    set_lmtp_options("trt", "point.wise")
+    return(rep(trt, tau))
+  } else {
+    stop("Treatment nodes should either be the same length as nodes, or of length 1.",
+         call. = F)
+  }
+}
 
+check_deterministic <- function(outcomes, tau) {
+  if (length(outcomes) == 1) {
+    return(NULL)
+  } else if (length(outcomes) == tau + 1) {
+    return(outcomes[1:tau])
+  } else {
+    stop("Outcome argument must be of length 1, or in the case of survival analyis, of length tau + 1, with nodes 1 through tau set to the intermediate outcomes.",
+         call. = F)
+  }
+}

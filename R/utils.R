@@ -3,27 +3,35 @@
   packageStartupMessage(welcome_msg(), check_for_sl3())
 }
 
-shift_data <- function(data, A, .f) {
-  if (is.null(.f)) {
-    return(data)
-  }
+shift_data <- function(data, A, C, .f) {
 
   out <- as.list(data)
-  for (a in A) {
-    out[[a]] <- .f(out[[a]])
+
+  if (is.null(.f)) { # only set C = 1
+    for (ce in C) {
+      out[[ce]] <- 1
+    }
+  } else {
+    for (a in A) { # shift A
+      out[[a]] <- .f(out[[a]])
+    }
+
+    for (ce in C) { # and set C = 1
+      out[[ce]] <- 1
+    }
   }
 
   return(as.data.frame(out))
 }
 
 set_lmtp_options <- function(option, val) {
-
   if (option == "bound") {
     options(lmtp.bound = val)
-  } else if (option == "trunc") {
-    option(lmtp.trunc = val)
+  } else if (option == "trt") {
+    options(lmtp.trt.length = val)
+  } else {
+    stop("Unknown lmtp option.", call. = F)
   }
-
 }
 
 bound <- function(x, p = getOption("lmtp.bound")) {
@@ -92,6 +100,14 @@ create_censoring_indicators <- function(data, C, tau) {
   return(out)
 }
 
+create_determ_indicators <- function(data, determ, tau) {
+  if (is.null(determ)) {
+    return(rep(FALSE, nrow(data)))
+  } else {
+    return(data[[determ[tau]]] == 1 & !is.na(data[[determ[tau]]]))
+  }
+}
+
 transform_sdr <- function(r, tau, max, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
@@ -151,3 +167,12 @@ pluck_weights <- function(type, x) {
 is.lmtp <- function(x) {
   class(x) == "lmtp"
 }
+
+sw <- function(x) {
+  suppressWarnings(x)
+}
+
+final_outcome <- function(outcomes) {
+  max(outcomes)
+}
+

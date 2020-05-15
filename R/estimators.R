@@ -61,13 +61,8 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  cens_ratio <- cf_cens(
-    data, meta$data, folds, cens, outcome, meta$tau,
-    meta$node_list, learners_trt, meta$weights_c
-  )
-
   dens_ratio <- ratio_dr(
-    cf_r(meta$data, shift, folds, trt, cens, cens_ratio, meta$tau,
+    cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
          meta$node_list, learners_trt, pb, meta$weights_r),
     folds
   )
@@ -76,7 +71,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-            cens, meta$tau, meta$outcome_type, meta$m, meta$m,
+            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
             dens_ratio, learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
@@ -93,7 +88,6 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", dens_ratio),
-      weights_c = pluck_weights("r", cens_ratio),
       outcome_type = meta$outcome_type
     ))
 
@@ -163,18 +157,15 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  cens_ratio <- cf_cens(data, meta$data, folds, cens, outcome, meta$tau,
-                        meta$node_list, learners_trt, meta$weights_c)
-
-  raw_ratio <- cf_r(meta$data, shift, folds, trt, cens, cens_ratio, meta$tau,
+  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
                     meta$node_list, learners_trt, pb, meta$weights_r)
 
   # sdr ---------------------------------------------------------------------
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-           cens, meta$tau, meta$outcome_type, meta$m, meta$m, raw_ratio,
-           learners_outcome, pb, meta$weights_m)
+           cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
+           raw_ratio, learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 
@@ -190,7 +181,6 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", raw_ratio),
-      weights_c = pluck_weights("r", cens_ratio),
       outcome_type = meta$outcome_type
     ))
 
@@ -257,7 +247,8 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
   # substitution ------------------------------------------------------------
 
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-                   cens, meta$tau, meta$outcome_type, learners, meta$m, pb, meta$weights_m)
+                   cens, meta$determ, meta$tau, meta$outcome_type,
+                   learners, meta$m, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 
@@ -331,13 +322,10 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  cens_ratio <- cf_cens(data, meta$data, folds, cens, outcome,
-                        meta$tau, meta$node_list, learners, meta$weights_c)
-
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
-        cf_r(meta$data, shift, folds, trt, cens, cens_ratio,
+        cf_r(meta$data, shift, folds, meta$trt, cens, meta$deterministic,
              meta$tau, meta$node_list, learners, pb, meta$weights_r
         )
       )
@@ -349,12 +337,11 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     estimator = "ipw",
     eta = list(
       r = dens_ratio$r,
-      y = data[[outcome]],
+      y = data[[final_outcome(outcome)]],
       folds = meta$folds,
       tau = meta$tau,
       shift = deparse(substitute((shift))),
-      weights_r = dens_ratio$sl_weights,
-      weights_c = pluck_weights("r", cens_ratio)
+      weights_r = dens_ratio$sl_weights
     ))
 
   return(out)
