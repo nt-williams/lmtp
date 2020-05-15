@@ -47,7 +47,7 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
   out <- sapply(out, function(x) {
     . <- strsplit(x, ",")
     if (k == 0) .
-    else unlist(.)
+    else unique(unlist(.))
   })
 
   if (!is.null(baseline)) {

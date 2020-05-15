@@ -157,15 +157,15 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # propensity --------------------------------------------------------------
 
-  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$tau,
+  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
                     meta$node_list, learners_trt, pb, meta$weights_r)
 
   # sdr ---------------------------------------------------------------------
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
-           cens, meta$tau, meta$outcome_type, meta$m, meta$m, raw_ratio,
-           learners_outcome, pb, meta$weights_m)
+           cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
+           raw_ratio, learners_outcome, pb, meta$weights_m)
 
   # return estimates --------------------------------------------------------
 

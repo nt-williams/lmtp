@@ -73,7 +73,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
     vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
     vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
-    ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
+    ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
 
     # progress bar
     pb()
@@ -131,12 +131,17 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 }
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
-                         outcome, node_list, C, tau, max, outcome_type,
+                         outcome, node_list, C, deterministic, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
 
   if (tau > 0) {
 
     # global setup
+    i      <- create_censoring_indicators(training, C, tau)$i
+    jt     <- create_censoring_indicators(training, C, tau)$j
+    jv     <- create_censoring_indicators(validation, C, tau)$j
+    dt     <- create_determ_indicators(training, deterministic, tau)
+    dv     <- create_determ_indicators(validation, deterministic, tau)
     pseudo <- paste0("psi", tau + 1)
 
     # progress bar
@@ -145,15 +150,12 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     if (tau == max) {
 
       # setup
-      i            <- create_censoring_indicators(training, C, tau)$i
-      jt           <- create_censoring_indicators(training, C, tau)$j
-      jv           <- create_censoring_indicators(validation, C, tau)$j
-      fit_task     <- initiate_sl3_task(training[i, ], outcome, node_list[[tau]], outcome_type)
+      fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
       nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
       shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
       vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
       vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
-      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
+      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
@@ -162,17 +164,16 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       # predict on training data
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
       m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task))
+      m_natural$train[dt, tau] <- 1
+      m_shifted$train[dt, tau] <- 1
 
       # predict on validation data
       m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task))
       m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
+      m_natural$valid[dv, tau] <- 1
+      m_shifted$valid[dv, tau] <- 1
 
     } else if (tau < max) {
-
-      # setup
-      i  <- create_censoring_indicators(training, C, tau + 1)$i
-      jt <- create_censoring_indicators(training, C, tau)$j
-      jv <- create_censoring_indicators(validation, C, tau)$j
 
       # outcome transformation
       training[, pseudo]  <-
@@ -181,12 +182,12 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                       tau, max, m_shifted$train, m_natural$train)
 
       # run SL on outcome transformation and get predictions
-      fit_task     <- initiate_sl3_task(training[i, ], pseudo, node_list[[tau]], outcome_type)
+      fit_task     <- initiate_sl3_task(training[i & !dt, ], pseudo, node_list[[tau]], outcome_type)
       nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
       shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
       vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
       vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
-      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i, ], pseudo, learners))
+      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], pseudo, learners))
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
@@ -195,8 +196,12 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       # predictions
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
       m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task))
+      m_natural$train[dt, tau] <- 1
+      m_shifted$train[dt, tau] <- 1
       m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task))
       m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
+      m_natural$valid[dv, tau] <- 1
+      m_shifted$valid[dv, tau] <- 1
 
     }
 
@@ -208,6 +213,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                  outcome = pseudo,
                  node_list = node_list,
                  C = C,
+                 deterministic = deterministic,
                  tau = tau - 1,
                  max = max,
                  outcome_type = "continuous",
