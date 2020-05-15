@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# lmtp
+# lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
 
@@ -31,9 +31,10 @@ devtools::install_github("nt-williams/lmtp")
 ## Scope
 
 `lmtp` is an R package that provides an estimation framework for the
-casual effects of longitudinal modified treatment policies described in
-\[INSERT IVAN PAPER\]. Two primary estimators are supported, a Targeted
-Maximum Likelihood (TML) estimator and a Sequentially Doubly Robust
+casual effects of longitudinal modified treatment policies (also
+referred to as stochastic interventions) as described in Diaz, Williams,
+& Hoffman (2020). Two primary estimators are supported, a targeted
+maximum likelihood (TML) estimator and a sequentially doubly robust
 (SDR) estimator (a substitution and an IPW estimator are provided for
 the sake of being thorough but their use is recommended against in favor
 of the TML and SDR estimators). In addition to longitudinal effects,
@@ -133,4 +134,13 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 #>         95% CI: (0.2863, 0.3315)
 ```
 
+## Citation
+
+    # Package citation
+    
+    # Paper citation
+
 ## References
+
+Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. *Non-Parametric
+Causal Effects Based on Longitudinal Modified Policies*.
