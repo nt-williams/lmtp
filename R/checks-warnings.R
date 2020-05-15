@@ -169,3 +169,11 @@ check_deterministic <- function(outcomes, tau) {
          call. = F)
   }
 }
+
+check_folds <- function(V) {
+  if (V > 1) {
+    on.exit()
+  } else {
+    stop("The number of folds must be greater than 1.", call. = F)
+  }
+}

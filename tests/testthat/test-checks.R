@@ -11,3 +11,7 @@ test_that("detects xyz", {
   df <- data.frame(xyz = 1:5)
   expect_error(check_scaled_conflict(df))
 })
+
+test_that("detects incorrect folds", {
+  expect_error(check_folds(1))
+})

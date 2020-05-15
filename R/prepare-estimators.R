@@ -23,6 +23,7 @@ Meta <- R6::R6Class(
       check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, nodes, baseline, cens, length(nodes))
       check_scaled_conflict(data)
+      check_folds(V)
 
       # general setup
       self$n            <- nrow(data)
