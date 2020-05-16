@@ -125,5 +125,21 @@ progressr::with_progress({
 })
 fit2.2
 
+# Example 3.1
+# Longitudinal setting, time-varying binary treatment, time-varying covariates
+# and baseline covariates with no loss-to-follow-up. Interested in a traditional
+# causal effect where treatment is set to 1 at all time points for all observations.
+data("iptwExWide", package = "twang")
+a <- paste0("tx", 1:3)
+baseline <- c("gender", "age")
+nodes <- list(c("use0"), c("use1"), c("use2"))
+progressr::with_progress({
+  fit3.1 <-
+    lmtp_tmle(iptwExWide, a, "outcome", nodes, baseline = baseline,
+              shift = function(x) 1, outcome_type = "continuous",
+              folds = 2)
+})
+
+
 
 }
