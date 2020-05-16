@@ -1,19 +1,34 @@
 
 #' Create a node list specification
 #'
+#' Creates a node list specification that is used by the provided estimators.
+#' \code{create_node_list()} is not explicitly called by the analyst, rather
+#' it is provided so the analyst can confirm how estimators will use variables
+#' before actually performing the estimation procedure.
+#'
 #' @param trt A vector of column names of treatment variables.
 #' @param nodes A list of length tau with the column names for new nodes to
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
-#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-#'  and these variables should be added to the first index of \code{nodes}.
-#' @param k An integer specifying how many previous time points nodes should be
+#'  included for adjustment at every timepoint.
+#' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #'
-#' @return TODO
+#' @return A list the same length of the nodes parameter with the variables
+#' to be used for estimation at that given time point.
 #' @export
+#' @examples
+#' a <- c("A_1", "A_2", "A_3", "A_4")
+#' bs <- c("W_1", "W_2")
+#' nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+#'
+#' # assuming no Markov property
+#' create_node_list(a, nodes, bs, k = Inf)
+#'
+#' # assuming a Markov property
+#' create_node_list(a, nodes, bs, k = 1)
 create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
 
   out <- list()

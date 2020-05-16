@@ -7,7 +7,7 @@
 \title{lmtp: Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies}
 \description{
 Cross-validated estimators for casual effects based on longitudinal modified treatment 
-  policies as described in ... (2020) <arXiv:...>, traditional point treatment, 
+  policies as described in Diaz, Williams, and Hoffman (2020) <arXiv:...>, traditional point treatment, 
   and traditional longitudinal effects. Both continuous and binary treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   whether treatment is continuous or binary. Estimation is performed using the Super Learner from `sl3`. 
