@@ -10,10 +10,8 @@ A <- 23 + 5*W + rnorm(n)
 Y <- 7.2*A + 3*W + rnorm(n)
 ex1_dat <- data.frame(W, A, Y)
 d <- function(x) x - 5
-progressr::with_progress({
-  fit1.1 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
-                     outcome_type = "continuous", folds = 2)
-})
+fit1.1 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+                   outcome_type = "continuous", folds = 2)
 
 # Example 1.2
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
@@ -21,10 +19,8 @@ progressr::with_progress({
 # units only among observations whose observed A was above 80.
 # The true value under this intervention is about 513.
 d <- function(x) (x > 80)*(x - 15) + (x <= 80)*x
-progressr::with_progress({
-  fit1.2 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
-                     outcome_type = "continuous", folds = 2)
-})
+fit1.2 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+                   outcome_type = "continuous", folds = 2)
 
 # Example 2.1
 # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -52,7 +48,7 @@ fit2.1
 # domain specific knowledge may suggest otherwise leading to a Markov processes.
 # This can be controlled using the k argument.
 progressr::with_progress({
-  fit2.2 <- lmtp_tmle(sim_t4, a, "Y", time_varying, shift = d,
+  fit2.2 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d,
                       k = 1, folds = 2)
 })
 fit2.2
@@ -67,7 +63,8 @@ baseline <- c("gender", "age")
 nodes <- list(c("use0"), c("use1"), c("use2"))
 progressr::with_progress({
   fit3.1 <-
-    lmtp_tmle(iptwExWide, a, "outcome", nodes, baseline = baseline,
+    lmtp_sdr(iptwExWide, a, "outcome", nodes, baseline = baseline,
               shift = function(x) 1, outcome_type = "continuous",
               folds = 2)
 })
+fit3.1

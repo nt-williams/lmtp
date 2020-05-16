@@ -139,6 +139,7 @@ progressr::with_progress({
               shift = function(x) 1, outcome_type = "continuous",
               folds = 2)
 })
+fit3.1
 
 
 
