@@ -27,11 +27,6 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
     k <- 0
   }
 
-  if (!is.null(baseline) & k == Inf) {
-    stop("Non-Markov process, set `baseline = NULL` and add baseline covariates to `nodes[[1]]`",
-         call. = FALSE)
-  }
-
   if (length(trt) == tau) {
     for (i in 1:tau) {
       out[[i]] <- c(nodes[[i]], trt[i])
