@@ -32,8 +32,7 @@ be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
 
 \item{baseline}{An optional vector of columns names for baseline covariates to be
-included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-and these variables should be added to the first index of \code{nodes}.}
+included for adjustment at every timepoint.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
 length as \code{A}.}

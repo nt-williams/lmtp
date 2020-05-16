@@ -8,8 +8,7 @@
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
-#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-#'  and these variables should be added to the first index of \code{nodes}.
+#'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -102,8 +101,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
-#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-#'  and these variables should be added to the first index of \code{nodes}.
+#'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -194,8 +192,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
-#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-#'  and these variables should be added to the first index of \code{nodes}.
+#'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
@@ -274,8 +271,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  be introduced at each time point. The list should be ordered following
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
-#'  included for adjustment at every timepoint. If \code{k = Inf}, should be \code{NULL}
-#'  and these variables should be added to the first index of \code{nodes}.
+#'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
 #' @param k An integer specifying how many previous time points nodes should be
