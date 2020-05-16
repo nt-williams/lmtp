@@ -28,10 +28,9 @@
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @return TODO
-#' @export
 #'
-#' @examples
-#' # TO DO
+#' @example inst/examples/tmle-ex.R
+#' @export
 lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
                       cens = NULL, k = Inf, shift,
                       outcome_type = c("binomial", "continuous"),
@@ -126,8 +125,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @return TODO
 #' @export
 #'
-#' @examples
-#' # TO DO
+#' @example inst/examples/tmle-ex.R
 lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
