@@ -85,7 +85,11 @@ fit4.1
 
 # Example 4.2
 # Using the same data as example 4.1, but now interested in the causal effect of a
-# modified treatment policy where ...
+# treatment policy where exposure increased by 0.5 units at all time points. The
+# true value under this intervention is about 0.88.
+d <- function(x) x + 0.5
+fit4.2 <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
+fit4.2
 
 # Example 5.1
 # Time-to-event analysis with a time-invariant exposure.

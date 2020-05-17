@@ -70,7 +70,7 @@ A list of class \code{lmtp} containing the following components:
 \item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
 \item{high}{Upper bound of the 95\% confidene interval of the LMTP effect.}
 \item{eif}{The estimated, uncentered, influence function of the estimate.}
-\item{shift}{}
+\item{shift}{The shift function specifying the treatment policy of interest.}
 \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 ensemble weights at each time-point for each fold for the outcome regression.}
 \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -168,7 +168,11 @@ fit4.1
 
 # Example 4.2
 # Using the same data as example 4.1, but now interested in the causal effect of a
-# modified treatment policy where ...
+# treatment policy where exposure increased by 0.5 units at all time points. The
+# true value under this intervention is about 0.88.
+d <- function(x) x + 0.5
+fit4.2 <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
+fit4.2
 
 # Example 5.1
 # Time-to-event analysis with a time-invariant exposure.

@@ -34,7 +34,7 @@
 #' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
 #' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
 #' \item{eif}{The estimated, uncentered, influence function of the estimate.}
-#' \item{shift}{}
+#' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -140,7 +140,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
 #' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
 #' \item{eif}{The estimated, uncentered, influence function of the estimate.}
-#' \item{shift}{}
+#' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner

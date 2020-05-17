@@ -68,3 +68,23 @@ progressr::with_progress({
               folds = 2)
 })
 fit3.1
+
+# Example 4.1
+# Longitudinal setting, time-varying continuous treatment, time-varying covariates,
+# binary outcome with right censoring. Interested in the mean population outcome under
+# the observed exposures in a hypothetical population with no loss-to-follow-up.
+head(sim_cens)
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+y <- "Y"
+fit4.1 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+fit4.1
+
+# Example 4.2
+# Using the same data as example 4.1, but now interested in the causal effect of a
+# treatment policy where exposure increased by 0.5 units at all time points. The
+# true value under this intervention is about 0.88.
+d <- function(x) x + 0.5
+fit4.2 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
+fit4.2
