@@ -62,13 +62,27 @@ mechanism.}
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 }
 \value{
-TODO
+A list of class \code{lmtp} containing the following components:
+
+\item{estimator}{The estimator used, in this case "SDR".}
+\item{theta}{The estimated population LMTP effect.}
+\item{standard_error}{The estimated standard error of the LMTP effect.}
+\item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
+\item{high}{Upper bound of the 95\% confidene interval of the LMTP effect.}
+\item{eif}{The estimated, uncentered, influence function of the estimate.}
+\item{shift}{}
+\item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
+ensemble weights at each time-point for each fold for the outcome regression.}
+\item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
+ensemble weights at each time-point for each fold for the propensity.}
+\item{outcome_type}{The outcome variable type.}
 }
 \description{
 LMTP Sequential Doubly Robust Estimator
 }
 \examples{
 library(lmtp)
+
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units
@@ -140,6 +154,26 @@ progressr::with_progress({
 })
 fit3.1
 
+# Example 4.1
+# Longitudinal setting, time-varying continuous treatment, time-varying covariates,
+# binary outcome with right censoring. Interested in the mean population outcome under
+# the observed exposures in a hypothetical population with no loss-to-follow-up.
+head(sim_cens)
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+y <- "Y"
+fit4.1 <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+fit4.1
 
+# Example 4.2
+# Using the same data as example 4.1, but now interested in the causal effect of a
+# modified treatment policy where ...
+
+# Example 5.1
+# Time-to-event analysis with a time-invariant exposure.
+
+# Example 5.2
+# Time-to-event analysis with a time-varying exposure and time-varying covariates.
 
 }

@@ -11,10 +11,10 @@
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{A}.
-#' @param k An integer specifying how many previous time points nodes should be
+#' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param shift A function that specifies how treatment variables should be shifted.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
 #' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
 #'  the bounds will be taken as the minimum and maximum of the observed data.
@@ -26,7 +26,20 @@
 #' @param folds The number of folds to be used for cross-validation.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @return TODO
+#' @return A list of class \code{lmtp} containing the following components:
+#'
+#' \item{estimator}{The estimator used, in this case "TMLE".}
+#' \item{theta}{The estimated population LMTP effect.}
+#' \item{standard_error}{The estimated standard error of the LMTP effect.}
+#' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
+#' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
+#' \item{eif}{The estimated, uncentered, influence function of the estimate.}
+#' \item{shift}{}
+#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the outcome regression.}
+#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the propensity.}
+#' \item{outcome_type}{The outcome variable type.}
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
@@ -119,8 +132,20 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param folds The number of folds to be used for cross-validation.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
+#' @return A list of class \code{lmtp} containing the following components:
 #'
-#' @return TODO
+#' \item{estimator}{The estimator used, in this case "SDR".}
+#' \item{theta}{The estimated population LMTP effect.}
+#' \item{standard_error}{The estimated standard error of the LMTP effect.}
+#' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
+#' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
+#' \item{eif}{The estimated, uncentered, influence function of the estimate.}
+#' \item{shift}{}
+#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the outcome regression.}
+#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the propensity.}
+#' \item{outcome_type}{The outcome variable type.}
 #' @export
 #'
 #' @example inst/examples/tmle-ex.R

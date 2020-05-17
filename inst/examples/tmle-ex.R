@@ -1,4 +1,5 @@
 library(lmtp)
+
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units
@@ -70,5 +71,25 @@ progressr::with_progress({
 })
 fit3.1
 
+# Example 4.1
+# Longitudinal setting, time-varying continuous treatment, time-varying covariates,
+# binary outcome with right censoring. Interested in the mean population outcome under
+# the observed exposures in a hypothetical population with no loss-to-follow-up.
+head(sim_cens)
+a <- c("A1", "A2")
+nodes <- list(c("L1"), c("L2"))
+cens <- c("C1", "C2")
+y <- "Y"
+fit4.1 <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+fit4.1
 
+# Example 4.2
+# Using the same data as example 4.1, but now interested in the causal effect of a
+# modified treatment policy where ...
+
+# Example 5.1
+# Time-to-event analysis with a time-invariant exposure.
+
+# Example 5.2
+# Time-to-event analysis with a time-varying exposure and time-varying covariates.
 
