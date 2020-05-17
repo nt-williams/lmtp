@@ -3,7 +3,7 @@
 \docType{data}
 \name{sim_cens}
 \alias{sim_cens}
-\title{Simulated longitudinal data with censoring}
+\title{Simulated Longitudinal Data Dith Censoring}
 \format{A data frame with 1000 rows and 10 variables:
 \describe{
 \item{L1}{Time varying covariate time 1}

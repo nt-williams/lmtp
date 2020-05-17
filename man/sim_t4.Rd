@@ -3,7 +3,7 @@
 \docType{data}
 \name{sim_t4}
 \alias{sim_t4}
-\title{Simulated longitudinal data}
+\title{Simulated Longitudinal Data}
 \format{A data frame with 5000 rows and 10 variables:
 \describe{
 \item{ID}{observation ID}
