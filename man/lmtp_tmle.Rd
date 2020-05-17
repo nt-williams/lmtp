@@ -175,7 +175,24 @@ fit4.2 <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
 fit4.2
 
 # Example 5.1
-# Time-to-event analysis with a time-invariant exposure.
+# Time-to-event analysis with a binary time-invariant exposure. Interested in
+# the effect of treatment being given to all observations on the cumulative
+# incidence of our time-to-event outcome.
+a <- "trt"
+# for a survival problem, the outcome arugment now takes a vector of outcomes
+# if an observation experiences the event prior to the end of follow-up, all future
+# outcome nodes should be set to 1 (i.e., last observation carried forward).
+y <- paste0("N1.", 0:6)
+cens <- paste0("C.", 0:5)
+baseline <- c("W1", "W2")
+# even if there are no time varying covariates, we still provide a list the same
+# length as the number of time points, but with items specified as NULL.
+nodes <- lapply(0:5, function(x) NULL)
+progressr::with_progress({
+  fit5.1 <- lmtp_tmle(sim_point_surv, a, y, nodes, baseline, cens,
+                      shift = function(x) 1, folds = 2)
+})
+fit5.1
 
 # Example 5.2
 # Time-to-event analysis with a time-varying exposure and time-varying covariates.

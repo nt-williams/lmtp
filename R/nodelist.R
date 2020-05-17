@@ -38,10 +38,6 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
     k <- Inf
   }
 
-  if (tau == 1 & k == Inf) {
-    k <- 0
-  }
-
   if (length(trt) == tau) {
     for (i in 1:tau) {
       out[[i]] <- c(nodes[[i]], trt[i])
@@ -54,9 +50,9 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
 
   out <- paste(lapply(out, function(x) paste(x, collapse = ",")))
   out <- slider::slide(out, ~ .x, .before = k)
-  out <- sapply(out, function(x) {
+  out <- lapply(out, function(x) {
     . <- strsplit(x, ",")
-    if (k == 0) .
+    if (k == 0) unlist(.)
     else unique(unlist(.))
   })
 
