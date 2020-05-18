@@ -233,7 +233,17 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
-#' @return TODO
+#' @return A list of class \code{lmtp} containing the following components:
+#'
+#' \item{estimator}{The estimator used, in this case "substitution".}
+#' \item{theta}{The estimated population LMTP effect.}
+#' \item{standard_error}{NA}
+#' \item{low}{NA}
+#' \item{high}{NA}
+#' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the outcome regression.}
+#' \item{outcome_type}{The outcome variable type.}
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
@@ -308,7 +318,16 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
-#' @return TODO
+#' @return A list of class \code{lmtp} containing the following components:
+#'
+#' \item{estimator}{The estimator used, in this case "IPW".}
+#' \item{theta}{The estimated population LMTP effect.}
+#' \item{standard_error}{NA}
+#' \item{low}{NA}
+#' \item{high}{NA}
+#' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
+#'  ensemble weights at each time-point for each fold for the propensity.}
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R

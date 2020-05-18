@@ -50,7 +50,16 @@ exposure mechanism.}
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 }
 \value{
-TODO
+A list of class \code{lmtp} containing the following components:
+
+\item{estimator}{The estimator used, in this case "IPW".}
+\item{theta}{The estimated population LMTP effect.}
+\item{standard_error}{NA}
+\item{low}{NA}
+\item{high}{NA}
+\item{shift}{The shift function specifying the treatment policy of interest.}
+\item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
+ensemble weights at each time-point for each fold for the propensity.}
 }
 \description{
 LMTP IPW Estimator
