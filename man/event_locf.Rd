@@ -16,5 +16,10 @@ A modified dataset with future outcome nodes set to 1 if an observation
 experienced an event at any previous time point.
 }
 \description{
-Time To Event Last Outcome Carried Forward
+A helper function to prepare survival data for use with LMTP estimators
+by imputing outcome nodes using last outcome carried forward when an observation
+experiences the event before the end-of-follow-up.
+}
+\examples{
+event_locf(sim_point_surv, c(paste0("N1.", 0:6)))
 }
