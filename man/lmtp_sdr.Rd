@@ -94,8 +94,9 @@ LMTP Sequential Doubly Robust Estimator
   Y <- 7.2*A + 3*W + rnorm(n)
   ex1_dat <- data.frame(W, A, Y)
   d <- function(x) x - 5
-  fit1.1 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+  psi1.1 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
                      outcome_type = "continuous", folds = 2)
+  psi1.1
 
   # Example 1.2
   # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
@@ -103,8 +104,9 @@ LMTP Sequential Doubly Robust Estimator
   # units only among observations whose observed A was above 80.
   # The true value under this intervention is about 513.
   d <- function(x) (x > 80)*(x - 15) + (x <= 80)*x
-  fit1.2 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+  psi1.2 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
                      outcome_type = "continuous", folds = 2)
+  psi1.2
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -122,9 +124,9 @@ LMTP Sequential Doubly Robust Estimator
     (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
   }
   progressr::with_progress({
-    fit2.1 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, folds = 2)
+    psi2.1 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, folds = 2)
   })
-  fit2.1
+  psi2.1
 
   # Example 2.2
   # Example 2.1 assumed that the outcome (as well as the treatment variables)
@@ -132,10 +134,36 @@ LMTP Sequential Doubly Robust Estimator
   # domain specific knowledge may suggest otherwise leading to a Markov processes.
   # This can be controlled using the k argument.
   progressr::with_progress({
-    fit2.2 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d,
+    psi2.2 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d,
                        k = 1, folds = 2)
   })
-  fit2.2
+  psi2.2
+
+  # Example 2.3
+  # Using the same data as examples 2.1 and 2.3, but now treating the exposure
+  # as an ordered categorical variable. To account for the exposure being a
+  # factor we just need to modify the shift function (and the original data)
+  # so as to respect this.
+  for (i in a) {
+    sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
+  }
+
+  d <- function(a) {
+    out <- list()
+    for (i in 1:length(a)) {
+      if (as.character(a[i]) \%in\% c("0", "1")) {
+        out[[i]] <- as.character(a[i])
+      } else {
+        out[[i]] <- as.numeric(as.character(a[i])) - 1
+      }
+    }
+    factor(unlist(out), levels = 0:5, ordered = T)
+  }
+
+  progressr::with_progress({
+    psi2.3 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, folds = 2)
+  })
+  psi2.3
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -146,12 +174,12 @@ LMTP Sequential Doubly Robust Estimator
   baseline <- c("gender", "age")
   nodes <- list(c("use0"), c("use1"), c("use2"))
   progressr::with_progress({
-    fit3.1 <-
+    psi3.1 <-
       lmtp_sdr(iptwExWide, a, "outcome", nodes, baseline = baseline,
                shift = function(x) 1, outcome_type = "continuous",
                folds = 2)
   })
-  fit3.1
+  psi3.1
 
   # Example 4.1
   # Longitudinal setting, time-varying continuous treatment, time-varying covariates,
@@ -162,16 +190,16 @@ LMTP Sequential Doubly Robust Estimator
   nodes <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
   y <- "Y"
-  fit4.1 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
-  fit4.1
+  psi4.1 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+  psi4.1
 
   # Example 4.2
   # Using the same data as example 4.1, but now interested in the causal effect of a
   # treatment policy where exposure increased by 0.5 units at all time points. The
   # true value under this intervention is about 0.88.
   d <- function(x) x + 0.5
-  fit4.2 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
-  fit4.2
+  psi4.2 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
+  psi4.2
 
   # Example 5.1
   # Time-to-event analysis with a binary time-invariant exposure. Interested in
@@ -188,11 +216,9 @@ LMTP Sequential Doubly Robust Estimator
   # length as the number of time points, but with items specified as NULL.
   nodes <- lapply(0:5, function(x) NULL)
   progressr::with_progress({
-    fit5.1 <- lmtp_sdr(sim_point_surv, a, y, nodes, baseline, cens,
+    psi5.1 <- lmtp_sdr(sim_point_surv, a, y, nodes, baseline, cens,
                        shift = function(x) 1, folds = 2)
   })
-  fit5.1
+  psi5.1
 }
-
-
 }

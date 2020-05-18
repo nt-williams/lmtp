@@ -236,8 +236,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @return TODO
 #' @export
 #'
-#' @examples
-#' # TO DO
+#' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
