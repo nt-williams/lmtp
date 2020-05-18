@@ -14,8 +14,10 @@ generics::tidy
 #' nodes <- list(c("L1"), c("L2"))
 #' cens <- c("C1", "C2")
 #' y <- "Y"
+#' \dontrun{
 #' fit <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
 #' tidy(fit)
+#' }
 #'
 #' @export
 tidy.lmtp <- function(x, ...) {

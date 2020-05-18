@@ -1,3 +1,5 @@
+\dontrun{
+
 library(lmtp)
 
 # Example 1.1
@@ -114,3 +116,4 @@ fit5.1
 # Example 5.2
 # Time-to-event analysis with a time-varying exposure and time-varying covariates.
 
+}

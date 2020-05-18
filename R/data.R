@@ -50,7 +50,7 @@
 #'   \item{C.0}{Censoring indicator that the observation is observed future time points.}
 #'   \item{N1.1}{Outcome node at time 1.}
 #'   \item{C.1}{Censoring indicator that the observation is observed future time points.}
-#'   \item{N2.1}{Outcome node at time 2.}
+#'   \item{N1.2}{Outcome node at time 2.}
 #'   \item{C.2}{Censoring indicator that the observation is observed future time points.}
 #'   \item{N1.3}{Outcome node at time 3.}
 #'   \item{C.3}{Censoring indicator that the observation is observed future time points.}

@@ -81,6 +81,8 @@ ensemble weights at each time-point for each fold for the propensity.}
 LMTP Targeted Maximum Likelihood Estimator
 }
 \examples{
+\dontrun{
+
 library(lmtp)
 
 # Example 1.1
@@ -197,4 +199,5 @@ fit5.1
 # Example 5.2
 # Time-to-event analysis with a time-varying exposure and time-varying covariates.
 
+}
 }

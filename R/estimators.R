@@ -148,7 +148,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' \item{outcome_type}{The outcome variable type.}
 #' @export
 #'
-#' @example inst/examples/tmle-ex.R
+#' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift,
                      outcome_type = c("binomial", "continuous"),
