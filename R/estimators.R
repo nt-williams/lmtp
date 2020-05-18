@@ -311,8 +311,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @return TODO
 #' @export
 #'
-#' @examples
-#' # TO DO
+#' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
                      cens = NULL, k = Inf, shift, learners = NULL,
                      folds = 10, bound = 1e-5) {
