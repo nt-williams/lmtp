@@ -3,8 +3,7 @@ compute_theta <- function(estimator, eta) {
   out <- switch(estimator,
                 "ipw" = theta_ipw(eta),
                 "sub" = theta_sub(eta),
-                "tml" = theta_tml(eta),
-                "sdr" = theta_sdr(eta))
+                "dr"  = theta_dr(eta))
 
   return(out)
 }
@@ -61,7 +60,7 @@ eif <- function(r, tau, shifted, natural) {
   return(out)
 }
 
-theta_tml <- function(eta) {
+theta_dr <- function(eta) {
 
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
 
@@ -83,45 +82,7 @@ theta_tml <- function(eta) {
   ci_high <- theta + (qnorm(0.975) * se)
 
   # returns
-  out <- list(estimator = "TMLE",
-              theta = theta,
-              standard_error = se,
-              low = ci_low,
-              high = ci_high,
-              eif = inflnce[order(i)],
-              shift = eta$shift,
-              weights_m = eta$weights_m,
-              weights_r = eta$weights_r,
-              outcome_type = eta$outcome_type)
-
-  class(out) <- "lmtp"
-
-  return(out)
-}
-
-theta_sdr <- function(eta) {
-
-  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-
-  # calculate eif
-  inflnce <- eif(r = eta$r, tau = eta$tau,
-                 shifted = eta$m$shifted, natural = eta$m$natural)
-
-  # rescale if necessary and calculate estimates
-  theta <- mean(eta$m$shifted[, 1])
-
-  if (eta$outcome_type == "continuous") {
-    inflnce <- rescale_y_continuous(inflnce, eta$bounds)
-    theta   <- rescale_y_continuous(theta, eta$bounds)
-  }
-
-  n       <- nrow(eta$m$natural)
-  se      <- sd(inflnce, na.rm = TRUE) / sqrt(n)
-  ci_low  <- theta - (qnorm(0.975) * se)
-  ci_high <- theta + (qnorm(0.975) * se)
-
-  # returns
-  out <- list(estimator = "SDR",
+  out <- list(estimator = eta$estimator,
               theta = theta,
               standard_error = se,
               low = ci_low,

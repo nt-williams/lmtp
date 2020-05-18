@@ -88,8 +88,9 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
-    estimator = "tml",
+    estimator = "dr",
     eta = list(
+      estimator = "TMLE",
       m = estims,
       r = recombine_dens_ratio(dens_ratio),
       tau = meta$tau,
@@ -191,8 +192,9 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
   # return estimates --------------------------------------------------------
 
   out <- compute_theta(
-    estimator = "sdr",
+    estimator = "dr",
     eta = list(
+      estimator = "SDR",
       m = estims,
       r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
       tau = meta$tau,
