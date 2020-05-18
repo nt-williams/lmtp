@@ -1,14 +1,23 @@
 
 #' Perform Contrasts of LMTP Fits
 #'
+#' Estimates contrasts of multiple LMTP fits compared to either a known reference value
+#' or a reference LMTP fit.
+#'
 #' @param ... One or more objects of class lmtp.
 #' @param ref A reference value or another lmtp fit to compare all other fits against.
 #' @param type The contrasts of interest. Options are "additive" (the default),
 #'  "rr", and "or".
 #'
-#' @return TODO
+#' @return A list of class \code{lmtp_contrast} containing the following components:
+#'
+#' \item{type}{The type of contrast performed.}
+#' \item{null}{The null hypothesis.}
+#' \item{vals}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
+#' \item{eifs}{Uncenetered estimated influence functions for contrasts estimated.}
 #' @export
 #'
+#' @example inst/examples/contrasts-ex.R
 lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
 
   fits <- list(...)
