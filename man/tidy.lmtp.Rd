@@ -16,11 +16,11 @@
 Tidy a(n) lmtp object
 }
 \examples{
+\dontrun{
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
 y <- "Y"
-\dontrun{
 fit <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
 tidy(fit)
 }

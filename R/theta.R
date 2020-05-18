@@ -46,8 +46,7 @@ theta_ipw <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
-              weights_r = eta$weights_r,
-              weights_c = eta$weights_c)
+              weights_r = eta$weights_r)
 
   class(out) <- "lmtp"
 
@@ -93,7 +92,6 @@ theta_tml <- function(eta) {
               shift = eta$shift,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
-              weights_c = eta$weights_c,
               outcome_type = eta$outcome_type)
 
   class(out) <- "lmtp"
@@ -132,7 +130,6 @@ theta_sdr <- function(eta) {
               shift = eta$shift,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
-              weights_c = eta$weights_c,
               outcome_type = eta$outcome_type)
 
   class(out) <- "lmtp"
