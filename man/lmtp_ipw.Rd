@@ -19,32 +19,43 @@ lmtp_ipw(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame in wide format containing all necessary variables
+for the estimation problem.}
 
-\item{trt}{A vector of column names of treatment variables.}
+\item{trt}{A vector containing the column names of treatment variables ordered by time.}
 
-\item{outcome}{The column name of the outcome variable.}
+\item{outcome}{The column name of the outcome variable. In the case of time-to-event
+analysis, a vector containing the columns names of intermediate outcome variables and the final
+outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+is binary, data should be coded as 0 and 1.}
 
-\item{nodes}{A list of length tau with the column names for new nodes to
-be introduced at each time point. The list should be ordered following
-the time ordering of the model.}
+\item{nodes}{A list the same length as the number of time points of observation with
+the column names for new time-varying covariates introduced at each time point. The list
+should be ordered following the time ordering of the model. Must be provided, even
+if no time-varying covariates exist. In the case of a point-treatment, should be set
+to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
+\code{nodes} should be the same length as the number of intermediate outcome variables
+with each index of the list similiarly set to \code{NULL}. See examples for demonstration.}
 
-\item{baseline}{An optional vector of columns names for baseline covariates to be
+\item{baseline}{An optional vector of columns names of baseline covariates to be
 included for adjustment at every timepoint.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
-length as \code{A}.}
+length as \code{nodes}. If missingness in the outcome is present, must be provided.}
 
-\item{k}{An integer specifying how many previous time points nodes should be
+\item{k}{An integer specifying how many previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{shift}{A function that specifies how tratment variables should be shifted.}
+\item{shift}{A function that specifies how treatment variables should be shifted. See examples
+for how to specify shift functions for continuous, binary, and categorical exposures.}
 
-\item{learners}{An \code{sl3} learner stack for estimation of the
-exposure mechanism.}
+\item{learners}{An \code{sl3} learner stack for estimation of the treatment mechanism.
+If not specified, will default to an ensemble of an intercept only model
+and a GLM.}
 
-\item{folds}{The number of folds to be used for cross-validation.}
+\item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
+is two folds.}
 
 \item{bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
@@ -62,7 +73,9 @@ A list of class \code{lmtp} containing the following components:
 ensemble weights at each time-point for each fold for the propensity.}
 }
 \description{
-LMTP IPW Estimator
+Inverse probability of treatment weighting estimator for the effects of traditional causal
+effects and modified treatment policies for both point treatment and longitudinal data
+with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 }
 \examples{
 \dontrun{

@@ -1,29 +1,45 @@
 
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
-#' @param data A data frame.
-#' @param trt A vector of column names for treatment variables.
-#' @param outcome The column name of the outcome variable.
-#' @param nodes A list of length tau with the column names for new nodes to
-#'  be introduced at each time point. The list should be ordered following
-#'  the time ordering of the model.
-#' @param baseline An optional vector of columns names for baseline covariates to be
+#' Targeted maximum likelihood estimator for the effects of traditional causal effects and
+#' modified treatment policies for both point treatment and longitudinal data with binary,
+#' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+#'
+#' @param data A data frame in wide format containing all necessary variables
+#'  for the estimation problem.
+#' @param trt A vector containing the column names of treatment variables ordered by time.
+#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#'  analysis, a vector containing the columns names of intermediate outcome variables and the final
+#'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+#'  is binary, data should be coded as 0 and 1.
+#' @param nodes A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model. Must be provided, even
+#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
+#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
+#'  \code{nodes} should be the same length as the number of intermediate outcome variables
+#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
+#' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{A}.
+#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
 #' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how treatment variables should be shifted.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
+#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
-#'  Ignored if outcome type is binary.
+#'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression.
+#'  regression. If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism.
-#' @param folds The number of folds to be used for cross-validation.
+#'  mechanism. If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
+#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
+#' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @return A list of class \code{lmtp} containing the following components:
@@ -108,29 +124,45 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
 #' LMTP Sequential Doubly Robust Estimator
 #'
-#' @param data A data frame.
-#' @param trt A vector of column names of treatment variables.
-#' @param outcome The column name of the outcome variable.
-#' @param nodes A list of length tau with the column names for new nodes to
-#'  be introduced at each time point. The list should be ordered following
-#'  the time ordering of the model.
-#' @param baseline An optional vector of columns names for baseline covariates to be
+#' Sequentially doubly robust estimator for the effects of traditional causal effects and
+#' modified treatment policies for both point treatment and longitudinal data with binary,
+#' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+#'
+#' @param data A data frame in wide format containing all necessary variables
+#'  for the estimation problem.
+#' @param trt A vector containing the column names of treatment variables ordered by time.
+#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#'  analysis, a vector containing the columns names of intermediate outcome variables and the final
+#'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+#'  is binary, data should be coded as 0 and 1.
+#' @param nodes A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model. Must be provided, even
+#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
+#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
+#'  \code{nodes} should be the same length as the number of intermediate outcome variables
+#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
+#' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{A}.
-#' @param k An integer specifying how many previous time points nodes should be
+#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
-#'   the bounds will be taken as the minimum and maximum of the observed data.
-#'   Ignored if outcome type is binary.
+#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
+#'  the bounds will be taken as the minimum and maximum of the observed data.
+#'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression.
+#'  regression. If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
 #' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism.
-#' @param folds The number of folds to be used for cross-validation.
+#'  mechanism. If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
+#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
+#' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @return A list of class \code{lmtp} containing the following components:
@@ -212,26 +244,42 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 
 #' LMTP Substitution Estimator
 #'
-#' @param data A data frame.
-#' @param trt A vector of column names of treatment variables.
-#' @param outcome The column name of the outcome variable.
-#' @param nodes A list of length tau with the column names for new nodes to
-#'  be introduced at each time point. The list should be ordered following
-#'  the time ordering of the model.
-#' @param baseline An optional vector of columns names for baseline covariates to be
+#' G-computation estimator for the effects of traditional causal effects and
+#' modified treatment policies for both point treatment and longitudinal data with binary,
+#' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+#'
+#' @param data A data frame in wide format containing all necessary variables
+#'  for the estimation problem.
+#' @param trt A vector containing the column names of treatment variables ordered by time.
+#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#'  analysis, a vector containing the columns names of intermediate outcome variables and the final
+#'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+#'  is binary, data should be coded as 0 and 1.
+#' @param nodes A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model. Must be provided, even
+#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
+#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
+#'  \code{nodes} should be the same length as the number of intermediate outcome variables
+#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
+#' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{A}.
-#' @param k An integer specifying how many previous time points nodes should be
+#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how tratment variables should be shifted.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#'  for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param bounds An optional vector of the bounds for continuous outcomes. If NULL
+#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
+#'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners An \code{sl3} learner stack for estimation of the outcome
-#'  regression.
-#' @param folds The number of folds to be used for cross-validation.
+#'  regression. If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
+#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
+#'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
@@ -300,23 +348,38 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 
 #' LMTP IPW Estimator
 #'
-#' @param data A data frame.
-#' @param trt A vector of column names of treatment variables.
-#' @param outcome The column name of the outcome variable.
-#' @param nodes A list of length tau with the column names for new nodes to
-#'  be introduced at each time point. The list should be ordered following
-#'  the time ordering of the model.
-#' @param baseline An optional vector of columns names for baseline covariates to be
+#' Inverse probability of treatment weighting estimator for the effects of traditional causal
+#' effects and modified treatment policies for both point treatment and longitudinal data
+#' with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+#'
+#' @param data A data frame in wide format containing all necessary variables
+#'  for the estimation problem.
+#' @param trt A vector containing the column names of treatment variables ordered by time.
+#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#'  analysis, a vector containing the columns names of intermediate outcome variables and the final
+#'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+#'  is binary, data should be coded as 0 and 1.
+#' @param nodes A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model. Must be provided, even
+#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
+#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
+#'  \code{nodes} should be the same length as the number of intermediate outcome variables
+#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
+#' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{A}.
-#' @param k An integer specifying how many previous time points nodes should be
+#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#' @param k An integer specifying how many previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how tratment variables should be shifted.
-#' @param learners An \code{sl3} learner stack for estimation of the
-#'  exposure mechanism.
-#' @param folds The number of folds to be used for cross-validation.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
+#'  If not specified, will default to an ensemble of an intercept only model
+#'  and a GLM.
+#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
+#'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
