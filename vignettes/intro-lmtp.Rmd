@@ -313,10 +313,27 @@ lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1,
 
 ### Survival analysis
 
-Time-to-event analyses are supported for both time-invariant and time-varying exposures. Data must be in wide format. 
+Time-to-event analyses are supported for both time-invariant and time-varying exposures. The `outcome` argument should be provided a vector containing the names of intermediate outcome variables as well as the final outcome variable. This means that if the `nodes` argument is supplied a list of length $\tau$ then the length of the vector suppled to the `outcome` argument should be of length $\tau + 1$. 
+
+For time-to-event problems, the intermediate outcome variables serve as indicators for when an observation experiences the event before the end of follow-up. If an observation does experience the event before the final outcome time, all future outcome variables (including the final outcome) variable should be set to 1. The function `event_locf()` is provided to help with this imputation. 
+
+The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1. Notice that even though there are no time-varying covariates in the data, we still supply a list of length $\tau = 6$ to the `nodes` argument with all the items set to `NULL`.  
 
 ```{r, eval = F}
-
+head(sim_point_surv)
+a <- "trt"
+y <- paste0("Y.", 0:6)
+cens <- paste0("C.", 0:5)
+baseline <- c("W1", "W2")
+nodes <- lapply(0:5, function(x) NULL)
+lmtp_tmle(sim_point_surv, a, y, nodes, baseline, cens, shift = function(x) 1, folds = 2)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (function(x) 1)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.8111
+#>     Std. error: 0.0185
+#>         95% CI: (0.7748, 0.8475)
 ```
 
 #### Population mean outcome

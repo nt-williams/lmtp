@@ -205,7 +205,7 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   # for a survival problem, the outcome arugment now takes a vector of outcomes
   # if an observation experiences the event prior to the end of follow-up, all future
   # outcome nodes should be set to 1 (i.e., last observation carried forward).
-  y <- paste0("N1.", 0:6)
+  y <- paste0("Y", 0:6)
   cens <- paste0("C.", 0:5)
   baseline <- c("W1", "W2")
   # even if there are no time varying covariates, we still provide a list the same
