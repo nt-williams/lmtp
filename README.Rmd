@@ -53,6 +53,7 @@ For an in-depth look at the package's functionality, please consult the accompyi
 | Dynamic intervention            |   Planned   |
 | Continuous treatment            |   &check;   |
 | Binary treatment                |   &check;   |
+| Categorical treatment           |   &check;   |
 | Missingness in treatment        |             |
 | Continuous outcome              |   &check;   |
 | Binary outcome                  |   &check;   |

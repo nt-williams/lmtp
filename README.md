@@ -61,6 +61,7 @@ accompying
 | Dynamic intervention            | Planned |
 | Continuous treatment            |    ✓    |
 | Binary treatment                |    ✓    |
+| Categorical treatment           |    ✓    |
 | Missingness in treatment        |         |
 | Continuous outcome              |    ✓    |
 | Binary outcome                  |    ✓    |
