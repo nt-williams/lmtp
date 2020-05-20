@@ -15,7 +15,7 @@ has not yet been a stable, usable release suitable for the
 public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 <!-- badges: end -->
 
-> Cross-Validated, Non-parametric Causal Effects Based on Longitudinal
+> Non-parametric Causal Effects of Feasible Interventions Based on
 > Modified Treatment Policies
 
 [Nick Williams](https://nicholastwilliams.com) and [Ivan
@@ -34,20 +34,22 @@ devtools::install_github("nt-williams/lmtp")
 ## Scope
 
 `lmtp` is an R package that provides an estimation framework for the
-casual effects of longitudinal modified treatment policies (also
-referred to as stochastic interventions) as described in Diaz, Williams,
-& Hoffman (2020). Two primary estimators are supported, a targeted
-maximum likelihood (TML) estimator and a sequentially doubly robust
-(SDR) estimator (a substitution and an IPW estimator are provided for
-the sake of being thorough but their use is recommended against in favor
-of the TML and SDR estimators). In addition to longitudinal effects,
-point treatments are naturally supported and both binary and continuous
-outcome (both with censoring) are allowed. `lmtp` is built atop the
-[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
-machine learning for estimation.
+casual effects of feasible interventions based on point-treatment and
+longitudinal modified treatment policies (also referred to as stochastic
+interventions) as described in Diaz, Williams, & Hoffman (2020). Two
+primary estimators are supported, a targeted maximum likelihood (TML)
+estimator and a sequentially doubly robust (SDR) estimator (a
+G-computation and an inverse probability of treatment weighting
+estimator are provided for the sake of being thorough but their use is
+recommended against in favor of the TML and SDR estimators). Both binary
+and continuous outcomes (both with censoring) are allowed. `lmtp` is
+built atop the [`sl3`](https://github.com/tlverse/sl3) package to
+utilize ensemble machine learning for estimation. The treatment
+mechanism is estimated via a density ratio classification procedure
+irrespective of treatment variable type.
 
 For an in-depth look at the package’s functionality, please consult the
-accompying
+accompanying
 [vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/vignettes/intro-lmtp.html).
 
 ### Features
@@ -77,7 +79,7 @@ accompying
 ``` r
 library(lmtp)
 #> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
-#> Version: 0.0.8.9000
+#> Version: 0.0.8.9100
 #> 
 library(sl3)
 library(future)
@@ -147,4 +149,4 @@ lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d,
 ## References
 
 Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. *Non-Parametric
-Causal Effects Based on Longitudinal Modified Policies*.
+Causal Effects Based on Longitudinal Modified Treatment Policies*.

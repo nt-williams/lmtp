@@ -4,7 +4,7 @@
 \name{lmtp-package}
 \alias{lmtp}
 \alias{lmtp-package}
-\title{lmtp: Non-parametric Causal Effects Based on Longitudinal Modified Treatment Policies}
+\title{lmtp: Non-parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies}
 \description{
 Non-parametric estimators for casual effects based on longitudinal modified treatment 
   policies as described in Diaz, Williams, and Hoffman (2020) <arXiv:...>, traditional point treatment, 
