@@ -21,5 +21,5 @@ by imputing outcome nodes using last outcome carried forward when an observation
 experiences the event before the end-of-follow-up.
 }
 \examples{
-event_locf(sim_point_surv, c(paste0("N1.", 0:6)))
+event_locf(sim_point_surv, c(paste0("Y.", 0:6)))
 }

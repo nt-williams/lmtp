@@ -189,7 +189,7 @@ final_outcome <- function(outcomes) {
 #'  experienced an event at any previous time point.
 #' @export
 #' @examples
-#' event_locf(sim_point_surv, c(paste0("N1.", 0:6)))
+#' event_locf(sim_point_surv, c(paste0("Y.", 0:6)))
 event_locf <- function(data, outcomes) {
   tau <- length(outcomes)
   for (i in outcomes[1:(tau - 1)]) {
