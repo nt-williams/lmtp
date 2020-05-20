@@ -15,3 +15,12 @@ test_that("detects xyz", {
 test_that("detects incorrect folds", {
   expect_error(check_folds(1))
 })
+
+test_that("variables dont exist", {
+  a <- c("A", "A2")
+  nodes <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+  truth <- 0.88
+  expect_error(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
+                        cens, k = 1, shift = function(x) x + 0.5))
+})

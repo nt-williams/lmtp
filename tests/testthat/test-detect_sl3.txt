@@ -1,5 +1,5 @@
 > check_for_sl3(test = TRUE)
-Message: Recommended package, sl3, not detected.
+Message: Remote package, sl3, not detected.
 
 Message: sl3 can be installed with: `remotes::install_github('tlverse/sl3')`
 

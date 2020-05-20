@@ -20,6 +20,7 @@ Meta <- R6::R6Class(
                           bound = NULL) {
 
       # initial checks
+      check_for_variables(data, trt, outcome, baseline, nodes, cens)
       check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, nodes, baseline, cens, length(nodes))
       check_scaled_conflict(data)

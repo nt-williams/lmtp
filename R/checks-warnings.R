@@ -19,7 +19,7 @@ no_stderr_warning <- function(estimator) {
 }
 
 no_sl3 <- function() {
-  cli::cli_text("Recommended package, {.pkg sl3}, not detected.")
+  cli::cli_text("Remote package, {.pkg sl3}, not detected.")
   cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
 }
 
@@ -47,6 +47,15 @@ check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
+  }
+}
+
+check_for_variables <- function(data, trt, outcome, baseline, nodes, cens) {
+  vars <- c(trt, outcome, baseline, unlist(nodes), cens)
+  if (!all(vars %in% names(data))) {
+    warn <- vars[which(!(vars %in% names(data)))]
+    stop("Variable(s) ", paste(warn, collapse = ", "), " not found in data.",
+         call. = F)
   }
 }
 
