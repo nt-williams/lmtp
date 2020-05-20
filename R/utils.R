@@ -3,27 +3,6 @@
   packageStartupMessage(welcome_msg(), check_for_sl3())
 }
 
-shift_data <- function(data, A, C, .f) {
-
-  out <- as.list(data)
-
-  if (is.null(.f)) { # only set C = 1
-    for (ce in C) {
-      out[[ce]] <- 1
-    }
-  } else {
-    for (a in A) { # shift A
-      out[[a]] <- .f(out[[a]])
-    }
-
-    for (ce in C) { # and set C = 1
-      out[[ce]] <- 1
-    }
-  }
-
-  return(as.data.frame(out))
-}
-
 set_lmtp_options <- function(option, val) {
   if (option == "bound") {
     options(lmtp.bound = val)
