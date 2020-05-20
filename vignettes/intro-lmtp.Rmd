@@ -47,29 +47,29 @@ library(lmtp)
 
 Two auxiliary estimators are also provided, however, the use of these estimators is recommended against in favor of the TML or SDR estimators: 
 
-- a G-computation estimator: `lmtp_sub()`
-- an IPW estimator: `lmtp_ipw()`
+- a G-computation (substitution) estimator: `lmtp_sub()`
+- an inverse probability of treatment weighting (IPW) estimator: `lmtp_ipw()`
 
-### Required vs. optional
+### Parameter overview
 
-The following table describes `lmtp` parameter requirements across the provided estimators: 
+The following table describes `lmtp` parameters across the provided estimators: 
 
-| Parameter        |   TMLE  |   SDR   | Substitution |   IPW   | Required |
-|------------------|:-------:|:-------:|:------------:|:-------:|:--------:|
-| data             | &check; | &check; |    &check;   | &check; |  &check; |
-| trt              | &check; | &check; |    &check;   | &check; |  &check; |
-| outcome          | &check; | &check; |    &check;   | &check; |  &check; |
-| nodes            | &check; | &check; |    &check;   | &check; |  &check; |
-| baseline         | &check; | &check; |    &check;   | &check; |          |
-| cens             | &check; | &check; |    &check;   | &check; |          |
-| k                | &check; | &check; |    &check;   | &check; |          |
-| shift            | &check; | &check; |    &check;   | &check; |  &check; |
-| outcome_type     | &check; | &check; |    &check;   |         |          |
-| bounds           | &check; | &check; |    &check;   |         |          |
-| learners         |         |         |    &check;   | &check; |          |
-| learners_outcome | &check; | &check; |              |         |          |
-| learners_trt     | &check; | &check; |              |         |          |
-| folds            | &check; | &check; |    &check;   | &check; |          |
+| Parameter        |   TMLE  |   SDR   | Substitution |   IPW   |
+|------------------|:-------:|:-------:|:------------:|:-------:|
+| data             | &check; | &check; |    &check;   | &check; |
+| trt              | &check; | &check; |    &check;   | &check; |
+| outcome          | &check; | &check; |    &check;   | &check; |
+| nodes            | &check; | &check; |    &check;   | &check; |
+| baseline         | &check; | &check; |    &check;   | &check; |
+| cens             | &check; | &check; |    &check;   | &check; |
+| k                | &check; | &check; |    &check;   | &check; |
+| shift            | &check; | &check; |    &check;   | &check; |
+| outcome_type     | &check; | &check; |    &check;   |         |
+| bounds           | &check; | &check; |    &check;   |         |
+| learners         |         |         |    &check;   | &check; |
+| learners_outcome | &check; | &check; |              |         |
+| learners_trt     | &check; | &check; |              |         |
+| folds            | &check; | &check; |    &check;   | &check; |
 
 <br>
 
@@ -77,7 +77,7 @@ While many parameters aren't required, the default options will likely give sub 
 
 ### sl3
 
-`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the estimators supplied by `lmtp`, users must create and then pass to `lmtp` estimators `sl3` learner stacks.  `sl3` learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
+`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
@@ -99,13 +99,13 @@ lrnrs <-
   )
 ```
 
-The outcome type should guide users on selecting the appropriate learners for a stack when specifying `learners` with `lmtp_sub()` or `learners_outcome` with `lmtp_tmle()` and `lmtp_sdr()`. Regardless of whether an exposure/treatment is continuous, binary, or categorical, the exposure mechanism is estimated through classification, thus users should only use `sl3` learners that can handle a binary outcome when specifying `learners` with `lmtp_ipw()` or `learners_trt` with `lmtp_tmle()` or `lmtp_sdr()`. 
+The outcome type should guide users on selecting the appropriate learners for a stack when specifying `learners` with `lmtp_sub()` or `learners_outcome` with `lmtp_tmle()` and `lmtp_sdr()`. Regardless of whether an exposure/treatment is continuous, binary, or categorical, the exposure mechanism is estimated through classification, thus the analyst should only use `sl3` learners that can handle a binary outcome when specifying `learners` with `lmtp_ipw()` or `learners_trt` with `lmtp_tmle()` or `lmtp_sdr()`. 
 
 The ensemble meta-learner is always set to `Lrnr_nnls`. If learner stacks aren't provided, `lmtp` estimators default to an ensemble only made of `Lrnr_mean` and `Lrnr_glm`. 
 
 > *`lmtp` is a peacock, if you want to let it fly, you should use a more comprehensive learner than supplied by the defaults.*
 
-**It is recommended the user reads through the `sl3` [documentation](https://tlverse.org/sl3/index.html) to fully utilize `lmtp`.**
+**It is recommended the analyst reads through the `sl3` [documentation](https://tlverse.org/sl3/index.html) to fully utilize `lmtp`.**
 
 ### Node lists & Markov processes
 
@@ -113,7 +113,7 @@ The ensemble meta-learner is always set to `Lrnr_nnls`. If learner stacks aren't
 
 Estimating causal effects in longitudinal settings requires paying special attention to the time-ordering and relationships among covariates. In the `lmtp` framework, there are 5 types of variables: treatment, outcome, baseline, time-varying, and censoring. Treatment and outcome variables are self-explanatory, baseline variables are those that are observed pre-treatment allocation, don't change (i.e., age at treatment assignment), and always are used for estimation at all time points, time-varying variables  are variables that (you guessed it...) change over time, censoring nodes indicate if an observation is observed (or censored) at the next time-point.
 
-How these nodes are specified depends on the specific data generating mechanism and should be pre-specified based on a conceptual model (i.e, a DAG). How these nodes are used by `lmtp` estimators is specified by what we call a node list. The analyst doesn't explicitly create the node list them-self, instead the analyst supplies the ingredients and instructions on how to combine all the different nodes; this is done through the `k` parameter. 
+How these nodes are specified depends on the specific data generating mechanism and should be pre-specified based on a conceptual model (i.e, a DAG). How these nodes are used by `lmtp` estimators is specified by what we call a node list. The analyst doesn't explicitly create the node list themself, but instead supplies the variables and the instructions on how to combine; this is done through the `k` parameter. 
 
 Creating a node list is best understood through demonstration. The following DAG specifies 1 baseline node, `W`, 3 treatment nodes, `A1`, `A2`, `A3`, 3 time-varying nodes, `L1`, `L2`, `L3`, and an outcome, `Y`. 
 
@@ -134,7 +134,7 @@ nodes <- list(c("L1"),
 create_node_list(a, nodes, baseline = baseline, k = Inf)
 ```
 
-Notice that the time-varying covariates are specified using a list of vectors, allowing the user to specify multiple time-varying covariates at each time-point of observation. The length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
+Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. The length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
 
 What if we modify the DAG so that `Y` is only directly affected by `A3`, `L3`, and `W`? We could say this data generating mechanism is now a Markov process (*kind of*, hence `k`) and the correct `k` would be `k = 1`. 
 
@@ -161,13 +161,13 @@ Censoring nodes are discussed in the [Censored outcomes] section.
 
 ### Traditional causal effects
 
-For the purposes of this article, a traditional causal effect is the causal effect of any intervention, $\delta$, that is applied to all observations at all time points. 
+For the purposes of this guide, a traditional causal effect is the causal effect of any intervention, $\delta$, that is applied to all observations at all time points. 
 
 $$d_t(a_t, h_t) = a_t - \delta_t$$
 
 ### Modified treatment policies
 
-The causal effect of a modified treatment policy is the effect of an intervention that is only applied to observations where the intervention is feasible. What's feasible in this case is defined by $a_t>u_t(h_t) + \delta_t$, where $u_t$ is an analyst specified value. Interested readers are referred to Diaz, Williams, and Hoffman (2020) for an overview of modified treatment policies and their benefits compared to those of traditional causal effects. 
+The causal effect of a modified treatment policy is the effect of an intervention that is only applied to observations where the intervention is feasible. What's feasible in this case is defined by $a_t>u_t(h_t) + \delta_t$, where $u_t$ is an analyst-specified value. Interested readers are referred to Diaz, Williams, and Hoffman (2020) for an overview of modified treatment policies and their benefits compared to those of traditional causal effects. 
 
 $$
 d_t(a_t, h_t)=\left\{ \begin{array}{l}
@@ -194,7 +194,7 @@ shift <- function(trt) {
 }
 ```
 
-Shift functions are passed to lmtp estimators through the `shift` argument. Currently, shift functions can only depend on the value of the current treatment node. However, the ability evaluate dynamic treatment regimes will be established in a future version.
+Shift functions are passed to lmtp estimators through the `shift` argument. Currently, shift functions can only depend on the value of the current treatment node. However, the ability to evaluate dynamic treatment regimes will be established in a future version.
 
 ```{r, eval = F}
 # using the previous shift function with sdr
@@ -289,10 +289,13 @@ In the (likely) case of missing outcomes, `lmtp` can estimate the effect of a hy
 **Note: Censoring nodes must be provided if there are missing outcomes.**
 
 ```{r}
+# all observations that were observed through time 1
 head(sim_cens[sim_cens$C1 == 1, ])
 
+# all observations censored after time 1
 head(sim_cens[sim_cens$C1 == 0, ])
 
+# all observations censored after time 2
 head(sim_cens[sim_cens$C2 == 0, ])
 ```
 
@@ -319,12 +322,20 @@ lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 1,
 
 Time-to-event analyses are supported for both time-invariant and time-varying exposures. The `outcome` argument should be provided a vector containing the names of intermediate outcome variables as well as the final outcome variable. This means that if the `nodes` argument is supplied a list of length $\tau$ then the length of the vector supplied to the `outcome` argument should be of length $\tau + 1$. 
 
-For time-to-event problems, the intermediate outcome variables serve as indicators for when an observation experiences the event before the end of follow-up. If an observation does experience the event before the final outcome time, all future outcome variables (including the final outcome) variable should be set to 1. The function `event_locf()` is provided to help with this imputation. 
+For time-to-event problems, the intermediate outcome variables serve as indicators for when an observation experiences the event before the end of follow-up. If an observation does experience the event before the final outcome time, all future outcome variables (including the final outcome) variable should be set to 1. The function `event_locf()` (last observation carried forward, only for events) is provided to help with this imputation. 
 
 The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1. Notice that even though there are no time-varying covariates in the data, we still supply a list of length $\tau = 6$ to the `nodes` argument with all the items set to `NULL`.  
 
 ```{r, eval = F}
 head(sim_point_surv)
+#>   W1 W2 trt Y.0 C.0 Y.1 C.1 Y.2 C.2 Y.3 C.3 Y.4 C.4 Y.5 C.5 Y.6
+#> 1  0  0   0   0   1   0   1   0   1   0   0  NA   0  NA   0  NA
+#> 2  0  1   1   0   1   0   1   0   1   0   0  NA   0  NA   0  NA
+#> 3  1  1   1   0   1   0   1   0   1   0   1   0   1   0   0  NA
+#> 4  1  1   1   0   1   0   1   0   1   0   1   1   0   1   0   1
+#> 5  0  1   1   0   1   0   1   0   1   0   1   0   0  NA   0  NA
+#> 6  1  2   1   0   1   0   1   0   1   0   1   0   1   0   1   1
+
 a <- "trt"
 y <- paste0("Y.", 0:6)
 cens <- paste0("C.", 0:5)
@@ -500,3 +511,5 @@ with_progress({
 We recommend consulting the `progressr` [documentation](https://cran.r-project.org/web/packages/progressr/progressr.pdf) for more information. 
 
 ## References
+
+Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. Non-Parametric Causal Effects Based on Longitudinal Modified Policies.
