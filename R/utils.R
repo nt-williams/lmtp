@@ -126,36 +126,12 @@ recombine_dens_ratio <- function(r) {
   return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
 }
 
-create_lrnr_matrix <- function(folds, tau, lrnrs) {
-  # create empty matrices
-  lrnrs <- ifelse(lrnrs == 0, 2, lrnrs)
-  out <- lapply(1:folds, function(x) matrix(nrow = tau, ncol = lrnrs))
-
-  # set matrix names
-  names(out) <- paste0("fold_", 1:folds)
-  for (i in 1:length(out)) {
-    rownames(out[[i]]) <- paste0("time_", 1:tau)
-    colnames(out[[i]]) <- paste0("Lrnr_", 1:lrnrs)
-  }
-
-  return(out)
+hold_lrnr_weights <- function(folds) {
+  lapply(1:folds, function(x) list())
 }
 
 extract_sl_weights <- function(fit) {
-  fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$coefficients
-}
-
-count_lrnrs <- function(lrnr) {
-
-  if (is.null(lrnr)) {
-    return(2)
-  }
-
-  out <- length(lapply(lrnr$params$learners, function(x) x$name))
-  if (out == 0) {
-    out <- 1
-  }
-  return(out)
+  as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
 }
 
 pluck_weights <- function(type, x) {
