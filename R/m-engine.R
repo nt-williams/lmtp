@@ -22,7 +22,7 @@ estimate_sub <- function(training, shifted, validation, outcome,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
-    sl_weights[tau, ] <- extract_sl_weights(fit)
+    sl_weights[[tau]] <- extract_sl_weights(fit)
 
     # predict on shifted data for training
     training[js, pseudo] <- bound(predict_sl3(fit, shift_task))
@@ -80,7 +80,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
     # run SL
     fit <- run_ensemble(ensemble, fit_task)
-    sl_weights[tau, ] <- extract_sl_weights(fit)
+    sl_weights[[tau]] <- extract_sl_weights(fit)
 
     # predict on data
     m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -159,7 +159,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
-      sl_weights[tau, ] <- extract_sl_weights(fit)
+      sl_weights[[tau]] <- extract_sl_weights(fit)
 
       # predict on training data
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))
@@ -191,7 +191,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL
       fit <- run_ensemble(ensemble, fit_task)
-      sl_weights[tau, ] <- extract_sl_weights(fit)
+      sl_weights[[tau]] <- extract_sl_weights(fit)
 
       # predictions
       m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task))

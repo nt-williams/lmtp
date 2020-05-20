@@ -25,7 +25,7 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
 
     # run SL
     fit             <- run_ensemble(ensemble, fit_task)
-    sl_weights[t, ] <- extract_sl_weights(fit)
+    sl_weights[[t]] <- extract_sl_weights(fit)
 
     # ratios training
     pred            <- bound(predict_sl3(fit, tpred_task), .Machine$double.eps)

@@ -79,9 +79,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    count_lrnrs_outcome = count_lrnrs(learners_outcome),
-    count_lrnrs_trt = count_lrnrs(learners_trt)
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -202,9 +200,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    count_lrnrs_outcome = count_lrnrs(learners_outcome),
-    count_lrnrs_trt = count_lrnrs(learners_trt)
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -316,9 +312,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound,
-    count_lrnrs_outcome = count_lrnrs(learners),
-    count_lrnrs_trt = 0
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -414,9 +408,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
-    bound = bound,
-    count_lrnrs_outcome = 0,
-    count_lrnrs_trt = count_lrnrs(learners)
+    bound = bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
