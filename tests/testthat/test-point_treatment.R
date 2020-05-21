@@ -11,23 +11,27 @@ nodes <- list(c("X1", "X2"))
 df <- data.frame(W, A, Y)
 truth <- 0.76451
 
+rule <- function(data, x) {
+  data[[x]] + 0.5
+}
+
 # estimators
 sub <-
-  lmtp_sub(df, "A", "Y", nodes, shift = function(x) x + 0.5,
+  lmtp_sub(df, "A", "Y", nodes, shift = rule,
            outcome_type = "binomial", folds = 2)
 
 ipw <-
-  lmtp_ipw(df, "A", "Y", nodes, shift = function(x) x + 0.5,
+  lmtp_ipw(df, "A", "Y", nodes, shift = rule,
            learners = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 tmle <-
-  lmtp_tmle(df, "A", "Y", nodes, shift = function(x) x + 0.5,
+  lmtp_tmle(df, "A", "Y", nodes, shift = rule,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
             learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 sdr <-
-  lmtp_sdr(df, "A", "Y", nodes, shift = function(x) x + 0.5,
+  lmtp_sdr(df, "A", "Y", nodes, shift = rule,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
            learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
