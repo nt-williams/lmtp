@@ -49,10 +49,13 @@ dynamic_vec(sim, "A2")
 dynamic_iter(sim, "A1")
 dynamic_iter(sim, "A2")
 
+shift_trt(sim, c("A1", "A2"), static_binary_on)
+shift_trt(sim, c("A1", "A2"), static_binary_off)
+
 shift_trt(sim, "A1", dynamic_vec)
 shift_trt(sim, "A2", dynamic_vec)
 shift_trt(sim, c("A1", "A2"), dynamic_vec)
 
 shift_cens(sim, "C")
 shift_data(sim, c("A1", "A2"), "C", dynamic_vec)
-
+shift_data(sim, c("A1", "A2"), "C", NULL)

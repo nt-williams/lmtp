@@ -20,3 +20,11 @@ shift_data <- function(data, trt, cens, shift) {
   }
   return(shift_trt(shift_cens(data, cens), trt, shift))
 }
+
+static_binary_on <- function(data, trt) {
+  rep(1, length(data[[trt]]))
+}
+
+static_binary_off <- function(data, trt) {
+  rep(0, length(data[[trt]]))
+}
