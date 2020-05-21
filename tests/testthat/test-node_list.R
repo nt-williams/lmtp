@@ -4,7 +4,7 @@ context("Node list creation")
 test_that("create proper node lists, t > 1", {
   verify_output(test_path("test-node-list.txt"), {
     a <- c("A_1", "A_2", "A_3", "A_4")
-    bs <- c("W_1", "W_2")
+    bs <- c("W")
     nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 
     # k = NULL
@@ -23,7 +23,7 @@ test_that("create proper node lists, t > 1", {
     create_node_list(a, nodes, baseline = NULL, k = 2)
 
     # Markov
-    create_node_list(a, nodes, bs, k = 1)
+    create_node_list(a, nodes, bs, k = 0)
 
     # Non-Markov with baseline
     create_node_list(a, nodes, bs, k = Inf)

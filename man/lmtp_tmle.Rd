@@ -46,7 +46,7 @@ included for adjustment at every timepoint.}
 \item{cens}{An optional vector of column names of censoring indicators the same
 length as \code{nodes}. If missingness in the outcome is present, must be provided.}
 
-\item{k}{An integer specifying how many previous time points should be
+\item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 

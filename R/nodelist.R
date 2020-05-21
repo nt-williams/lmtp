@@ -12,7 +12,7 @@
 #'  the time ordering of the model.
 #' @param baseline An optional vector of columns names for baseline covariates to be
 #'  included for adjustment at every timepoint.
-#' @param k An integer specifying how many previous time points should be
+#' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #'
@@ -28,16 +28,52 @@
 #' create_node_list(a, nodes, bs, k = Inf)
 #'
 #' # assuming a Markov property
-#' create_node_list(a, nodes, bs, k = 1)
+#' create_node_list(a, nodes, bs, k = 0)
 create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
-
-  out <- list()
   tau <- length(nodes)
-
   if (is.null(k)) {
     k <- Inf
   }
 
+  out <- list(trt = trt_node_list(trt, nodes, baseline, k, tau),
+              outcome = outcome_node_list(trt, nodes, baseline, k, tau))
+
+  return(out)
+}
+
+trt_node_list <- function(trt, nodes, baseline = NULL, k, tau) {
+  out <- list()
+  if (length(trt) == tau) {
+    for (i in 1:tau) {
+      if (i > 1) {
+        out[[i]] <- c(nodes[[i]], trt[i - 1])
+      } else {
+        out[[i]] <- c(nodes[[i]])
+      }
+    }
+  } else {
+    for (i in 1:tau) {
+      out[[i]] <- c(nodes[[i]], trt)
+    }
+  }
+
+  out <- slide_node_list(out, k)
+
+  if (!is.null(baseline)) {
+    for (i in 1:tau) {
+      out[[i]] <- c(baseline, out[[i]])
+    }
+  }
+
+  for (i in 1:tau) {
+    out[[i]] <- c(out[[i]], trt[[i]])
+  }
+
+  return(out)
+}
+
+outcome_node_list <- function(trt, nodes, baseline = NULL, k, tau) {
+  out <- list()
   if (length(trt) == tau) {
     for (i in 1:tau) {
       out[[i]] <- c(nodes[[i]], trt[i])
@@ -48,21 +84,24 @@ create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
     }
   }
 
-  out <- paste(lapply(out, function(x) paste(x, collapse = ",")))
-  out <- slider::slide(out, ~ .x, .before = k)
-  out <- lapply(out, function(x) {
-    . <- strsplit(x, ",")
-    if (k == 0) unlist(.)
-    else unique(unlist(.))
-  })
+  out <- slide_node_list(out, k)
 
   if (!is.null(baseline)) {
     for (i in 1:tau) {
       out[[i]] <- c(baseline, out[[i]])
     }
   }
+  return(out)
+}
 
-  # returns
-  out
+slide_node_list <- function(nodes, k) {
+  out <- paste(lapply(nodes, function(x) paste(x, collapse = ",")))
+  out <- slider::slide(out, ~ .x, .before = k)
+  out <- lapply(out, function(x) {
+    . <- strsplit(x, ",")
+    if (k == 0) unlist(.)
+    else unique(unlist(.))
+  })
+  return(out)
 }
 
