@@ -149,7 +149,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # This can be controlled using the k argument.
   progressr::with_progress({
     psi2.2 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d,
-                       k = 1, folds = 2)
+                       k = 0, folds = 2)
   })
   psi2.2
 
@@ -175,7 +175,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   }
 
   progressr::with_progress({
-    psi2.3 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, folds = 2)
+    psi2.3 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, k = 0, folds = 2)
   })
   psi2.3
 
@@ -223,7 +223,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # for a survival problem, the outcome arugment now takes a vector of outcomes
   # if an observation experiences the event prior to the end of follow-up, all future
   # outcome nodes should be set to 1 (i.e., last observation carried forward).
-  y <- paste0("Y", 0:6)
+  y <- paste0("Y.", 0:6)
   cens <- paste0("C.", 0:5)
   baseline <- c("W1", "W2")
   # even if there are no time varying covariates, we still provide a list the same

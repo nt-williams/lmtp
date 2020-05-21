@@ -65,8 +65,10 @@ trt_node_list <- function(trt, nodes, baseline = NULL, k, tau) {
     }
   }
 
-  for (i in 1:tau) {
-    out[[i]] <- c(out[[i]], trt[[i]])
+  if (length(trt) == tau) {
+    for (i in 1:tau) {
+      out[[i]] <- c(out[[i]], trt[[i]])
+    }
   }
 
   return(out)
