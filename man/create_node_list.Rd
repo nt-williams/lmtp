@@ -16,7 +16,7 @@ the time ordering of the model.}
 \item{baseline}{An optional vector of columns names for baseline covariates to be
 included for adjustment at every timepoint.}
 
-\item{k}{An integer specifying how many previous time points should be
+\item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 }
@@ -39,5 +39,5 @@ nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 create_node_list(a, nodes, bs, k = Inf)
 
 # assuming a Markov property
-create_node_list(a, nodes, bs, k = 1)
+create_node_list(a, nodes, bs, k = 0)
 }

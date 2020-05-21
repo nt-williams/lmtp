@@ -23,7 +23,7 @@
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
-#' @param k An integer specifying how many previous time points should be
+#' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
@@ -88,14 +88,14 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 
   dens_ratio <- ratio_dr(
     cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
-         meta$node_list, learners_trt, pb, meta$weights_r),
+         meta$node_list$trt, learners_trt, pb, meta$weights_r),
     folds
   )
 
   # tmle --------------------------------------------------------------------
 
   estims <-
-    cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+    cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
             cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
             dens_ratio, learners_outcome, pb, meta$weights_m)
 
@@ -144,7 +144,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
-#' @param k An integer specifying how many previous time points should be
+#' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
@@ -208,12 +208,12 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
   # propensity --------------------------------------------------------------
 
   raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
-                    meta$node_list, learners_trt, pb, meta$weights_r)
+                    meta$node_list$trt, learners_trt, pb, meta$weights_r)
 
   # sdr ---------------------------------------------------------------------
 
   estims <-
-    cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+    cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
            raw_ratio, learners_outcome, pb, meta$weights_m)
 
@@ -262,7 +262,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
-#' @param k An integer specifying how many previous time points should be
+#' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
@@ -319,7 +319,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 
   # substitution ------------------------------------------------------------
 
-  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list,
+  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
                    cens, meta$determ, meta$tau, meta$outcome_type,
                    learners, meta$m, pb, meta$weights_m)
 
@@ -364,7 +364,7 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  included for adjustment at every timepoint.
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
-#' @param k An integer specifying how many previous time points should be
+#' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
@@ -419,7 +419,7 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     ratio_ipw(
       recombine_ipw(
         cf_r(meta$data, shift, folds, meta$trt, cens, meta$deterministic,
-             meta$tau, meta$node_list, learners, pb, meta$weights_r
+             meta$tau, meta$node_list$trt, learners, pb, meta$weights_r
         )
       )
     )
