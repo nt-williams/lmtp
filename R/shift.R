@@ -15,6 +15,8 @@ shift_trt <- function(data, trt, .f) {
 }
 
 shift_data <- function(data, trt, cens, shift) {
-  # NEED TO FIGURE OUT WHAT TO DO IF SHIFT IS NULL
+  if (is.null(shift)) {
+    return(shift_cens(data, cens))
+  }
   return(shift_trt(shift_cens(data, cens), trt, shift))
 }
