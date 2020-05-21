@@ -1,25 +1,4 @@
 
-# shift_data <- function(data, A, C, .f) {
-#
-#   out <- as.list(data)
-#
-#   if (is.null(.f)) { # only set C = 1
-#     for (ce in C) {
-#       out[[ce]] <- 1
-#     }
-#   } else {
-#     for (a in A) { # shift A
-#       out[[a]] <- .f(out[[a]])
-#     }
-#
-#     for (ce in C) { # and set C = 1
-#       out[[ce]] <- 1
-#     }
-#   }
-#
-#   return(as.data.frame(out))
-# }
-
 shift_cens <- function(data, cens) {
   out <- as.list(data)
   for (ce in cens) {
@@ -36,5 +15,6 @@ shift_trt <- function(data, trt, .f) {
 }
 
 shift_data <- function(data, trt, cens, shift) {
+  # NEED TO FIGURE OUT WHAT TO DO IF SHIFT IS NULL
   return(shift_trt(shift_cens(data, cens), trt, shift))
 }
