@@ -20,17 +20,18 @@ Meta <- R6::R6Class(
                           bound = NULL) {
 
       # initial checks
+      tau <- determine_tau(outcome, trt, cens)
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))
-      check_missing_data(data, trt, time_vary, baseline, cens, length(time_vary))
+      check_missing_data(data, trt, time_vary, baseline, cens, tau)
       check_scaled_conflict(data)
       check_folds(V)
 
       # general setup
       self$n            <- nrow(data)
-      self$tau          <- length(time_vary)
-      self$trt          <- check_trt_length(trt, length(time_vary))
-      self$determ       <- check_deterministic(outcome, length(time_vary))
+      self$tau          <- tau
+      self$trt          <- check_trt_length(trt, tau)
+      self$determ       <- check_deterministic(outcome, tau)
       self$node_list    <- create_node_list(trt, time_vary, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
@@ -40,7 +41,7 @@ Meta <- R6::R6Class(
       self$folds <- folds <- setup_cv(data, V = V)
       self$m <-
         get_folded_data(cbind(matrix(
-          nrow = nrow(data), ncol = length(time_vary)
+          nrow = nrow(data), ncol = tau
         ), scale_y_continuous(data[[final_outcome(outcome)]],
                              y_bounds(data[[final_outcome(outcome)]],
                                       outcome_type,
@@ -54,8 +55,7 @@ Meta <- R6::R6Class(
                                             y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
-            cens, length(time_vary)
-          ), folds
+            cens, tau), folds
         )
 
       self$shifted_data <-
@@ -66,8 +66,7 @@ Meta <- R6::R6Class(
                                             y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
-            cens, length(time_vary)
-          ), folds
+            cens, tau), folds
         )
 
       self$weights_m <- hold_lrnr_weights(V)

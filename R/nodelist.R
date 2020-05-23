@@ -29,7 +29,7 @@
 #'
 #' # assuming a Markov property
 #' create_node_list(a, nodes, bs, k = 0)
-create_node_list <- function(trt, nodes, baseline = NULL, k = Inf) {
+create_node_list <- function(trt, nodes = NULL, baseline = NULL, k = Inf) {
   tau <- length(nodes)
   if (is.null(k)) {
     k <- Inf

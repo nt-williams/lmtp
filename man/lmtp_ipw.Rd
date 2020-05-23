@@ -9,7 +9,7 @@ lmtp_ipw(
   trt,
   outcome,
   baseline = NULL,
-  time_vary,
+  time_vary = NULL,
   cens = NULL,
   k = Inf,
   shift,

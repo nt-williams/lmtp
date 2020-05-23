@@ -8,7 +8,7 @@ lmtp_sdr(
   data,
   trt,
   outcome,
-  time_vary,
+  time_vary = NULL,
   baseline = NULL,
   cens = NULL,
   shift,

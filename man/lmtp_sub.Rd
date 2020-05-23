@@ -9,7 +9,7 @@ lmtp_sub(
   trt,
   outcome,
   baseline = NULL,
-  time_vary,
+  time_vary = NULL,
   cens = NULL,
   shift,
   k = Inf,

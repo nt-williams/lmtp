@@ -59,8 +59,8 @@
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
-lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary,
-                      cens = NULL, shift, k = Inf,
+lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
+                      time_vary = NULL, cens = NULL, shift, k = Inf,
                       outcome_type = c("binomial", "continuous"),
                       bounds = NULL, learners_outcome = NULL,
                       learners_trt = NULL, folds = 10, bound = 1e-5) {
@@ -180,8 +180,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary,
 #' @export
 #'
 #' @example inst/examples/sdr-ex.R
-lmtp_sdr <- function(data, trt, outcome, time_vary, baseline = NULL,
-                     cens = NULL, shift, k = Inf,
+lmtp_sdr <- function(data, trt, outcome, time_vary = NULL,
+                     baseline = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners_outcome = NULL,
                      learners_trt = NULL, folds = 10, bound = 1e-5) {
@@ -293,8 +293,8 @@ lmtp_sdr <- function(data, trt, outcome, time_vary, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
-lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary,
-                     cens = NULL, shift, k = Inf,
+lmtp_sub <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
 
@@ -390,9 +390,9 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary,
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary,
-                     cens = NULL, k = Inf, shift, learners = NULL,
-                     folds = 10, bound = 1e-5) {
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, k = Inf, shift,
+                     learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
