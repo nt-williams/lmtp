@@ -38,7 +38,7 @@ Imports:
     future (>= 1.17.0),
     progressr
 Remotes: 
-    tlverse/sl3
+    github::tlverse/sl3@master
 Suggests: 
     testthat (>= 2.1.0),
     covr,
