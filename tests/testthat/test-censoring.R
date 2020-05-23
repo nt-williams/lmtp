@@ -7,20 +7,20 @@ cens <- c("C1", "C2")
 truth <- 0.88
 
 sub <-
-    lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
+    lmtp_sub(sim_cens, a, "Y", baseline = NULL, nodes,
              cens, k = 0, shift = function(x) x + 0.5,
              outcome_type = "binomial",
              learners = sl3::make_learner(sl3::Lrnr_glm),
              folds = 2)
 
 ipw <-
-  lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
+  lmtp_ipw(sim_cens, a, "Y", baseline = NULL, nodes,
            cens, k = 0, shift = function(x) x + 0.5,
            learners = sl3::make_learner(sl3::Lrnr_glm),
            folds = 2)
 
 tmle <-
-    lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
+    lmtp_tmle(sim_cens, a, "Y", baseline = NULL, nodes,
               cens, k = 0, shift = function(x) x + 0.5,
               outcome_type = "binomial",
               learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
@@ -28,7 +28,7 @@ tmle <-
               folds = 2)
 
 sdr <-
-  lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
+  lmtp_sdr(sim_cens, a, "Y", baseline = NULL, nodes,
            cens, k = 0, shift = function(x) x + 0.5,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),

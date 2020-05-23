@@ -8,11 +8,11 @@ lmtp_sdr(
   data,
   trt,
   outcome,
-  nodes,
+  time_vary,
   baseline = NULL,
   cens = NULL,
-  k = Inf,
   shift,
+  k = Inf,
   outcome_type = c("binomial", "continuous"),
   bounds = NULL,
   learners_outcome = NULL,
@@ -32,7 +32,7 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{nodes}{A list the same length as the number of time points of observation with
+\item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
 should be ordered following the time ordering of the model. Must be provided, even
 if no time-varying covariates exist. In the case of a point-treatment, should be set
@@ -44,14 +44,14 @@ with each index of the list similiarly set to \code{NULL}. See examples for demo
 included for adjustment at every timepoint.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
-length as \code{nodes}. If missingness in the outcome is present, must be provided.}
+length as \code{time_vary}. If missingness in the outcome is present, must be provided.}
+
+\item{shift}{A function that specifies how treatment variables should be shifted. See examples
+for how to specify shift functions for continuous, binary, and categorical exposures.}
 
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
-
-\item{shift}{A function that specifies how treatment variables should be shifted. See examples
-for how to specify shift functions for continuous, binary, and categorical exposures.}
 
 \item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
 

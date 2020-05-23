@@ -8,8 +8,8 @@ lmtp_ipw(
   data,
   trt,
   outcome,
-  nodes,
   baseline = NULL,
+  time_vary,
   cens = NULL,
   k = Inf,
   shift,
@@ -29,7 +29,10 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{nodes}{A list the same length as the number of time points of observation with
+\item{baseline}{An optional vector of columns names of baseline covariates to be
+included for adjustment at every timepoint.}
+
+\item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
 should be ordered following the time ordering of the model. Must be provided, even
 if no time-varying covariates exist. In the case of a point-treatment, should be set
@@ -37,11 +40,8 @@ to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
 \code{nodes} should be the same length as the number of intermediate outcome variables
 with each index of the list similiarly set to \code{NULL}. See examples for demonstration.}
 
-\item{baseline}{An optional vector of columns names of baseline covariates to be
-included for adjustment at every timepoint.}
-
 \item{cens}{An optional vector of column names of censoring indicators the same
-length as \code{nodes}. If missingness in the outcome is present, must be provided.}
+length as \code{time_vary}. If missingness in the outcome is present, must be provided.}
 
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
