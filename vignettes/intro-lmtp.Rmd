@@ -131,7 +131,7 @@ nodes <- list(c("L1"),
               c("L3"))
 
 # we can make sure our specification is correct by checking create_node_list()
-create_node_list(a, nodes, baseline = baseline, k = Inf)
+create_node_list(a, 3, nodes, baseline = baseline, k = Inf)
 ```
 
 Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. The length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
@@ -150,7 +150,7 @@ nodes <- list(c("L1"),
               c("L3"))
 
 # again checking or specification
-create_node_list(a, nodes, baseline = baseline, k = 0)
+create_node_list(a, 3, nodes, baseline = baseline, k = 0)
 ```
 
 Censoring nodes are discussed in the [Censored outcomes] section.
