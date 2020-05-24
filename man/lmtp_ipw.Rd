@@ -34,11 +34,7 @@ included for adjustment at every timepoint.}
 
 \item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
-should be ordered following the time ordering of the model. Must be provided, even
-if no time-varying covariates exist. In the case of a point-treatment, should be set
-to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
-\code{nodes} should be the same length as the number of intermediate outcome variables
-with each index of the list similiarly set to \code{NULL}. See examples for demonstration.}
+should be ordered following the time ordering of the model.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
 length as \code{time_vary}. If missingness in the outcome is present, must be provided.}
