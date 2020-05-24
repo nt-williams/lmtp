@@ -40,7 +40,8 @@ should be ordered following the time ordering of the model.}
 included for adjustment at every timepoint.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
-length as \code{time_vary}. If missingness in the outcome is present, must be provided.}
+length as the number of time points of observation. If missingness in the outcome is
+present or if time-to-event outcome, must be provided.}
 
 \item{shift}{A function that specifies how treatment variables should be shifted. See examples
 for how to specify shift functions for continuous, binary, and categorical exposures.}

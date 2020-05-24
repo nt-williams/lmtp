@@ -37,7 +37,8 @@ the column names for new time-varying covariates introduced at each time point. 
 should be ordered following the time ordering of the model.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
-length as \code{time_vary}. If missingness in the outcome is present, must be provided.}
+length as the number of time points of observation. If missingness in the outcome is
+present or if time-to-event outcome, must be provided.}
 
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},

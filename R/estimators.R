@@ -18,7 +18,8 @@
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{time_vary}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
 #' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
@@ -135,7 +136,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{time_vary}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
 #' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
@@ -249,7 +251,8 @@ lmtp_sdr <- function(data, trt, outcome, time_vary = NULL,
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{time_vary}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
 #'  for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
@@ -347,7 +350,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{time_vary}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
 #' @param shift A function that specifies how treatment variables should be shifted. See examples
 #' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
