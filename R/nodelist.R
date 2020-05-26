@@ -48,17 +48,33 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
     }
   }
 
-  if (length(trt) == tau) {
-    for (i in 1:tau) {
-      if (i > 1) {
-        out[[i]] <- c(out[[i]], time_vary[[i]], trt[i - 1])
-      } else {
-        out[[i]] <- c(out[[i]], time_vary[[i]])
+  if (length(out) == 0) {
+    if (length(trt) == tau) {
+      for (i in 1:tau) {
+        if (i > 1) {
+          out[[i]] <- c(time_vary[[i]], trt[i - 1])
+        } else {
+          out[[i]] <- c(time_vary[[i]])
+        }
+      }
+    } else {
+      for (i in 1:tau) {
+        out[[i]] <- c(time_vary[[i]], trt)
       }
     }
   } else {
-    for (i in 1:tau) {
-      out[[i]] <- c(out[[i]], time_vary[[i]], trt)
+    if (length(trt) == tau) {
+      for (i in 1:tau) {
+        if (i > 1) {
+          out[[i]] <- c(out[[i]], time_vary[[i]], trt[i - 1])
+        } else {
+          out[[i]] <- c(out[[i]], time_vary[[i]])
+        }
+      }
+    } else {
+      for (i in 1:tau) {
+        out[[i]] <- c(out[[i]], time_vary[[i]], trt)
+      }
     }
   }
 
