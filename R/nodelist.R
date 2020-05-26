@@ -42,27 +42,27 @@ create_node_list <- function(trt, tau, time_vary = NULL, baseline = NULL, k = In
 
 trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
   out <- list()
+  if (!is.null(baseline)) {
+    for (i in 1:tau) {
+      out[[i]] <- c(baseline)
+    }
+  }
+
   if (length(trt) == tau) {
     for (i in 1:tau) {
       if (i > 1) {
-        out[[i]] <- c(time_vary[[i]], trt[i - 1])
+        out[[i]] <- c(out[[i]], time_vary[[i]], trt[i - 1])
       } else {
-        out[[i]] <- c(time_vary[[i]])
+        out[[i]] <- c(out[[i]], time_vary[[i]])
       }
     }
   } else {
     for (i in 1:tau) {
-      out[[i]] <- c(time_vary[[i]], trt)
+      out[[i]] <- c(out[[i]], time_vary[[i]], trt)
     }
   }
 
   out <- slide_node_list(out, k)
-
-  if (!is.null(baseline)) {
-    for (i in 1:tau) {
-      out[[i]] <- c(baseline, out[[i]])
-    }
-  }
 
   if (length(trt) == tau) {
     for (i in 1:tau) {
