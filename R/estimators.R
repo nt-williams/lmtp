@@ -174,8 +174,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sdr-ex.R
-lmtp_sdr <- function(data, trt, outcome, time_vary = NULL,
-                     baseline = NULL, cens = NULL, shift, k = Inf,
+lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"),
                      bounds = NULL, learners_outcome = NULL,
                      learners_trt = NULL, folds = 10, bound = 1e-5) {

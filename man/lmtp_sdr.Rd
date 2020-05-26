@@ -8,8 +8,8 @@ lmtp_sdr(
   data,
   trt,
   outcome,
-  time_vary = NULL,
   baseline = NULL,
+  time_vary = NULL,
   cens = NULL,
   shift,
   k = Inf,
@@ -32,12 +32,12 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
+\item{baseline}{An optional vector of columns names of baseline covariates to be
+included for adjustment at every timepoint.}
+
 \item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
 should be ordered following the time ordering of the model.}
-
-\item{baseline}{An optional vector of columns names of baseline covariates to be
-included for adjustment at every timepoint.}
 
 \item{cens}{An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
@@ -105,7 +105,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   Y <- 7.2*A + 3*W + rnorm(n)
   ex1_dat <- data.frame(W, A, Y)
   d <- function(x) x - 5
-  psi1.1 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+  psi1.1 <- lmtp_sdr(ex1_dat, "A", "Y", "W", shift = d,
                      outcome_type = "continuous", folds = 2)
   psi1.1
 
@@ -115,7 +115,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # units only among observations whose observed A was above 80.
   # The true value under this intervention is about 513.
   d <- function(x) (x > 80)*(x - 15) + (x <= 80)*x
-  psi1.2 <- lmtp_sdr(ex1_dat, "A", "Y", list(c("W")), shift = d,
+  psi1.2 <- lmtp_sdr(ex1_dat, "A", "Y", "W", shift = d,
                      outcome_type = "continuous", folds = 2)
   psi1.2
 
@@ -129,13 +129,13 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # specifying treament variables
   a <- c("A_1", "A_2", "A_3", "A_4")
   # specifying time varying covariates
-  time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+  tv <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
   # treatment policy function to be applied at all time points
   d <- function(a) {
     (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
   }
   progressr::with_progress({
-    psi2.1 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, folds = 2)
+    psi2.1 <- lmtp_sdr(sim_t4, a, "Y", time_vary = tv, shift = d, folds = 2)
   })
   psi2.1
 
@@ -145,7 +145,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # domain specific knowledge may suggest otherwise leading to a Markov processes.
   # This can be controlled using the k argument.
   progressr::with_progress({
-    psi2.2 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d,
+    psi2.2 <- lmtp_sdr(sim_t4, a, "Y", time_vary = tv, shift = d,
                        k = 0, folds = 2)
   })
   psi2.2
@@ -172,7 +172,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   }
 
   progressr::with_progress({
-    psi2.3 <- lmtp_sdr(sim_t4, a, "Y", time_varying, shift = d, k = 0, folds = 2)
+    psi2.3 <- lmtp_sdr(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
   })
   psi2.3
 
@@ -183,10 +183,10 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   data("iptwExWide", package = "twang")
   a <- paste0("tx", 1:3)
   baseline <- c("gender", "age")
-  nodes <- list(c("use0"), c("use1"), c("use2"))
+  tv <- list(c("use0"), c("use1"), c("use2"))
   progressr::with_progress({
     psi3.1 <-
-      lmtp_sdr(iptwExWide, a, "outcome", nodes, baseline = baseline,
+      lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
                shift = function(x) 1, outcome_type = "continuous",
                folds = 2)
   })
@@ -198,10 +198,11 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # the observed exposures in a hypothetical population with no loss-to-follow-up.
   head(sim_cens)
   a <- c("A1", "A2")
-  nodes <- list(c("L1"), c("L2"))
+  tv <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
   y <- "Y"
-  psi4.1 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+  psi4.1 <- lmtp_sdr(sim_cens, a, y, time_vary = tv, cens = cens,
+                     shift = NULL, folds = 2)
   psi4.1
 
   # Example 4.2
@@ -209,7 +210,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # treatment policy where exposure increased by 0.5 units at all time points. The
   # true value under this intervention is about 0.88.
   d <- function(x) x + 0.5
-  psi4.2 <- lmtp_sdr(sim_cens, a, y, nodes, cens = cens, shift = d, folds = 2)
+  psi4.2 <- lmtp_sdr(sim_cens, a, y, time_vary = tv,
+                     cens = cens, shift = d, folds = 2)
   psi4.2
 
   # Example 5.1
@@ -223,11 +225,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   y <- paste0("Y.", 0:6)
   cens <- paste0("C.", 0:5)
   baseline <- c("W1", "W2")
-  # even if there are no time varying covariates, we still provide a list the same
-  # length as the number of time points, but with items specified as NULL.
-  nodes <- lapply(0:5, function(x) NULL)
   progressr::with_progress({
-    psi5.1 <- lmtp_sdr(sim_point_surv, a, y, nodes, baseline, cens,
+    psi5.1 <- lmtp_sdr(sim_point_surv, a, y, baseline, cens = cens,
                        shift = function(x) 1, folds = 2)
   })
   psi5.1
