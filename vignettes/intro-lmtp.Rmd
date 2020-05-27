@@ -59,8 +59,8 @@ The following table describes `lmtp` parameters across the provided estimators:
 | data             | &check; | &check; |    &check;   | &check; |
 | trt              | &check; | &check; |    &check;   | &check; |
 | outcome          | &check; | &check; |    &check;   | &check; |
-| time_vary        | &check; | &check; |    &check;   | &check; |
 | baseline         | &check; | &check; |    &check;   | &check; |
+| time_vary        | &check; | &check; |    &check;   | &check; |
 | cens             | &check; | &check; |    &check;   | &check; |
 | k                | &check; | &check; |    &check;   | &check; |
 | shift            | &check; | &check; |    &check;   | &check; |
@@ -134,7 +134,7 @@ nodes <- list(c("L1"),
 create_node_list(a, 3, nodes, baseline = baseline, k = Inf)
 ```
 
-Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. The length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
+Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. If provided, the length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
 
 What if we modify the DAG so that `Y` is only directly affected by `A3`, `L3`, and `W`? We could say this data generating mechanism is now a Markov process and the correct `k` would be `k = 0`. 
 
@@ -324,7 +324,7 @@ Time-to-event analyses are supported for both time-invariant and time-varying ex
 
 For time-to-event problems, the intermediate outcome variables serve as indicators for when an observation experiences the event before the end of follow-up. If an observation does experience the event before the final outcome time, all future outcome variables (including the final outcome) variable should be set to 1. The function `event_locf()` (last observation carried forward, only for events) is provided to help with this imputation. 
 
-The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1. Notice that even though there are no time-varying covariates in the data, we still supply a list of length $\tau = 6$ to the `time_vary` argument with all the items set to `NULL`.  
+The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1.  
 
 ```{r, eval = F}
 head(sim_point_surv)
