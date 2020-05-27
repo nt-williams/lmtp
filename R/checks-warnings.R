@@ -185,3 +185,16 @@ check_folds <- function(V) {
     stop("The number of folds must be greater than 1.", call. = F)
   }
 }
+
+ check_time_vary <- function(time_vary = NULL) {
+   if (!is.null(time_vary)) {
+     if (!is.list(time_vary)) {
+       stop("time_vary must be a list.", call. = F)
+     }
+   }
+ }
+
+
+
+
+

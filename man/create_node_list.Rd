@@ -9,6 +9,8 @@ create_node_list(trt, tau, time_vary = NULL, baseline = NULL, k = Inf)
 \arguments{
 \item{trt}{A vector of column names of treatment variables.}
 
+\item{tau}{The number of time points of observation, excluding the final outcome.}
+
 \item{time_vary}{A list of length tau with the column names for new time_vary to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
@@ -36,8 +38,8 @@ bs <- c("W_1", "W_2")
 time_vary <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 
 # assuming no Markov property
-create_node_list(a, time_vary, bs, k = Inf)
+create_node_list(a, 4, time_vary, bs, k = Inf)
 
 # assuming a Markov property
-create_node_list(a, time_vary, bs, k = 0)
+create_node_list(a, 4, time_vary, bs, k = 0)
 }

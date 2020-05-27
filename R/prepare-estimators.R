@@ -19,13 +19,15 @@ Meta <- R6::R6Class(
                           shift, outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL) {
 
-      # initial checks
       tau <- determine_tau(outcome, trt, cens)
+
+      # initial checks
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, time_vary, baseline, cens, tau)
       check_scaled_conflict(data)
       check_folds(V)
+      check_time_vary(time_vary)
 
       # general setup
       self$n            <- nrow(data)
