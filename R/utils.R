@@ -3,6 +3,15 @@
   packageStartupMessage(welcome_msg(), check_for_sl3())
 }
 
+determine_tau <- function(outcome, trt, cens) {
+  surv <- length(outcome) > 1
+  if (!surv) {
+    return(length(trt))
+  } else {
+    return(length(cens))
+  }
+}
+
 shift_data <- function(data, A, C, .f) {
 
   out <- as.list(data)

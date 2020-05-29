@@ -129,7 +129,7 @@ speed up computation, we can use parallel processing supported by the
 ``` r
 plan(multiprocess)
 
-lmtp_tmle(sim_t4, a, "Y", time_varying, k = 1, shift = d, 
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 1, shift = d, 
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (d)
