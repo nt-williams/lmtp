@@ -158,7 +158,7 @@ sw <- function(x) {
 }
 
 final_outcome <- function(outcomes) {
-  max(outcomes)
+  outcomes[length(outcomes)]
 }
 
 #' Time To Event Last Outcome Carried Forward
