@@ -132,5 +132,5 @@ A variety of other R packages perform similiar tasks as `lmtp`. However, `lmtp` 
 
 ## References
 
-Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. *Non-Parametric Causal Effects Based on Longitudinal Modified Treatment Policies*.
+Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric Causal Effects Based on Longitudinal Modified Treatment Policies*.
 

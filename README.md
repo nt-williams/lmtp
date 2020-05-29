@@ -164,5 +164,5 @@ effects or modified treatment policies.
 
 ## References
 
-Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. *Non-Parametric
+Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric
 Causal Effects Based on Longitudinal Modified Treatment Policies*.
