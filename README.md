@@ -36,17 +36,19 @@ devtools::install_github("nt-williams/lmtp")
 `lmtp` is an R package that provides an estimation framework for the
 casual effects of feasible interventions based on point-treatment and
 longitudinal modified treatment policies (also referred to as stochastic
-interventions) as described in Diaz, Williams, & Hoffman (2020). Two
-primary estimators are supported, a targeted maximum likelihood (TML)
-estimator and a sequentially doubly robust (SDR) estimator (a
-G-computation and an inverse probability of treatment weighting
-estimator are provided for the sake of being thorough but their use is
-recommended against in favor of the TML and SDR estimators). Both binary
-and continuous outcomes (both with censoring) are allowed. `lmtp` is
-built atop the [`sl3`](https://github.com/tlverse/sl3) package to
-utilize ensemble machine learning for estimation. The treatment
-mechanism is estimated via a density ratio classification procedure
-irrespective of treatment variable type.
+interventions) as described in Diaz, Williams, Hoffman, and Schenck
+(2020). Two primary estimators are supported, a targeted maximum
+likelihood (TML) estimator and a sequentially doubly robust (SDR)
+estimator (a G-computation and an inverse probability of treatment
+weighting estimator are provided for the sake of being thorough but
+their use is recommended against in favor of the TML and SDR
+estimators). Both binary and continuous outcomes (both with censoring)
+are allowed. `lmtp` is built atop the
+[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
+machine learning for estimation. The treatment mechanism is estimated
+via a density ratio classification procedure irrespective of treatment
+variable type providing decreased computation time when treatment is
+continuous.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
@@ -78,8 +80,9 @@ accompanying
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects Based on Longitudinal Modified Treatment Policies
-#> Version: 0.0.8.9100
+#> lmtp: Causal Effects Based on Longitudinal Modified Treatment
+#> Policies
+#> Version: 0.0.9.9000
 #> 
 library(sl3)
 library(future)
@@ -129,16 +132,29 @@ speed up computation, we can use parallel processing supported by the
 ``` r
 plan(multiprocess)
 
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 1, shift = d, 
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (d)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.3089
-#>     Std. error: 0.0115
-#>         95% CI: (0.2863, 0.3315)
+# LMTP Estimator: TMLE
+#    Trt. Policy: (d)
+# 
+# Population intervention effect
+#       Estimate: 0.2901
+#     Std. error: 0.0119
+#         95% CI: (0.2667, 0.3134)
 ```
+
+## Similiar Implementations
+
+A variety of other R packages perform similiar tasks as `lmtp`. However,
+`lmtp` is the only R package currently capable of estimating causal
+effects for binary, categorical, and continuous outcomes in both the
+point treatment and longitudinal setting using traditional causal
+effects or modified treatment policies.
+
+  - [`txshift`](https://github.com/nhejazi/txshift)  
+  - [`tmle3`](https://github.com/tlverse/tmle3)  
+  - [`ltmle`](https://cran.r-project.org/web/packages/ltmle/index.html)  
+  - [`tmle`](https://cran.r-project.org/web/packages/tmle/index.html)
 
 ## Citation
 
