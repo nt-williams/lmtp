@@ -125,19 +125,23 @@ A variety of other R packages perform similiar tasks as `lmtp`. However, `lmtp` 
 
 ## Citation
 
-Please use the following for citation after using `lmtp` for publications.
+Please cite the following when using `lmtp` in publications. Citation should include both the R package and the paper establishing the statistical methodolgy.
 
 ```
-@manual{williams_lmtp_2020,
-title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
-shorttitle = {lmtp},
-url = {https://github.com/nt-williams/lmtp},,
-author = {Williams, Nicholas and D{\'\i}az, Iv{\'a}n},
-year = {2020},
-note = {R package version 0.9.0}
+@Manual{,
+    title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+    author = {Nicholas T Williams and Iván Díaz},
+    year = {2020},
+    note = {R package version 0.0.9.9000},
+    url = {https://github.com/nt-williams/lmtp},
 }
 
-# Paper citation
+@Article{,
+    journal = {arxiv},
+    title = {Non-parametric causal effects based on longitudinal modified treatment policies},
+    author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
+    year = {2020},
+}
 ```
 
 ## References
