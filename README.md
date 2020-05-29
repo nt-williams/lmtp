@@ -153,12 +153,23 @@ effects or modified treatment policies.
 
   - [`txshift`](https://github.com/nhejazi/txshift)  
   - [`tmle3`](https://github.com/tlverse/tmle3)  
+  - [`tmle3shift`](https://github.com/tlverse/tmle3shift)
   - [`ltmle`](https://cran.r-project.org/web/packages/ltmle/index.html)  
   - [`tmle`](https://cran.r-project.org/web/packages/tmle/index.html)
 
 ## Citation
 
-    # Package citation
+Please use the following for citation after using `lmtp` for
+publications.
+
+    @manual{williams_lmtp_2020,
+    title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+    shorttitle = {lmtp},
+    url = {https://github.com/nt-williams/lmtp},,
+    author = {Williams, Nicholas and D{\'\i}az, Iv{\'a}n},
+    year = {2020},
+    note = {R package version 0.9.0}
+    }
     
     # Paper citation
 
