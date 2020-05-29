@@ -51,7 +51,7 @@ continuous.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
-[vignette](https://htmlpreview.github.io/?https://github.com/nt-williams/lmtp/blob/master/inst/intro-lmtp.html).
+[vignette](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/c56a7b0bbdf24ec18d08f839e73fa06a42ca9265/intro-lmtp.html).
 
 ### Features
 
@@ -81,7 +81,7 @@ accompanying
 library(lmtp)
 #> lmtp: Causal Effects Based on Longitudinal Modified Treatment
 #> Policies
-#> Version: 0.0.9.9000
+#> Version: 0.0.9
 #> 
 library(sl3)
 library(future)
