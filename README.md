@@ -81,7 +81,7 @@ accompanying
 library(lmtp)
 #> lmtp: Causal Effects Based on Longitudinal Modified Treatment
 #> Policies
-#> Version: 0.0.9
+#> Version: 0.0.91
 #> 
 library(sl3)
 library(future)
@@ -166,8 +166,8 @@ statistical methodolgy.
         title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
         author = {Nicholas T Williams and Iván Díaz},
         year = {2020},
-        note = {R package version 0.0.9},
-        url = {https://github.com/nt-williams/lmtp},
+        note = {R package version 0.0.91},
+        url = {https://github.com/nt-williams/lmtp}
     }
     
     @Article{,
@@ -175,6 +175,7 @@ statistical methodolgy.
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},
         author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
         year = {2020},
+        url = {https://arxiv.org/abs/2006.01366}
     }
 
 ## References

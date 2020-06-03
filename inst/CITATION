@@ -9,7 +9,6 @@ bibentry(bibtype = "Manual",
                     person("Iván", "Díaz")),
          year = "2020",
          note = note,
-         doi = "",
          url = "https://github.com/nt-williams/lmtp")
 
 bibentry(bibtype = "Article",
@@ -20,5 +19,4 @@ bibentry(bibtype = "Article",
                     person("Katherine", "Hoffman", "L"),
                     person("Edward", "Schneck", "J")),
          year = "2020",
-         doi = "",
-         url = "")
+         url = "https://arxiv.org/abs/2006.01366")
