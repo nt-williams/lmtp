@@ -13,6 +13,7 @@ license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://openso
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
@@ -160,13 +161,14 @@ effects or modified treatment policies.
 
 Please cite the following when using `lmtp` in publications. Citation
 should include both the R package and the paper establishing the
-statistical methodolgy.
+statistical methodology.
 
     @Manual{,
         title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
         author = {Nicholas T Williams and Iván Díaz},
         year = {2020},
         note = {R package version 0.0.91},
+        doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }
     
@@ -182,3 +184,4 @@ statistical methodolgy.
 
 Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric
 Causal Effects Based on Longitudinal Modified Treatment Policies*.
+<https://arxiv.org/abs/2006.01366>
