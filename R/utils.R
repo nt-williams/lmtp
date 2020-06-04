@@ -186,3 +186,12 @@ event_locf <- function(data, outcomes) {
   return(data)
 }
 
+create_ids <- function(data, id) {
+  if (is.null(id)) {
+    out <- 1:nrow(data)
+  } else {
+    out <- id
+  }
+  return(out)
+}
+

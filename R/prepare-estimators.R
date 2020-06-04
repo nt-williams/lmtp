@@ -16,7 +16,7 @@ Meta <- R6::R6Class(
     weights_m = NULL,
     weights_r = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, outcome_type = NULL, V = 10, bounds = NULL,
+                          shift, id, outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL) {
 
       tau <- determine_tau(outcome, trt, cens)
@@ -37,10 +37,11 @@ Meta <- R6::R6Class(
       self$node_list    <- create_node_list(trt, tau, time_vary, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
-      set_lmtp_options("bound", bound)
+      data$lmtp_id      <- create_ids(data, id)
+      set_lmtp_options("bound", bound) # global bounding option
 
       # cross validation setup
-      self$folds <- folds <- setup_cv(data, V = V)
+      self$folds <- folds <- setup_cv(data, id = "lmtp_id", V = V)
       self$m <-
         get_folded_data(cbind(matrix(
           nrow = nrow(data), ncol = tau
