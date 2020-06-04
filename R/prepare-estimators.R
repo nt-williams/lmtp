@@ -41,7 +41,7 @@ Meta <- R6::R6Class(
       set_lmtp_options("bound", bound) # global bounding option
 
       # cross validation setup
-      self$folds <- folds <- setup_cv(data, id = "lmtp_id", V = V)
+      self$folds <- folds <- setup_cv(data, "lmtp_id", V)
       self$m <-
         get_folded_data(cbind(matrix(
           nrow = nrow(data), ncol = tau

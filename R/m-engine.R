@@ -13,8 +13,8 @@ estimate_sub <- function(training, shifted, validation, outcome,
     dv         <- create_determ_indicators(validation, deterministic, tau)
     pseudo     <- paste0("psi", tau)
     fit_task   <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
-    shift_task <- sw(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL))
-    valid_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
+    shift_task <- sw(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], "lmtp_id"))
+    valid_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], "lmtp_id"))
     ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
 
     # progress bar
@@ -69,10 +69,10 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     dv           <- create_determ_indicators(validation, deterministic, tau)
     pseudo       <- paste0("psi", tau)
     fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
-    nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-    shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-    vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-    vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+    nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+    shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+    vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], "lmtp_id"))
+    vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], "lmtp_id"))
     ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
 
     # progress bar
@@ -151,10 +151,10 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # setup
       fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type)
-      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], "lmtp_id"))
+      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], "lmtp_id"))
       ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
 
       # run SL
@@ -183,10 +183,10 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
 
       # run SL on outcome transformation and get predictions
       fit_task     <- initiate_sl3_task(training[i & !dt, ], pseudo, node_list[[tau]], outcome_type)
-      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL))
-      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL))
-      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL))
-      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL))
+      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], "lmtp_id"))
+      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], "lmtp_id"))
+      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], "lmtp_id"))
       ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], pseudo, learners))
 
       # run SL
