@@ -10,6 +10,7 @@ Meta <- R6::R6Class(
     node_list = NULL,
     n = NULL,
     tau = NULL,
+    id = NULL,
     outcome_type = NULL,
     bounds = NULL,
     folds = NULL,
@@ -37,7 +38,7 @@ Meta <- R6::R6Class(
       self$node_list    <- create_node_list(trt, tau, time_vary, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
-      data$lmtp_id      <- create_ids(data, id)
+      self$id           <- data$lmtp_id <- create_ids(data, id)
       set_lmtp_options("bound", bound) # global bounding option
 
       # cross validation setup
