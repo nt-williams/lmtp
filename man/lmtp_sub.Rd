@@ -14,6 +14,7 @@ lmtp_sub(
   shift,
   k = Inf,
   outcome_type = c("binomial", "continuous"),
+  id = NULL,
   bounds = NULL,
   learners = NULL,
   folds = 10,
@@ -50,6 +51,8 @@ used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
 \item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
+
+\item{id}{An optional column name containing cluster level identifiers.}
 
 \item{bounds}{An optional vector of the bounds for continuous outcomes. If \code{NULL},
 the bounds will be taken as the minimum and maximum of the observed data.

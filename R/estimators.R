@@ -26,7 +26,7 @@
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param id
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -147,7 +147,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param id
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -265,7 +265,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
-#' @param id
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -365,7 +365,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param id
+#' @param id An optional column name containing cluster level identifiers.
 #' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
 #'  If not specified, will default to an ensemble of an intercept only model
 #'  and a GLM.
