@@ -145,9 +145,9 @@ lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d,
 
 ## Similiar Implementations
 
-A variety of other R packages perform similiar tasks as `lmtp`. However,
+A variety of other R packages perform similar tasks as `lmtp`. However,
 `lmtp` is the only R package currently capable of estimating causal
-effects for binary, categorical, and continuous outcomes in both the
+effects for binary, categorical, and continuous exposures in both the
 point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
