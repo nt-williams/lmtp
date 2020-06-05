@@ -9,6 +9,7 @@ bibentry(bibtype = "Manual",
                     person("Iván", "Díaz")),
          year = "2020",
          note = note,
+         doi = "10.5281/zenodo.3874931",
          url = "https://github.com/nt-williams/lmtp")
 
 bibentry(bibtype = "Article",

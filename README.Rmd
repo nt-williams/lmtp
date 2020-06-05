@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg?token=TFQNTischL)](https://codecov.io/gh/nt-williams/lmtp)
 [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
@@ -115,7 +116,7 @@ lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d,
 
 ## Similiar Implementations
 
-A variety of other R packages perform similiar tasks as `lmtp`. However, `lmtp` is the only R package currently capable of estimating causal effects for binary, categorical, and continuous outcomes in both the point treatment and longitudinal setting using traditional causal effects or modified treatment policies.
+A variety of other R packages perform similar tasks as `lmtp`. However, `lmtp` is the only R package currently capable of estimating causal effects for binary, categorical, and continuous exposures in both the point treatment and longitudinal setting using traditional causal effects or modified treatment policies.
 
 - [`txshift`](https://github.com/nhejazi/txshift)  
 - [`tmle3`](https://github.com/tlverse/tmle3)  
@@ -125,7 +126,7 @@ A variety of other R packages perform similiar tasks as `lmtp`. However, `lmtp` 
 
 ## Citation
 
-Please cite the following when using `lmtp` in publications. Citation should include both the R package and the paper establishing the statistical methodolgy.
+Please cite the following when using `lmtp` in publications. Citation should include both the R package and the paper establishing the statistical methodology.
 
 ```
 @Manual{,
@@ -133,6 +134,7 @@ Please cite the following when using `lmtp` in publications. Citation should inc
     author = {Nicholas T Williams and Iván Díaz},
     year = {2020},
     note = {R package version 0.0.91},
+    doi = {10.5281/zenodo.3874931}, 
     url = {https://github.com/nt-williams/lmtp}
 }
 
@@ -147,5 +149,5 @@ Please cite the following when using `lmtp` in publications. Citation should inc
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric Causal Effects Based on Longitudinal Modified Treatment Policies*.
+Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric Causal Effects Based on Longitudinal Modified Treatment Policies*. https://arxiv.org/abs/2006.01366
 
