@@ -1,6 +1,6 @@
 
 welcome_msg <- function() {
-  cli::cli_text("{.strong lmtp}: Causal Effects Based on Longitudinal Modified Treatment Policies")
+  cli::cli_text("{.strong lmtp}: Causal Effects of Feasible Interventions Based on Modified Treatment Policies")
   cli::cli_text("{.strong Version}: ", as.character(utils::packageVersion("lmtp")))
 }
 
