@@ -32,6 +32,12 @@ Diaz](https://idiaz.xyz)
 devtools::install_github("nt-williams/lmtp")
 ```
 
+The stable, development version can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@devel")
+```
+
 ## Scope
 
 `lmtp` is an R package that provides an estimation framework for the
@@ -80,9 +86,9 @@ accompanying
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects Based on Longitudinal Modified Treatment
-#> Policies
-#> Version: 0.0.91
+#> lmtp: Causal Effects of Feasible Interventions Based on Modified
+#> Treatment Policies
+#> Version: 0.0.1.9000
 #> 
 library(sl3)
 library(future)
