@@ -12,6 +12,7 @@ lmtp_ipw(
   time_vary = NULL,
   cens = NULL,
   k = Inf,
+  id = NULL,
   shift,
   learners = NULL,
   folds = 10,
@@ -43,6 +44,8 @@ present or if time-to-event outcome, must be provided.}
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
+
+\item{id}{An optional column name containing cluster level identifiers.}
 
 \item{shift}{A function that specifies how treatment variables should be shifted. See examples
 for how to specify shift functions for continuous, binary, and categorical exposures.}

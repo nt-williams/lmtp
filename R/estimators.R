@@ -26,6 +26,7 @@
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -58,7 +59,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
-                      outcome_type = c("binomial", "continuous"),
+                      outcome_type = c("binomial", "continuous"), id = NULL,
                       bounds = NULL, learners_outcome = NULL,
                       learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -73,6 +74,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -106,6 +108,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
       r = recombine_dens_ratio(dens_ratio),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -144,6 +147,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -176,7 +180,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"),
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners_outcome = NULL,
                      learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -191,6 +195,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -221,6 +226,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
       r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -259,6 +265,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -286,7 +293,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"),
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
@@ -300,6 +307,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -357,6 +365,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
+#' @param id An optional column name containing cluster level identifiers.
 #' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
 #'  If not specified, will default to an ensemble of an intercept only model
 #'  and a GLM.
@@ -379,7 +388,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, k = Inf, shift,
+                     time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
                      learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
@@ -393,6 +402,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
