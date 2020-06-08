@@ -61,7 +61,7 @@ For an in-depth look at the package's functionality, please consult the accompan
 | Censored outcome                |   &check;   |
 | Mediation                       |             |
 | Super learner                   |   &check;   |
-| Clustered data                  |   Planned   |
+| Clustered data                  |   &check;   |
 | Parallel processing             |   &check;   |
 | Progress bars                   |   &check;   |
 
