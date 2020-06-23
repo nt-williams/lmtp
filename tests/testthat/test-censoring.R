@@ -11,49 +11,29 @@ rule <- function(data, x) {
 }
 
 sub <-
-<<<<<<< HEAD
     lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
              cens, k = 0, shift = rule,
-=======
-    lmtp_sub(sim_cens, a, "Y", baseline = NULL, nodes,
-             cens, k = 0, shift = function(x) x + 0.5,
->>>>>>> devel
              outcome_type = "binomial",
              learners = sl3::make_learner(sl3::Lrnr_glm),
              folds = 2)
 
 ipw <-
-<<<<<<< HEAD
   lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = rule,
-=======
-  lmtp_ipw(sim_cens, a, "Y", baseline = NULL, nodes,
-           cens, k = 0, shift = function(x) x + 0.5,
->>>>>>> devel
            learners = sl3::make_learner(sl3::Lrnr_glm),
            folds = 2)
 
 tmle <-
-<<<<<<< HEAD
     lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shift = rule,
-=======
-    lmtp_tmle(sim_cens, a, "Y", baseline = NULL, nodes,
-              cens, k = 0, shift = function(x) x + 0.5,
->>>>>>> devel
               outcome_type = "binomial",
               learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
               learners_trt = sl3::make_learner(sl3::Lrnr_glm),
               folds = 2)
 
 sdr <-
-<<<<<<< HEAD
   lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = rule,
-=======
-  lmtp_sdr(sim_cens, a, "Y", baseline = NULL, nodes,
-           cens, k = 0, shift = function(x) x + 0.5,
->>>>>>> devel
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
            learners_trt = sl3::make_learner(sl3::Lrnr_glm),
