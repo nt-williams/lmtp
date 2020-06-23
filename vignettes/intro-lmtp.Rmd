@@ -512,7 +512,9 @@ We recommend consulting the `progressr` [documentation](https://cran.r-project.o
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies.
+Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
+
+Díaz Muñoz, I. and van der Laan, M. (2012). Population Intervention Causal Effects Based on Stochastic Interventions. Biometrics, 68: 541-549. doi:10.1111/j.1541-0420.2011.01685.x
 
 Haneuse, S. and Rotnitzky, A. (2013), Estimation of the effect of interventions that modify the received treatment. Statist. Med., 32: 5260-5277. doi:10.1002/sim.5907
 

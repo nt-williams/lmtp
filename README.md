@@ -183,7 +183,7 @@ statistical methodology.
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},
         author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
         year = {2020},
-        url = {https://arxiv.org/abs/2006.01366}
+        url = {https://arxiv.org/abs/2006.01366v2}
     }
 
 ## References
