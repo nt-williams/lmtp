@@ -4,12 +4,14 @@
 \alias{create_node_list}
 \title{Create a node list specification}
 \usage{
-create_node_list(trt, nodes, baseline = NULL, k = Inf)
+create_node_list(trt, tau, time_vary = NULL, baseline = NULL, k = Inf)
 }
 \arguments{
 \item{trt}{A vector of column names of treatment variables.}
 
-\item{nodes}{A list of length tau with the column names for new nodes to
+\item{tau}{The number of time points of observation, excluding the final outcome.}
+
+\item{time_vary}{A list of length tau with the column names for new time_vary to
 be introduced at each time point. The list should be ordered following
 the time ordering of the model.}
 
@@ -21,7 +23,7 @@ used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 }
 \value{
-A list the same length of the nodes parameter with the variables
+A list the same length of the time_vary parameter with the variables
 to be used for estimation at that given time point.
 }
 \description{
@@ -33,11 +35,11 @@ before actually performing the estimation procedure.
 \examples{
 a <- c("A_1", "A_2", "A_3", "A_4")
 bs <- c("W_1", "W_2")
-nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+time_vary <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 
 # assuming no Markov property
-create_node_list(a, nodes, bs, k = Inf)
+create_node_list(a, 4, time_vary, bs, k = Inf)
 
 # assuming a Markov property
-create_node_list(a, nodes, bs, k = 0)
+create_node_list(a, 4, time_vary, bs, k = 0)
 }

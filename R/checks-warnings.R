@@ -41,9 +41,8 @@ check_censoring <- function(data, C, Y) {
 
 check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
   for (t in 1:tau) {
-    i <- create_censoring_indicators(data, cens, t)$i
+    i <- create_censoring_indicators(data, cens, t)$j
     if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau)[t], baseline, unlist(nodes[t]))])))) {
-      browser()
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
@@ -186,3 +185,16 @@ check_folds <- function(V) {
     stop("The number of folds must be greater than 1.", call. = F)
   }
 }
+
+ check_time_vary <- function(time_vary = NULL) {
+   if (!is.null(time_vary)) {
+     if (!is.list(time_vary)) {
+       stop("time_vary must be a list.", call. = F)
+     }
+   }
+ }
+
+
+
+
+

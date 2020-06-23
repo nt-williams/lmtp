@@ -1,7 +1,7 @@
 > a <- c("A_1", "A_2", "A_3", "A_4")
 > bs <- c("W")
 > nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-> create_node_list(a, nodes, baseline = NULL, k = NULL)
+> create_node_list(a, 4, nodes, baseline = NULL, k = NULL)
 $trt
 $trt[[1]]
 [1] "L_1" "A_1"
@@ -31,7 +31,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, baseline = NULL, k = Inf)
+> create_node_list(a, 4, nodes, baseline = NULL, k = Inf)
 $trt
 $trt[[1]]
 [1] "L_1" "A_1"
@@ -61,7 +61,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, baseline = NULL, k = 0)
+> create_node_list(a, 4, nodes, baseline = NULL, k = 0)
 $trt
 $trt[[1]]
 [1] "L_1" "A_1"
@@ -91,7 +91,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, baseline = NULL, k = 1)
+> create_node_list(a, 4, nodes, baseline = NULL, k = 1)
 $trt
 $trt[[1]]
 [1] "L_1" "A_1"
@@ -121,7 +121,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, baseline = NULL, k = 2)
+> create_node_list(a, 4, nodes, baseline = NULL, k = 2)
 $trt
 $trt[[1]]
 [1] "L_1" "A_1"
@@ -151,7 +151,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, bs, k = 0)
+> create_node_list(a, 4, nodes, bs, k = 0)
 $trt
 $trt[[1]]
 [1] "W"   "L_1" "A_1"
@@ -181,7 +181,7 @@ $outcome[[4]]
 
 
 
-> create_node_list(a, nodes, bs, k = Inf)
+> create_node_list(a, 4, nodes, bs, k = Inf)
 $trt
 $trt[[1]]
 [1] "W"   "L_1" "A_1"
@@ -208,6 +208,36 @@ $outcome[[3]]
 
 $outcome[[4]]
 [1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
+
+
+
+> create_node_list(a, 4, NULL, bs, k = Inf)
+$trt
+$trt[[1]]
+[1] "W"   "A_1"
+
+$trt[[2]]
+[1] "W"   "A_1" "A_2"
+
+$trt[[3]]
+[1] "W"   "A_1" "A_2" "A_3"
+
+$trt[[4]]
+[1] "W"   "A_1" "A_2" "A_3" "A_4"
+
+
+$outcome
+$outcome[[1]]
+[1] "W"   "A_1"
+
+$outcome[[2]]
+[1] "W"   "A_1" "A_2"
+
+$outcome[[3]]
+[1] "W"   "A_1" "A_2" "A_3"
+
+$outcome[[4]]
+[1] "W"   "A_1" "A_2" "A_3" "A_4"
 
 
 

@@ -7,4 +7,5 @@
 ^\.github$
 ^\.covrignore$
 ^vignettes/articles$
-^vignettes/intro-lmtp.html$
+^inst/intro-lmtp.html$
+^inst/intro-lmtp_files$

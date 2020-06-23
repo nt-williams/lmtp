@@ -3,6 +3,15 @@
   packageStartupMessage(welcome_msg(), check_for_sl3())
 }
 
+determine_tau <- function(outcome, trt, cens) {
+  surv <- length(outcome) > 1
+  if (!surv) {
+    return(length(trt))
+  } else {
+    return(length(cens))
+  }
+}
+
 set_lmtp_options <- function(option, val) {
   if (option == "bound") {
     options(lmtp.bound = val)
@@ -128,7 +137,7 @@ sw <- function(x) {
 }
 
 final_outcome <- function(outcomes) {
-  max(outcomes)
+  outcomes[length(outcomes)]
 }
 
 #' Time To Event Last Outcome Carried Forward
@@ -154,5 +163,14 @@ event_locf <- function(data, outcomes) {
     }
   }
   return(data)
+}
+
+create_ids <- function(data, id) {
+  if (is.null(id)) {
+    out <- 1:nrow(data)
+  } else {
+    out <- data[[id]]
+  }
+  return(out)
 }
 

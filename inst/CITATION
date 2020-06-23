@@ -1,0 +1,23 @@
+
+citHeader("Please cite the following when using 'lmtp' in publications. Citation should include both the R package and the paper establishing the statistical methodolgy.")
+
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(bibtype = "Manual",
+         title = "lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}",
+         author = c(person("Nicholas", "Williams", "T"),
+                    person("Iván", "Díaz")),
+         year = "2020",
+         note = note,
+         doi = "10.5281/zenodo.3874931",
+         url = "https://github.com/nt-williams/lmtp")
+
+bibentry(bibtype = "Article",
+         journal = "arxiv",
+         title = "Non-parametric causal effects based on longitudinal modified treatment policies",
+         author = c(person("Iván", "Díaz"),
+                    person("Nicholas", "Williams"),
+                    person("Katherine", "Hoffman", "L"),
+                    person("Edward", "Schneck", "J")),
+         year = "2020",
+         url = "https://arxiv.org/abs/2006.01366")

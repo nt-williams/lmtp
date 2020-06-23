@@ -10,37 +10,42 @@ Meta <- R6::R6Class(
     node_list = NULL,
     n = NULL,
     tau = NULL,
+    id = NULL,
     outcome_type = NULL,
     bounds = NULL,
     folds = NULL,
     weights_m = NULL,
     weights_r = NULL,
-    initialize = function(data, trt, outcome, nodes, baseline, cens, k,
-                          shift, outcome_type = NULL, V = 10, bounds = NULL,
+    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
+                          shift, id, outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL) {
 
+      tau <- determine_tau(outcome, trt, cens)
+
       # initial checks
-      check_for_variables(data, trt, outcome, baseline, nodes, cens)
+      check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))
-      check_missing_data(data, trt, nodes, baseline, cens, length(nodes))
+      check_missing_data(data, trt, time_vary, baseline, cens, tau)
       check_scaled_conflict(data)
       check_folds(V)
+      check_time_vary(time_vary)
 
       # general setup
       self$n            <- nrow(data)
-      self$tau          <- length(nodes)
-      self$trt          <- check_trt_length(trt, length(nodes))
-      self$determ       <- check_deterministic(outcome, length(nodes))
-      self$node_list    <- create_node_list(trt, nodes, baseline, k)
+      self$tau          <- tau
+      self$trt          <- check_trt_length(trt, tau)
+      self$determ       <- check_deterministic(outcome, tau)
+      self$node_list    <- create_node_list(trt, tau, time_vary, baseline, k)
       self$outcome_type <- outcome_type
       self$bounds       <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
-      set_lmtp_options("bound", bound)
+      self$id           <- data$lmtp_id <- create_ids(data, id)
+      set_lmtp_options("bound", bound) # global bounding option
 
       # cross validation setup
-      self$folds <- folds <- setup_cv(data, V = V)
+      self$folds <- folds <- setup_cv(data, data[["lmtp_id"]], V)
       self$m <-
         get_folded_data(cbind(matrix(
-          nrow = nrow(data), ncol = length(nodes)
+          nrow = nrow(data), ncol = tau
         ), scale_y_continuous(data[[final_outcome(outcome)]],
                              y_bounds(data[[final_outcome(outcome)]],
                                       outcome_type,
@@ -54,8 +59,7 @@ Meta <- R6::R6Class(
                                             y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
-            cens, length(nodes)
-          ), folds
+            cens, tau), folds
         )
 
       self$shifted_data <-
@@ -66,8 +70,7 @@ Meta <- R6::R6Class(
                                             y_bounds(data[[final_outcome(outcome)]],
                                                      outcome_type,
                                                      bounds))),
-            cens, length(nodes)
-          ), folds
+            cens, tau), folds
         )
 
       self$weights_m <- hold_lrnr_weights(V)
@@ -78,7 +81,6 @@ Meta <- R6::R6Class(
 
 prepare_r_engine <- function(data, shifted, n) {
   out    <- rbind(data, shifted)
-  out$id <- rep(1:n, 2)
   out$si <- c(rep(0, n), rep(1, n))
   return(out)
 }

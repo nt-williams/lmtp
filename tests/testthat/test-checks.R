@@ -20,7 +20,14 @@ test_that("variables dont exist", {
   a <- c("A", "A2")
   nodes <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
-  truth <- 0.88
+  expect_error(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
+                        cens, k = 1, shift = function(x) x + 0.5))
+})
+
+test_that("time_vary is a list", {
+  a <- c("A1", "A2")
+  nodes <- c("L1", "L2")
+  cens <- c("C1", "C2")
   expect_error(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
                         cens, k = 1, shift = function(x) x + 0.5))
 })

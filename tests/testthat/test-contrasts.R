@@ -22,7 +22,7 @@ fit1 <-
 set.seed(679)
 
 fit0 <-
-  lmtp_tmle(sim_cens[1:500, ], a, "Y", nodes, baseline = NULL,
+  lmtp_tmle(sim_cens[1:500, ], a, "Y", baseline = NULL, nodes,
             cens, k = 0, shift = NULL,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),

@@ -1,5 +1,5 @@
 ---
-title: "Using LMTP"
+title: "Getting Started with LMTP"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{try}
@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 __Authors__: [Nick Williams](https://nicholastwilliams.com) and [Ivan Diaz](https://idiaz.xyz)  
 __Updated__: `r Sys.Date()` 
 
-This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the casual effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, and Hoffman (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
+This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the casual effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, Hoffman, and Schenck (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
 
 While not possible to cover everything, this introductory guide should equip users of `lmtp` with enough knowledge to handle the majority of use cases. In addition, we assume the analyst has basic knowledge of non-parametric estimation for causal inference; the specifics of the methodology behind the provided functions is not discussed. 
 
@@ -59,8 +59,8 @@ The following table describes `lmtp` parameters across the provided estimators:
 | data             | &check; | &check; |    &check;   | &check; |
 | trt              | &check; | &check; |    &check;   | &check; |
 | outcome          | &check; | &check; |    &check;   | &check; |
-| nodes            | &check; | &check; |    &check;   | &check; |
 | baseline         | &check; | &check; |    &check;   | &check; |
+| time_vary        | &check; | &check; |    &check;   | &check; |
 | cens             | &check; | &check; |    &check;   | &check; |
 | k                | &check; | &check; |    &check;   | &check; |
 | shift            | &check; | &check; |    &check;   | &check; |
@@ -77,7 +77,7 @@ While many parameters aren't required, the default options will likely give sub 
 
 ### sl3
 
-`lmtp` relies on the `sl3` package to use ensemble machine learning during estimation procedures. To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
+`lmtp` relies on the [`sl3`](https://tlverse.org/sl3/) package to use ensemble machine learning during estimation procedures. To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
@@ -131,10 +131,10 @@ nodes <- list(c("L1"),
               c("L3"))
 
 # we can make sure our specification is correct by checking create_node_list()
-create_node_list(a, nodes, baseline = baseline, k = Inf)
+create_node_list(a, 3, nodes, baseline = baseline, k = Inf)
 ```
 
-Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. The length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
+Notice that the time-varying covariates are specified using a list of vectors, allowing the analyst to specify multiple time-varying covariates at each time-point of observation. If provided, the length of this list should be the same length as the treatment vector, `a` in this example (the one exception to this rule is in [Survival analysis]). 
 
 What if we modify the DAG so that `Y` is only directly affected by `A3`, `L3`, and `W`? We could say this data generating mechanism is now a Markov process and the correct `k` would be `k = 0`. 
 
@@ -150,7 +150,7 @@ nodes <- list(c("L1"),
               c("L3"))
 
 # again checking or specification
-create_node_list(a, nodes, baseline = baseline, k = 0)
+create_node_list(a, 3, nodes, baseline = baseline, k = 0)
 ```
 
 Censoring nodes are discussed in the [Censored outcomes] section.
@@ -167,7 +167,7 @@ $$d_t(a_t, h_t) = a_t - \delta_t$$
 
 ### Modified treatment policies
 
-The causal effect of a modified treatment policy is the effect of an intervention that is only applied to observations where the intervention is feasible. What's feasible in this case is defined by $a_t>u_t(h_t) + \delta_t$, where $u_t$ is an analyst-specified value. Interested readers are referred to Diaz, Williams, and Hoffman (2020) for an overview of modified treatment policies and their advantages compared to traditional causal effects. 
+The causal effect of a modified treatment policy is the effect of an intervention that is only applied to observations where the intervention is feasible. What's feasible in this case is defined by $a_t>u_t(h_t) + \delta_t$, where $u_t$ is an analyst-specified value. Interested readers are referred to Diaz, Williams, Hoffman, and Schenck (2020) and Haneuse and Rotnitzky (2013), for an overview of modified treatment policies and their advantages compared to traditional causal effects. 
 
 $$
 d_t(a_t, h_t)=\left\{ \begin{array}{l}
@@ -202,7 +202,7 @@ a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
-lmtp_sdr(sim_t4, a, "Y", time_varying, k = 0, shift = shift, 
+lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
 #> LMTP Estimator: SDR
 #>    Trt. Policy: (shift)
@@ -233,8 +233,8 @@ nodes <- list(c("gender", "age", "use0"),
               c("use2"))
 lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
-lmtp_tmle(iptwExWide, a, "outcome", nodes, shift = shift, 
-          outcome_type = "continuous",
+lmtp_tmle(iptwExWide, a, "outcome", time_vary = nodes, 
+          shift = shift, outcome_type = "continuous",
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (shift)
@@ -272,14 +272,14 @@ shift <- function(a) {
     factor(unlist(out), levels = 0:5, ordered = T)
 }
 
-lmtp_sdr(sim_t4, a, "Y", time_varying, k = 0, shift = shift, folds = 2)
+lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 2)
 #> LMTP Estimator: SDR
 #>    Trt. Policy: (shift)
 #> 
 #> Population intervention effect
-#>       Estimate: 0.2886
+#>       Estimate: 0.2953
 #>     Std. error: 0.0176
-#>         95% CI: (0.2541, 0.323)
+#>         95% CI: (0.2607, 0.3299)
 ```
 
 ### Censored outcomes
@@ -306,7 +306,7 @@ nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
 lrnrs <- make_learner(Lrnr_glm)
 
-lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 0, 
+lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
           shift = function(x) x + 0.5, learners_outcome = lrnrs,
           learners_trt = lrnrs)
 #> LMTP Estimator: TMLE
@@ -320,11 +320,11 @@ lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 0,
 
 ### Survival analysis
 
-Time-to-event analyses are supported for both time-invariant and time-varying exposures. The `outcome` argument should be provided a vector containing the names of intermediate outcome variables as well as the final outcome variable. This means that if the `nodes` argument is supplied a list of length $\tau$ then the length of the vector supplied to the `outcome` argument should be of length $\tau + 1$. 
+Time-to-event analyses are supported for both time-invariant and time-varying exposures. The `outcome` argument should be provided a vector containing the names of intermediate outcome variables as well as the final outcome variable. This means that if the `time_vary` argument is supplied a list of length $\tau$ then the length of the vector supplied to the `outcome` argument should be of length $\tau + 1$. 
 
 For time-to-event problems, the intermediate outcome variables serve as indicators for when an observation experiences the event before the end of follow-up. If an observation does experience the event before the final outcome time, all future outcome variables (including the final outcome) variable should be set to 1. The function `event_locf()` (last observation carried forward, only for events) is provided to help with this imputation. 
 
-The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1. Notice that even though there are no time-varying covariates in the data, we still supply a list of length $\tau = 6$ to the `nodes` argument with all the items set to `NULL`.  
+The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1.  
 
 ```{r, eval = F}
 head(sim_point_surv)
@@ -340,8 +340,8 @@ a <- "trt"
 y <- paste0("Y.", 0:6)
 cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
-nodes <- lapply(0:5, function(x) NULL)
-lmtp_tmle(sim_point_surv, a, y, nodes, baseline, cens, shift = function(x) 1, folds = 2)
+lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens, 
+          shift = function(x) 1, folds = 2)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (function(x) 1)
 #> 
@@ -361,9 +361,8 @@ nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
 lrnrs <- make_learner(Lrnr_glm)
 
-lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 0, 
-          shift = NULL, learners_outcome = lrnrs,
-          learners_trt = lrnrs)
+lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
+          shift = NULL, learners_outcome = lrnrs, learners_trt = lrnrs)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (NULL)
 #> 
@@ -384,12 +383,12 @@ cens <- c("C1", "C2")
 lrnrs <- make_learner(Lrnr_glm)
 
 fit_shift <- 
-  lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 0, 
+  lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
             shift = function(x) x + 0.5, learners_outcome = lrnrs,
             learners_trt = lrnrs, folds = 2)
 
 fit_noshift <- 
-  lmtp_tmle(sim_cens, a, "Y", nodes, cens = cens, k = 0, 
+  lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
             shift = NULL, learners_outcome = lrnrs,
             learners_trt = lrnrs, folds = 2)
 
@@ -434,7 +433,7 @@ d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
 lrnrs <- make_learner(Lrnr_glm)
 
 thetas <- lapply(1:100, function(x) {
-  lmtp_ipw(resamples[[x]], a, "Y", time_varying, 
+  lmtp_ipw(resamples[[x]], a, "Y", time_vary = time_varying, 
            k = 0, shift = d, learners = lrnrs, folds = 2)$theta
 })
 
@@ -457,7 +456,7 @@ time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
 lrnrs <- make_learner_stack(Lrnr_glm)
 
-fit <- lmtp_tmle(sim_t4, a, "Y", time_varying, k = 0, shift = d, 
+fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
                  learners_outcome = lrnrs, learners_trt = lrnrs, folds = 2)
 
 tidy(fit)
@@ -478,7 +477,7 @@ lrnrs <- make_learner_stack(Lrnr_mean,
                             Lrnr_ranger)
 
 system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_varying, k = 0, shift = d, 
+  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
             learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 )
 #>     user   system  elapsed 
@@ -487,7 +486,7 @@ system.time(
 plan(multiprocess)
 
 system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_varying, k = 0, shift = d, 
+  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
             learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 )
 #>  user  system elapsed 
@@ -512,4 +511,11 @@ We recommend consulting the `progressr` [documentation](https://cran.r-project.o
 
 ## References
 
-Ivan Diaz, Nicholas Williams, & Katherine Hoffman, 2020. Non-Parametric Causal Effects Based on Longitudinal Modified Policies.
+Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies.
+
+Haneuse, S. and Rotnitzky, A. (2013), Estimation of the effect of interventions that modify the received treatment. Statist. Med., 32: 5260-5277. doi:10.1002/sim.5907
+
+Coyle JR, Hejazi NS, Malenica I, Sofrygin O (2020). _sl3: Pipelines for
+Machine Learning and Super Learning_. doi: 10.5281/zenodo.1342293 (URL:
+https://doi.org/10.5281/zenodo.1342293), R package version 1.3.8, <URL:
+https://github.com/tlverse/sl3>.

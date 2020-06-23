@@ -12,23 +12,21 @@
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param nodes A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model. Must be provided, even
-#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
-#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
-#'  \code{nodes} should be the same length as the number of intermediate outcome variables
-#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
 #' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
+#' @param time_vary A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -59,9 +57,9 @@
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
-lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
-                      cens = NULL, k = Inf, shift,
-                      outcome_type = c("binomial", "continuous"),
+lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
+                      time_vary = NULL, cens = NULL, shift, k = Inf,
+                      outcome_type = c("binomial", "continuous"), id = NULL,
                       bounds = NULL, learners_outcome = NULL,
                       learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -71,11 +69,12 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
     data = data,
     trt = trt,
     outcome = outcome,
-    nodes = nodes,
+    time_vary = time_vary,
     baseline = baseline,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -109,6 +108,7 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
       r = recombine_dens_ratio(dens_ratio),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -133,23 +133,21 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param nodes A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model. Must be provided, even
-#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
-#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
-#'  \code{nodes} should be the same length as the number of intermediate outcome variables
-#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
 #' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
+#' @param time_vary A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -180,9 +178,9 @@ lmtp_tmle <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sdr-ex.R
-lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
-                     cens = NULL, k = Inf, shift,
-                     outcome_type = c("binomial", "continuous"),
+lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, shift, k = Inf,
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners_outcome = NULL,
                      learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -192,11 +190,12 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
     data = data,
     trt = trt,
     outcome = outcome,
-    nodes = nodes,
+    time_vary = time_vary,
     baseline = baseline,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -227,6 +226,7 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
       r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -251,23 +251,21 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param nodes A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model. Must be provided, even
-#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
-#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
-#'  \code{nodes} should be the same length as the number of intermediate outcome variables
-#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
 #' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
+#' @param time_vary A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#'  for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#'  for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
@@ -293,9 +291,9 @@ lmtp_sdr <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
-lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
-                     cens = NULL, k = Inf, shift,
-                     outcome_type = c("binomial", "continuous"),
+lmtp_sub <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, shift, k = Inf,
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
@@ -304,11 +302,12 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
     data = data,
     trt = trt,
     outcome = outcome,
-    nodes = nodes,
+    time_vary = time_vary,
     baseline = baseline,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -353,22 +352,20 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param nodes A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model. Must be provided, even
-#'  if no time-varying covariates exist. In the case of a point-treatment, should be set
-#'  to \code{list(c(NULL))}. If time-to-event with a time-invariant exposure,
-#'  \code{nodes} should be the same length as the number of intermediate outcome variables
-#'  with each index of the list similiarly set to \code{NULL}. See examples for demonstration.
 #' @param baseline An optional vector of columns names of baseline covariates to be
 #'  included for adjustment at every timepoint.
+#' @param time_vary A list the same length as the number of time points of observation with
+#'  the column names for new time-varying covariates introduced at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param cens An optional vector of column names of censoring indicators the same
-#'  length as \code{nodes}. If missingness in the outcome is present, must be provided.
+#'  length as the number of time points of observation. If missingness in the outcome is
+#'  present or if time-to-event outcome, must be provided.
+#' @param shift A function that specifies how treatment variables should be shifted. See examples
+#' for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param id An optional column name containing cluster level identifiers.
 #' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
 #'  If not specified, will default to an ensemble of an intercept only model
 #'  and a GLM.
@@ -390,9 +387,9 @@ lmtp_sub <- function(data, trt, outcome, nodes, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
-                     cens = NULL, k = Inf, shift, learners = NULL,
-                     folds = 10, bound = 1e-5) {
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
+                     time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
+                     learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -400,11 +397,12 @@ lmtp_ipw <- function(data, trt, outcome, nodes, baseline = NULL,
     data = data,
     trt = trt,
     outcome = outcome,
-    nodes = nodes,
+    time_vary = time_vary,
     baseline = baseline,
     cens = cens,
     k = k,
     shift = shift,
+    id = id,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
