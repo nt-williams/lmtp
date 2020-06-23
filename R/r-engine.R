@@ -11,7 +11,6 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-
     # setup
     i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
     d     <- rep(create_determ_indicators(training, deterministic, t), 2)

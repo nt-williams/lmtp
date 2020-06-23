@@ -190,7 +190,7 @@ create_ids <- function(data, id) {
   if (is.null(id)) {
     out <- 1:nrow(data)
   } else {
-    out <- id
+    out <- data[[id]]
   }
   return(out)
 }
