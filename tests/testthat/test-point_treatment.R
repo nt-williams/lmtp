@@ -7,7 +7,7 @@ n_obs <- 200
 W <- replicate(2, rbinom(n_obs, 1, 0.5))
 A <- rnorm(n_obs, mean = 2 * W, sd = 1)
 Y <- rbinom(n_obs, 1, plogis(A + W + rnorm(n_obs, mean = 0, sd = 1)))
-nodes <- list(c("X1", "X2"))
+bs <- c("X1", "X2")
 df <- data.frame(W, A, Y)
 truth <- 0.76451
 
@@ -17,21 +17,21 @@ rule <- function(data, x) {
 
 # estimators
 sub <-
-  lmtp_sub(df, "A", "Y", nodes, shift = rule,
+  lmtp_sub(df, "A", "Y", baseline = bs, shift = rule,
            outcome_type = "binomial", folds = 2)
 
 ipw <-
-  lmtp_ipw(df, "A", "Y", nodes, shift = rule,
+  lmtp_ipw(df, "A", "Y", baseline = bs, shift = rule,
            learners = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 tmle <-
-  lmtp_tmle(df, "A", "Y", nodes, shift = rule,
+  lmtp_tmle(df, "A", "Y", baseline = bs, shift = rule,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
             learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
 
 sdr <-
-  lmtp_sdr(df, "A", "Y", nodes, shift = rule,
+  lmtp_sdr(df, "A", "Y", baseline = bs, shift = rule,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
            learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)

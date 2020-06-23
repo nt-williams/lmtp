@@ -21,24 +21,24 @@ rule <- function(data, x) {
 
 # estimators
 sub <-
-  lmtp_sub(df, a, "Y", nodes, k = 0, shift = rule,
+  lmtp_sub(df, a, "Y", time_vary = nodes, k = 0, shift = rule,
            outcome_type = "binomial", learners = sl3::make_learner(sl3::Lrnr_glm),
            folds = 2)
 
 ipw <-
-  lmtp_ipw(df, a, "Y", nodes, k = 0, shift = rule,
+  lmtp_ipw(df, a, "Y", time_vary = nodes, k = 0, shift = rule,
            learners = sl3::make_learner(sl3::Lrnr_glm),
            folds = 2)
 
 tmle <-
-  lmtp_tmle(df, a, "Y", nodes, cens = NULL, k = 0, shift = rule,
+  lmtp_tmle(df, a, "Y", time_vary = nodes, cens = NULL, k = 0, shift = rule,
             outcome_type = "binomial",
             learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
             learners_trt = sl3::make_learner(sl3::Lrnr_glm),
             folds = 2)
 
 sdr <-
-  lmtp_sdr(df, a, "Y", nodes, cens = NULL, k = 0, shift = rule,
+  lmtp_sdr(df, a, "Y", time_vary = nodes, cens = NULL, k = 0, shift = rule,
            outcome_type = "binomial",
            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
            learners_trt = sl3::make_learner(sl3::Lrnr_glm),
