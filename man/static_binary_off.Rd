@@ -12,7 +12,7 @@ static_binary_off(data, trt)
 \item{trt}{The name of the current treatment variable.}
 }
 \value{
-
+A dataframe with all treatment nodes set to 0.
 }
 \description{
 A pre-packaged shift function for use with provided estimators when the exposure is binary.

@@ -30,7 +30,7 @@ shift_trt <- function(data, trt, .f) {
 #' @param trt The name of the current treatment variable.
 #'
 #' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
-#' @return
+#' @return A dataframe with all treatment nodes set to 1.
 #' @export
 #'
 #' @examples
@@ -48,7 +48,7 @@ static_binary_on <- function(data, trt) {
 #' @param trt The name of the current treatment variable.
 
 #' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
-#' @return
+#' @return A dataframe with all treatment nodes set to 0.
 #' @export
 #'
 #' @examples
