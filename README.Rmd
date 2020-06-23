@@ -57,7 +57,7 @@ For an in-depth look at the package's functionality, please consult the accompan
 | Longitudinal treatment          |   &check;   |
 | Modified treatment intervention |   &check;   |
 | Static intervention             |   &check;   |
-| Dynamic intervention            |   Planned   |
+| Dynamic intervention            |   &check;   |
 | Continuous treatment            |   &check;   |
 | Binary treatment                |   &check;   |
 | Categorical treatment           |   &check;   |
@@ -86,8 +86,8 @@ We're interested in a treatment policy, `d`, where exposure is decreased by 1 on
 
 ```{r, eval = F}
 # our treatment policy function to be applied at all time points
-d <- function(a) {
-  (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
@@ -109,7 +109,7 @@ We can now estimate the effect of our treatment policy, `d`. In this example, we
 ```{r, eval = F}
 plan(multiprocess)
 
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 # LMTP Estimator: TMLE
 #    Trt. Policy: (d)
