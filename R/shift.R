@@ -34,7 +34,14 @@ shift_trt <- function(data, trt, .f) {
 #' @export
 #'
 #' @examples
-#' # TODO
+#' \dontrun{
+#' data("iptwExWide", package = "twang")
+#' a <- paste0("tx", 1:3)
+#' baseline <- c("gender", "age")
+#' tv <- list(c("use0"), c("use1"), c("use2"))
+#' lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+#'          shift = static_binary_on, outcome_type = "continuous", folds = 2)
+#' }
 static_binary_on <- function(data, trt) {
   rep(1, length(data[[trt]]))
 }
@@ -52,7 +59,14 @@ static_binary_on <- function(data, trt) {
 #' @export
 #'
 #' @examples
-#' #TODO
+#' \dontrun{
+#' data("iptwExWide", package = "twang")
+#' a <- paste0("tx", 1:3)
+#' baseline <- c("gender", "age")
+#' tv <- list(c("use0"), c("use1"), c("use2"))
+#' lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+#'          shift = static_binary_off, outcome_type = "continuous", folds = 2)
+#' }
 static_binary_off <- function(data, trt) {
   rep(0, length(data[[trt]]))
 }
