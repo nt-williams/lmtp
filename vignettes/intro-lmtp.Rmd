@@ -245,7 +245,6 @@ To evaluate the effect of an intervention on a categorical exposure, the shift f
 ```{r, eval = F}
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
 # converting the observed exposures to an ordered factor
 for (i in a) {
@@ -275,7 +274,42 @@ lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds =
 #>         95% CI: (0.2607, 0.3299)
 ```
 
-### Dyanmic treatment regimes
+### Dynamic treatment regimes
+
+Dynamic treatment regimes are treatment rules where treatment is applied based on a fixed rule that depends on covariate history. `lmtp` is capable of estimating the effects of deterministic dynamic treatment rules as well as dynamic modified treatment policies. 
+
+```{r, eval = F}
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+# our same shift function
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
+
+# creating a dynamic mtp that applies the shift function 
+# but also depends on history and the current time
+dynamic_mtp <- function(data, trt) {
+  if (trt == "A_1") {
+    # if its the first time point, follow the same mtp as before
+    shift(data, trt)
+  } else {
+    # otherwise check if the time varying covariate equals 1
+    ifelse(data[[sub("A", "L", trt)]] == 1, 
+           shift(data, trt), # if yes continue with the policy
+           data[[trt]]) # otherwise do nothing
+  }
+}
+
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = dynamic_mtp)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (dynamic_mtp)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.2363
+#>     Std. error: 0.0112
+#>         95% CI: (0.2144, 0.2583)
+```
 
 ### Censored outcomes
 
@@ -512,7 +546,7 @@ We recommend consulting the `progressr` [documentation](https://cran.r-project.o
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
+Díaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
 
 Díaz Muñoz, I. and van der Laan, M. (2012). Population Intervention Causal Effects Based on Stochastic Interventions. Biometrics, 68: 541-549. doi:10.1111/j.1541-0420.2011.01685.x
 

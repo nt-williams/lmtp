@@ -47,8 +47,8 @@ all time points.}
 
 \item{id}{An optional column name containing cluster level identifiers.}
 
-\item{shift}{A function that specifies how treatment variables should be shifted. See examples
-for how to specify shift functions for continuous, binary, and categorical exposures.}
+\item{shift}{A two argument function that specifies how treatment variables should be shifted.
+See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
 
 \item{learners}{An \code{sl3} learner stack for estimation of the treatment mechanism.
 If not specified, will default to an ensemble of an intercept only model
@@ -139,7 +139,36 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   psi2.2
 
   # Example 2.3
-  # Using the same data as examples 2.1 and 2.3, but now treating the exposure
+  # Using the same data as examples 2.1 and 2.2.
+  # Now estimating the effect of a dynamic modified treatment policy.
+  a <- c("A_1", "A_2", "A_3", "A_4")
+  time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+  # our same shift function
+  shift <- function(data, trt) {
+    (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+  }
+
+  # creating a dynamic mtp that applies the shift function
+  # but also depends on history and the current time
+  dynamic_mtp <- function(data, trt) {
+    if (trt == "A_1") {
+      # if its the first time point, follow the same mtp as before
+      shift(data, trt)
+    } else {
+      # otherwise check if the time varying covariate equals 1
+      ifelse(data[[sub("A", "L", trt)]] == 1,
+             shift(data, trt), # if yes continue with the policy
+             data[[trt]]) # otherwise do nothing
+    }
+  }
+
+  psi2.3 <- lmtp_ipw(sim_t4, a, "Y", time_vary = time_varying,
+                     k = 0, shift = dynamic_mtp, folds = 2)
+  psi2.3
+
+  # Example 2.4
+  # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
   # as an ordered categorical variable. To account for the exposure being a
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
@@ -161,9 +190,9 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   }
 
   progressr::with_progress({
-    psi2.3 <- lmtp_ipw(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
+    psi2.4 <- lmtp_ipw(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
   })
-  psi2.3
+  psi2.4
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
