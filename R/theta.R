@@ -25,6 +25,7 @@ theta_sub <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
+              outcome_reg = rescale_y_continuous(eta$m, eta$bounds),
               weights_m = eta$weights_m,
               outcome_type = eta$outcome_type)
 
@@ -45,6 +46,7 @@ theta_ipw <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
+              density_ratios = eta$r,
               weights_r = eta$weights_r)
 
   class(out) <- "lmtp"
@@ -90,6 +92,8 @@ theta_dr <- function(eta) {
               high = ci_high,
               eif = inflnce,
               shift = eta$shift,
+              outcome_reg = rescale_y_continuous(eta$m$shifted, eta$bounds),
+              density_ratios = eta$r,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
               outcome_type = eta$outcome_type)

@@ -83,6 +83,9 @@ A list of class \code{lmtp} containing the following components:
 \item{high}{Upper bound of the 95\% confidene interval of the LMTP effect.}
 \item{eif}{The estimated, uncentered, influence function of the estimate.}
 \item{shift}{The shift function specifying the treatment policy of interest.}
+\item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
+The mean of the first column is used for calculating theta.}
+\item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
 \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 ensemble weights at each time-point for each fold for the outcome regression.}
 \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
