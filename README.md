@@ -54,7 +54,7 @@ censoring) are allowed. `lmtp` is built atop the
 machine learning for estimation. The treatment mechanism is estimated
 via a density ratio classification procedure irrespective of treatment
 variable type providing decreased computation time when treatment is
-continuous.
+continuous. Dynamic treatment regimes are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
@@ -86,9 +86,9 @@ accompanying
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects of Feasible Interventions Based on Modified
-#> Treatment Policies
-#> Version: 0.0.1.9000
+#> lmtp: Causal Effects of Feasible Interventions Based on Modified Treatment
+#> Policies
+#> Version: 0.0.2.9000
 #> 
 library(sl3)
 library(future)
