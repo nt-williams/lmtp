@@ -12,17 +12,17 @@
   A <- 23 + 5*W + rnorm(n)
   Y <- 7.2*A + 3*W + rnorm(n)
   ex1_dat <- data.frame(W, A, Y)
-  d <- function(x) x - 5
+  d <- function(data, x) data[[x]] - 5
   psi1.1 <- lmtp_sub(ex1_dat, "A", "Y", "W", shift = d,
                      outcome_type = "continuous", folds = 2)
   psi1.1
 
   # Example 1.2
   # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
-  # Interesed in the effect of a modified treatment policy where A is decreased by 15
+  # Interested in the effect of a modified treatment policy where A is decreased by 15
   # units only among observations whose observed A was above 80.
   # The true value under this intervention is about 513.
-  d <- function(x) (x > 80)*(x - 15) + (x <= 80)*x
+  d <- function(data, x) (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   psi1.2 <- lmtp_sub(ex1_dat, "A", "Y", "W", shift = d,
                       outcome_type = "continuous", folds = 2)
   psi1.2
@@ -39,7 +39,8 @@
   # specifying time varying covariates
   tv <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
   # treatment policy function to be applied at all time points
-  d <- function(a) {
+  d <- function(data, trt) {
+    a <- data[[trt]]
     (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
   }
   progressr::with_progress({
@@ -59,7 +60,36 @@
   psi2.2
 
   # Example 2.3
-  # Using the same data as examples 2.1 and 2.3, but now treating the exposure
+  # Using the same data as examples 2.1 and 2.2.
+  # Now estimating the effect of a dynamic modified treatment policy.
+  a <- c("A_1", "A_2", "A_3", "A_4")
+  time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+  # our same shift function
+  shift <- function(data, trt) {
+    (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+  }
+
+  # creating a dynamic mtp that applies the shift function
+  # but also depends on history and the current time
+  dynamic_mtp <- function(data, trt) {
+    if (trt == "A_1") {
+      # if its the first time point, follow the same mtp as before
+      shift(data, trt)
+    } else {
+      # otherwise check if the time varying covariate equals 1
+      ifelse(data[[sub("A", "L", trt)]] == 1,
+             shift(data, trt), # if yes continue with the policy
+             data[[trt]]) # otherwise do nothing
+    }
+  }
+
+  psi2.3 <- lmtp_sub(sim_t4, a, "Y", time_vary = time_varying,
+                     k = 0, shift = dynamic_mtp, folds = 2)
+  psi2.3
+
+  # Example 2.4
+  # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
   # as an ordered categorical variable. To account for the exposure being a
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
@@ -67,8 +97,9 @@
     sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
   }
 
-  d <- function(a) {
+  d <- function(data, trt) {
     out <- list()
+    a <- data[[trt]]
     for (i in 1:length(a)) {
       if (as.character(a[i]) %in% c("0", "1")) {
         out[[i]] <- as.character(a[i])
@@ -80,9 +111,9 @@
   }
 
   progressr::with_progress({
-    psi2.3 <- lmtp_sub(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
+    psi2.4 <- lmtp_sub(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
   })
-  psi2.3
+  psi2.4
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -95,7 +126,7 @@
   progressr::with_progress({
     psi3.1 <-
       lmtp_sub(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-                shift = function(x) 1, outcome_type = "continuous",
+                shift = static_binary_on, outcome_type = "continuous",
                 folds = 2)
   })
   psi3.1
@@ -117,7 +148,7 @@
   # Using the same data as example 4.1, but now interested in the causal effect of a
   # treatment policy where exposure increased by 0.5 units at all time points. The
   # true value under this intervention is about 0.88.
-  d <- function(x) x + 0.5
+  d <- function(data, x) data[[x]] + 0.5
   psi4.2 <- lmtp_sub(sim_cens, a, y, time_vary = tv, cens = cens, shift = d, folds = 2)
   psi4.2
 
@@ -134,7 +165,7 @@
   baseline <- c("W1", "W2")
   progressr::with_progress({
     psi5.1 <- lmtp_sub(sim_point_surv, a, y, baseline, cens = cens,
-                        shift = function(x) 1, folds = 2)
+                        shift = static_binary_on, folds = 2)
   })
   psi5.1
 

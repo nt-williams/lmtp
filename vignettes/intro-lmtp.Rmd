@@ -181,16 +181,16 @@ $$
 To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. A shift function for a traditional intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
 
 ```{r}
-shift <- function(trt) {
-  trt - 1
+shift <- function(data, trt) {
+  data[[trt]] - 1
 }
 ```
 
 In contrast, we may interested in the effect of a modified treatment policy where exposure is decreased by 1 unit only among subjects whose exposure won’t go below 1 if intervened upon:
 
 ```{r}
-shift <- function(trt) {
-  (trt - 1) * (trt - 1 >= 1) + trt * (trt - 1 < 1)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
@@ -215,15 +215,9 @@ lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift,
 
 #### Binary treatment
 
-In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest:
+In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest. Two helper shift functions are pre-packaged for this: `static_binary_on()` and `static_binary_off()`.
 
 ```{r, eval = F}
-# set exposure to 1 for all observations at all time points
-shift <- function(x) 1
-
-# set exposure to 0 for all observations at all time points
-shift_0 <- function(x) 0
-
 # a binary trt example
 data("iptwExWide", package = "twang")
 
@@ -231,11 +225,10 @@ a <- paste0("tx", 1:3)
 nodes <- list(c("gender", "age", "use0"),
               c("use1"), 
               c("use2"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
 lmtp_tmle(iptwExWide, a, "outcome", time_vary = nodes, 
-          shift = shift, outcome_type = "continuous",
-          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
+          shift = static_binary_on, outcome_type = "continuous",
+          folds = 5)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (shift)
 #> 
@@ -252,7 +245,6 @@ To evaluate the effect of an intervention on a categorical exposure, the shift f
 ```{r, eval = F}
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
 # converting the observed exposures to an ordered factor
 for (i in a) {
@@ -260,13 +252,13 @@ for (i in a) {
 }
 
 # a shift function that respects that exposure is an ordered factor
-shift <- function(a) {
+shift <- function(data, a) {
     out <- list()
-    for (i in 1:length(a)) {
-      if (as.character(a[i]) %in% c("0", "1")) {
-        out[[i]] <- as.character(a[i])
+    for (i in 1:length(data[[a]])) {
+      if (as.character(data[[a]][i]) %in% c("0", "1")) {
+        out[[i]] <- as.character(data[[a]][i])
       } else {
-        out[[i]] <- as.numeric(as.character(a[i])) - 1
+        out[[i]] <- as.numeric(as.character(data[[a]][i])) - 1
       }
     }
     factor(unlist(out), levels = 0:5, ordered = T)
@@ -280,6 +272,43 @@ lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds =
 #>       Estimate: 0.2953
 #>     Std. error: 0.0176
 #>         95% CI: (0.2607, 0.3299)
+```
+
+### Dynamic treatment regimes
+
+Dynamic treatment regimes are treatment rules where treatment is applied based on a fixed rule that depends on covariate history. `lmtp` is capable of estimating the effects of deterministic dynamic treatment rules as well as dynamic modified treatment policies. 
+
+```{r, eval = F}
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+# our same shift function
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
+
+# creating a dynamic mtp that applies the shift function 
+# but also depends on history and the current time
+dynamic_mtp <- function(data, trt) {
+  if (trt == "A_1") {
+    # if its the first time point, follow the same mtp as before
+    shift(data, trt)
+  } else {
+    # otherwise check if the time varying covariate equals 1
+    ifelse(data[[sub("A", "L", trt)]] == 1, 
+           shift(data, trt), # if yes continue with the policy
+           data[[trt]]) # otherwise do nothing
+  }
+}
+
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = dynamic_mtp)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (dynamic_mtp)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.2363
+#>     Std. error: 0.0112
+#>         95% CI: (0.2144, 0.2583)
 ```
 
 ### Censored outcomes
@@ -307,7 +336,7 @@ cens <- c("C1", "C2")
 lrnrs <- make_learner(Lrnr_glm)
 
 lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-          shift = function(x) x + 0.5, learners_outcome = lrnrs,
+          shift = function(data, trt) data[[trt]] + 0.5, learners_outcome = lrnrs,
           learners_trt = lrnrs)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (function(x) x + 0.5)
@@ -341,7 +370,7 @@ y <- paste0("Y.", 0:6)
 cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens, 
-          shift = function(x) 1, folds = 2)
+          shift = static_binary_on, folds = 2)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (function(x) 1)
 #> 
@@ -384,7 +413,7 @@ lrnrs <- make_learner(Lrnr_glm)
 
 fit_shift <- 
   lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-            shift = function(x) x + 0.5, learners_outcome = lrnrs,
+            shift = function(data, trt) data[[trt]] + 0.5, learners_outcome = lrnrs,
             learners_trt = lrnrs, folds = 2)
 
 fit_noshift <- 
@@ -429,12 +458,14 @@ There is no theory to provide standard errors for the G-computation or IPW estim
 resamples <- lapply(1:100, function(x) sim_t4[1:100, ][sample(1:100, replace = T), ])
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
 lrnrs <- make_learner(Lrnr_glm)
 
 thetas <- lapply(1:100, function(x) {
   lmtp_ipw(resamples[[x]], a, "Y", time_vary = time_varying, 
-           k = 0, shift = d, learners = lrnrs, folds = 2)$theta
+           k = 0, shift = shift, learners = lrnrs, folds = 2)$theta
 })
 
 quantile(unlist(thetas), c(0.025, 0.975))
@@ -453,10 +484,12 @@ quantile(unlist(thetas), c(0.025, 0.975))
 ```{r tidy}
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
 lrnrs <- make_learner_stack(Lrnr_glm)
 
-fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
                  learners_outcome = lrnrs, learners_trt = lrnrs, folds = 2)
 
 tidy(fit)
@@ -471,13 +504,15 @@ library(future)
 
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
 lrnrs <- make_learner_stack(Lrnr_mean, 
                             Lrnr_glm, 
                             Lrnr_ranger)
 
 system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
             learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 )
 #>     user   system  elapsed 
@@ -486,7 +521,7 @@ system.time(
 plan(multiprocess)
 
 system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
             learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 )
 #>  user  system elapsed 
@@ -511,7 +546,7 @@ We recommend consulting the `progressr` [documentation](https://cran.r-project.o
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
+Díaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
 
 Díaz Muñoz, I. and van der Laan, M. (2012). Population Intervention Causal Effects Based on Stochastic Interventions. Biometrics, 68: 541-549. doi:10.1111/j.1541-0420.2011.01685.x
 

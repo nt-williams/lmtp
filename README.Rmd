@@ -45,7 +45,7 @@ devtools::install_github("nt-williams/lmtp@devel")
 
 ## Scope
 
-`lmtp` is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. `lmtp` is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous.
+`lmtp` is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. `lmtp` is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous. Dynamic treatment regimes are also supported. 
 
 For an in-depth look at the package's functionality, please consult the accompanying [vignette](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/c56a7b0bbdf24ec18d08f839e73fa06a42ca9265/intro-lmtp.html).
 
@@ -57,7 +57,7 @@ For an in-depth look at the package's functionality, please consult the accompan
 | Longitudinal treatment          |   &check;   |
 | Modified treatment intervention |   &check;   |
 | Static intervention             |   &check;   |
-| Dynamic intervention            |   Planned   |
+| Dynamic intervention            |   &check;   |
 | Continuous treatment            |   &check;   |
 | Binary treatment                |   &check;   |
 | Categorical treatment           |   &check;   |
@@ -86,8 +86,8 @@ We're interested in a treatment policy, `d`, where exposure is decreased by 1 on
 
 ```{r, eval = F}
 # our treatment policy function to be applied at all time points
-d <- function(a) {
-  (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
@@ -109,7 +109,7 @@ We can now estimate the effect of our treatment policy, `d`. In this example, we
 ```{r, eval = F}
 plan(multiprocess)
 
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 # LMTP Estimator: TMLE
 #    Trt. Policy: (d)

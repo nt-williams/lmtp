@@ -54,7 +54,7 @@ censoring) are allowed. `lmtp` is built atop the
 machine learning for estimation. The treatment mechanism is estimated
 via a density ratio classification procedure irrespective of treatment
 variable type providing decreased computation time when treatment is
-continuous.
+continuous. Dynamic treatment regimes are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
@@ -62,33 +62,33 @@ accompanying
 
 ### Features
 
-| Feature                         | Status  |
-| ------------------------------- | :-----: |
-| Point treatment                 |    ✓    |
-| Longitudinal treatment          |    ✓    |
-| Modified treatment intervention |    ✓    |
-| Static intervention             |    ✓    |
-| Dynamic intervention            | Planned |
-| Continuous treatment            |    ✓    |
-| Binary treatment                |    ✓    |
-| Categorical treatment           |    ✓    |
-| Missingness in treatment        |         |
-| Continuous outcome              |    ✓    |
-| Binary outcome                  |    ✓    |
-| Censored outcome                |    ✓    |
-| Mediation                       |         |
-| Super learner                   |    ✓    |
-| Clustered data                  |    ✓    |
-| Parallel processing             |    ✓    |
-| Progress bars                   |    ✓    |
+| Feature                         | Status |
+| ------------------------------- | :----: |
+| Point treatment                 |   ✓    |
+| Longitudinal treatment          |   ✓    |
+| Modified treatment intervention |   ✓    |
+| Static intervention             |   ✓    |
+| Dynamic intervention            |   ✓    |
+| Continuous treatment            |   ✓    |
+| Binary treatment                |   ✓    |
+| Categorical treatment           |   ✓    |
+| Missingness in treatment        |        |
+| Continuous outcome              |   ✓    |
+| Binary outcome                  |   ✓    |
+| Censored outcome                |   ✓    |
+| Mediation                       |        |
+| Super learner                   |   ✓    |
+| Clustered data                  |   ✓    |
+| Parallel processing             |   ✓    |
+| Progress bars                   |   ✓    |
 
 ## Example
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects of Feasible Interventions Based on Modified
-#> Treatment Policies
-#> Version: 0.0.1.9000
+#> lmtp: Causal Effects of Feasible Interventions Based on Modified Treatment
+#> Policies
+#> Version: 0.0.2.9000
 #> 
 library(sl3)
 library(future)
@@ -110,8 +110,8 @@ upon. The true population outcome under this policy is about 0.305.
 
 ``` r
 # our treatment policy function to be applied at all time points
-d <- function(a) {
-  (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
@@ -138,7 +138,7 @@ speed up computation, we can use parallel processing supported by the
 ``` r
 plan(multiprocess)
 
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
           learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
 # LMTP Estimator: TMLE
 #    Trt. Policy: (d)
