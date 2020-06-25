@@ -88,7 +88,7 @@ accompanying
 library(lmtp)
 #> lmtp: Causal Effects of Feasible Interventions Based on Modified Treatment
 #> Policies
-#> Version: 0.0.2.9000
+#> Version: 0.0.3.9000
 #> 
 library(sl3)
 library(future)
