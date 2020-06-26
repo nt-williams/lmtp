@@ -60,7 +60,6 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
 
   if (tau > 0) {
-
     # setup
     i            <- create_censoring_indicators(training, C, tau)$i
     jt           <- create_censoring_indicators(training, C, tau)$j
@@ -89,7 +88,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task))
 
     # tilt estimates
-    fit <- sw(glm(training[i & !dt, outcome] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
+    fit <- sw(glm(training[i & !dt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
                                 weights = r$train[i & !dt, tau], family = "binomial"))
 
     # update training estimates

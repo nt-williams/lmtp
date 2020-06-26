@@ -94,7 +94,7 @@ check_extreme_ratio <- function(ratio) {
 }
 
 check_variation <- function(data, outcome, learners) {
-  if (sd(data[, outcome]) < .Machine$double.eps) {
+  if (sd(data[[outcome]]) < .Machine$double.eps) {
     learners <- sl3::make_learner(sl3::Lrnr_mean)
   }
   return(learners)
@@ -193,8 +193,4 @@ check_folds <- function(V) {
      }
    }
  }
-
-
-
-
 

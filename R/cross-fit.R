@@ -50,7 +50,6 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
 
 cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                     outcome_type, m_natural, m_shifted, r, learners, pb, weights_m) {
-
   fopts <- options("lmtp.bound")
   m <- list()
   for (i in 1:V) {
