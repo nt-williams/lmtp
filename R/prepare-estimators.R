@@ -25,7 +25,7 @@ Meta <- R6::R6Class(
       # initial checks
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))
-      check_missing_data(data, trt, time_vary, baseline, cens, tau)
+      check_missing_data(data, trt, outcome, time_vary, baseline, cens, tau)
       check_scaled_conflict(data)
       check_folds(V)
       check_time_vary(time_vary)
@@ -33,7 +33,7 @@ Meta <- R6::R6Class(
       # general setup
       self$n            <- nrow(data)
       self$tau          <- tau
-      self$trt          <- check_trt_length(trt, tau)
+      self$trt          <- check_trt_length(trt, time_vary, cens, tau)
       self$determ       <- check_deterministic(outcome, tau)
       self$node_list    <- create_node_list(trt, tau, time_vary, baseline, k)
       self$outcome_type <- outcome_type
