@@ -39,10 +39,11 @@ check_censoring <- function(data, C, Y) {
   }
 }
 
-check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
+check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, tau) {
   for (t in 1:tau) {
     i <- create_censoring_indicators(data, cens, t)$j
-    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau)[t], baseline, unlist(nodes[t]))])))) {
+    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, time_vary, cens, tau)[t],
+                                      baseline, unlist(time_vary[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
@@ -154,16 +155,39 @@ check_ref_type <- function(ref, type) {
   return(out)
 }
 
-check_trt_length <- function(trt, tau) {
+check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   if (length(trt) == tau) {
-    set_lmtp_options("trt", "standard")
-    return(trt)
+    if (!is.null(time_vary) & !is.null(cens)) {
+      if (tau == length(time_vary) & tau == length(cens)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt`, `time_vary`, and `cens` are of the same length.",
+             call. = F)
+      }
+    } else if (!is.null(time_vary) & is.null(cens)) {
+      if (tau == length(time_vary)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `time_vary` are of the same length.",
+             call. = F)
+      }
+    } else if (is.null(time_vary & !is.null(cens))) {
+      if (tau == length(cens)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `cens` are of the same length",
+             call. = F)
+      }
+    } else {
+      set_lmtp_options("trt", "standard")
+      return(trt)
+    }
   } else if (length(trt) == 1) {
     set_lmtp_options("trt", "point.wise")
     return(rep(trt, tau))
-  } else {
-    stop("Treatment nodes should either be the same length as nodes, or of length 1.",
-         call. = F)
   }
 }
 
@@ -173,7 +197,8 @@ check_deterministic <- function(outcomes, tau) {
   } else if (length(outcomes) == tau + 1) {
     return(outcomes[1:tau])
   } else {
-    stop("Outcome argument must be of length 1, or in the case of survival analyis, of length tau + 1, with nodes 1 through tau set to the intermediate outcomes.",
+    stop("`outcome` must be of length 1, or in the case of survival analyis, of length tau + 1, with variables
+         1:tau set to the names of the intermediate outcomes.",
          call. = F)
   }
 }
