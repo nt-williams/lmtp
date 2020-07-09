@@ -4,7 +4,7 @@ Version: 0.0.4.9000
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
-             role = c("aut", "cre"),
+             role = c("aut", "cre", "cph"),
              email = "niw4001@med.cornell.edu", 
              comment = c(ORCID = "0000-0002-1378-4831")),
       person(given = "Iván", 

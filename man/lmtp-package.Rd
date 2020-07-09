@@ -15,7 +15,7 @@ Non-parametric estimators for casual effects based on longitudinal modified trea
   using the Super Learner from `sl3` available for download from GitHub using 'remotes::install_github("tlverse/sl3@devel")'.
 }
 \author{
-\strong{Maintainer}: Nicholas Williams \email{niw4001@med.cornell.edu} (\href{https://orcid.org/0000-0002-1378-4831}{ORCID})
+\strong{Maintainer}: Nicholas Williams \email{niw4001@med.cornell.edu} (\href{https://orcid.org/0000-0002-1378-4831}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
