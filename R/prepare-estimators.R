@@ -17,7 +17,8 @@ Meta <- R6::R6Class(
     weights_m = NULL,
     weights_r = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, id, outcome_type = NULL, V = 10, bounds = NULL,
+                          shift, learners_trt, learners_outcome, id,
+                          outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL) {
 
       tau <- determine_tau(outcome, trt, cens)
@@ -29,6 +30,7 @@ Meta <- R6::R6Class(
       check_scaled_conflict(data)
       check_folds(V)
       check_time_vary(time_vary)
+      check_estimation_engine(learners_trt, learners_outcome)
 
       # general setup
       self$n            <- nrow(data)

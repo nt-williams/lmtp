@@ -81,7 +81,7 @@ While many parameters aren't required, the default options will likely give sub 
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
-```{r}
+```{r eval = FALSE}
 library(sl3)
 
 # using learner defaults
@@ -200,10 +200,8 @@ Shift functions are passed to lmtp estimators through the `shift` argument. Curr
 # using the previous shift function with sdr
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
-lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
-         learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
+lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 5)
 #> LMTP Estimator: SDR
 #>    Trt. Policy: (shift)
 #> 
@@ -333,11 +331,9 @@ head(sim_cens[sim_cens$C2 == 0, ])
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
 lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-          shift = function(data, trt) data[[trt]] + 0.5, learners_outcome = lrnrs,
-          learners_trt = lrnrs)
+          shift = function(data, trt) data[[trt]] + 0.5)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (function(x) x + 0.5)
 #> 
@@ -388,10 +384,9 @@ In certain situations, the user may be interested in the population mean outcome
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
 lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-          shift = NULL, learners_outcome = lrnrs, learners_trt = lrnrs)
+          shift = NULL, learners_trt = lrnrs)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (NULL)
 #> 
@@ -409,17 +404,14 @@ The effects returned by `lmtp` estimators are population intervention effects, t
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
 fit_shift <- 
   lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-            shift = function(data, trt) data[[trt]] + 0.5, learners_outcome = lrnrs,
-            learners_trt = lrnrs, folds = 2)
+            shift = function(data, trt) data[[trt]] + 0.5, folds = 2)
 
 fit_noshift <- 
   lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-            shift = NULL, learners_outcome = lrnrs,
-            learners_trt = lrnrs, folds = 2)
+            shift = NULL, folds = 2)
 
 lmtp_contrast(fit_shift, ref = fit_noshift, type = "additive")
 #>   LMTP Contrast: additive
@@ -461,11 +453,10 @@ time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 shift <- function(data, trt) {
   (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
-lrnrs <- make_learner(Lrnr_glm)
 
 thetas <- lapply(1:100, function(x) {
   lmtp_ipw(resamples[[x]], a, "Y", time_vary = time_varying, 
-           k = 0, shift = shift, learners = lrnrs, folds = 2)$theta
+           k = 0, shift = shift, folds = 2)$theta
 })
 
 quantile(unlist(thetas), c(0.025, 0.975))
@@ -487,10 +478,9 @@ time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 shift <- function(data, trt) {
   (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
-lrnrs <- make_learner_stack(Lrnr_glm)
 
 fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
-                 learners_outcome = lrnrs, learners_trt = lrnrs, folds = 2)
+                 folds = 2)
 
 tidy(fit)
 ```
