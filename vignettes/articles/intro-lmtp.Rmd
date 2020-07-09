@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 __Authors__: [Nick Williams](https://nicholastwilliams.com) and [Ivan Diaz](https://idiaz.xyz)  
 __Updated__: `r Sys.Date()` 
 
-This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the casual effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, Hoffman, and Schenck (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
+This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the causal effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, Hoffman, and Schenck (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
 
 While not possible to cover everything, this introductory guide should equip users of `lmtp` with enough knowledge to handle the majority of use cases. In addition, we assume the analyst has basic knowledge of non-parametric estimation for causal inference; the specifics of the methodology behind the provided functions is not discussed. 
 
@@ -186,7 +186,7 @@ A modified treatment policy is an intervention that can depend on the *natural* 
 
 ### Shift functions
 
-To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. They should take 2 arguments, the first being one for the data and the second for the name of the current treatment node. A shift function for a intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
+To estimate the effect of a deterministic causal intervention or a modified treatment policy with `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. They should take 2 arguments, the first being one for the data and the second for the name of the current treatment node. A shift function for a intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
 
 ```{r}
 shift <- function(data, trt) {
@@ -216,7 +216,7 @@ lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds =
 
 In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest. Two helper shift functions are pre-packaged for this: `static_binary_on()` and `static_binary_off()`.
 
-```{r}
+```{r warning = F}
 # a binary trt example
 data("iptwExWide", package = "twang")
 
