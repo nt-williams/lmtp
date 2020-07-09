@@ -21,20 +21,15 @@ sub <-
            outcome_type = "binomial", folds = 2)
 
 ipw <-
-  lmtp_ipw(df, "A", "Y", baseline = bs, shift = rule,
-           learners = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
+  lmtp_ipw(df, "A", "Y", baseline = bs, shift = rule, folds = 2)
 
 tmle <-
   lmtp_tmle(df, "A", "Y", baseline = bs, shift = rule,
-            outcome_type = "binomial",
-            learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-            learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
+            outcome_type = "binomial", folds = 2)
 
 sdr <-
   lmtp_sdr(df, "A", "Y", baseline = bs, shift = rule,
-           outcome_type = "binomial",
-           learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-           learners_trt = sl3::make_learner(sl3::Lrnr_glm), folds = 2)
+           outcome_type = "binomial", folds = 2)
 
 # tests
 test_that("point treatment fidelity", {

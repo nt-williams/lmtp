@@ -14,30 +14,21 @@ sub <-
     lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
              cens, k = 0, shift = rule,
              outcome_type = "binomial",
-             learners = sl3::make_learner(sl3::Lrnr_glm),
              folds = 2)
 
 ipw <-
-  lmtp_ipw(sim_cens, a, "Y", nodes, baseline = NULL,
-           cens, k = 0, shift = rule,
-           learners = sl3::make_learner(sl3::Lrnr_glm),
-           folds = 2)
+  lmtp_ipw(sim_cens, a, "Y", NULL, nodes,
+           cens, k = 0, shift = rule, folds = 2)
 
 tmle <-
     lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shift = rule,
-              outcome_type = "binomial",
-              learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-              learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-              folds = 2)
+              outcome_type = "binomial", folds = 2)
 
 sdr <-
   lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
            cens, k = 0, shift = rule,
-           outcome_type = "binomial",
-           learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-           learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-           folds = 2)
+           outcome_type = "binomial", folds = 2)
 
 # tests
 test_that("estimator fidelity with censoring", {
