@@ -86,7 +86,6 @@ accompanying
 
 ``` r
 library(lmtp)
-library(future)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
