@@ -325,11 +325,11 @@ For time-to-event problems, the intermediate outcome variables serve as indicato
 
 The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1.  
 
-```{r}
+```{r warning = FALSE}
 head(sim_point_surv)
 
 a <- "trt"
-y <- paste0("Y.", 0:6)
+y <- paste0("Y.", 1:6)
 cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens, 
