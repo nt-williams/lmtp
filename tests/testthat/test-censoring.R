@@ -16,9 +16,11 @@ sub <-
              outcome_type = "binomial",
              folds = 2)
 
+set.seed(553)
+
 ipw <-
   lmtp_ipw(sim_cens, a, "Y", NULL, nodes,
-           cens, k = 0, shift = rule, folds = 2)
+           cens, k = 0, shift = rule, folds = 10)
 
 tmle <-
     lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,

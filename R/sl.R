@@ -48,7 +48,7 @@ run_ensemble <- function(ensemble, task, envir) {
   if (!is.null(ensemble)) {
     ensemble$train(task)
   } else {
-    eval(task, envir = envir)
+    sw(eval(task, envir = envir))
   }
 }
 
@@ -58,8 +58,8 @@ predict_sl3 <- function(object, task, envir) {
   } else {
     call_data <- eval(substitute(task$data), envir = envir)
     call_obj  <- substitute(object)
-    out       <- eval(call("predict.glm", call_obj, newdata = call_data, type = "response"),
-                      envir = envir)
+    out       <- sw(eval(call("predict.glm", call_obj, newdata = call_data, type = "response"),
+                         envir = envir))
     return(as.vector(out))
   }
 }
