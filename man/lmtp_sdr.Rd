@@ -96,7 +96,7 @@ modified treatment policies for both point treatment and longitudinal data with 
 continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 }
 \examples{
-\dontrun{
+\donttest{
   library(lmtp)
   # Example 1.1
   # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
@@ -190,7 +190,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   for (i in a) {
-    sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
+    sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = TRUE)
   }
 
   d <- function(data, trt) {
@@ -203,7 +203,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = T)
+    factor(unlist(out), levels = 0:5, ordered = TRUE)
   }
 
   progressr::with_progress({
