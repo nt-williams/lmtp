@@ -1,26 +1,12 @@
 
-check_for_sl3 <- function(test = FALSE) {
-  tryCatch(
-    if (isTRUE(test)) {
-      stop()
-    } else {
-      has_sl3 <- "sl3" %in% rownames(utils::installed.packages())
-      if (isFALSE(has_sl3)) stop()
-      else on.exit()
-    }, error = function(e) {
-      no_sl3()
-    }
-  )
-}
-
 no_stderr_warning <- function(estimator) {
   cat("\n")
   cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
 }
 
 no_sl3 <- function() {
-  cli::cli_text("Remote package, {.pkg sl3}, not detected.")
-  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
+  cli::cli_text("Enhancement package, {.pkg sl3}, not detected.")
+  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3@devel')}")
 }
 
 check_sd <- function(x, learner_stack) {
@@ -218,3 +204,20 @@ check_folds <- function(V) {
    }
  }
 
+ check_estimation_engine <- function(learners_trt, learners_outcome) {
+   if (is.null(learners_trt) & is.null(learners_outcome)) {
+     set_lmtp_options("engine", "glm")
+   } else {
+     set_lmtp_options("engine", "sl3")
+   }
+ }
+
+ check_glm_outcome <- function(outcome_type) {
+   if (is.null(outcome_type)) {
+     return("gaussian")
+   } else if (outcome_type == "continuous") {
+     return("gaussian")
+   } else if (outcome_type == "binomial") {
+     return(outcome_type)
+   }
+ }

@@ -86,12 +86,6 @@ accompanying
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects of Feasible Interventions Based on Modified Treatment
-#> Policies
-#> Version: 0.0.3.9000
-#> 
-library(sl3)
-library(future)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -116,37 +110,20 @@ policy <- function(data, trt) {
 ```
 
 In addition to specifying a treatment policy, we need to specify our
-treatment variables, time-varying covariates, and the `sl3` learners to
-be used in estimation.
+treatment variables and time-varying covariates.
 
 ``` r
 # our treatment nodes, a character vector of length 4
 a <- c("A_1", "A_2", "A_3", "A_4")
 # our time varying nodes, a list of length 4
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-# our sl3 learner stack: the mean, GLM, and random forest
-lrnrs <- make_learner_stack(Lrnr_mean, 
-                            Lrnr_glm, 
-                            Lrnr_ranger)
 ```
 
 We can now estimate the effect of our treatment policy, `d`. In this
-example, we’ll use the cross-validated TML estimator with 10 folds. To
-speed up computation, we can use parallel processing supported by the
-`future` package.
+example, we’ll use the cross-validated TML estimator with 10 folds.
 
 ``` r
-plan(multiprocess)
-
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
-          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-# LMTP Estimator: TMLE
-#    Trt. Policy: (d)
-# 
-# Population intervention effect
-#       Estimate: 0.2901
-#     Std. error: 0.0119
-#         95% CI: (0.2667, 0.3134)
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
 ```
 
 ## Similiar Implementations

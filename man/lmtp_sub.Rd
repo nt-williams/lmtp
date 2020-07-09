@@ -58,9 +58,8 @@ all time points.}
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners}{An \code{sl3} learner stack for estimation of the outcome
-regression. If not specified, will default to an ensemble of an intercept only model
-and a GLM.}
+\item{learners}{An optional \code{sl3} learner stack for estimation of the outcome
+regression. If not specified, will default to using a generalized linear model.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
@@ -89,7 +88,7 @@ modified treatment policies for both point treatment and longitudinal data with 
 continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 }
 \examples{
-\dontrun{
+\donttest{
 
   library(lmtp)
 
@@ -185,7 +184,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   for (i in a) {
-    sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
+    sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = TRUE)
   }
 
   d <- function(data, trt) {
@@ -198,7 +197,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = T)
+    factor(unlist(out), levels = 0:5, ordered = TRUE)
   }
 
   progressr::with_progress({

@@ -23,20 +23,20 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     ensemble   <- initiate_ensemble("binomial", learners)
 
     # run SL
-    fit             <- run_ensemble(ensemble, fit_task)
+    fit             <- run_ensemble(ensemble, fit_task, envir = environment())
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     # ratios training
-    pred            <- bound(predict_sl3(fit, tpred_task), .Machine$double.eps)
-    rat             <- pred * rep(create_censoring_indicators(training, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
+    pred            <- bound(predict_sl3(fit, tpred_task, envir = environment()), .Machine$double.eps)
+    rat             <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
     rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
     rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
 
     # ratios validation
-    pred            <- bound(predict_sl3(fit, vpred_task), .Machine$double.eps)
-    rat             <- pred * rep(create_censoring_indicators(validation, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
+    pred            <- bound(predict_sl3(fit, vpred_task, envir = environment()), .Machine$double.eps)
+    rat             <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
     rv$natural[create_determ_indicators(validation, deterministic, t), t] <- 1
@@ -52,6 +52,12 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
               sl_weights = sl_weights)
 
   # returns
+  return(out)
+}
+
+create_ratios <- function(pred, data, cens, tau) {
+  out <- pred * rep(create_censoring_indicators(data, cens, tau)$i, 2) / (1 - bound(pred))
+  out <- ifelse(is.na(out), 0, out)
   return(out)
 }
 
