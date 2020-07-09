@@ -30,12 +30,10 @@
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
-#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -156,12 +154,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
-#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -279,9 +275,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -380,9 +375,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param id An optional column name containing cluster level identifiers.
-#' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
-#'  If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions

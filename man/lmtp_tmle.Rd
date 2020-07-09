@@ -59,13 +59,11 @@ all time points.}
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners_outcome}{An \code{sl3} learner stack for estimation of the outcome
-regression. If not specified, will default to an ensemble of an intercept only model
-and a GLM.}
+\item{learners_outcome}{An optional \code{sl3} learner stack for estimation of the outcome
+regression. If not specified, will default to using a generalized linear model.}
 
-\item{learners_trt}{An \code{sl3} learner stack for estimation of the exposure
-mechanism. If not specified, will default to an ensemble of an intercept only model
-and a GLM.}
+\item{learners_trt}{An optional \code{sl3} learner stack for estimation of the exposure
+mechanism. If not specified, will default to using a generalized linear model.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
