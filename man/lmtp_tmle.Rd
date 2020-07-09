@@ -260,7 +260,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # for a survival problem, the outcome arugment now takes a vector of outcomes
   # if an observation experiences the event prior to the end of follow-up, all future
   # outcome nodes should be set to 1 (i.e., last observation carried forward).
-  y <- paste0("Y.", 0:6)
+  y <- paste0("Y.", 1:6)
   cens <- paste0("C.", 0:5)
   baseline <- c("W1", "W2")
   progressr::with_progress({

@@ -194,11 +194,10 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
 check_deterministic <- function(outcomes, tau) {
   if (length(outcomes) == 1) {
     return(NULL)
-  } else if (length(outcomes) == tau + 1) {
-    return(outcomes[1:tau])
+  } else if (length(outcomes) == tau) {
+    return(outcomes[1:tau - 1])
   } else {
-    stop("`outcome` must be of length 1, or in the case of survival analyis, of length tau + 1, with variables
-         1:tau set to the names of the intermediate outcomes.",
+    stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
          call. = F)
   }
 }
