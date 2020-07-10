@@ -78,8 +78,8 @@ A list of class \code{lmtp} containing the following components:
 \item{theta}{The estimated population LMTP effect.}
 \item{standard_error}{The estimated standard error of the LMTP effect.}
 \item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
-\item{high}{Upper bound of the 95\% confidene interval of the LMTP effect.}
-\item{eif}{The estimated, uncentered, influence function of the estimate.}
+\item{high}{Upper bound of the 95\% confidence interval of the LMTP effect.}
+\item{eif}{The estimated, un-centered, influence function of the estimate.}
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}

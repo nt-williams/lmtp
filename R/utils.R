@@ -131,7 +131,7 @@ final_outcome <- function(outcomes) {
   outcomes[length(outcomes)]
 }
 
-#' Time To Event Last Outcome censarried Forward
+#' Time To Event Last Outcome Carried Forward
 #'
 #' A helper function to prepare survival data for use with LMTP estimators
 #' by imputing outcome nodes using last outcome carried forward when an observation

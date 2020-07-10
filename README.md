@@ -133,7 +133,7 @@ lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds
 #>         95% CI: (0.2228, 0.2967)
 ```
 
-## Similiar Implementations
+## Similar Implementations
 
 A variety of other R packages perform similar tasks as `lmtp`. However,
 `lmtp` is the only R package currently capable of estimating causal

@@ -26,7 +26,7 @@ shift_trt <- function(data, trt, .f) {
 #' A pre-packaged shift function for use with provided estimators when the exposure is binary.
 #' Used to estimate the population intervention effect when all treatment variables are set to 1.
 #'
-#' @param data A dataframe containg the treatment variables.
+#' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 #'
 #' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
@@ -51,7 +51,7 @@ static_binary_on <- function(data, trt) {
 #' A pre-packaged shift function for use with provided estimators when the exposure is binary.
 #' Used to estimate the population intervention effect when all treatment variables are set to 0.
 #'
-#' @param data A dataframe containg the treatment variables.
+#' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 
 #' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]

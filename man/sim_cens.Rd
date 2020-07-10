@@ -3,7 +3,7 @@
 \docType{data}
 \name{sim_cens}
 \alias{sim_cens}
-\title{Simulated Longitudinal Data Dith Censoring}
+\title{Simulated Longitudinal Data With Censoring}
 \format{
 A data frame with 1000 rows and 10 variables:
 \describe{

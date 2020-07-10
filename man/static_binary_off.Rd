@@ -7,7 +7,7 @@
 static_binary_off(data, trt)
 }
 \arguments{
-\item{data}{A dataframe containg the treatment variables.}
+\item{data}{A dataframe containing the treatment variables.}
 
 \item{trt}{The name of the current treatment variable.}
 }

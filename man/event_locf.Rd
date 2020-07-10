@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{event_locf}
 \alias{event_locf}
-\title{Time To Event Last Outcome censarried Forward}
+\title{Time To Event Last Outcome Carried Forward}
 \usage{
 event_locf(data, outcomes)
 }

@@ -14,7 +14,7 @@
 #' \item{type}{The type of contrast performed.}
 #' \item{null}{The null hypothesis.}
 #' \item{vals}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
-#' \item{eifs}{Uncenetered estimated influence functions for contrasts estimated.}
+#' \item{eifs}{Un-centered estimated influence functions for contrasts estimated.}
 #' @export
 #'
 #' @example inst/examples/contrasts-ex.R

@@ -34,7 +34,7 @@
   # one unit at every time point if an observations observed exposure is greater
   # than or equal to 2. The true value under this intervention is about 0.305.
   head(sim_t4)
-  # specifying treament variables
+  # specifying treatment variables
   a <- c("A_1", "A_2", "A_3", "A_4")
   # specifying time varying covariates
   tv <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
@@ -70,7 +70,7 @@
     (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
   }
 
-  # creating a dynamic mtp that applies the shift function
+  # creating a dynamic MTP that applies the shift function
   # but also depends on history and the current time
   dynamic_mtp <- function(data, trt) {
     if (trt == "A_1") {
