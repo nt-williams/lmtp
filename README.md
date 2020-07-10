@@ -58,7 +58,7 @@ continuous. Dynamic treatment regimes are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
-[vignette](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/c56a7b0bbdf24ec18d08f839e73fa06a42ca9265/intro-lmtp.html).
+[article](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/45db700a02bf92e2a55790e60ed48266a97ca4e7/intro-lmtp.html).
 
 ### Features
 
