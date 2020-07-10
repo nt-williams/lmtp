@@ -124,6 +124,13 @@ example, we’ll use the cross-validated TML estimator with 10 folds.
 
 ``` r
 lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (policy)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.2598
+#>     Std. error: 0.0188
+#>         95% CI: (0.2228, 0.2967)
 ```
 
 ## Similiar Implementations
