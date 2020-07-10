@@ -144,8 +144,8 @@ effects or modified treatment policies.
   - [`txshift`](https://github.com/nhejazi/txshift)  
   - [`tmle3`](https://github.com/tlverse/tmle3)  
   - [`tmle3shift`](https://github.com/tlverse/tmle3shift)
-  - [`ltmle`](https://cran.r-project.org/web/packages/ltmle/index.html)  
-  - [`tmle`](https://cran.r-project.org/web/packages/tmle/index.html)
+  - [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+  - [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
@@ -157,7 +157,7 @@ statistical methodology.
         title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
         author = {Nicholas T Williams and Iván Díaz},
         year = {2020},
-        note = {R package version 0.0.91},
+        note = {R package version 0.0.4},
         doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }

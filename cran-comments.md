@@ -10,17 +10,23 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 3 notes
-
 * This is a new release.
 * Suggests or Enhances not in mainstream repositories:
    sl3
-* Possibly mis-spelled words in DESCRIPTION:
-   Diaz (17:28)
-   GitHub (22:66)
-   sl (22:33)
 
 ## Additional comments
+
+### Submission 2
+
+The NOTEs about links being in CRAN canonical form have been changed to the canonical form.
+
+Thank you for reviewing the package.
+The package lists the sl3 package in the Enhances field. 
+The sl3 package is not available on CRAN, and can be installed from GitHub (tlverse/sl3). 
+As the sl3 package is not yet in a mainstream repository we get the NOTE about mainstream repositories in the R CMD Check.
+The optional installation instructions for the sl3 package appear in the package description.
+
+### Submission 1
 
 The package lists the sl3 package in the Enhances field. 
 The sl3 package is not available on CRAN but can be installed from GitHub (tlverse/sl3). 
