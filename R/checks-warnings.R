@@ -1,26 +1,12 @@
 
-check_for_sl3 <- function(test = FALSE) {
-  tryCatch(
-    if (isTRUE(test)) {
-      stop()
-    } else {
-      has_sl3 <- "sl3" %in% rownames(utils::installed.packages())
-      if (isFALSE(has_sl3)) stop()
-      else on.exit()
-    }, error = function(e) {
-      no_sl3()
-    }
-  )
-}
-
 no_stderr_warning <- function(estimator) {
   cat("\n")
   cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
 }
 
 no_sl3 <- function() {
-  cli::cli_text("Remote package, {.pkg sl3}, not detected.")
-  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3')}")
+  cli::cli_text("Enhancement package, {.pkg sl3}, not detected.")
+  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3@devel')}")
 }
 
 check_sd <- function(x, learner_stack) {
@@ -39,10 +25,11 @@ check_censoring <- function(data, C, Y) {
   }
 }
 
-check_missing_data <- function(data, trt, nodes, baseline, cens, tau) {
+check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, tau) {
   for (t in 1:tau) {
-    i <- create_censoring_indicators(data, cens, t)$i
-    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, tau)[t], baseline, unlist(nodes[t]))])))) {
+    i <- create_censoring_indicators(data, cens, t)$j
+    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, time_vary, cens, tau)[t],
+                                      baseline, unlist(time_vary[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
@@ -94,7 +81,7 @@ check_extreme_ratio <- function(ratio) {
 }
 
 check_variation <- function(data, outcome, learners) {
-  if (sd(data[, outcome]) < .Machine$double.eps) {
+  if (sd(data[[outcome]]) < .Machine$double.eps) {
     learners <- sl3::make_learner(sl3::Lrnr_mean)
   }
   return(learners)
@@ -154,26 +141,49 @@ check_ref_type <- function(ref, type) {
   return(out)
 }
 
-check_trt_length <- function(trt, tau) {
+check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   if (length(trt) == tau) {
-    set_lmtp_options("trt", "standard")
-    return(trt)
+    if (!is.null(time_vary) & !is.null(cens)) {
+      if (tau == length(time_vary) & tau == length(cens)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt`, `time_vary`, and `cens` are of the same length.",
+             call. = F)
+      }
+    } else if (!is.null(time_vary) & is.null(cens)) {
+      if (tau == length(time_vary)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `time_vary` are of the same length.",
+             call. = F)
+      }
+    } else if (is.null(time_vary & !is.null(cens))) {
+      if (tau == length(cens)) {
+        set_lmtp_options("trt", "standard")
+        return(trt)
+      } else {
+        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `cens` are of the same length",
+             call. = F)
+      }
+    } else {
+      set_lmtp_options("trt", "standard")
+      return(trt)
+    }
   } else if (length(trt) == 1) {
     set_lmtp_options("trt", "point.wise")
     return(rep(trt, tau))
-  } else {
-    stop("Treatment nodes should either be the same length as nodes, or of length 1.",
-         call. = F)
   }
 }
 
 check_deterministic <- function(outcomes, tau) {
   if (length(outcomes) == 1) {
     return(NULL)
-  } else if (length(outcomes) == tau + 1) {
-    return(outcomes[1:tau])
+  } else if (length(outcomes) == tau) {
+    return(outcomes[1:tau - 1])
   } else {
-    stop("Outcome argument must be of length 1, or in the case of survival analyis, of length tau + 1, with nodes 1 through tau set to the intermediate outcomes.",
+    stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
          call. = F)
   }
 }
@@ -194,7 +204,20 @@ check_folds <- function(V) {
    }
  }
 
+ check_estimation_engine <- function(learners_trt, learners_outcome) {
+   if (is.null(learners_trt) & is.null(learners_outcome)) {
+     set_lmtp_options("engine", "glm")
+   } else {
+     set_lmtp_options("engine", "sl3")
+   }
+ }
 
-
-
-
+ check_glm_outcome <- function(outcome_type) {
+   if (is.null(outcome_type)) {
+     return("gaussian")
+   } else if (outcome_type == "continuous") {
+     return("gaussian")
+   } else if (outcome_type == "binomial") {
+     return(outcome_type)
+   }
+ }

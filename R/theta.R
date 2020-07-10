@@ -25,6 +25,7 @@ theta_sub <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
+              outcome_reg = rescale_y_continuous(eta$m, eta$bounds),
               weights_m = eta$weights_m,
               outcome_type = eta$outcome_type)
 
@@ -45,6 +46,7 @@ theta_ipw <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
+              density_ratios = eta$r,
               weights_r = eta$weights_r)
 
   class(out) <- "lmtp"
@@ -65,8 +67,7 @@ theta_dr <- function(eta) {
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
 
   # calculate eif
-  inflnce <- eif(r = eta$r, tau = eta$tau,
-                 shifted = eta$m$shifted, natural = eta$m$natural)
+  inflnce <- eif(r = eta$r, tau = eta$tau, shifted = eta$m$shifted, natural = eta$m$natural)[order(i)]
 
   # rescale if necessary and calculate estimates
   theta <- mean(eta$m$shifted[, 1])
@@ -76,8 +77,10 @@ theta_dr <- function(eta) {
     theta   <- rescale_y_continuous(theta, eta$bounds)
   }
 
-  n       <- nrow(eta$m$natural)
-  se      <- sd(inflnce, na.rm = TRUE) / sqrt(n)
+  # inference
+  clusters <- split(inflnce, eta$id)
+  j <- length(clusters)
+  se <- sqrt(var(vapply(clusters, function(x) sum(x), 1)) / j)
   ci_low  <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
 
@@ -87,8 +90,10 @@ theta_dr <- function(eta) {
               standard_error = se,
               low = ci_low,
               high = ci_high,
-              eif = inflnce[order(i)],
+              eif = inflnce,
               shift = eta$shift,
+              outcome_reg = rescale_y_continuous(eta$m$shifted, eta$bounds),
+              density_ratios = eta$r,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
               outcome_type = eta$outcome_type)

@@ -1,16 +1,13 @@
 ---
 title: "Getting Started with LMTP"
 output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{try}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", 
+  results = "hold"
 )
 ```
 
@@ -26,7 +23,7 @@ knitr::opts_chunk$set(
 __Authors__: [Nick Williams](https://nicholastwilliams.com) and [Ivan Diaz](https://idiaz.xyz)  
 __Updated__: `r Sys.Date()` 
 
-This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the casual effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, Hoffman, and Schenck (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
+This document serves as an introductory guide to using the `lmtp` package. `lmtp` provides an estimation framework for the causal effects of longitudinal modified treatment policies using ensemble machine learning as described in Diaz, Williams, Hoffman, and Schenck (2020). While originally developed to estimate the effect of continuous exposures, `lmtp` naturally extends to allowing the estimation of traditional causal effects based on binary and categorical exposures in both point treatment and time-varying situations. 
 
 While not possible to cover everything, this introductory guide should equip users of `lmtp` with enough knowledge to handle the majority of use cases. In addition, we assume the analyst has basic knowledge of non-parametric estimation for causal inference; the specifics of the methodology behind the provided functions is not discussed. 
 
@@ -77,11 +74,31 @@ While many parameters aren't required, the default options will likely give sub 
 
 ### sl3
 
-`lmtp` relies on the [`sl3`](https://tlverse.org/sl3/) package to use ensemble machine learning during estimation procedures. To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
+`lmtp` can be enhanced by using the [`sl3`](https://tlverse.org/sl3/) package for ensemble machine learning during estimation procedures. `sl3` may be installed from GitHub using: 
+
+```{r, eval = FALSE}
+remotes::install_github("tlverse/sl3@devel")
+```
+
+```{r, include = FALSE}
+# installing sl3 if possible
+if (curl::has_internet()) {
+  # adding tmpdir to libPath
+  temp_path <- file.path(tempdir(), "sl3_dir")
+  dir.create(temp_path)
+  lib_path <-.libPaths()
+  .libPaths(c(lib_path, temp_path))
+  
+  # installing gt
+  remotes::install_github("tlverse/sl3@devel", lib = temp_path)
+}
+```
+
+To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
 
 The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
 
-```{r}
+```{r eval = FALSE}
 library(sl3)
 
 # using learner defaults
@@ -159,71 +176,47 @@ Censoring nodes are discussed in the [Censored outcomes] section.
 
 > The goal of this section is to identify how to estimate different causal effects using `lmtp` estimators.
 
-### Traditional causal effects
+### Deterministic causal effects
 
-For the purposes of this guide, a traditional causal effect is the causal effect of any intervention, $\delta$, that is applied to all observations at all time points. 
-
-$$d_t(a_t, h_t) = a_t - \delta_t$$
+A deterministic causal effect is the causal effect of any intervention where the exposure level is set deterministically. For example, the average treatment effect considers the difference in population mean outcomes when an exposure or treatment is deterministically applied to everyone versus when it is applied to no one.
 
 ### Modified treatment policies
 
-The causal effect of a modified treatment policy is the effect of an intervention that is only applied to observations where the intervention is feasible. What's feasible in this case is defined by $a_t>u_t(h_t) + \delta_t$, where $u_t$ is an analyst-specified value. Interested readers are referred to Diaz, Williams, Hoffman, and Schenck (2020) and Haneuse and Rotnitzky (2013), for an overview of modified treatment policies and their advantages compared to traditional causal effects. 
-
-$$
-d_t(a_t, h_t)=\left\{ \begin{array}{l}
-    a_t - \delta_t & \text{if $a_t>u_t(h_t) + \delta_t$}\\
-    a_t & \text{if $a_t \leq u_t(h_t) + \delta_t$}\\
-  \end{array} \right.
-$$
+A modified treatment policy is an intervention that can depend on the *natural* value of the exposure. This allows for the formulation of hypothetical interventions that can avoid positivity violations and may be considered feasible. Interested readers are referred to Diaz, Williams, Hoffman, and Schenck (2020) and Haneuse and Rotnitzky (2013), for an overview of modified treatment policies and their advantages compared to deterministic causal effects. 
 
 ### Shift functions
 
-To estimate the effect of a traditional causal intervention or a modified treatment policy in `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. A shift function for a traditional intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
+To estimate the effect of a deterministic causal intervention or a modified treatment policy with `lmtp` we need to translate these interventions into a shift function. Shift functions are applied to treatment nodes at each time point. They should take 2 arguments, the first being one for the data and the second for the name of the current treatment node. A shift function for a intervention where the exposure decreases by 1 unit for all observations at every time point would look like: 
 
 ```{r}
-shift <- function(trt) {
-  trt - 1
+shift <- function(data, trt) {
+  data[[trt]] - 1
 }
 ```
 
-In contrast, we may interested in the effect of a modified treatment policy where exposure is decreased by 1 unit only among subjects whose exposure won’t go below 1 if intervened upon:
+We may also be interested in the effect of a modified treatment policy where exposure is decreased by 1 unit only among subjects whose exposure won’t go below 1 if intervened upon:
 
 ```{r}
-shift <- function(trt) {
-  (trt - 1) * (trt - 1 >= 1) + trt * (trt - 1 < 1)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
-Shift functions are passed to lmtp estimators through the `shift` argument. Currently, shift functions can only depend on the value of the current treatment node. However, the ability to evaluate dynamic treatment regimes will be established in a future version.
+Shift functions are passed to lmtp estimators through the `shift` argument. 
 
-```{r, eval = F}
+```{r}
 # using the previous shift function with sdr
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
-lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, 
-         learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
-#> LMTP Estimator: SDR
-#>    Trt. Policy: (shift)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.2582
-#>     Std. error: 0.0179
-#>         95% CI: (0.223, 0.2933)
+lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 5)
 ```
 
 #### Binary treatment
 
-In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest:
+In the case of a binary treatment/exposure the shift function would simply set treatment/exposure to either 0 or 1 depending on the effect of interest. Two helper shift functions are pre-packaged for this: `static_binary_on()` and `static_binary_off()`.
 
-```{r, eval = F}
-# set exposure to 1 for all observations at all time points
-shift <- function(x) 1
-
-# set exposure to 0 for all observations at all time points
-shift_0 <- function(x) 0
-
+```{r warning = F}
 # a binary trt example
 data("iptwExWide", package = "twang")
 
@@ -231,55 +224,70 @@ a <- paste0("tx", 1:3)
 nodes <- list(c("gender", "age", "use0"),
               c("use1"), 
               c("use2"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
 lmtp_tmle(iptwExWide, a, "outcome", time_vary = nodes, 
-          shift = shift, outcome_type = "continuous",
-          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 5)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (shift)
-#> 
-#> Population intervention effect
-#>       Estimate: -0.287
-#>     Std. error: 0.07
-#>         95% CI: (-0.4242, -0.1497)
+          shift = static_binary_on, outcome_type = "continuous",
+          folds = 5)
 ```
 
 ### Categorical treatment
 
 To evaluate the effect of an intervention on a categorical exposure, the shift function needs to respect the potential levels of the variable, even when those levels may not be observed. Categorical treatment nodes should be coded as factors and dummy variables should not be created.
 
-```{r, eval = F}
+```{r}
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lrnrs <- make_learner_stack(Lrnr_mean, Lrnr_glm)
 
 # converting the observed exposures to an ordered factor
+sim_t4_fct <- sim_t4
 for (i in a) {
-  sim_t4[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
+  sim_t4_fct[[i]] <- factor(sim_t4[[i]], levels = 0:5, ordered = T)
 }
 
 # a shift function that respects that exposure is an ordered factor
-shift <- function(a) {
+shift <- function(data, a) {
     out <- list()
-    for (i in 1:length(a)) {
-      if (as.character(a[i]) %in% c("0", "1")) {
-        out[[i]] <- as.character(a[i])
+    for (i in 1:length(data[[a]])) {
+      if (as.character(data[[a]][i]) %in% c("0", "1")) {
+        out[[i]] <- as.character(data[[a]][i])
       } else {
-        out[[i]] <- as.numeric(as.character(a[i])) - 1
+        out[[i]] <- as.numeric(as.character(data[[a]][i])) - 1
       }
     }
     factor(unlist(out), levels = 0:5, ordered = T)
 }
 
-lmtp_sdr(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 2)
-#> LMTP Estimator: SDR
-#>    Trt. Policy: (shift)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.2953
-#>     Std. error: 0.0176
-#>         95% CI: (0.2607, 0.3299)
+lmtp_sdr(sim_t4_fct, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 2)
+```
+
+### Dynamic treatment regimes
+
+Dynamic treatment regimes are treatment rules where treatment is applied based on a fixed rule that depends on covariate history. `lmtp` is capable of estimating the effects of deterministic dynamic treatment rules as well as dynamic modified treatment policies. 
+
+```{r}
+a <- c("A_1", "A_2", "A_3", "A_4")
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+
+# our same shift function
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
+
+# creating a dynamic mtp that applies the shift function 
+# but also depends on history and the current time
+dynamic_mtp <- function(data, trt) {
+  if (trt == "A_1") {
+    # if its the first time point, follow the same mtp as before
+    shift(data, trt)
+  } else {
+    # otherwise check if the time varying covariate equals 1
+    ifelse(data[[sub("A", "L", trt)]] == 1, 
+           shift(data, trt), # if yes continue with the policy
+           data[[trt]]) # otherwise do nothing
+  }
+}
+
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = dynamic_mtp)
 ```
 
 ### Censored outcomes
@@ -299,23 +307,14 @@ head(sim_cens[sim_cens$C1 == 0, ])
 head(sim_cens[sim_cens$C2 == 0, ])
 ```
 
-```{r, eval = F}
+```{r}
 # estimating an effect when there is censoring
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
 lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-          shift = function(x) x + 0.5, learners_outcome = lrnrs,
-          learners_trt = lrnrs)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (function(x) x + 0.5)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.8873
-#>     Std. error: 0.0096
-#>         95% CI: (0.8684, 0.9062)
+          shift = function(data, trt) data[[trt]] + 0.5)
 ```
 
 ### Survival analysis
@@ -326,121 +325,59 @@ For time-to-event problems, the intermediate outcome variables serve as indicato
 
 The following example shows how to estimate the cumulative incidence of an event at time $\tau + 1 = 7$ under a hypothetical intervention where all subjects point treatment is set to 1.  
 
-```{r, eval = F}
+```{r warning = FALSE}
 head(sim_point_surv)
-#>   W1 W2 trt Y.0 C.0 Y.1 C.1 Y.2 C.2 Y.3 C.3 Y.4 C.4 Y.5 C.5 Y.6
-#> 1  0  0   0   0   1   0   1   0   1   0   0  NA   0  NA   0  NA
-#> 2  0  1   1   0   1   0   1   0   1   0   0  NA   0  NA   0  NA
-#> 3  1  1   1   0   1   0   1   0   1   0   1   0   1   0   0  NA
-#> 4  1  1   1   0   1   0   1   0   1   0   1   1   0   1   0   1
-#> 5  0  1   1   0   1   0   1   0   1   0   1   0   0  NA   0  NA
-#> 6  1  2   1   0   1   0   1   0   1   0   1   0   1   0   1   1
 
 a <- "trt"
-y <- paste0("Y.", 0:6)
+y <- paste0("Y.", 1:6)
 cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens, 
-          shift = function(x) 1, folds = 2)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (function(x) 1)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.8111
-#>     Std. error: 0.0185
-#>         95% CI: (0.7748, 0.8475)
+          shift = static_binary_on, folds = 2)
 ```
 
 #### Population mean outcome
 
 In certain situations, the user may be interested in the population mean outcome under no intervention. In the presence of censoring, this can be estimated by setting `shift = NULL` and providing censoring indicators. 
 
-```{r, eval = F}
+```{r}
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
-lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-          shift = NULL, learners_outcome = lrnrs, learners_trt = lrnrs)
-#> LMTP Estimator: TMLE
-#>    Trt. Policy: (NULL)
-#> 
-#> Population intervention effect
-#>       Estimate: 0.7977
-#>     Std. error: 0.0129
-#>         95% CI: (0.7723, 0.8231)
+lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, shift = NULL)
 ```
 
 ### Calculating contrasts
 
 The effects returned by `lmtp` estimators are population intervention effects, that is the expected mean outcome in the population under the hypothetical intervention. Often, however, we are also interested in the comparison of different interventions to each other or to no intervention at all. This is the role of `lmtp_contrast()`. 
 
-```{r, eval = F}
+```{r}
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")
-lrnrs <- make_learner(Lrnr_glm)
 
 fit_shift <- 
   lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-            shift = function(x) x + 0.5, learners_outcome = lrnrs,
-            learners_trt = lrnrs, folds = 2)
+            shift = function(data, trt) data[[trt]] + 0.5, folds = 2)
 
 fit_noshift <- 
   lmtp_tmle(sim_cens, a, "Y", time_vary = nodes, cens = cens, k = 0, 
-            shift = NULL, learners_outcome = lrnrs,
-            learners_trt = lrnrs, folds = 2)
+            shift = NULL, folds = 2)
 
 lmtp_contrast(fit_shift, ref = fit_noshift, type = "additive")
-#>   LMTP Contrast: additive
-#> Null hypothesis: theta == 0
-#> 
-#>    theta shift   ref std.error conf.low conf.high p.value
-#> 1 0.0896 0.887 0.798   0.00567   0.0785     0.101  <0.001
-
 lmtp_contrast(fit_shift, ref = fit_noshift, type = "rr")
-#>   LMTP Contrast: relative risk
-#> Null hypothesis: theta == 1
-#> 
-#>   theta shift   ref std.error conf.low conf.high p.value
-#> 1  1.11 0.887 0.798   0.00764      1.1      1.13  <0.001
 ```
 
 Any number of `lmtp` fits can specified in `lmtp_contrast()` to be compared to either a single reference fit or a known scalar. 
 
-```{r, eval = F}
+```{r}
 lmtp_contrast(fit_shift, fit_noshift, ref = 0.787)
-#> Non-estimated reference value, defaulting type = 'additive'.
-#> 
-#>   LMTP Contrast: additive
-#> Null hypothesis: theta == 0
-#> 
-#>    theta shift   ref std.error conf.low conf.high p.value
-#> 1 0.1001 0.887 0.787   0.00972   0.0811    0.1192  <0.001
-#> 2 0.0105 0.798 0.787   0.01292  -0.0148    0.0359   0.414
 ```
 
 ### Bootstrap for G-comp & IPW
 
-There is no theory to provide standard errors for the G-computation or IPW estimators when using data-adaptive estimation procedures such as the super learner; standard errors are thus not provided. However, if using a pre-specified parametric model for estimation, (i.e., only including `Lrnr_glm`), inference can be performed using the non-parametric bootstrap.
-
-```{r bootstrap, eval = F}
-resamples <- lapply(1:100, function(x) sim_t4[1:100, ][sample(1:100, replace = T), ])
-a <- c("A_1", "A_2", "A_3", "A_4")
-time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
-lrnrs <- make_learner(Lrnr_glm)
-
-thetas <- lapply(1:100, function(x) {
-  lmtp_ipw(resamples[[x]], a, "Y", time_vary = time_varying, 
-           k = 0, shift = d, learners = lrnrs, folds = 2)$theta
-})
-
-quantile(unlist(thetas), c(0.025, 0.975))
-#>       2.5%      97.5% 
-#> 0.08490264 0.46476965 
-```
+There is no theory to provide standard errors for the G-computation or IPW estimators when using data-adaptive estimation procedures such as the super learner; standard errors are thus not provided. However, if using a pre-specified parametric model for estimation, inference can be performed using the non-parametric bootstrap.
 
 ## Extra features
 
@@ -453,47 +390,18 @@ quantile(unlist(thetas), c(0.025, 0.975))
 ```{r tidy}
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
-lrnrs <- make_learner_stack(Lrnr_glm)
+shift <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
 
-fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
-                 learners_outcome = lrnrs, learners_trt = lrnrs, folds = 2)
+fit <- lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = shift, folds = 2)
 
 tidy(fit)
 ```
 
 ### Parallel processing with future
 
-Computation time can quickly increase in situations with lots of time points, complex ensemble learners, and large datasets. In response, `lmtp` provides support for parallel processing using the [`future`](https://cran.r-project.org/web/packages/future/index.html) package. The simplest way to use `lmtp` estimators in parallel is to run `plan(multiprocess)`. 
-
-```{r, eval = F}
-library(future)
-
-a <- c("A_1", "A_2", "A_3", "A_4")
-time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-d <- function(a) (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
-lrnrs <- make_learner_stack(Lrnr_mean, 
-                            Lrnr_glm, 
-                            Lrnr_ranger)
-
-system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
-            learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-)
-#>     user   system  elapsed 
-#> 1025.343   16.717  346.707 
-
-plan(multiprocess)
-
-system.time(
-  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
-            learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-)
-#>  user  system elapsed 
-#> 1.962   0.269 126.338 
-```
-
-We recommend consulting the `future` [documentation](https://cran.r-project.org/web/packages/future/future.pdf) for more information.
+Computation time can quickly increase in situations with lots of time points, complex ensemble learners, and large datasets. In response, `lmtp` provides support for parallel processing using the [`future`](https://cran.r-project.org/web/packages/future/index.html) package. The simplest way to use `lmtp` estimators in parallel is to run `plan(multiprocess)`. We recommend consulting the `future` [documentation](https://cran.r-project.org/web/packages/future/future.pdf) for more information.
 
 ### Progress bars with progressr
 
@@ -511,7 +419,9 @@ We recommend consulting the `progressr` [documentation](https://cran.r-project.o
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies.
+Díaz I, Williams N, Hoffman KL, Schenck, EJ (2020). Non-Parametric Causal Effects Based on Longitudinal Modified Policies. arXiv: https://arxiv.org/abs/2006.01366v2
+
+Díaz Muñoz, I. and van der Laan, M. (2012). Population Intervention Causal Effects Based on Stochastic Interventions. Biometrics, 68: 541-549. doi:10.1111/j.1541-0420.2011.01685.x
 
 Haneuse, S. and Rotnitzky, A. (2013), Estimation of the effect of interventions that modify the received treatment. Statist. Med., 32: 5260-5277. doi:10.1002/sim.5907
 

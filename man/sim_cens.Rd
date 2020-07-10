@@ -4,7 +4,8 @@
 \name{sim_cens}
 \alias{sim_cens}
 \title{Simulated Longitudinal Data Dith Censoring}
-\format{A data frame with 1000 rows and 10 variables:
+\format{
+A data frame with 1000 rows and 10 variables:
 \describe{
 \item{L1}{Time varying covariate time 1}
 \item{A1}{Treatment node at time 1, effected by L_1}
@@ -13,7 +14,8 @@
 \item{A2}{Treatment node at time 2, effected by L_2 and A_1}
 \item{C2}{Censoring indicator that the observation is observed after time 2}
 \item{Y}{Binary outcome at time 3, effected by L_2 and A_2}
-}}
+}
+}
 \usage{
 sim_cens
 }

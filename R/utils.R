@@ -1,8 +1,4 @@
 
-.onAttach <- function(libname, pkg) {
-  packageStartupMessage(welcome_msg(), check_for_sl3())
-}
-
 determine_tau <- function(outcome, trt, cens) {
   surv <- length(outcome) > 1
   if (!surv) {
@@ -12,35 +8,12 @@ determine_tau <- function(outcome, trt, cens) {
   }
 }
 
-shift_data <- function(data, A, C, .f) {
-
-  out <- as.list(data)
-
-  if (is.null(.f)) { # only set C = 1
-    for (ce in C) {
-      out[[ce]] <- 1
-    }
-  } else {
-    for (a in A) { # shift A
-      out[[a]] <- .f(out[[a]])
-    }
-
-    for (ce in C) { # and set C = 1
-      out[[ce]] <- 1
-    }
-  }
-
-  return(as.data.frame(out))
-}
-
 set_lmtp_options <- function(option, val) {
-  if (option == "bound") {
-    options(lmtp.bound = val)
-  } else if (option == "trt") {
-    options(lmtp.trt.length = val)
-  } else {
-    stop("Unknown lmtp option.", call. = F)
-  }
+  switch (option,
+    "bound"  = options(lmtp.bound = val),
+    "trt"    = options(lmtp.trt.length = val),
+    "engine" = options(lmtp.engine = val)
+  )
 }
 
 bound <- function(x, p = getOption("lmtp.bound")) {
@@ -77,19 +50,10 @@ add_scaled_y <- function(data, scaled) {
   return(data)
 }
 
-run_ensemble <- function(ensemble, task) {
-  ensemble$train(task)
-}
-
-predict_sl3 <- function(object, task) {
-  out <- object$predict(task)
-  return(out)
-}
-
-create_censoring_indicators <- function(data, C, tau) {
+create_censoring_indicators <- function(data, cens, tau) {
 
   # when no censoring return TRUE for all obs
-  if (is.null(C)) {
+  if (is.null(cens)) {
     i <- rep(TRUE, nrow(data))
     j <- rep(TRUE, nrow(data))
     out <- list(i = i, j = j)
@@ -97,10 +61,10 @@ create_censoring_indicators <- function(data, C, tau) {
   }
 
   # other wise find censored observations
-  i <- data[[C[tau]]] == 1
+  i <- data[[cens[tau]]] == 1
 
   if (tau > 1) {
-    j <- data[[C[tau - 1]]] == 1
+    j <- data[[cens[tau - 1]]] == 1
   } else {
     j <- rep(TRUE, nrow(data))
   }
@@ -112,8 +76,10 @@ create_censoring_indicators <- function(data, C, tau) {
 create_determ_indicators <- function(data, determ, tau) {
   if (is.null(determ)) {
     return(rep(FALSE, nrow(data)))
+  } else if (tau == 1) {
+    return(rep(FALSE, nrow(data)))
   } else {
-    return(data[[determ[tau]]] == 1 & !is.na(data[[determ[tau]]]))
+    return(data[[determ[tau - 1]]] == 1 & !is.na(data[[determ[tau - 1]]]))
   }
 }
 
@@ -140,7 +106,11 @@ hold_lrnr_weights <- function(folds) {
 }
 
 extract_sl_weights <- function(fit) {
-  as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
+  if (getOption("lmtp.engine") == "sl3") {
+    as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
+  } else {
+    NULL
+  }
 }
 
 pluck_weights <- function(type, x) {
@@ -161,7 +131,7 @@ final_outcome <- function(outcomes) {
   outcomes[length(outcomes)]
 }
 
-#' Time To Event Last Outcome Carried Forward
+#' Time To Event Last Outcome censarried Forward
 #'
 #' A helper function to prepare survival data for use with LMTP estimators
 #' by imputing outcome nodes using last outcome carried forward when an observation
@@ -184,5 +154,14 @@ event_locf <- function(data, outcomes) {
     }
   }
   return(data)
+}
+
+create_ids <- function(data, id) {
+  if (is.null(id)) {
+    out <- 1:nrow(data)
+  } else {
+    out <- data[[id]]
+  }
+  return(out)
 }
 

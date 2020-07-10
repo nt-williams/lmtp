@@ -45,9 +45,9 @@ devtools::install_github("nt-williams/lmtp@devel")
 
 ## Scope
 
-`lmtp` is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. `lmtp` is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous.
+`lmtp` is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. `lmtp` is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous. Dynamic treatment regimes are also supported. 
 
-For an in-depth look at the package's functionality, please consult the accompanying [vignette](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/c56a7b0bbdf24ec18d08f839e73fa06a42ca9265/intro-lmtp.html).
+For an in-depth look at the package's functionality, please consult the accompanying [article](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/45db700a02bf92e2a55790e60ed48266a97ca4e7/intro-lmtp.html).
 
 ### Features
 
@@ -57,7 +57,7 @@ For an in-depth look at the package's functionality, please consult the accompan
 | Longitudinal treatment          |   &check;   |
 | Modified treatment intervention |   &check;   |
 | Static intervention             |   &check;   |
-| Dynamic intervention            |   Planned   |
+| Dynamic intervention            |   &check;   |
 | Continuous treatment            |   &check;   |
 | Binary treatment                |   &check;   |
 | Categorical treatment           |   &check;   |
@@ -67,7 +67,7 @@ For an in-depth look at the package's functionality, please consult the accompan
 | Censored outcome                |   &check;   |
 | Mediation                       |             |
 | Super learner                   |   &check;   |
-| Clustered data                  |   Planned   |
+| Clustered data                  |   &check;   |
 | Parallel processing             |   &check;   |
 | Progress bars                   |   &check;   |
 
@@ -75,8 +75,6 @@ For an in-depth look at the package's functionality, please consult the accompan
 
 ```{r}
 library(lmtp)
-library(sl3)
-library(future)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -86,38 +84,24 @@ We're interested in a treatment policy, `d`, where exposure is decreased by 1 on
 
 ```{r, eval = F}
 # our treatment policy function to be applied at all time points
-d <- function(a) {
-  (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
-In addition to specifying a treatment policy, we need to specify our treatment variables, time-varying covariates, and the `sl3` learners to be used in estimation.
+In addition to specifying a treatment policy, we need to specify our treatment variables and time-varying covariates.
 
 ```{r, eval = F}
 # our treatment nodes, a character vector of length 4
 a <- c("A_1", "A_2", "A_3", "A_4")
 # our time varying nodes, a list of length 4
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-# our sl3 learner stack: the mean, GLM, and random forest
-lrnrs <- make_learner_stack(Lrnr_mean, 
-                            Lrnr_glm, 
-                            Lrnr_ranger)
 ```
 
-We can now estimate the effect of our treatment policy, `d`. In this example, we'll use the cross-validated TML estimator with 10 folds. To speed up computation, we can use parallel processing supported by the `future` package.
+We can now estimate the effect of our treatment policy, `d`. In this example, we'll use the cross-validated TML estimator with 10 folds. 
 
 ```{r, eval = F}
-plan(multiprocess)
-
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
-          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-# LMTP Estimator: TMLE
-#    Trt. Policy: (d)
-# 
-# Population intervention effect
-#       Estimate: 0.2901
-#     Std. error: 0.0119
-#         95% CI: (0.2667, 0.3134)
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
 ```
 
 ## Similiar Implementations
@@ -149,7 +133,7 @@ Please cite the following when using `lmtp` in publications. Citation should inc
     title = {Non-parametric causal effects based on longitudinal modified treatment policies},
     author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
     year = {2020},
-    url = {https://arxiv.org/abs/2006.01366}
+    url = {https://arxiv.org/abs/2006.01366v2}
 }
 ```
 

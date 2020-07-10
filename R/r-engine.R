@@ -11,33 +11,32 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-
     # setup
     i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
     d     <- rep(create_determ_indicators(training, deterministic, t), 2)
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
 
     # create sl3 tasks for training and validation sets
-    fit_task   <- initiate_sl3_task(subset(stcks$train, i & !d), "si", c(node_list[[t]], cens[[t]]), "binomial", "id")
-    tpred_task <- sw(initiate_sl3_task(stcks$train, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
-    vpred_task <- sw(initiate_sl3_task(stcks$valid, "si", c(node_list[[t]], cens[[t]]), "binomial", "id")) # same here
+    fit_task   <- initiate_sl3_task(subset(stcks$train, i & !d), "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")
+    tpred_task <- sw(initiate_sl3_task(stcks$train, "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
+    vpred_task <- sw(initiate_sl3_task(stcks$valid, "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")) # same here
     ensemble   <- initiate_ensemble("binomial", learners)
 
     # run SL
-    fit             <- run_ensemble(ensemble, fit_task)
+    fit             <- run_ensemble(ensemble, fit_task, envir = environment())
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     # ratios training
-    pred            <- bound(predict_sl3(fit, tpred_task), .Machine$double.eps)
-    rat             <- pred * rep(create_censoring_indicators(training, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
+    pred            <- bound(predict_sl3(fit, tpred_task, envir = environment()), .Machine$double.eps)
+    rat             <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
     rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
     rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
 
     # ratios validation
-    pred            <- bound(predict_sl3(fit, vpred_task), .Machine$double.eps)
-    rat             <- pred * rep(create_censoring_indicators(validation, cens, t)$i, 2) / (1 - bound(pred)) # rep() serves as indicator of missing at next time
+    pred            <- bound(predict_sl3(fit, vpred_task, envir = environment()), .Machine$double.eps)
+    rat             <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
     rv$natural[create_determ_indicators(validation, deterministic, t), t] <- 1
@@ -53,6 +52,12 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
               sl_weights = sl_weights)
 
   # returns
+  return(out)
+}
+
+create_ratios <- function(pred, data, cens, tau) {
+  out <- pred * rep(create_censoring_indicators(data, cens, tau)$i, 2) / (1 - bound(pred))
+  out <- ifelse(is.na(out), 0, out)
   return(out)
 }
 

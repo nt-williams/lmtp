@@ -54,44 +54,38 @@ censoring) are allowed. `lmtp` is built atop the
 machine learning for estimation. The treatment mechanism is estimated
 via a density ratio classification procedure irrespective of treatment
 variable type providing decreased computation time when treatment is
-continuous.
+continuous. Dynamic treatment regimes are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying
-[vignette](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/c56a7b0bbdf24ec18d08f839e73fa06a42ca9265/intro-lmtp.html).
+[article](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/45db700a02bf92e2a55790e60ed48266a97ca4e7/intro-lmtp.html).
 
 ### Features
 
-| Feature                         | Status  |
-| ------------------------------- | :-----: |
-| Point treatment                 |    ✓    |
-| Longitudinal treatment          |    ✓    |
-| Modified treatment intervention |    ✓    |
-| Static intervention             |    ✓    |
-| Dynamic intervention            | Planned |
-| Continuous treatment            |    ✓    |
-| Binary treatment                |    ✓    |
-| Categorical treatment           |    ✓    |
-| Missingness in treatment        |         |
-| Continuous outcome              |    ✓    |
-| Binary outcome                  |    ✓    |
-| Censored outcome                |    ✓    |
-| Mediation                       |         |
-| Super learner                   |    ✓    |
-| Clustered data                  | Planned |
-| Parallel processing             |    ✓    |
-| Progress bars                   |    ✓    |
+| Feature                         | Status |
+| ------------------------------- | :----: |
+| Point treatment                 |   ✓    |
+| Longitudinal treatment          |   ✓    |
+| Modified treatment intervention |   ✓    |
+| Static intervention             |   ✓    |
+| Dynamic intervention            |   ✓    |
+| Continuous treatment            |   ✓    |
+| Binary treatment                |   ✓    |
+| Categorical treatment           |   ✓    |
+| Missingness in treatment        |        |
+| Continuous outcome              |   ✓    |
+| Binary outcome                  |   ✓    |
+| Censored outcome                |   ✓    |
+| Mediation                       |        |
+| Super learner                   |   ✓    |
+| Clustered data                  |   ✓    |
+| Parallel processing             |   ✓    |
+| Progress bars                   |   ✓    |
 
 ## Example
 
 ``` r
 library(lmtp)
-#> lmtp: Causal Effects of Feasible Interventions Based on Modified
-#> Treatment Policies
-#> Version: 0.0.1.9000
-#> 
-library(sl3)
-library(future)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -110,43 +104,26 @@ upon. The true population outcome under this policy is about 0.305.
 
 ``` r
 # our treatment policy function to be applied at all time points
-d <- function(a) {
-  (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
 
 In addition to specifying a treatment policy, we need to specify our
-treatment variables, time-varying covariates, and the `sl3` learners to
-be used in estimation.
+treatment variables and time-varying covariates.
 
 ``` r
 # our treatment nodes, a character vector of length 4
 a <- c("A_1", "A_2", "A_3", "A_4")
 # our time varying nodes, a list of length 4
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-# our sl3 learner stack: the mean, GLM, and random forest
-lrnrs <- make_learner_stack(Lrnr_mean, 
-                            Lrnr_glm, 
-                            Lrnr_ranger)
 ```
 
 We can now estimate the effect of our treatment policy, `d`. In this
-example, we’ll use the cross-validated TML estimator with 10 folds. To
-speed up computation, we can use parallel processing supported by the
-`future` package.
+example, we’ll use the cross-validated TML estimator with 10 folds.
 
 ``` r
-plan(multiprocess)
-
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = d, 
-          learners_outcome = lrnrs, learners_trt = lrnrs, folds = 10)
-# LMTP Estimator: TMLE
-#    Trt. Policy: (d)
-# 
-# Population intervention effect
-#       Estimate: 0.2901
-#     Std. error: 0.0119
-#         95% CI: (0.2667, 0.3134)
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
 ```
 
 ## Similiar Implementations
@@ -183,7 +160,7 @@ statistical methodology.
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},
         author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
         year = {2020},
-        url = {https://arxiv.org/abs/2006.01366}
+        url = {https://arxiv.org/abs/2006.01366v2}
     }
 
 ## References

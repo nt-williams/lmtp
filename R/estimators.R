@@ -20,21 +20,20 @@
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
-#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -48,6 +47,9 @@
 #' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
 #' \item{eif}{The estimated, uncentered, influence function of the estimate.}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
+#'  The mean of the first column is used for calculating theta.}
+#' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -58,7 +60,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
-                      outcome_type = c("binomial", "continuous"),
+                      outcome_type = c("binomial", "continuous"), id = NULL,
                       bounds = NULL, learners_outcome = NULL,
                       learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -73,6 +75,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    learners_trt = learners_trt,
+    learners_outcome = learners_outcome,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -106,6 +111,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
       r = recombine_dens_ratio(dens_ratio),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -138,21 +144,20 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
-#' @param learners_trt An \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -166,6 +171,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' \item{high}{Upper bound of the 95% confidene interval of the LMTP effect.}
 #' \item{eif}{The estimated, uncentered, influence function of the estimate.}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
+#'  The mean of the first column is used for calculating theta.}
+#' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -176,7 +184,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"),
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners_outcome = NULL,
                      learners_trt = NULL, folds = 10, bound = 1e-5) {
 
@@ -191,6 +199,9 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    learners_trt = learners_trt,
+    learners_outcome = learners_outcome,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -221,6 +232,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
       r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
       tau = meta$tau,
       folds = meta$folds,
+      id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       shift = deparse(substitute((shift))),
@@ -253,18 +265,18 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#'  for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners An \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param learners An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -278,6 +290,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' \item{low}{NA}
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
+#'  The mean of the first column is used for calculating theta.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{outcome_type}{The outcome variable type.}
@@ -286,7 +300,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"),
+                     outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
@@ -300,6 +314,9 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    learners_trt = NULL,
+    learners_outcome = learners,
+    id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
@@ -352,14 +369,14 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @param cens An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A function that specifies how treatment variables should be shifted. See examples
-#' for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param learners An \code{sl3} learner stack for estimation of the treatment mechanism.
-#'  If not specified, will default to an ensemble of an intercept only model
-#'  and a GLM.
+#' @param id An optional column name containing cluster level identifiers.
+#' @param learners An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param bound Determines that maximum and minimum values (scaled) predictions
@@ -373,13 +390,14 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' \item{low}{NA}
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
+#' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the propensity.}
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, k = Inf, shift,
+                     time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
                      learners = NULL, folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
@@ -393,6 +411,9 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    learners_trt = learners,
+    learners_outcome = NULL,
+    id = id,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
