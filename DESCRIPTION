@@ -1,5 +1,5 @@
 Package: lmtp
-Title: Non-parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
+Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
 Version: 0.0.4.9000
 Authors@R: 
     c(person(given = "Nicholas",
@@ -13,7 +13,7 @@ Authors@R:
              role = c("aut"),
              comment = c(ORCID = "0000-0001-9056-2047")))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
-  policies as described in Diaz, Williams, and Hoffman (2020) <arXiv:https://arxiv.org/abs/2006.01366>, traditional point treatment, 
+  policies as described in Diaz, Williams, and Hoffman (2020) <arXiv:2006.01366>, traditional point treatment, 
   and traditional longitudinal effects. Continuous, binary, and categorical treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
@@ -45,4 +45,3 @@ Suggests:
     twang
 Enhances:
     sl3 (>= 1.3.7)
-VignetteBuilder: knitr
