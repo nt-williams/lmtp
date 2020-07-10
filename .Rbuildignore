@@ -8,3 +8,4 @@
 ^\.covrignore$
 ^vignettes/articles$
 
+^cran-comments\.md$
