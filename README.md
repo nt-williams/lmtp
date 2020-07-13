@@ -5,22 +5,22 @@
 
 <!-- badges: start -->
 
-[![Build
-Status](https://travis-ci.com/nt-williams/lmtp.svg?token=DA4a53nWMx6q9LisKdRD&branch=master)](https://travis-ci.com/nt-williams/lmtp)
-[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg?token=TFQNTischL)](https://codecov.io/gh/nt-williams/lmtp)
-[![MIT
-license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-[![Project Status: Active – The project has reached a stable, usable
-state and is being actively
-developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
+<!-- [![Build Status](https://travis-ci.com/nt-williams/lmtp.svg?token=DA4a53nWMx6q9LisKdRD&branch=master)](https://travis-ci.com/nt-williams/lmtp) -->
+
+<!-- [![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp) -->
+
+<!-- [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT) -->
+
+<!-- [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
+
+<!-- [![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023) -->
+
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
 > Modified Treatment Policies
 
-[Nick Williams](https://nicholastwilliams.com) and [Ivan
-Diaz](https://idiaz.xyz)
+Nick Williams and Ivan Diaz
 
 -----
 
