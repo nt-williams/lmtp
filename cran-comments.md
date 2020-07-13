@@ -16,6 +16,13 @@
 
 ## Additional comments
 
+### Submission 3
+
+Only undirected quotation marks are now used in DESCRIPTION  
+Broken links have either been removed or fixed  
+`\dontrun{}` was replaced with `\donttest{}`  
+.R files in inst/examples removed  
+
 ### Submission 2
 
 The NOTEs about links being in CRAN canonical form have been changed to the canonical form.
