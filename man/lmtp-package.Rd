@@ -19,7 +19,7 @@ Non-parametric estimators for casual effects based on longitudinal modified trea
 
 Authors:
 \itemize{
-  \item Iván Díaz \email{ild2005@med.cornell.edu} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID})
+  \item Iván Díaz \email{ild2005@med.cornell.edu} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID}) [copyright holder]
 }
 
 }

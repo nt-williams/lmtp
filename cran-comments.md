@@ -16,6 +16,11 @@
 
 ## Additional comments
 
+### Submission 4
+
+Ivan Diaz has been identified as a copyright holder in DESCRIPTION
+All instances of `\dontrun{}` have been removed
+
 ### Submission 3
 
 Only undirected quotation marks are now used in DESCRIPTION  

@@ -25,7 +25,9 @@ theta_sub <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
-              outcome_reg = rescale_y_continuous(eta$m, eta$bounds),
+              outcome_reg = switch(eta$outcome_type,
+                                   continuous = rescale_y_continuous(eta$m, eta$bounds),
+                                   binomial = eta$m),
               weights_m = eta$weights_m,
               outcome_type = eta$outcome_type)
 
@@ -92,7 +94,9 @@ theta_dr <- function(eta) {
               high = ci_high,
               eif = inflnce,
               shift = eta$shift,
-              outcome_reg = rescale_y_continuous(eta$m$shifted, eta$bounds),
+              outcome_reg = switch(eta$outcome_type,
+                                   continuous = rescale_y_continuous(eta$m$shifted, eta$bounds),
+                                   binomial = eta$m$shifted),
               density_ratios = eta$r,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,

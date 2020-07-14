@@ -157,7 +157,7 @@ statistical methodology.
         title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
         author = {Nicholas T Williams and Iván Díaz},
         year = {2020},
-        note = {R package version 0.0.4},
+        note = {R package version 0.0.5},
         doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }

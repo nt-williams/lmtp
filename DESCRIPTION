@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 0.0.4
+Version: 0.0.5
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -10,7 +10,7 @@ Authors@R:
       person(given = "Iván", 
              family = "Díaz", 
              email = "ild2005@med.cornell.edu",
-             role = c("aut"),
+             role = c("aut", "cph"),
              comment = c(ORCID = "0000-0001-9056-2047")))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
   policies as described in Diaz, Williams, and Hoffman (<arXiv:2006.01366>), traditional point treatment, 
