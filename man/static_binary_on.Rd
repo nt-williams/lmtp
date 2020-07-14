@@ -19,7 +19,7 @@ A pre-packaged shift function for use with provided estimators when the exposure
 Used to estimate the population intervention effect when all treatment variables are set to 1.
 }
 \examples{
-\dontrun{
+\donttest{
 data("iptwExWide", package = "twang")
 a <- paste0("tx", 1:3)
 baseline <- c("gender", "age")

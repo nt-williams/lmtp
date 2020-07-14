@@ -34,7 +34,7 @@ shift_trt <- function(data, trt, .f) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data("iptwExWide", package = "twang")
 #' a <- paste0("tx", 1:3)
 #' baseline <- c("gender", "age")
@@ -59,7 +59,7 @@ static_binary_on <- function(data, trt) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data("iptwExWide", package = "twang")
 #' a <- paste0("tx", 1:3)
 #' baseline <- c("gender", "age")

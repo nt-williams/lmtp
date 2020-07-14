@@ -10,12 +10,12 @@ generics::tidy
 #' @param ... Unused, included for generic consistency only.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' a <- c("A1", "A2")
 #' nodes <- list(c("L1"), c("L2"))
 #' cens <- c("C1", "C2")
 #' y <- "Y"
-#' fit <- lmtp_tmle(sim_cens, a, y, nodes, cens = cens, shift = NULL, folds = 2)
+#' fit <- lmtp_tmle(sim_cens, a, y, time_vary = nodes, cens = cens, shift = NULL, folds = 2)
 #' tidy(fit)
 #' }
 #'
