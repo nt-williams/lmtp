@@ -19,7 +19,7 @@
 #' }
 "sim_t4"
 
-#' Simulated Longitudinal Data Dith Censoring
+#' Simulated Longitudinal Data With Censoring
 #'
 #' A dataset with a binary outcome, two time varying treatment nodes,
 #' two time varying covariates, and two censoring indicators.
