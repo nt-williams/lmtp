@@ -57,7 +57,6 @@ estimate_sub <- function(training, shifted, validation, outcome,
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, deterministic, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
-
   if (tau > 0) {
     # setup
     i            <- create_censoring_indicators(training, C, tau)$i

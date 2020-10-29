@@ -16,8 +16,26 @@ prepare_data <- function(data, trt, status, time) {
       (data[[time]] >= t) * (1 - data[[status]])
   }
 
-  data.table::data.table(id = rep(1:nobs, each = max_time),
-                         data[as.numeric(gl(nobs, max_time)), ],
-                         all_time = all_time,
-                         evnt, cens)
+  long <-
+    data.table(id = rep(1:nobs, each = max_time),
+               data[as.numeric(gl(nobs, max_time)), ],
+               all_time = all_time,
+               outcome = evnt, status = cens)
+
+  fevnt <- long[, .I[(.I[which(outcome == 1)]) < .I], by = id]$V1
+  fcens <- long[, .I[(.I[which(status == 1)]) < .I], by = id]$V1
+
+  long[fevnt, outcome := 1]
+  long[fcens, `:=`(outcome = NA, status = 1)]
+  long[, status := fifelse(status == 1, 0, 1)]
+  long[all_time == max(all_time) & !is.na(outcome), status := 1]
+
+  form <- paste(paste(c("id", setdiff(names(data), c(status, time))),
+                      collapse = "+"),
+                "~ all_time")
+
+  list(data = dcast(long, form, value.var = c("status", "outcome")),
+       outcome_vars = paste0("outcome_", 1:max_time),
+       censoring_vars = paste0("status_", 1:max_time))
 }
+
