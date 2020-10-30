@@ -11,9 +11,6 @@ prepare_data <- function(data, trt, status, time) {
   for (t in 1:max_time) {
     cens[all_time == t] <- (1 - data[[status]]) * (data[[time]] == t)
     evnt[all_time == t] <- data[[status]] * (data[[time]] == t)
-    risk_evnt[all_time == t] <- (data[[time]] >= t)
-    risk_cens[all_time == t] <- (data[[time]] > t) * data[[status]] +
-      (data[[time]] >= t) * (1 - data[[status]])
   }
 
   long <-
