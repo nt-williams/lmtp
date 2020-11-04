@@ -1,9 +1,26 @@
 
-# for now just going to work with a simple case of
-# a non time-varying treatment
-prepare_data <- function(data, trt, status, time) {
+#' Transform Survival Data Into the Correct Format
+#'
+#' @param data
+#' @param trt
+#' @param status
+#' @param time
+#' @param horizon
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prep_survival_data <- function(data, trt, status, time, horizon = NULL) {
+  # for now just going to work with a simple case of
+  # a non time-varying treatment
   nobs <- nrow(data)
-  max_time <- max(data[[time]])
+  max_time <- horizon
+
+  if (is.null(max_time)) {
+    max_time <- max(data[[time]])
+  }
+
   all_time <- rep(1:max_time, nobs)
   evnt <- cens <- rep(NA, nobs*max_time)
   risk_evnt <- risk_cens <- 1*(all_time == 1)
@@ -31,8 +48,11 @@ prepare_data <- function(data, trt, status, time) {
                       collapse = "+"),
                 "~ all_time")
 
-  list(data = dcast(long, form, value.var = c("status", "outcome")),
-       outcome_vars = paste0("outcome_", 1:max_time),
-       censoring_vars = paste0("status_", 1:max_time))
+  wide <- dcast(long, form, value.var = c("status", "outcome"))
+  dlte <- c("outcome_1", paste0("status_", max_time))
+
+  list(data = wide[, !dlte, with = FALSE],
+       outcome_vars = paste0("outcome_", 2:max_time),
+       censoring_vars = paste0("status_", 1:(max_time - 1)))
 }
 
