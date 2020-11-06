@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 0.0.5.9000
+Version: 0.0.6.9000
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -20,7 +20,7 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes. Estimation is enhanced 
   using the Super Learner from 'sl3' available for download from GitHub using 'remotes::install_github("tlverse/sl3@devel")'. 
 Depends: R (>= 2.10)
-License: MIT + file LICENSE
+License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
