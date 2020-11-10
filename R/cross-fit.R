@@ -25,7 +25,7 @@ cf_r <- function(data, shift, V, trt, cens, deterministic, tau,
                  shift, tau, node_list, learners, pb, weights_r[[i]])
     }, seed = TRUE)
   }
-  out <- future::values(out)
+  out <- future::value(out)
   return(out)
 }
 
@@ -41,7 +41,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                    learners, m[[i]]$valid, pb, weights_m[[i]])
     }, seed = TRUE)
   }
-  out <- future::values(out)
+  out <- future::value(out)
   out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
               sl_weights = lapply(out, function(x) x[["sl_weights"]]))
   return(out)
@@ -61,7 +61,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                     learners, pb, weights_m[[i]])
     }, seed = TRUE)
   }
-  m <- future::values(m)
+  m <- future::value(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
               shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])),
               sl_weights = lapply(m, function(x) x[["sl_weights"]]))
@@ -82,7 +82,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
                    r[[i]], pb, weights_m[[i]])
     }, seed = TRUE)
   }
-  m <- future::values(m)
+  m <- future::value(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
               shifted = Reduce(rbind, lapply(m, function(x) x[["shifted"]])),
               sl_weights = lapply(m, function(x) x[["sl_weights"]]))
