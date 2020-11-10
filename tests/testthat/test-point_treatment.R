@@ -17,20 +17,18 @@ rule <- function(data, x) {
 
 # estimators
 sub <-
-  lmtp_sub(df, "A", "Y", baseline = bs, shift = rule, learners = lib,
+  lmtp_sub(df, "A", "Y", baseline = bs, shift = rule,
            outcome_type = "binomial", folds = 2)
 
 ipw <-
   lmtp_ipw(df, "A", "Y", baseline = bs, shift = rule, folds = 2)
 
 tmle <-
-  lmtp_tmle(df, "A", "Y", baseline = bs, shift = rule, learners_trt = lib,
-            learners_outcome = lib,
+  lmtp_tmle(df, "A", "Y", baseline = bs, shift = rule,
             outcome_type = "binomial", folds = 2)
 
 sdr <-
-  lmtp_sdr(df, "A", "Y", baseline = bs, shift = rule,learners_trt = lib,
-           learners_outcome = lib,
+  lmtp_sdr(df, "A", "Y", baseline = bs, shift = rule,
            outcome_type = "binomial", folds = 2)
 
 # tests
