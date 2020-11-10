@@ -208,7 +208,7 @@ check_folds <- function(V) {
    if (is.null(learners_trt) & is.null(learners_outcome)) {
      set_lmtp_options("engine", "glm")
    } else {
-     set_lmtp_options("engine", "sl3")
+     set_lmtp_options("engine", "SuperLearner")
    }
  }
 

@@ -16,43 +16,37 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     d     <- rep(create_determ_indicators(training, deterministic, t), 2)
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
 
-    # create sl3 tasks for training and validation sets
-    fit_task   <- initiate_sl3_task(subset(stcks$train, i & !d), "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")
-    tpred_task <- sw(initiate_sl3_task(stcks$train, "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")) # sl3 will impute missing here, this is okay because all censored are multiplied by 0 below
-    vpred_task <- sw(initiate_sl3_task(stcks$valid, "si", c(node_list[[t]], cens[[t]]), "binomial", "lmtp_id")) # same here
-    ensemble   <- initiate_ensemble("binomial", learners)
-
-    # run SL
-    fit             <- run_ensemble(ensemble, fit_task, envir = environment())
-    sl_weights[[t]] <- extract_sl_weights(fit)
+    fit <- run_ensemble(subset(stcks$train, i & !d)$si,
+                        subset(stcks$train, i & !d)[, c(node_list[[t]], cens[[t]])],
+                        learners,
+                        "binary",
+                        subset(stcks$train, i & !d)$lmtp_id)
 
     # ratios training
-    pred            <- bound(predict_sl3(fit, tpred_task, envir = environment()), .Machine$double.eps)
-    rat             <- create_ratios(pred, training, cens, t)
+    pred <- bound(predict(fit, stcks$train)$pred, .Machine$double.eps)
+    rat <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
     rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
     rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
 
     # ratios validation
-    pred            <- bound(predict_sl3(fit, vpred_task, envir = environment()), .Machine$double.eps)
-    rat             <- create_ratios(pred, validation, cens, t)
+    pred <- bound(predict(fit, stcks$valid)$pred, .Machine$double.eps)
+    rat <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
     rv$natural[create_determ_indicators(validation, deterministic, t), t] <- 1
     rv$shifted[create_determ_indicators(validation, deterministic, t), t] <- 1
 
+    # sl_weights[[t]] <- extract_sl_weights(fit)
+
     # update progress bar
     pb()
 
   }
-
-  out <- list(train = rt,
-              valid = rv,
-              sl_weights = sl_weights)
-
-  # returns
-  return(out)
+  list(train = rt,
+       valid = rv,
+       sl_weights = sl_weights)
 }
 
 create_ratios <- function(pred, data, cens, tau) {
