@@ -61,8 +61,8 @@
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
                       outcome_type = c("binomial", "continuous"), id = NULL,
-                      bounds = NULL, learners_outcome = NULL,
-                      learners_trt = NULL, folds = 10, bound = 1e-5) {
+                      bounds = NULL, learners_outcome = "SL.glm",
+                      learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -185,8 +185,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"), id = NULL,
-                     bounds = NULL, learners_outcome = NULL,
-                     learners_trt = NULL, folds = 10, bound = 1e-5) {
+                     bounds = NULL, learners_outcome = "SL.glm",
+                     learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -301,7 +301,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"), id = NULL,
-                     bounds = NULL, learners = NULL, folds = 10, bound = 1e-5) {
+                     bounds = NULL, learners = "SL.glm", folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 
@@ -398,7 +398,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
-                     learners = NULL, folds = 10, bound = 1e-5) {
+                     learners = "SL.glm", folds = 10, bound = 1e-5) {
 
   # setup -------------------------------------------------------------------
 

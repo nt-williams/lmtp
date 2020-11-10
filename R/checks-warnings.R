@@ -204,14 +204,6 @@ check_folds <- function(V) {
    }
  }
 
- check_estimation_engine <- function(learners_trt, learners_outcome) {
-   if (is.null(learners_trt) & is.null(learners_outcome)) {
-     set_lmtp_options("engine", "glm")
-   } else {
-     set_lmtp_options("engine", "SuperLearner")
-   }
- }
-
  check_glm_outcome <- function(outcome_type) {
    if (is.null(outcome_type)) {
      return("gaussian")

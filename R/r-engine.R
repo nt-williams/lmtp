@@ -1,8 +1,6 @@
 
 estimate_r <- function(training, validation, trt, cens, deterministic, shift,
                        tau, node_list, learners = NULL, pb, sl_weights) {
-
-  # global setup
   nt <- nrow(training)
   nv <- nrow(validation)
   rt <- list(natural = matrix(nrow = nt, ncol = tau),
@@ -11,8 +9,7 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-    # setup
-    i     <- rep(create_censoring_indicators(training, cens, t)$j, 2) # using j because we want everyone observed at current time despite censoring at t + 1
+    i     <- rep(create_censoring_indicators(training, cens, t)$j, 2)
     d     <- rep(create_determ_indicators(training, deterministic, t), 2)
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
 
@@ -21,8 +18,8 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
                         learners,
                         "binary",
                         subset(stcks$train, i & !d)$lmtp_id)
+    sl_weights[[t]] <- extract_sl_weights(fit)
 
-    # ratios training
     pred <- bound(predict(fit, stcks$train)$pred, .Machine$double.eps)
     rat <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
@@ -30,7 +27,6 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
     rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
 
-    # ratios validation
     pred <- bound(predict(fit, stcks$valid)$pred, .Machine$double.eps)
     rat <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
@@ -38,11 +34,7 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     rv$natural[create_determ_indicators(validation, deterministic, t), t] <- 1
     rv$shifted[create_determ_indicators(validation, deterministic, t), t] <- 1
 
-    # sl_weights[[t]] <- extract_sl_weights(fit)
-
-    # update progress bar
     pb()
-
   }
   list(train = rt,
        valid = rv,

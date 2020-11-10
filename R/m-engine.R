@@ -2,7 +2,6 @@
 estimate_sub <- function(training, shifted, validation, outcome,
                          node_list, C, deterministic, tau, outcome_type,
                          learners = NULL, m, pb, sl_weights) {
-
   if (tau > 0) {
     i <- create_censoring_indicators(training, C, tau)$i
     js <- create_censoring_indicators(shifted, C, tau)$j
@@ -16,9 +15,7 @@ estimate_sub <- function(training, shifted, validation, outcome,
                         learners,
                         outcome_type,
                         id = training[i & !dt, ][["lmtp_id"]])
-
-
-    # sl_weights[[tau]] <- extract_sl_weights(fit)
+    sl_weights[[tau]] <- extract_sl_weights(fit)
 
     training[js, pseudo] <- bound(predict(fit, shifted[js, ])$pred)
     training[dt, pseudo] <- 1
@@ -27,19 +24,21 @@ estimate_sub <- function(training, shifted, validation, outcome,
     m[dv, tau] <- 1
 
     pb()
-    estimate_sub(training = training,
-                 shifted = shifted,
-                 validation = validation,
-                 outcome = pseudo,
-                 node_list = node_list,
-                 C = C,
-                 deterministic = deterministic,
-                 tau = tau - 1,
-                 outcome_type = "continuous",
-                 learners,
-                 m = m,
-                 pb = pb,
-                 sl_weights = sl_weights)
+    estimate_sub(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      deterministic = deterministic,
+      tau = tau - 1,
+      outcome_type = "continuous",
+      learners,
+      m = m,
+      pb = pb,
+      sl_weights = sl_weights
+    )
 
   }
   list(m = m, sl_weights = sl_weights)
@@ -61,8 +60,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                         learners,
                         outcome_type,
                         id = training[i & !dt, ][["lmtp_id"]])
-
-    # sl_weights[[tau]] <- extract_sl_weights(fit)
+    sl_weights[[tau]] <- extract_sl_weights(fit)
 
     m_natural$train[jt, tau] <- bound(predict(fit, training[jt, ])$pred)
     m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, ])$pred)
@@ -81,22 +79,24 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_shifted$valid[dv, tau] <- 1
 
     pb()
-    estimate_tmle(training = training,
-                  shifted = shifted,
-                  validation = validation,
-                  validation_shifted = validation_shifted,
-                  outcome = pseudo,
-                  node_list = node_list,
-                  C = C,
-                  deterministic = deterministic,
-                  tau = tau - 1,
-                  outcome_type = "continuous",
-                  m_natural = m_natural,
-                  m_shifted = m_shifted,
-                  r = r,
-                  learners = learners,
-                  pb = pb,
-                  sl_weights = sl_weights)
+    estimate_tmle(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      validation_shifted = validation_shifted,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      deterministic = deterministic,
+      tau = tau - 1,
+      outcome_type = "continuous",
+      m_natural = m_natural,
+      m_shifted = m_shifted,
+      r = r,
+      learners = learners,
+      pb = pb,
+      sl_weights = sl_weights
+    )
   }
   out <- list(natural = m_natural$valid,
               shifted = m_shifted$valid,
@@ -106,7 +106,6 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, deterministic, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
-
   if (tau > 0) {
     i      <- create_censoring_indicators(training, C, tau)$i
     jt     <- create_censoring_indicators(training, C, tau)$j
@@ -121,8 +120,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           learners,
                           outcome_type,
                           id = training[i & !dt, ][["lmtp_id"]])
-
-      # sl_weights[[tau]] <- extract_sl_weights(fit)
+      sl_weights[[tau]] <- extract_sl_weights(fit)
 
       m_natural$train[jt, tau] <- bound(predict(fit, training[jt, ])$pred)
       m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, ])$pred)
@@ -146,8 +144,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           learners,
                           outcome_type,
                           id = training[i & !dt, ][["lmtp_id"]])
-
-      # sl_weights[[tau]] <- extract_sl_weights(fit)
+      sl_weights[[tau]] <- extract_sl_weights(fit)
 
       m_natural$train[jt, tau] <- bound(predict(fit, training[jt, ])$pred)
       m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, ])$pred)
@@ -161,23 +158,25 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     }
 
     pb()
-    estimate_sdr(training = training,
-                 shifted = shifted,
-                 validation = validation,
-                 validation_shifted = validation_shifted,
-                 outcome = pseudo,
-                 node_list = node_list,
-                 C = C,
-                 deterministic = deterministic,
-                 tau = tau - 1,
-                 max = max,
-                 outcome_type = "continuous",
-                 learners = learners,
-                 m_shifted = m_shifted,
-                 m_natural = m_natural,
-                 r = r,
-                 pb = pb,
-                 sl_weights = sl_weights)
+    estimate_sdr(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      validation_shifted = validation_shifted,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      deterministic = deterministic,
+      tau = tau - 1,
+      max = max,
+      outcome_type = "continuous",
+      learners = learners,
+      m_shifted = m_shifted,
+      m_natural = m_natural,
+      r = r,
+      pb = pb,
+      sl_weights = sl_weights
+    )
   }
 
   list(natural = m_natural$valid,
