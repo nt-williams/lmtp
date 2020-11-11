@@ -4,16 +4,6 @@ no_stderr_warning <- function(estimator) {
   cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
 }
 
-check_sd <- function(x, learner_stack) {
-  if (sd(x) > .Machine$double.eps) {
-    out <- learner_stack
-  } else {
-    out <- "SL.mean"
-  }
-
-  return(out)
-}
-
 check_censoring <- function(data, C, Y) {
   if (any(is.na(data[[Y]])) & is.null(C)) {
     stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
@@ -75,10 +65,11 @@ check_extreme_ratio <- function(ratio) {
   return(apply(ratio, 2, function(x) pmin(x, quantile(x, 0.999))))
 }
 
-check_variation <- function(data, outcome, learners) {
-  if (sd(data[[outcome]]) < .Machine$double.eps) {
+check_variation <- function(outcome, learners) {
+  if (sd(outcome) < .Machine$double.eps) {
     return("SL.mean")
   }
+  return(learners)
 }
 
 check_outcome_type <- function(fits, ref, type) {
@@ -112,7 +103,6 @@ check_lmtp_type <- function(fits, ref) {
     stop("Contrasts not implemented for substitution/IPW estimators.",
          call. = F)
   }
-
 }
 
 check_ref_type <- function(ref, type) {
