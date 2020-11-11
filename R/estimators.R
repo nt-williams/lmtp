@@ -63,9 +63,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       outcome_type = c("binomial", "continuous"), id = NULL,
                       bounds = NULL, learners_outcome = "SL.glm",
                       learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
-
-  # setup -------------------------------------------------------------------
-
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -86,22 +83,16 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  # propensity --------------------------------------------------------------
-
   dens_ratio <- ratio_dr(
     cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
          meta$node_list$trt, learners_trt, pb, meta$weights_r),
     folds
   )
 
-  # tmle --------------------------------------------------------------------
-
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
             cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
             dens_ratio, learners_outcome, pb, meta$weights_m)
-
-  # return estimates --------------------------------------------------------
 
   out <- compute_theta(
     estimator = "dr",
@@ -187,9 +178,6 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners_outcome = "SL.glm",
                      learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
-
-  # setup -------------------------------------------------------------------
-
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -210,19 +198,13 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  # propensity --------------------------------------------------------------
-
   raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
                     meta$node_list$trt, learners_trt, pb, meta$weights_r)
-
-  # sdr ---------------------------------------------------------------------
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
            raw_ratio, learners_outcome, pb, meta$weights_m)
-
-  # return estimates --------------------------------------------------------
 
   out <- compute_theta(
     estimator = "dr",
@@ -302,9 +284,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners = "SL.glm", folds = 10, bound = 1e-5) {
-
-  # setup -------------------------------------------------------------------
-
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -325,13 +304,9 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  # substitution ------------------------------------------------------------
-
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
                    cens, meta$determ, meta$tau, meta$outcome_type,
                    learners, meta$m, pb, meta$weights_m)
-
-  # return estimates --------------------------------------------------------
 
   out <- compute_theta(
     estimator = "sub",
@@ -345,7 +320,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     ))
 
   return(out)
-
 }
 
 #' LMTP IPW Estimator
@@ -399,9 +373,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
                      learners = "SL.glm", folds = 10, bound = 1e-5) {
-
-  # setup -------------------------------------------------------------------
-
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -422,8 +393,6 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  # propensity --------------------------------------------------------------
-
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
@@ -432,8 +401,6 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
         )
       )
     )
-
-  # return estimates --------------------------------------------------------
 
   out <- compute_theta(
     estimator = "ipw",
@@ -447,5 +414,4 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     ))
 
   return(out)
-
 }

@@ -34,14 +34,14 @@ estimate_sub <- function(training, shifted, validation, outcome,
       deterministic = deterministic,
       tau = tau - 1,
       outcome_type = "continuous",
-      learners,
+      learners = learners,
       m = m,
       pb = pb,
       sl_weights = sl_weights
     )
-
+  } else {
+    list(m = m, sl_weights = sl_weights)
   }
-  list(m = m, sl_weights = sl_weights)
 }
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
@@ -97,10 +97,11 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
       pb = pb,
       sl_weights = sl_weights
     )
+  } else {
+    list(natural = m_natural$valid,
+         shifted = m_shifted$valid,
+         sl_weights = sl_weights)
   }
-  out <- list(natural = m_natural$valid,
-              shifted = m_shifted$valid,
-              sl_weights = sl_weights)
 }
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
@@ -177,9 +178,9 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       pb = pb,
       sl_weights = sl_weights
     )
+  } else {
+    list(natural = m_natural$valid,
+         shifted = m_shifted$valid,
+         sl_weights = sl_weights)
   }
-
-  list(natural = m_natural$valid,
-       shifted = m_shifted$valid,
-       sl_weights = sl_weights)
 }

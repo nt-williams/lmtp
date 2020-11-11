@@ -14,7 +14,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   shift,
-  learners = NULL,
+  learners = "SL.glm",
   folds = 10,
   bound = 1e-05
 )
@@ -79,7 +79,6 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
 }
 \examples{
 \donttest{
-library(lmtp)
 
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up

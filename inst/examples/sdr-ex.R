@@ -1,5 +1,4 @@
 \donttest{
-library(lmtp)
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units

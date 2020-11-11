@@ -1,5 +1,4 @@
 \donttest{
-library(lmtp)
 
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up

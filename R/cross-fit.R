@@ -45,7 +45,6 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
   out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
               sl_weights = lapply(out, function(x) x[["sl_weights"]]))
   return(out)
-
 }
 
 cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
@@ -70,7 +69,6 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
 
 cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
                    tau, outcome_type, m_natural, m_shifted, r, learners, pb, weights_m) {
-
   fopts <- options("lmtp.bound", "lmtp.engine")
   m <- list()
   for (i in 1:V) {

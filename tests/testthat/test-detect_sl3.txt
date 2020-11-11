@@ -1,3 +1,0 @@
-> check_for_sl3(test = TRUE)
-Error in check_for_sl3(test = TRUE): could not find function "check_for_sl3"
-

@@ -28,8 +28,6 @@ or a reference LMTP fit.
 }
 \examples{
 \donttest{
-library(lmtp)
-head(sim_cens)
 a <- c("A1", "A2")
 nodes <- list(c("L1"), c("L2"))
 cens <- c("C1", "C2")

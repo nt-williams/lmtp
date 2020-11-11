@@ -16,7 +16,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous"),
   id = NULL,
   bounds = NULL,
-  learners = NULL,
+  learners = "SL.glm",
   folds = 10,
   bound = 1e-05
 )
@@ -89,8 +89,6 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 }
 \examples{
 \donttest{
-library(lmtp)
-
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units

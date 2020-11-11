@@ -4,16 +4,11 @@ no_stderr_warning <- function(estimator) {
   cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
 }
 
-no_sl3 <- function() {
-  cli::cli_text("Enhancement package, {.pkg sl3}, not detected.")
-  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3@devel')}")
-}
-
 check_sd <- function(x, learner_stack) {
   if (sd(x) > .Machine$double.eps) {
     out <- learner_stack
   } else {
-    out <- sl3::Lrnr_mean
+    out <- "SL.mean"
   }
 
   return(out)
@@ -82,9 +77,8 @@ check_extreme_ratio <- function(ratio) {
 
 check_variation <- function(data, outcome, learners) {
   if (sd(data[[outcome]]) < .Machine$double.eps) {
-    learners <- sl3::make_learner(sl3::Lrnr_mean)
+    return("SL.mean")
   }
-  return(learners)
 }
 
 check_outcome_type <- function(fits, ref, type) {
