@@ -50,8 +50,8 @@ all time points.}
 \item{shift}{A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
 
-\item{learners}{An optional \code{sl3} learner stack for estimation of the exposure
-mechanism. If not specified, will default to using a generalized linear model.}
+\item{learners}{A vector of \code{SuperLearner} algorithms for estimation
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}

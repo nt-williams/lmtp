@@ -51,7 +51,6 @@ add_scaled_y <- function(data, scaled) {
 }
 
 create_censoring_indicators <- function(data, cens, tau) {
-
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
     i <- rep(TRUE, nrow(data))
