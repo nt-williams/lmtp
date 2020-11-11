@@ -111,17 +111,19 @@ psi2.4
 # Longitudinal setting, time-varying binary treatment, time-varying covariates
 # and baseline covariates with no loss-to-follow-up. Interested in a traditional
 # causal effect where treatment is set to 1 at all time points for all observations.
-data("iptwExWide", package = "twang")
-a <- paste0("tx", 1:3)
-baseline <- c("gender", "age")
-tv <- list(c("use0"), c("use1"), c("use2"))
-progressr::with_progress({
-  psi3.1 <-
-    lmtp_sub(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-              shift = static_binary_on, outcome_type = "continuous",
-              folds = 2)
-})
-psi3.1
+if (require("twang")) {
+  data("iptwExWide", package = "twang")
+  a <- paste0("tx", 1:3)
+  baseline <- c("gender", "age")
+  tv <- list(c("use0"), c("use1"), c("use2"))
+  progressr::with_progress({
+    psi3.1 <-
+      lmtp_sub(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+               shift = static_binary_on, outcome_type = "continuous",
+               folds = 2)
+  })
+  psi3.1
+}
 
 # Example 4.1
 # Longitudinal setting, time-varying continuous treatment, time-varying covariates,
@@ -149,7 +151,7 @@ psi4.2
 # the effect of treatment being given to all observations on the cumulative
 # incidence of our time-to-event outcome.
 a <- "trt"
-# for a survival problem, the outcome arugment now takes a vector of outcomes
+# for a survival problem, the outcome argument now takes a vector of outcomes
 # if an observation experiences the event prior to the end of follow-up, all future
 # outcome nodes should be set to 1 (i.e., last observation carried forward).
 y <- paste0("Y.", 1:6)
