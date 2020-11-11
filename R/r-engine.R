@@ -20,14 +20,16 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
                         subset(stcks$train, i & !d)$lmtp_id)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
-    pred <- bound(predict(fit, stcks$train)$pred, .Machine$double.eps)
+    pred <- bound(predict(fit, stcks$train[, c(node_list[[t]], cens[[t]])])$pred,
+                  .Machine$double.eps)
     rat <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
     rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
     rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
 
-    pred <- bound(predict(fit, stcks$valid)$pred, .Machine$double.eps)
+    pred <- bound(predict(fit, stcks$valid[, c(node_list[[t]], cens[[t]])])$pred,
+                  .Machine$double.eps)
     rat <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
