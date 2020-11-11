@@ -37,5 +37,8 @@ test_that("variable length mismatch", {
   nodes <- list(c("L1"))
   expect_error(lmtp_sub(sim_cens[complete.cases(sim_cens), ], a, "Y",
                         nodes, baseline = NULL, k = 1, shift = function(x) x + 0.5))
+})
 
+test_that("no variation is caught", {
+  expect_equal(check_variation(rep(0.5, 10), "SL.glm"), "SL.mean")
 })
