@@ -16,7 +16,7 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     fit <- run_ensemble(subset(stcks$train, i & !d)$si,
                         subset(stcks$train, i & !d)[, c(node_list[[t]], cens[[t]])],
                         learners,
-                        "binary",
+                        "binomial",
                         subset(stcks$train, i & !d)$lmtp_id)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
