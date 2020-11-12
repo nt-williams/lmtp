@@ -1,4 +1,3 @@
-
 #' Create a node list specification
 #'
 #' Creates a node list specification that is used by the provided estimators.

@@ -1,4 +1,3 @@
-
 determine_tau <- function(outcome, trt, cens) {
   surv <- length(outcome) > 1
   if (!surv) {

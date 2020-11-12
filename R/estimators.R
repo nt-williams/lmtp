@@ -1,4 +1,3 @@
-
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
 #' Targeted maximum likelihood estimator for the effects of traditional causal effects and

@@ -1,4 +1,3 @@
-
 #' Perform Contrasts of LMTP Fits
 #'
 #' Estimates contrasts of multiple LMTP fits compared to either a known reference value

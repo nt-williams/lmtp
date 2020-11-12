@@ -1,4 +1,3 @@
-
 Meta <- R6::R6Class(
   "Meta",
   public = list(

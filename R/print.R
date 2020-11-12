@@ -1,4 +1,3 @@
-
 #' @export
 print.lmtp <- function(x, ...) {
   cat("\n")

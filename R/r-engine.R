@@ -1,4 +1,3 @@
-
 estimate_r <- function(training, validation, trt, cens, deterministic, shift,
                        tau, node_list, learners = NULL, pb, sl_weights) {
   nt <- nrow(training)

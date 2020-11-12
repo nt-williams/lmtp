@@ -1,4 +1,3 @@
-
 estimate_sub <- function(training, shifted, validation, outcome,
                          node_list, C, deterministic, tau, outcome_type,
                          learners = NULL, m, pb, sl_weights) {

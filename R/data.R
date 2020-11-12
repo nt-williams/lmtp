@@ -1,4 +1,3 @@
-
 #' Simulated Longitudinal Data
 #'
 #' A dataset with a binary outcome, four time varying treatment nodes,
