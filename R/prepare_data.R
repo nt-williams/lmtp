@@ -10,12 +10,18 @@
 #' @return
 #' @export
 #'
+#' @importFrom data.table data.table `:=` fifelse .I dcast
+#'
 #' @examples
-prep_survival_data <- function(data, trt, status, time, horizon = NULL) {
+prep_survival_data <- function(data, trt, status, time, id = NULL, horizon = NULL) {
   # for now just going to work with a simple case of
   # a non time-varying treatment
   nobs <- nrow(data)
   max_time <- horizon
+
+  if (is.null(id)) {
+    id <- rep(1:nobs)
+  }
 
   if (is.null(max_time)) {
     max_time <- max(data[[time]])
@@ -31,7 +37,7 @@ prep_survival_data <- function(data, trt, status, time, horizon = NULL) {
   }
 
   long <-
-    data.table(id = rep(1:nobs, each = max_time),
+    data.table(id = rep(id, each = max_time),
                data[as.numeric(gl(nobs, max_time)), ],
                all_time = all_time,
                outcome = evnt, status = cens)
