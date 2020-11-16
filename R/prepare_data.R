@@ -13,25 +13,44 @@
 #' @importFrom data.table data.table `:=` fifelse .I dcast
 #'
 #' @examples
-prep_survival_data <- function(formula, data, target, horizon = NULL) {
-  time <- get_time(formula)
+prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL) {
+  time1 <- get_time1(formula)
+  time2 <- get_time2(formula)
   status <- get_status(formula)
   covar <- get_covar(formula, target)
   nobs <- nrow(data)
   max_time <- horizon
-  id <- 1:nobs
 
-  if (is.null(max_time)) {
-    max_time <- max(data[[time]])
+  setDT(data)
+
+  if (is.null(id)) {
+    data[, id := 1:nrow(data)]
+  } else {
+    tid <- data[[id]]
   }
 
   all_time <- rep(1:max_time, nobs)
   evnt <- cens <- rep(NA, nobs*max_time)
-  risk_evnt <- risk_cens <- 1*(all_time == 1)
+
+  browser()
+
+  # tidyr::complete(dplyr::group_by(data, id), start = tidyr::full_seq(0:max(stop), 1)) %>%
+  #   tidyr::fill(everything(), .direction = "downup")
+
+  filled <-
+    setnames(do.call(CJ, list(data[[id]], 1:max_time, unique = TRUE)), c(id, time2))
+  long <- data[filled, on = c(id, time2)]
+  set(long, j = target, value = nafill(long[[target]], "nocb"))
+
+  # complete_time(data, list(id = id, stop = 0:max_time))
+  #
+  # data[CJ(id = id, stop = 0:max(stop), unique = TRUE),
+  #      on = .(id, stop)
+  #      ][, trt := nafill(trt, "nocb")]
 
   for (t in 1:max_time) {
-    cens[all_time == t] <- (1 - data[[status]]) * (data[[time]] == t)
-    evnt[all_time == t] <- data[[status]] * (data[[time]] == t)
+    cens[all_time == t] <- (1 - data[[status]]) * (data[[time2]] == t)
+    evnt[all_time == t] <- data[[status]] * (data[[time2]] == t)
   }
 
   long <-
@@ -60,11 +79,23 @@ prep_survival_data <- function(formula, data, target, horizon = NULL) {
 }
 
 get_status <- function(formula) {
-  all.vars(formula[[2]])[[2]]
+  vars <- all.vars(formula[[2]])
+  if (length(vars) > 2) {
+    return(vars[[3]])
+  }
+  vars[[2]]
 }
 
-get_time <- function(formula) {
+get_time1 <- function(formula) {
   all.vars(formula[[2]])[[1]]
+}
+
+get_time2 <- function(formula) {
+  vars <- all.vars(formula[[2]])
+  if (length(vars) == 2) {
+    return(NULL)
+  }
+  vars[[2]]
 }
 
 get_covar <- function(formula, target) {
