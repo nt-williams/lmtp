@@ -13,15 +13,13 @@
 #' @importFrom data.table data.table `:=` fifelse .I dcast
 #'
 #' @examples
-prep_survival_data <- function(data, trt, status, time, id = NULL, horizon = NULL) {
-  # for now just going to work with a simple case of
-  # a non time-varying treatment
+prep_survival_data <- function(formula, data, target, horizon = NULL) {
+  time <- get_time(formula)
+  status <- get_status(formula)
+  covar <- get_covar(formula, target)
   nobs <- nrow(data)
   max_time <- horizon
-
-  if (is.null(id)) {
-    id <- rep(1:nobs)
-  }
+  id <- 1:nobs
 
   if (is.null(max_time)) {
     max_time <- max(data[[time]])
@@ -50,15 +48,25 @@ prep_survival_data <- function(data, trt, status, time, id = NULL, horizon = NUL
   long[, status := fifelse(status == 1, 0, 1)]
   long[all_time == max(all_time) & !is.na(outcome), status := 1]
 
-  form <- paste(paste(c("id", setdiff(names(data), c(status, time))),
-                      collapse = "+"),
-                "~ all_time")
-
+  form <- paste(paste(c("id", trt, covar), collapse = "+"), "~ all_time")
   wide <- dcast(long, form, value.var = c("status", "outcome"))
   dlte <- c("outcome_1", paste0("status_", max_time))
 
   list(data = wide[, !dlte, with = FALSE],
-       outcome_vars = paste0("outcome_", 2:max_time),
-       censoring_vars = paste0("status_", 1:(max_time - 1)))
+       trt = target,
+       baseline = covar,
+       outcome = paste0("outcome_", 2:max_time),
+       cens = paste0("status_", 1:(max_time - 1)))
 }
 
+get_status <- function(formula) {
+  all.vars(formula[[2]])[[2]]
+}
+
+get_time <- function(formula) {
+  all.vars(formula[[2]])[[1]]
+}
+
+get_covar <- function(formula, target) {
+  setdiff(all.vars(formula[[3]]), target)
+}
