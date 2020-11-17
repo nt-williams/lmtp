@@ -18,15 +18,15 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   time2 <- get_time2(formula)
   status <- get_status(formula)
   covar <- get_covar(formula, target)
-  nobs <- nrow(data)
   max_time <- horizon
 
   setDT(data)
 
   if (is.null(id)) {
     data[, id := 1:nrow(data)]
+    nobs <- nrow(data)
   } else {
-    tid <- data[[id]]
+    nobs <- length(unique(data[[id]]))
   }
 
   all_time <- rep(1:max_time, nobs)
@@ -40,6 +40,9 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   filled <-
     setnames(do.call(CJ, list(data[[id]], 1:max_time, unique = TRUE)), c(id, time2))
   long <- data[filled, on = c(id, time2)]
+
+  long[, (target) := nafill(get(target), "nocb"), "id"]
+
   set(long, j = target, value = nafill(long[[target]], "nocb"))
 
   # complete_time(data, list(id = id, stop = 0:max_time))
@@ -48,9 +51,11 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   #      on = .(id, stop)
   #      ][, trt := nafill(trt, "nocb")]
 
+  lt <- data[, .I[.N], by = id]$V1
+
   for (t in 1:max_time) {
-    cens[all_time == t] <- (1 - data[[status]]) * (data[[time2]] == t)
-    evnt[all_time == t] <- data[[status]] * (data[[time2]] == t)
+    cens[all_time == t] <- (1 - data[lt, status]) * (data[lt, get(time2)] == t)
+    evnt[all_time == t] <- data[lt, status] * (data[lt, get(time2)] == t)
   }
 
   long <-

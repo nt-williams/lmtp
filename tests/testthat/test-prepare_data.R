@@ -28,7 +28,7 @@ lmtp_tmle(test$data, "trt", test$outcome_vars, c("W1", "W2"),
 temp <- data.frame(
   id = c(1, 1, 2, 3, 4, 4, 5),
   start = c(1, 3, 1, 1, 1, 4, 1),
-  stop = c(3, 5, 4, 5, 4, 5, 5),
+  stop = c(2, 4, 4, 5, 4, 5, 5),
   trt = c(2.5, 3, 4.6, 2.7, 1.2, 3.3, 4.4),
   status = c(0, 0, 1, 0, 0, 1, 1)
 )
