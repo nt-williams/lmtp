@@ -4,7 +4,7 @@
 \alias{prep_survival_data}
 \title{Transform Survival Data Into the Correct Format}
 \usage{
-prep_survival_data(data, trt, status, time, horizon = NULL)
+prep_survival_data(formula, data, target, horizon = NULL, id = NULL)
 }
 \arguments{
 \item{horizon}{}

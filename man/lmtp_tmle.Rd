@@ -145,7 +145,7 @@ psi2.1
 
 # Example 2.2
 # Example 2.1 assumed that the outcome (as well as the treatment variables)
-# were directly affected by all other nodes in the past. In certain situtations,
+# were directly affected by all other nodes in the past. In certain situations,
 # domain specific knowledge may suggest otherwise leading to a Markov processes.
 # This can be controlled using the k argument.
 progressr::with_progress({

@@ -20,7 +20,8 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
 Depends: 
     R (>= 2.10),
-    SuperLearner
+    SuperLearner,
+    data.table
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
@@ -44,4 +45,3 @@ Suggests:
     knitr, 
     ranger, 
     twang
-

@@ -8,30 +8,28 @@ ftime <- round(1 + runif(n, 1, 4) - trt + adjustVars$W1 + adjustVars$W2)
 ftype <- round(runif(n, 0, 1))
 df <- data.frame(trt, adjustVars, ftime, ftype)
 
-survtmle(ftime = ftime, ftype = ftype,
+wide_df <- prep_survival_data(Surv(ftime, ftype) ~ trt + W1 + W2, df, "trt", horizon = t_0)
+
+lmtp_tmle(wide_df$data, wide_df$trt, wide_df$outcome, wide_df$baseline,
+          cens = wide_df$cens, shift = static_binary_on)
+
+lmtp_tmle(wide_df$data, wide_df$trt, wide_df$outcome, wide_df$baseline,
+          cens = wide_df$cens, shift = static_binary_off)
+
+survtmle::survtmle(ftime = ftime, ftype = ftype,
          trt = trt, adjustVars = adjustVars,
          glm.ftime = "trt + W1 + W2",
-         method = "mean", t0 = 6)
-
-test <- prep_survival_data(df, "trt", "ftype", "ftime", covar = c("W1", "W2"), horizon = 6)
-
-lmtp_surv_data(Surv(ftime, ftype) ~ trt + W1 + W2, df, "trt", horizon = 6)
-
-lmtp_tmle(test$data, "trt", test$outcome_vars, c("W1", "W2"),
-          cens = test$censoring_vars, shift = static_binary_on,
-          outcome_type = "binomial", folds = 50)
-
-lmtp_tmle(test$data, "trt", test$outcome_vars, c("W1", "W2"),
-         cens = test$censoring_vars, shift = static_binary_off,
-         outcome_type = "binomial", folds = 2)
+         method = "mean", t0 = t_0)
 
 temp <- data.frame(
   id = c(1, 1, 2, 3, 4, 4, 5),
   start = c(1, 3, 1, 1, 1, 4, 1),
-  stop = c(2, 4, 4, 5, 4, 5, 5),
+  stop = c(2, 4, 4, 2, 4, 5, 5),
+  baseline = c(3, 3, 1, 0, 2, 2, 1),
+  tv = c(0, 1, 1, 0, 1, 0, 1),
   trt = c(2.5, 3, 4.6, 2.7, 1.2, 3.3, 4.4),
   status = c(0, 0, 1, 0, 0, 1, 1)
 )
 
-prep_survival_data(Surv(start, stop, status) ~ trt, temp,
+prep_survival_data(Surv(start, stop, status) ~ trt + baseline + tv, temp,
                    "trt", horizon = 5, id = "id")
