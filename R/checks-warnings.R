@@ -11,9 +11,9 @@ check_censoring <- function(data, C, Y) {
 
 check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, tau) {
   for (t in 1:tau) {
-    i <- create_censoring_indicators(data, cens, t)$j
-    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, time_vary, cens, tau)[t],
-                                      baseline, unlist(time_vary[t]))])))) {
+    ci <- create_censoring_indicators(data, cens, t)$j
+    di <- create_determ_indicators(data, cens, t)
+    if (any(is.na(as.matrix(data[ci & !di, c(check_trt_length(trt, time_vary, cens, tau)[t], baseline, unlist(time_vary[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = F)
     }
