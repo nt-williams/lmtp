@@ -33,3 +33,8 @@ temp <- data.frame(
 
 prep_survival_data(Surv(start, stop, status) ~ trt + baseline + tv, temp,
                    "trt", horizon = 5, id = "id")
+
+pf_temp <- unique(pf_temp)
+
+test <- prep_survival_data(Surv(start_day, stop_day, status) ~ pf_ratio + sex,
+                   pf_temp, "pf_ratio", horizon = 5, id = "patient_num")

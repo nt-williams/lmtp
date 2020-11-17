@@ -13,6 +13,7 @@
 #'
 #' @examples
 prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL) {
+  setDT(data)
   time1 <- get_time1(formula)
   time2 <- get_time2(formula)
   status <- get_status(formula)
@@ -24,8 +25,10 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
     time <- time1
   }
 
+  all_vars <- c(id, time1, time2, target, status, covar)
+  data <- data[, .SD, .SDcols = all_vars]
+
   max_time <- max(data[[time]])
-  setDT(data)
 
   if (is.null(id)) {
     data[, id := 1:nrow(data)]
@@ -44,8 +47,8 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
 
   if (is.null(time2)) {
     fx <- c(target, covar)
-    long[, (fx) := lapply(.SD, nafill, type = "nocb"), by = "id", .SDcols = fx
-         ][, (fx) := lapply(.SD, nafill, type = "locf"), by = "id", .SDcols = fx]
+    long[, (fx) := lapply(.SD, zoo::na.locf, na.rm = FALSE, fromLast = TRUE), by = id, .SDcols = fx
+         ][, (fx) := lapply(.SD, zoo::na.locf, na.rm = FALSE), by = id, .SDcols = fx]
   }
 
   if (!is.null(time2)) {
@@ -53,8 +56,8 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
     cnst <- covar[static]
     time_vary <- covar[!static]
     vars <- c(target, covar)
-    long[, (vars) := lapply(.SD, nafill, type = "nocb"), by = "id", .SDcols = vars
-         ][, (cnst) := lapply(.SD, nafill, type = "locf"), by = "id", .SDcols = cnst]
+    long[, (vars) := lapply(.SD, zoo::na.locf, na.rm = FALSE, fromLast = TRUE), by = id, .SDcols = vars
+         ][, (cnst) := lapply(.SD, zoo::na.locf, na.rm = FALSE), by = id, .SDcols = cnst]
   }
 
   lt <- data[, .I[.N], by = id]$V1
@@ -62,12 +65,6 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
     cens[all_time == t] <- (1 - data[lt][[status]]) * (data[lt][[time]] == t)
     evnt[all_time == t] <- data[lt][[status]] * (data[lt][[time]] == t)
   }
-
-  # long <-
-  #   data.table(id = rep(id, each = max_time),
-  #              data[as.numeric(gl(nobs, max_time)), ],
-  #              all_time = all_time,
-  #              outcome = evnt, status = cens)
 
   long[, `:=`(outcome = evnt,
               status = cens,
@@ -79,7 +76,7 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   long[fevnt, `:=`(outcome = 1, status = NA)]
   long[fcens, `:=`(outcome = NA, status = 1)]
   long[, status := fifelse(status == 1, 0, 1)]
-  long[all_time == max(all_time) & !is.na(outcome), status := 1]
+  # long[all_time == max(all_time) & !is.na(outcome), status := 1]
 
   if (is.null(time2)) {
     form <- paste(paste(c("id", target, covar), collapse = "+"), "~ all_time")
@@ -93,8 +90,9 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
                 cens = paste0("status_", 1:(horizon - 1)))
   }
 
+  browser()
   if (!is.null(time2)) {
-    form <- paste(paste(c("id", cnst), collapse = "+"), "~ all_time")
+    form <- paste(paste(c(id, cnst), collapse = "+"), "~ all_time")
     wide <- dcast(long[all_time <= horizon, ], form, value.var = c(target, time_vary, "status", "outcome"))
     dlte <- c("outcome_1", paste0("status_", horizon))
 
