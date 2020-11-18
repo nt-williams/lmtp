@@ -1,4 +1,3 @@
-
 #' Transform Survival Data Into the Correct Format
 #'
 #' @param data
