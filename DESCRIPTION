@@ -37,7 +37,8 @@ Imports:
     generics,
     origami,
     future (>= 1.17.0),
-    progressr
+    progressr,
+    zoo
 Suggests: 
     testthat (>= 2.1.0),
     covr,

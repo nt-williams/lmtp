@@ -21,14 +21,16 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
 
   if (!is.null(time2)) {
     time <- time2
+    min_time <- min(data[[time1]])
   } else {
     time <- time1
+    min_time <- 1
   }
 
+  max_time <- max(data[[time]])
+  time_seq <- min_time:max_time
   all_vars <- c(id, time1, time2, target, status, covar)
   data <- data[, .SD, .SDcols = all_vars]
-
-  max_time <- max(data[[time]])
 
   if (is.null(id)) {
     data[, id := 1:nrow(data)]
@@ -38,11 +40,11 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
     nobs <- length(unique(data[[id]]))
   }
 
-  all_time <- rep(1:max_time, nobs)
+  all_time <- rep(time_seq, nobs)
   evnt <- cens <- rep(NA, nobs*max_time)
 
   filled <-
-    setnames(do.call(CJ, list(data[[id]], 1:max_time, unique = TRUE)), c(id, time))
+    setnames(do.call(CJ, list(data[[id]], time_seq, unique = TRUE)), c(id, time))
   long <- data[filled, on = c(id, time)]
 
   if (is.null(time2)) {
@@ -61,7 +63,7 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   }
 
   lt <- data[, .I[.N], by = id]$V1
-  for (t in 1:max_time) {
+  for (t in time_seq) {
     cens[all_time == t] <- (1 - data[lt][[status]]) * (data[lt][[time]] == t)
     evnt[all_time == t] <- data[lt][[status]] * (data[lt][[time]] == t)
   }
@@ -76,7 +78,6 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
   long[fevnt, `:=`(outcome = 1, status = NA)]
   long[fcens, `:=`(outcome = NA, status = 1)]
   long[, status := fifelse(status == 1, 0, 1)]
-  # long[all_time == max(all_time) & !is.na(outcome), status := 1]
 
   if (is.null(time2)) {
     form <- paste(paste(c("id", target, covar), collapse = "+"), "~ all_time")
@@ -86,18 +87,18 @@ prep_survival_data <- function(formula, data, target, horizon = NULL, id = NULL)
     out <- list(data = wide[, !dlte, with = FALSE],
                 trt = target,
                 baseline = covar,
-                outcome = paste0("outcome_", 2:horizon),
-                cens = paste0("status_", 1:(horizon - 1)))
+                outcome = paste0("outcome_", (min_time + 1):horizon),
+                cens = paste0("status_", min_time:(horizon - 1)))
   }
 
-  browser()
   if (!is.null(time2)) {
+    # long[all_time == max(all_time) & !is.na(outcome), status := 1]
     form <- paste(paste(c(id, cnst), collapse = "+"), "~ all_time")
     wide <- dcast(long[all_time <= horizon, ], form, value.var = c(target, time_vary, "status", "outcome"))
     dlte <- c("outcome_1", paste0("status_", horizon))
 
     out <- list(data = wide[, !dlte, with = FALSE],
-                trt = target,
+                trt = paste0(target, "_", min_time:(horizon - 1)),
                 baseline = cnst,
                 time_vary = NULL,
                 outcome = paste0("outcome_", 2:horizon),
@@ -137,3 +138,7 @@ is_baseline <- function(data, x, id) {
   }
   return(FALSE)
 }
+
+# minus_one <- function(var, x) {
+#   paste0(var, "_", as.numeric(sub("\\D+", "", x)) - 1)
+# }
