@@ -11,7 +11,7 @@ rule <- function(data, x) {
 }
 
 sub <-
-  sw(lmtp_sub(sim_cens[1:100, ], a, "Y", nodes, baseline = NULL,
+  sw(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shift = rule,
               outcome_type = "binomial",
               folds = 2))
