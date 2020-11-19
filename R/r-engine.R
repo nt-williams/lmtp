@@ -8,32 +8,44 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-    i     <- rep(create_censoring_indicators(training, cens, t)$j, 2)
-    d     <- rep(create_determ_indicators(training, deterministic, t), 2)
-    stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
+    irt <- rep(create_censoring_indicators(training, cens, t)$j, 2)
+    drt <- rep(create_determ_indicators(training, deterministic, t), 2)
+    irv <- rep(create_censoring_indicators(validation, cens, t)$j, 2)
+    drv <- rep(create_determ_indicators(validation, deterministic, t), 2)
+    dt <- create_determ_indicators(training, deterministic, t)
+    dv <- create_determ_indicators(validation, deterministic, t)
 
-    fit <- run_ensemble(subset(stcks$train, i & !d)$si,
-                        subset(stcks$train, i & !d)[, c(node_list[[t]], cens[[t]])],
+    stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
+    fit <- run_ensemble(subset(stcks$train, irt & !drt)$si,
+                        subset(stcks$train, irt & !drt)[, c(node_list[[t]], cens[[t]])],
                         learners,
                         "binomial",
-                        subset(stcks$train, i & !d)$lmtp_id)
+                        subset(stcks$train, irt & !drt)$lmtp_id)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
-    pred <- bound(predict(fit, stcks$train[, c(node_list[[t]], cens[[t]])])$pred,
-                  .Machine$double.eps)
+    pred <- matrix(nrow = nt * 2, ncol = 1)
+    pred[irt & !drt, ] <- bound(
+      predict(fit, stcks$train[irt & !drt, c(node_list[[t]], cens[[t]])])$pred,
+      .Machine$double.eps
+    )
+
     rat <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
-    rt$natural[create_determ_indicators(training, deterministic, t), t] <- 1
-    rt$shifted[create_determ_indicators(training, deterministic, t), t] <- 1
+    rt$natural[dt, t] <- 1
+    rt$shifted[dt, t] <- 1
 
-    pred <- bound(predict(fit, stcks$valid[, c(node_list[[t]], cens[[t]])])$pred,
-                  .Machine$double.eps)
+    pred <- matrix(nrow = nv * 2, ncol = 1)
+    pred[irv & !drv, ] <- bound(
+      predict(fit, stcks$valid[irv & !drv, c(node_list[[t]], cens[[t]])])$pred,
+      .Machine$double.eps
+    )
+
     rat <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
-    rv$natural[create_determ_indicators(validation, deterministic, t), t] <- 1
-    rv$shifted[create_determ_indicators(validation, deterministic, t), t] <- 1
+    rv$natural[dv, t] <- 1
+    rv$shifted[dv, t] <- 1
 
     pb()
   }
