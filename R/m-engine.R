@@ -1,9 +1,9 @@
-estimate_sub <- function(training, shifted, validation, outcome,
+estimate_sub <- function(training, shifted, validation, validation_shifted, outcome,
                          node_list, C, deterministic, tau, outcome_type,
                          learners = NULL, m, pb, sl_weights) {
   if (tau > 0) {
     i <- create_censoring_indicators(training, C, tau)$i
-    js <- create_censoring_indicators(shifted, C, tau)$j
+    jt <- create_censoring_indicators(training, C, tau)$j
     jv <- create_censoring_indicators(validation, C, tau)$j
     dt <- create_determ_indicators(training, deterministic, tau)
     dv <- create_determ_indicators(validation, deterministic, tau)
@@ -17,10 +17,10 @@ estimate_sub <- function(training, shifted, validation, outcome,
                         id = training[i & !dt, ][["lmtp_id"]])
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    training[js, pseudo] <- bound(predict(fit, shifted[js, node_list[[tau]]])$pred)
+    training[jt & !dt, pseudo] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
     training[dt, pseudo] <- 1
 
-    m[jv, tau] <- bound(predict(fit, validation[jv, node_list[[tau]]])$pred)
+    m[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
     m[dv, tau] <- 1
 
     pb()
@@ -28,6 +28,7 @@ estimate_sub <- function(training, shifted, validation, outcome,
       training = training,
       shifted = shifted,
       validation = validation,
+      validation_shifted = validation_shifted,
       outcome = pseudo,
       node_list = node_list,
       C = C,

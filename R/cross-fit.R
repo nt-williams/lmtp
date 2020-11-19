@@ -37,7 +37,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_sub(data[[i]]$train, shifted[[i]]$train, shifted[[i]]$valid,
+      estimate_sub(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid, shifted[[i]]$valid,
                    outcome, node_list, C, deterministic, tau, outcome_type,
                    learners, m[[i]]$valid, pb, weights_m[[i]])
     },
