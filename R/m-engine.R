@@ -63,10 +63,10 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                         id = training[i & !dt, ][["lmtp_id"]])
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    m_natural$train[jt, tau] <- bound(predict(fit, training[jt, node_list[[tau]]])$pred)
-    m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, node_list[[tau]]])$pred)
-    m_natural$valid[jv, tau] <- bound(predict(fit, validation[jv, node_list[[tau]]])$pred)
-    m_shifted$valid[jv, tau] <- bound(predict(fit, validation_shifted[jv, node_list[[tau]]])$pred)
+    m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
+    m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
+    m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
+    m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
 
     fit <- sw(glm(training[i & !dt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
                                 weights = r$train[i & !dt, tau], family = "binomial"))

@@ -5,3 +5,4 @@
  after an observation experiences the outcome
 * fixed a bug that resulted in NA censoring indicators throwing an error for missing data
 * Added a `NEWS.md` file to track changes to the package.
+* license change to GPL-3
