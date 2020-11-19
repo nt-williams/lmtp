@@ -395,7 +395,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
-        cf_r(meta$data, shift, folds, meta$trt, cens, meta$deterministic,
+        cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ,
              meta$tau, meta$node_list$trt, learners, pb, meta$weights_r
         )
       )
