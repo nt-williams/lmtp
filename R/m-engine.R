@@ -109,11 +109,11 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, deterministic, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
   if (tau > 0) {
-    i      <- create_censoring_indicators(training, C, tau)$i
-    jt     <- create_censoring_indicators(training, C, tau)$j
-    jv     <- create_censoring_indicators(validation, C, tau)$j
-    dt     <- create_determ_indicators(training, deterministic, tau)
-    dv     <- create_determ_indicators(validation, deterministic, tau)
+    i <- create_censoring_indicators(training, C, tau)$i
+    jt <- create_censoring_indicators(training, C, tau)$j
+    jv <- create_censoring_indicators(validation, C, tau)$j
+    dt <- create_determ_indicators(training, deterministic, tau)
+    dv <- create_determ_indicators(validation, deterministic, tau)
     pseudo <- paste0("psi", tau + 1)
 
     if (tau == max) {
@@ -125,13 +125,13 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           id = training[i & !dt, ][["lmtp_id"]])
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
-      m_natural$train[jt, tau] <- bound(predict(fit, training[jt, node_list[[tau]]])$pred)
-      m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, node_list[[tau]]])$pred)
+      m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
+      m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
       m_natural$train[dt, tau] <- 1
       m_shifted$train[dt, tau] <- 1
 
-      m_natural$valid[jv, tau] <- bound(predict(fit, validation[jv, node_list[[tau]]])$pred)
-      m_shifted$valid[jv, tau] <- bound(predict(fit, validation_shifted[jv, node_list[[tau]]])$pred)
+      m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
+      m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
       m_natural$valid[dv, tau] <- 1
       m_shifted$valid[dv, tau] <- 1
     }
@@ -150,13 +150,13 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           id = training[i & !dt, ][["lmtp_id"]])
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
-      m_natural$train[jt, tau] <- bound(predict(fit, training[jt, node_list[[tau]]])$pred)
-      m_shifted$train[jt, tau] <- bound(predict(fit, shifted[jt, node_list[[tau]]])$pred)
+      m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
+      m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
       m_natural$train[dt, tau] <- 1
       m_shifted$train[dt, tau] <- 1
 
-      m_natural$valid[jv, tau] <- bound(predict(fit, validation[jv, node_list[[tau]]])$pred)
-      m_shifted$valid[jv, tau] <- bound(predict(fit, validation_shifted[jv, node_list[[tau]]])$pred)
+      m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
+      m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
       m_natural$valid[dv, tau] <- 1
       m_shifted$valid[dv, tau] <- 1
     }
