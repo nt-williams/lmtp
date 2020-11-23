@@ -18,10 +18,10 @@ sub <-
 
 ipw <-
   sw(lmtp_ipw(sim_cens, a, "Y", NULL, nodes,
-              cens, k = 0, shift = rule, folds = 10))
+              cens, k = 0, shift = rule, folds = 2))
 
 tmle <-
-    sw(lmtp_tmle(sim_cens[1:100, ], a, "Y", nodes, baseline = NULL,
+    sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shift = rule,
               outcome_type = "binomial", folds = 2))
 
