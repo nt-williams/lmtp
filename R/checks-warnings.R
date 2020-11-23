@@ -60,8 +60,8 @@ check_scaled_conflict <- function(data) {
   )
 }
 
-check_extreme_ratio <- function(ratio) {
-  return(apply(ratio, 2, function(x) pmin(x, quantile(x, 0.999))))
+check_extreme_ratio <- function(ratio, trim) {
+  return(apply(ratio, 2, function(x) pmin(x, quantile(x, trim))))
 }
 
 check_variation <- function(outcome, learners) {

@@ -108,7 +108,7 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, deterministic, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
+                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights, trim) {
   if (tau > 0) {
     i <- create_censoring_indicators(training, C, tau)$i
     jt <- create_censoring_indicators(training, C, tau)$j
@@ -140,7 +140,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     if (tau < max) {
       training[, pseudo]  <-
         shifted[, pseudo] <-
-        transform_sdr(ratio_sdr(r$train, tau, max),
+        transform_sdr(ratio_sdr(r$train, tau, max, trim),
                       tau, max, m_shifted$train, m_natural$train)
 
       fit <- run_ensemble(training[i & !dt, ][[pseudo]],
@@ -180,7 +180,8 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       m_natural = m_natural,
       r = r,
       pb = pb,
-      sl_weights = sl_weights
+      sl_weights = sl_weights,
+      trim = trim
     )
   } else {
     list(natural = m_natural$valid,

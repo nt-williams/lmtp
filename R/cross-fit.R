@@ -73,7 +73,8 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
 }
 
 cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
-                   tau, outcome_type, m_natural, m_shifted, r, learners, pb, weights_m) {
+                   tau, outcome_type, m_natural, m_shifted, r, learners,
+                   pb, weights_m, trim) {
   fopts <- options("lmtp.bound", "lmtp.engine")
   m <- list()
   for (i in 1:V) {
@@ -82,7 +83,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
       estimate_sdr(data[[i]]$train, shifted[[i]]$train,data[[i]]$valid,
                    shifted[[i]]$valid, outcome, node_list, C, deterministic, tau, tau,
                    outcome_type, learners,m_natural[[i]], m_shifted[[i]],
-                   r[[i]], pb, weights_m[[i]])
+                   r[[i]], pb, weights_m[[i]], trim)
     },
     seed = TRUE,
     globals = structure(TRUE, add = learners))

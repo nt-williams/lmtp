@@ -61,38 +61,43 @@ create_ratios <- function(pred, data, cens, tau) {
   return(out)
 }
 
-ratio_dr <- function(ratios, V) {
+ratio_dr <- function(ratios, V, trim) {
   out <- list()
   for (i in 1:V) {
       out[[i]] <- list()
       out[[i]]$train <- check_extreme_ratio(
         matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
                nrow = nrow(ratios[[i]]$train$natural),
-               ncol = ncol(ratios[[i]]$train$natural))
+               ncol = ncol(ratios[[i]]$train$natural)),
+        trim
       )
       out[[i]]$valid <- check_extreme_ratio(
         matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
                nrow = nrow(ratios[[i]]$valid$natural),
-               ncol = ncol(ratios[[i]]$valid$natural))
+               ncol = ncol(ratios[[i]]$valid$natural)),
+        trim
       )
       out[[i]]$sl_weights <- ratios[[i]]$sl_weights
   }
   return(out)
 }
 
-ratio_ipw <- function(ratio) {
+ratio_ipw <- function(ratio, trim) {
   out <-
-    list(r = check_extreme_ratio(matrix(
-      t(apply(ratio$r, 1, cumprod)),
-      nrow = nrow(ratio$r),
-      ncol = ncol(ratio$r)
-    )),
+    list(r = check_extreme_ratio(
+      matrix(
+        t(apply(ratio$r, 1, cumprod)),
+        nrow = nrow(ratio$r),
+        ncol = ncol(ratio$r)
+      ),
+      trim
+    ),
     sl_weights = ratio$sl_weights)
   return(out)
 }
 
-ratio_sdr <- function(ratio, tau, max_tau) {
+ratio_sdr <- function(ratio, tau, max_tau, trim) {
   out <- t(apply(ratio$natural[, (tau + 1):max_tau, drop = FALSE], 1, cumprod))
   if (tau == max_tau - 1) out <- t(out)
-  return(check_extreme_ratio(out))
+  return(check_extreme_ratio(out, trim))
 }

@@ -35,8 +35,11 @@
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
-#' @param bound Determines that maximum and minimum values (scaled) predictions
+#' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
+#' @param .trim Determines the amount the density ratios should be trimmed.
+#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+#'  to the 0.999 percentile. A value of 1 indicates no trimming.
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "TMLE".}
@@ -61,7 +64,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
                       outcome_type = c("binomial", "continuous"), id = NULL,
                       bounds = NULL, learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
+                      learners_trt = "SL.glm", folds = 10,
+                      .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -77,7 +81,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = .bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -85,7 +89,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   dens_ratio <- ratio_dr(
     cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
          meta$node_list$trt, learners_trt, pb, meta$weights_r),
-    folds
+    folds,
+    .trim
   )
 
   estims <-
@@ -150,8 +155,11 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
-#' @param bound Determines that maximum and minimum values (scaled) predictions
+#' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
+#' @param .trim Determines the amount the density ratios should be trimmed.
+#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+#'  to the 0.999 percentile. A value of 1 indicates no trimming.
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "SDR".}
@@ -176,7 +184,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"), id = NULL,
                      bounds = NULL, learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm", folds = 10, bound = 1e-5) {
+                     learners_trt = "SL.glm", folds = 10,
+                     .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -192,7 +201,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = .bound
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -203,14 +212,14 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
-           raw_ratio, learners_outcome, pb, meta$weights_m)
+           raw_ratio, learners_outcome, pb, meta$weights_m, .trim)
 
   out <- compute_theta(
     estimator = "dr",
     eta = list(
       estimator = "SDR",
       m = estims,
-      r = recombine_dens_ratio(ratio_dr(raw_ratio, folds)),
+      r = recombine_dens_ratio(ratio_dr(raw_ratio, folds, .trim)),
       tau = meta$tau,
       folds = meta$folds,
       id = meta$id,
@@ -260,7 +269,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
-#' @param bound Determines that maximum and minimum values (scaled) predictions
+#' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
@@ -282,7 +291,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous"), id = NULL,
-                     bounds = NULL, learners = "SL.glm", folds = 10, bound = 1e-5) {
+                     bounds = NULL, learners = "SL.glm", folds = 10,
+                     .bound = 1e-5) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -298,7 +308,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     outcome_type = match.arg(outcome_type),
     V = folds,
     bounds = bounds,
-    bound = bound
+    bound = .bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -353,8 +363,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
-#' @param bound Determines that maximum and minimum values (scaled) predictions
+#' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
+#' @param .trim Determines the amount the density ratios should be trimmed.
+#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+#'  to the 0.999 percentile. A value of 1 indicates no trimming.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -372,7 +385,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
-                     learners = "SL.glm", folds = 10, bound = 1e-5) {
+                     learners = "SL.glm", folds = 10,
+                     .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -388,7 +402,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     outcome_type = NULL,
     V = folds,
     bounds = NULL,
-    bound = bound
+    bound = .bound
   )
 
   pb <- progressr::progressor(meta$tau*folds)
@@ -399,7 +413,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
         cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ,
              meta$tau, meta$node_list$trt, learners, pb, meta$weights_r
         )
-      )
+      ),
+      .trim
     )
 
   out <- compute_theta(
