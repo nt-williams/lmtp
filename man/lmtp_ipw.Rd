@@ -16,7 +16,8 @@ lmtp_ipw(
   shift,
   learners = "SL.glm",
   folds = 10,
-  bound = 1e-05
+  .bound = 1e-05,
+  .trim = 0.999
 )
 }
 \arguments{
@@ -56,8 +57,12 @@ of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
 
-\item{bound}{Determines that maximum and minimum values (scaled) predictions
+\item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
+
+\item{.trim}{Determines the amount the density ratios should be trimmed.
+The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+to the 0.999 percentile. A value of 1 indicates no trimming.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
