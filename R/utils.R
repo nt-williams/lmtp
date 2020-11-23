@@ -75,7 +75,7 @@ create_determ_indicators <- function(data, determ, tau) {
   if (is.null(determ)) {
     return(rep(FALSE, nrow(data)))
   } else if (tau == 1) {
-    return(rep(FALSE, nrow(data)))
+    return(rep(TRUE, nrow(data)))
   } else {
     return(data[[determ[tau - 1]]] == 1 & !is.na(data[[determ[tau - 1]]]))
   }

@@ -8,7 +8,6 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-    browser()
     irt <- rep(create_censoring_indicators(training, cens, t)$j, 2)
     drt <- rep(create_determ_indicators(training, deterministic, t), 2) # deterministic here is a bit confusing
     irv <- rep(create_censoring_indicators(validation, cens, t)$j, 2)
@@ -17,17 +16,16 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     dv <- create_determ_indicators(validation, deterministic, t)
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
-    fit <- run_ensemble(subset(stcks$train, irt & !drt)$si,
-                        # the outcome in this case the probability of experiencing a shift at time t and being observed at time t + 1?
-                        subset(stcks$train, irt & !drt)[, c(node_list[[t]], cens[[t]])],
+    fit <- run_ensemble(subset(stcks$train, irt & drt)$si,
+                        subset(stcks$train, irt & drt)[, c(node_list[[t]], cens[[t]])],
                         learners,
                         "binomial",
-                        subset(stcks$train, irt & !drt)$lmtp_id)
+                        subset(stcks$train, irt & drt)$lmtp_id)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     pred <- matrix(nrow = nt * 2, ncol = 1)
-    pred[irt & !drt, ] <- bound(
-      predict(fit, stcks$train[irt & !drt, c(node_list[[t]], cens[[t]])])$pred,
+    pred[irt & drt, ] <- bound(
+      predict(fit, stcks$train[irt & drt, c(node_list[[t]], cens[[t]])])$pred,
       .Machine$double.eps
     )
 
@@ -38,8 +36,8 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     # rt$shifted[dt, t] <- 1
 
     pred <- matrix(nrow = nv * 2, ncol = 1)
-    pred[irv & !drv, ] <- bound(
-      predict(fit, stcks$valid[irv & !drv, c(node_list[[t]], cens[[t]])])$pred,
+    pred[irv & drv, ] <- bound(
+      predict(fit, stcks$valid[irv & drv, c(node_list[[t]], cens[[t]])])$pred,
       .Machine$double.eps
     )
 

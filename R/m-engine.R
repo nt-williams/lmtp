@@ -9,19 +9,20 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
     dv <- create_determ_indicators(validation, deterministic, tau)
     pseudo <- paste0("psi", tau)
 
-    fit <- run_ensemble(training[i & !dt, ][[outcome]],
-                        training[i & !dt, node_list[[tau]]],
-                        check_variation(training[i & !dt, ][[outcome]],
+    fit <- run_ensemble(training[i & dt, ][[outcome]],
+                        training[i & dt, node_list[[tau]]],
+                        check_variation(training[i & dt, ][[outcome]],
                                         learners),
                         outcome_type,
-                        id = training[i & !dt, ][["lmtp_id"]])
+                        id = training[i & dt, ][["lmtp_id"]])
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    training[jt & !dt, pseudo] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
-    training[dt, pseudo] <- 1
+    # why are we bounding here?
+    training[jt & dt, pseudo] <- bound(predict(fit, shifted[jt & dt, node_list[[tau]]])$pred)
+    training[!dt, pseudo] <- 0
 
-    m[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
-    m[dv, tau] <- 1
+    m[jv & dv, tau] <- bound(predict(fit, validation_shifted[jv & dv, node_list[[tau]]])$pred)
+    m[!dv, tau] <- 0
 
     pb()
     estimate_sub(
@@ -56,29 +57,29 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     dv <- create_determ_indicators(validation, deterministic, tau)
     pseudo <- paste0("psi", tau)
 
-    fit <- run_ensemble(training[i & !dt, ][[outcome]],
-                        training[i & !dt, node_list[[tau]]],
-                        check_variation(training[i & !dt, ][[outcome]],
+    fit <- run_ensemble(training[i & dt, ][[outcome]],
+                        training[i & dt, node_list[[tau]]],
+                        check_variation(training[i & dt, ][[outcome]],
                                         learners),
                         outcome_type,
-                        id = training[i & !dt, ][["lmtp_id"]])
+                        id = training[i & dt, ][["lmtp_id"]])
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
-    m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
-    m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
-    m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
+    m_natural$train[jt & dt, tau] <- bound(predict(fit, training[jt & dt, node_list[[tau]]])$pred)
+    m_shifted$train[jt & dt, tau] <- bound(predict(fit, shifted[jt & dt, node_list[[tau]]])$pred)
+    m_natural$valid[jv & dv, tau] <- bound(predict(fit, validation[jv & dv, node_list[[tau]]])$pred)
+    m_shifted$valid[jv & dv, tau] <- bound(predict(fit, validation_shifted[jv & dv, node_list[[tau]]])$pred)
 
-    fit <- sw(glm(training[i & !dt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
-                                weights = r$train[i & !dt, tau], family = "binomial"))
+    fit <- sw(glm(training[i & dt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & dt, tau])),
+                                weights = r$train[i & dt, tau], family = "binomial"))
 
     training[, pseudo] <- bound(plogis(qlogis(m_shifted$train[, tau]) + coef(fit)))
-    training[dt, pseudo] <- 1
+    training[!dt, pseudo] <- 0
 
     m_natural$valid[, tau] <- bound(plogis(qlogis(m_natural$valid[, tau]) + coef(fit)))
     m_shifted$valid[, tau] <- bound(plogis(qlogis(m_shifted$valid[, tau]) + coef(fit)))
-    m_natural$valid[dv, tau] <- 1
-    m_shifted$valid[dv, tau] <- 1
+    m_natural$valid[!dv, tau] <- 0
+    m_shifted$valid[!dv, tau] <- 0
 
     pb()
     estimate_tmle(
@@ -118,23 +119,23 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     pseudo <- paste0("psi", tau + 1)
 
     if (tau == max) {
-      fit <- run_ensemble(training[i & !dt, ][[outcome]],
-                          training[i & !dt, node_list[[tau]]],
-                          check_variation(training[i & !dt, ][[outcome]],
+      fit <- run_ensemble(training[i & dt, ][[outcome]],
+                          training[i & dt, node_list[[tau]]],
+                          check_variation(training[i & dt, ][[outcome]],
                                           learners),
                           outcome_type,
-                          id = training[i & !dt, ][["lmtp_id"]])
+                          id = training[i & dt, ][["lmtp_id"]])
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
-      m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
-      m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
-      m_natural$train[dt, tau] <- 1
-      m_shifted$train[dt, tau] <- 1
+      m_natural$train[jt & dt, tau] <- bound(predict(fit, training[jt & dt, node_list[[tau]]])$pred)
+      m_shifted$train[jt & dt, tau] <- bound(predict(fit, shifted[jt & dt, node_list[[tau]]])$pred)
+      m_natural$train[!dt, tau] <- 0
+      m_shifted$train[!dt, tau] <- 0
 
-      m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
-      m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
-      m_natural$valid[dv, tau] <- 1
-      m_shifted$valid[dv, tau] <- 1
+      m_natural$valid[jv & dv, tau] <- bound(predict(fit, validation[jv & dv, node_list[[tau]]])$pred)
+      m_shifted$valid[jv & dv, tau] <- bound(predict(fit, validation_shifted[jv & dv, node_list[[tau]]])$pred)
+      m_natural$valid[!dv, tau] <- 0
+      m_shifted$valid[!dv, tau] <- 0
     }
 
     if (tau < max) {
@@ -143,23 +144,23 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
         transform_sdr(ratio_sdr(r$train, tau, max, trim),
                       tau, max, m_shifted$train, m_natural$train)
 
-      fit <- run_ensemble(training[i & !dt, ][[pseudo]],
-                          training[i & !dt, node_list[[tau]]],
-                          check_variation(training[i & !dt, ][[pseudo]],
+      fit <- run_ensemble(training[i & dt, ][[pseudo]],
+                          training[i & dt, node_list[[tau]]],
+                          check_variation(training[i & dt, ][[pseudo]],
                                           learners),
                           outcome_type,
-                          id = training[i & !dt, ][["lmtp_id"]])
+                          id = training[i & dt, ][["lmtp_id"]])
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
-      m_natural$train[jt & !dt, tau] <- bound(predict(fit, training[jt & !dt, node_list[[tau]]])$pred)
-      m_shifted$train[jt & !dt, tau] <- bound(predict(fit, shifted[jt & !dt, node_list[[tau]]])$pred)
-      m_natural$train[dt, tau] <- 1
-      m_shifted$train[dt, tau] <- 1
+      m_natural$train[jt & dt, tau] <- bound(predict(fit, training[jt & dt, node_list[[tau]]])$pred)
+      m_shifted$train[jt & dt, tau] <- bound(predict(fit, shifted[jt & dt, node_list[[tau]]])$pred)
+      m_natural$train[!dt, tau] <- 0
+      m_shifted$train[!dt, tau] <- 0
 
-      m_natural$valid[jv & !dv, tau] <- bound(predict(fit, validation[jv & !dv, node_list[[tau]]])$pred)
-      m_shifted$valid[jv & !dv, tau] <- bound(predict(fit, validation_shifted[jv & !dv, node_list[[tau]]])$pred)
-      m_natural$valid[dv, tau] <- 1
-      m_shifted$valid[dv, tau] <- 1
+      m_natural$valid[jv & dv, tau] <- bound(predict(fit, validation[jv & dv, node_list[[tau]]])$pred)
+      m_shifted$valid[jv & dv, tau] <- bound(predict(fit, validation_shifted[jv & dv, node_list[[tau]]])$pred)
+      m_natural$valid[!dv, tau] <- 0
+      m_shifted$valid[!dv, tau] <- 0
     }
 
     pb()
