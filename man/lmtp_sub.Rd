@@ -13,7 +13,7 @@ lmtp_sub(
   cens = NULL,
   shift,
   k = Inf,
-  outcome_type = c("binomial", "continuous"),
+  outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
   learners = "SL.glm",
@@ -32,8 +32,8 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{baseline}{An optional vector of columns names of baseline covariates to be
-included for adjustment at every timepoint.}
+\item{baseline}{An optional vector containing the column names of baseline covariates to be
+included for adjustment at every time point.}
 
 \item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
@@ -50,7 +50,7 @@ See examples for how to specify shift functions for continuous, binary, and cate
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{id}{An optional column name containing cluster level identifiers.}
 

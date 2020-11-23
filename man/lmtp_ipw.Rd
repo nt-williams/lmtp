@@ -14,6 +14,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   shift,
+  outcome_type = c("binomial", "continuous", "survival"),
   learners = "SL.glm",
   folds = 10,
   .bound = 1e-05,
@@ -31,8 +32,8 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{baseline}{An optional vector of columns names of baseline covariates to be
-included for adjustment at every timepoint.}
+\item{baseline}{An optional vector containing the column names of baseline covariates to be
+included for adjustment at every time point.}
 
 \item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
@@ -50,6 +51,8 @@ all time points.}
 
 \item{shift}{A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
+
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{learners}{A vector of \code{SuperLearner} algorithms for estimation
 of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
