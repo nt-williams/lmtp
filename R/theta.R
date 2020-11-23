@@ -81,7 +81,7 @@ theta_dr <- function(eta) {
                 continuous = rescale_y_continuous(eta$m$shifted, eta$bounds)[order(i), ],
                 binomial = eta$m$shifted[order(i), ]
               ),
-              density_ratios = eta$r,
+              density_ratios = eta$r[order(i), ],
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
               outcome_type = eta$outcome_type)
