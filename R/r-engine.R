@@ -32,8 +32,6 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     rat <- create_ratios(pred)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
-    # rt$natural[dt, t] <- 1
-    # rt$shifted[dt, t] <- 1
 
     pred <- matrix(nrow = nv * 2, ncol = 1)
     pred[irv & drv, ] <- bound(
@@ -44,8 +42,6 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
     rat <- create_ratios(pred)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
-    # rv$natural[dv, t] <- 1
-    # rv$shifted[dv, t] <- 1
 
     pb()
   }

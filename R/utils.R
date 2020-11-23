@@ -73,7 +73,7 @@ create_censoring_indicators <- function(data, cens, tau) {
 
 create_determ_indicators <- function(data, determ, tau) {
   if (is.null(determ)) {
-    return(rep(FALSE, nrow(data)))
+    return(rep(TRUE, nrow(data)))
   } else if (tau == 1) {
     return(rep(TRUE, nrow(data)))
   } else {

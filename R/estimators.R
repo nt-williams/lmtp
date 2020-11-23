@@ -423,7 +423,11 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     estimator = "ipw",
     eta = list(
       r = dens_ratio$r,
-      y = convert_to_surv(data[[final_outcome(outcome)]]),
+      y = if (meta$survival) {
+        convert_to_surv(data[[final_outcome(outcome)]])
+      } else {
+        data[[final_outcome(outcome)]]
+      },
       folds = meta$folds,
       tau = meta$tau,
       shift = deparse(substitute((shift))),

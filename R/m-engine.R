@@ -17,7 +17,6 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
                         id = training[i & dt, ][["lmtp_id"]])
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    # why are we bounding here?
     training[jt & dt, pseudo] <- bound(predict(fit, shifted[jt & dt, node_list[[tau]]])$pred)
     training[!dt, pseudo] <- 0
 
