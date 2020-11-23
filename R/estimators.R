@@ -24,7 +24,7 @@
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
@@ -62,8 +62,8 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
-                      outcome_type = c("binomial", "continuous"), id = NULL,
-                      bounds = NULL, learners_outcome = "SL.glm",
+                      outcome_type = c("binomial", "continuous", "survival"),
+                      id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                       learners_trt = "SL.glm", folds = 10,
                       .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
@@ -144,7 +144,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
@@ -182,8 +182,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"), id = NULL,
-                     bounds = NULL, learners_outcome = "SL.glm",
+                     outcome_type = c("binomial", "continuous", "survival"),
+                     id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                      learners_trt = "SL.glm", folds = 10,
                      .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
@@ -260,7 +260,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial).
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
@@ -290,8 +290,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
-                     outcome_type = c("binomial", "continuous"), id = NULL,
-                     bounds = NULL, learners = "SL.glm", folds = 10,
+                     outcome_type = c("binomial", "continuous", "survival"),
+                     id = NULL, bounds = NULL, learners = "SL.glm", folds = 10,
                      .bound = 1e-5) {
   meta <- Meta$new(
     data = data,
@@ -355,6 +355,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param survival
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -384,7 +385,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, k = Inf, id = NULL, shift,
+                     time_vary = NULL, cens = NULL, k = Inf,
+                     id = NULL, shift, survival = FALSE,
                      learners = "SL.glm", folds = 10,
                      .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
