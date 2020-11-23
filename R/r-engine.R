@@ -55,7 +55,8 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
 }
 
 create_ratios <- function(pred, data, cens, tau) {
-  out <- pred * rep(create_censoring_indicators(data, cens, tau)$i, 2) / (1 - bound(pred))
+  out <- pred / (1 - pred)
+  # out <- pred * rep(create_censoring_indicators(data, cens, tau)$i, 2) / (1 - bound(pred))
   out <- ifelse(is.na(out), 0, out)
   return(out)
 }
