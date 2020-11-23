@@ -8,8 +8,9 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
+    browser()
     irt <- rep(create_censoring_indicators(training, cens, t)$j, 2)
-    drt <- rep(create_determ_indicators(training, deterministic, t), 2)
+    drt <- rep(create_determ_indicators(training, deterministic, t), 2) # deterministic here is a bit confusing
     irv <- rep(create_censoring_indicators(validation, cens, t)$j, 2)
     drv <- rep(create_determ_indicators(validation, deterministic, t), 2)
     dt <- create_determ_indicators(training, deterministic, t)
@@ -17,6 +18,7 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
     fit <- run_ensemble(subset(stcks$train, irt & !drt)$si,
+                        # the outcome in this case the probability of experiencing a shift at time t and being observed at time t + 1?
                         subset(stcks$train, irt & !drt)[, c(node_list[[t]], cens[[t]])],
                         learners,
                         "binomial",
@@ -29,11 +31,11 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred, training, cens, t)
+    rat <- create_ratios(pred)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
-    rt$natural[dt, t] <- 1
-    rt$shifted[dt, t] <- 1
+    # rt$natural[dt, t] <- 1
+    # rt$shifted[dt, t] <- 1
 
     pred <- matrix(nrow = nv * 2, ncol = 1)
     pred[irv & !drv, ] <- bound(
@@ -41,11 +43,11 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred, validation, cens, t)
+    rat <- create_ratios(pred)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
-    rv$natural[dv, t] <- 1
-    rv$shifted[dv, t] <- 1
+    # rv$natural[dv, t] <- 1
+    # rv$shifted[dv, t] <- 1
 
     pb()
   }
@@ -54,11 +56,9 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
        sl_weights = sl_weights)
 }
 
-create_ratios <- function(pred, data, cens, tau) {
+create_ratios <- function(pred) {
   out <- pred / (1 - pred)
-  # out <- pred * rep(create_censoring_indicators(data, cens, tau)$i, 2) / (1 - bound(pred))
-  out <- ifelse(is.na(out), 0, out)
-  return(out)
+  ifelse(is.na(out), 0, out)
 }
 
 ratio_dr <- function(ratios, V, trim) {
