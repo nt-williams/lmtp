@@ -11,6 +11,7 @@ Meta <- R6::R6Class(
     tau = NULL,
     id = NULL,
     outcome_type = NULL,
+    survival = NULL,
     bounds = NULL,
     folds = NULL,
     weights_m = NULL,
@@ -20,7 +21,12 @@ Meta <- R6::R6Class(
                           outcome_type = NULL, V = 10, bounds = NULL,
                           bound = NULL) {
       self$tau <- determine_tau(outcome, trt, cens)
+
       data <- fix_censoring_ind(data, cens, self$tau)
+
+      # need to add a check that if outcome type is survival that outcome is greater than 1
+      # and that all values are 0 or 1
+      # this same check should probably just exist for binomial as well
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))
@@ -33,12 +39,20 @@ Meta <- R6::R6Class(
       self$trt <- check_trt_length(trt, time_vary, cens, self$tau)
       self$determ <- check_deterministic(outcome, self$tau)
       self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
-      self$outcome_type <- outcome_type
-      self$bounds <- y_bounds(data[[final_outcome(outcome)]], outcome_type, bounds)
+      self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
+      self$survival <- outcome_type == "survival"
+      self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
       data$lmtp_id <- create_ids(data, id)
       self$id <- data$lmtp_id
-      self$folds <- setup_cv(data, data[["lmtp_id"]], V)
+      self$folds <- setup_cv(data, data$lmtp_id, V)
+
       set_lmtp_options("bound", bound)
+
+      if (self$survival) {
+        for (outcomes in outcome) {
+          data.table::set(data, j = outcomes, value = convert_to_surv(data[[outcomes]]))
+        }
+      }
 
       self$m <-
         get_folded_data(
@@ -50,7 +64,7 @@ Meta <- R6::R6Class(
             scale_y_continuous(
               data[[final_outcome(outcome)]],
               y_bounds(data[[final_outcome(outcome)]],
-                       outcome_type,
+                       self$outcome_type,
                        bounds)
             )
           ),
@@ -65,7 +79,7 @@ Meta <- R6::R6Class(
               scale_y_continuous(
                 data[[final_outcome(outcome)]],
                 y_bounds(data[[final_outcome(outcome)]],
-                         outcome_type,
+                         self$outcome_type,
                          bounds)
               )
             ),
@@ -82,7 +96,7 @@ Meta <- R6::R6Class(
               scale_y_continuous(
                 data[[final_outcome(outcome)]],
                 y_bounds(data[[final_outcome(outcome)]],
-                         outcome_type,
+                         self$outcome_type,
                          bounds)
               )
             ),
@@ -104,6 +118,7 @@ prepare_r_engine <- function(data, shifted, n) {
 }
 
 create_r_stacks <- function(training, validation, trt, cens, shift, t, nt, nv) {
+  # need to re-think this option setting here
   if (getOption("lmtp.trt.length") == "standard" || t == 1) {
     train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
     valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)

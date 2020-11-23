@@ -355,7 +355,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
-#' @param survival
+#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -386,7 +386,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf,
-                     id = NULL, shift, survival = FALSE,
+                     id = NULL, shift, outcome_type = c("binomial", "continuous", "survival"),
                      learners = "SL.glm", folds = 10,
                      .bound = 1e-5, .trim = 0.999) {
   meta <- Meta$new(
