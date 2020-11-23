@@ -313,6 +313,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
       m = estims$m,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
+      folds = meta$folds,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       outcome_type = meta$outcome_type

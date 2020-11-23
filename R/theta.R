@@ -8,21 +8,18 @@ compute_theta <- function(estimator, eta) {
 }
 
 theta_sub <- function(eta) {
-  if (eta$outcome_type == "continuous") {
-    eta$m <- rescale_y_continuous(eta$m, eta$bounds)
-  }
-
-  theta <- mean(eta$m[, 1])
-
+  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
   out <- list(estimator = "substitution",
-              theta = theta,
+              theta = mean(eta$m[, 1]),
               standard_error = NA_real_,
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
-              outcome_reg = switch(eta$outcome_type,
-                                   continuous = rescale_y_continuous(eta$m, eta$bounds),
-                                   binomial = eta$m),
+              outcome_reg = switch(
+                eta$outcome_type,
+                continuous = rescale_y_continuous(eta$m, eta$bounds)[order(i), ],
+                binomial = eta$m[order(i)]
+              ),
               weights_m = eta$weights_m,
               outcome_type = eta$outcome_type)
 
@@ -40,7 +37,7 @@ theta_ipw <- function(eta) {
               low = NA_real_,
               high = NA_real_,
               shift = eta$shift,
-              density_ratios = eta$r,
+              density_ratios = eta$r[order(i), ],
               weights_r = eta$weights_r)
 
   class(out) <- "lmtp"
@@ -56,9 +53,9 @@ eif <- function(r, tau, shifted, natural) {
 }
 
 theta_dr <- function(eta) {
-
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-  inflnce <- eif(r = eta$r, tau = eta$tau, shifted = eta$m$shifted, natural = eta$m$natural)[order(i)]
+  inflnce <- eif(r = eta$r, tau = eta$tau, shifted = eta$m$shifted,
+                 natural = eta$m$natural)[order(i)]
   theta <- mean(eta$m$shifted[, 1])
 
   if (eta$outcome_type == "continuous") {
@@ -79,9 +76,11 @@ theta_dr <- function(eta) {
               high = ci_high,
               eif = inflnce,
               shift = eta$shift,
-              outcome_reg = switch(eta$outcome_type,
-                                   continuous = rescale_y_continuous(eta$m$shifted, eta$bounds),
-                                   binomial = eta$m$shifted),
+              outcome_reg = switch(
+                eta$outcome_type,
+                continuous = rescale_y_continuous(eta$m$shifted, eta$bounds)[order(i), ],
+                binomial = eta$m$shifted[order(i), ]
+              ),
               density_ratios = eta$r,
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
