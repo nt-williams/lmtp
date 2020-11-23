@@ -29,7 +29,7 @@ theta_sub <- function(eta) {
 
 theta_ipw <- function(eta) {
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-  theta <- mean(eta$r[, eta$tau]*eta$y[i], na.rm = T)
+  theta <- mean(eta$r[, eta$tau]*missing_outcome(eta$y[i]))
 
   out <- list(estimator = "IPW",
               theta = theta,

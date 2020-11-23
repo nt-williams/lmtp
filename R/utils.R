@@ -163,3 +163,7 @@ convert_to_surv <- function(x) {
   data.table::fcase(x == 0, 1,
                     x == 1, 0)
 }
+
+missing_outcome <- function(x) {
+  ifelse(is.na(x), 999, x)
+}
