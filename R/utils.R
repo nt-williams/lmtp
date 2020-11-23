@@ -158,3 +158,8 @@ create_ids <- function(data, id) {
   }
   return(out)
 }
+
+convert_to_surv <- function(x) {
+  data.table::fcase(x == 0, 1,
+                    x == 1, 0)
+}
