@@ -160,7 +160,7 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   }
 }
 
-check_deterministic <- function(outcomes, tau) {
+check_at_risk <- function(outcomes, tau) {
   if (length(outcomes) == 1) {
     return(NULL)
   } else if (length(outcomes) == tau) {

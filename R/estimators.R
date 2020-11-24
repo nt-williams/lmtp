@@ -87,7 +87,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   pb <- progressr::progressor(meta$tau*folds*2)
 
   dens_ratio <- ratio_dr(
-    cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
+    cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
          meta$node_list$trt, learners_trt, pb, meta$weights_r),
     folds,
     .trim
@@ -95,7 +95,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
-            cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
+            cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
             dens_ratio, learners_outcome, pb, meta$weights_m)
 
   out <- compute_theta(
@@ -206,12 +206,12 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ, meta$tau,
+  raw_ratio <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
                     meta$node_list$trt, learners_trt, pb, meta$weights_r)
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
-           cens, meta$determ, meta$tau, meta$outcome_type, meta$m, meta$m,
+           cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
            raw_ratio, learners_outcome, pb, meta$weights_m, .trim)
 
   out <- compute_theta(
@@ -314,7 +314,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
   pb <- progressr::progressor(meta$tau*folds)
 
   estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
-                   cens, meta$determ, meta$tau, meta$outcome_type,
+                   cens, meta$risk, meta$tau, meta$outcome_type,
                    learners, meta$m, pb, meta$weights_m)
 
   out <- compute_theta(
@@ -412,7 +412,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
   dens_ratio <-
     ratio_ipw(
       recombine_ipw(
-        cf_r(meta$data, shift, folds, meta$trt, cens, meta$determ,
+        cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk,
              meta$tau, meta$node_list$trt, learners, pb, meta$weights_r
         )
       ),

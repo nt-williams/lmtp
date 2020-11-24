@@ -1,4 +1,4 @@
-estimate_r <- function(training, validation, trt, cens, deterministic, shift,
+estimate_r <- function(training, validation, trt, cens, risk, shift,
                        tau, node_list, learners = NULL, pb, sl_weights) {
   nt <- nrow(training)
   nv <- nrow(validation)
@@ -9,9 +9,9 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
 
   for (t in 1:tau) {
     irt <- rep(censored(training, cens, t)$j, 2)
-    drt <- rep(at_risk(training, deterministic, t), 2) # deterministic here is a bit confusing
+    drt <- rep(at_risk(training, risk, t), 2)
     irv <- rep(censored(validation, cens, t)$j, 2)
-    drv <- rep(at_risk(validation, deterministic, t), 2)
+    drv <- rep(at_risk(validation, risk, t), 2)
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
     fit <- run_ensemble(subset(stcks$train, irt & drt)$si,
