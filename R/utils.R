@@ -49,7 +49,7 @@ add_scaled_y <- function(data, scaled) {
   return(data)
 }
 
-create_censoring_indicators <- function(data, cens, tau) {
+censored <- function(data, cens, tau) {
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
     i <- rep(TRUE, nrow(data))
@@ -71,13 +71,13 @@ create_censoring_indicators <- function(data, cens, tau) {
   return(out)
 }
 
-create_determ_indicators <- function(data, determ, tau) {
-  if (is.null(determ)) {
+at_risk <- function(data, risk, tau) {
+  if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
   } else if (tau == 1) {
     return(rep(TRUE, nrow(data)))
   } else {
-    return(data[[determ[tau - 1]]] == 1 & !is.na(data[[determ[tau - 1]]]))
+    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
   }
 }
 

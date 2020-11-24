@@ -8,12 +8,10 @@ estimate_r <- function(training, validation, trt, cens, deterministic, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-    irt <- rep(create_censoring_indicators(training, cens, t)$j, 2)
-    drt <- rep(create_determ_indicators(training, deterministic, t), 2) # deterministic here is a bit confusing
-    irv <- rep(create_censoring_indicators(validation, cens, t)$j, 2)
-    drv <- rep(create_determ_indicators(validation, deterministic, t), 2)
-    dt <- create_determ_indicators(training, deterministic, t)
-    dv <- create_determ_indicators(validation, deterministic, t)
+    irt <- rep(censored(training, cens, t)$j, 2)
+    drt <- rep(at_risk(training, deterministic, t), 2) # deterministic here is a bit confusing
+    irv <- rep(censored(validation, cens, t)$j, 2)
+    drv <- rep(at_risk(validation, deterministic, t), 2)
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
     fit <- run_ensemble(subset(stcks$train, irt & drt)$si,
@@ -77,7 +75,6 @@ ratio_dr <- function(ratios, V, trim) {
 }
 
 ratio_ipw <- function(ratio, trim) {
-  out <-
     list(r = check_extreme_ratio(
       matrix(
         t(apply(ratio$r, 1, cumprod)),
@@ -87,11 +84,10 @@ ratio_ipw <- function(ratio, trim) {
       trim
     ),
     sl_weights = ratio$sl_weights)
-  return(out)
 }
 
 ratio_sdr <- function(ratio, tau, max_tau, trim) {
   out <- t(apply(ratio$natural[, (tau + 1):max_tau, drop = FALSE], 1, cumprod))
   if (tau == max_tau - 1) out <- t(out)
-  return(check_extreme_ratio(out, trim))
+  check_extreme_ratio(out, trim)
 }

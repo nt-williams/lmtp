@@ -2,11 +2,11 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
                          node_list, C, deterministic, tau, outcome_type,
                          learners = NULL, m, pb, sl_weights) {
   if (tau > 0) {
-    i <- create_censoring_indicators(training, C, tau)$i
-    jt <- create_censoring_indicators(training, C, tau)$j
-    jv <- create_censoring_indicators(validation, C, tau)$j
-    dt <- create_determ_indicators(training, deterministic, tau)
-    dv <- create_determ_indicators(validation, deterministic, tau)
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    dt <- at_risk(training, deterministic, tau)
+    dv <- at_risk(validation, deterministic, tau)
     pseudo <- paste0("psi", tau)
 
     fit <- run_ensemble(training[i & dt, ][[outcome]],
@@ -49,11 +49,11 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, deterministic, tau, outcome_type,
                           m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
   if (tau > 0) {
-    i <- create_censoring_indicators(training, C, tau)$i
-    jt <- create_censoring_indicators(training, C, tau)$j
-    jv <- create_censoring_indicators(validation, C, tau)$j
-    dt <- create_determ_indicators(training, deterministic, tau)
-    dv <- create_determ_indicators(validation, deterministic, tau)
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    dt <- at_risk(training, deterministic, tau)
+    dv <- at_risk(validation, deterministic, tau)
     pseudo <- paste0("psi", tau)
 
     fit <- run_ensemble(training[i & dt, ][[outcome]],
@@ -110,11 +110,11 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, deterministic, tau, max, outcome_type,
                          learners = NULL, m_shifted, m_natural, r, pb, sl_weights, trim) {
   if (tau > 0) {
-    i <- create_censoring_indicators(training, C, tau)$i
-    jt <- create_censoring_indicators(training, C, tau)$j
-    jv <- create_censoring_indicators(validation, C, tau)$j
-    dt <- create_determ_indicators(training, deterministic, tau)
-    dv <- create_determ_indicators(validation, deterministic, tau)
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    dt <- at_risk(training, deterministic, tau)
+    dv <- at_risk(validation, deterministic, tau)
     pseudo <- paste0("psi", tau + 1)
 
     if (tau == max) {
