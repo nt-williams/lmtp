@@ -35,7 +35,8 @@ Imports:
     origami,
     future (>= 1.17.0),
     progressr,
-    data.table
+    data.table,
+    SuperLearner
 Suggests: 
     testthat (>= 2.1.0),
     covr,

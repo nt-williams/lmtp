@@ -262,7 +262,8 @@ cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens,
-                      shift = static_binary_on, folds = 2)
+                      shift = static_binary_on, folds = 2,
+                      outcome_type = "survival")
 })
 psi5.1
 }

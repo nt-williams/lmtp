@@ -148,8 +148,8 @@ psi4.2
 
 # Example 5.1
 # Time-to-event analysis with a binary time-invariant exposure. Interested in
-# the effect of treatment being given to all observations on the cumulative
-# incidence of our time-to-event outcome.
+# the effect of treatment being given to all observations on the probability of being event
+# free at the end of follow-up.
 a <- "trt"
 # for a survival problem, the outcome argument now takes a vector of outcomes
 # if an observation experiences the event prior to the end of follow-up, all future
@@ -159,7 +159,8 @@ cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_sub(sim_point_surv, a, y, baseline, cens = cens,
-                      shift = static_binary_on, folds = 2)
+                     shift = static_binary_on, folds = 2,
+                     outcome_type = "survival")
 })
 psi5.1
 }

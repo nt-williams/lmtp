@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - dev
+      - SuperLearner
   pull_request:
     branches:
       - master
