@@ -78,7 +78,7 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
     }
   }
 
-  out <- slide_node_list(out, k)
+  out <- slide(out, k)
 
   if (length(trt) == tau) {
     for (i in 1:tau) {
@@ -101,7 +101,7 @@ outcome_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
     }
   }
 
-  out <- slide_node_list(out, k)
+  out <- slide(out, k)
 
   if (!is.null(baseline)) {
     for (i in 1:tau) {
@@ -111,14 +111,22 @@ outcome_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
   return(out)
 }
 
-slide_node_list <- function(time_vary, k) {
-  out <- paste(lapply(time_vary, function(x) paste(x, collapse = ",")))
-  out <- slider::slide(out, ~ .x, .before = k)
-  out <- lapply(out, function(x) {
-    . <- strsplit(x, ",")
-    if (k == 0) unlist(.)
-    else unique(unlist(.))
-  })
-  return(out)
+slide <- function(x, k) {
+  if (k == 0) {
+    return(x)
+  }
+
+  t <- length(x)
+  if (k == Inf) {
+    k <- t - 1
+  }
+  lapply(1:t, Lag, x = x, k = k)
 }
 
+Lag <- function(x, t, k) {
+  if (t == 1) {
+    return(x[[1]])
+  }
+  tk <- max(1, t - k)
+  unique(do.call("c", x[tk:t]))
+}

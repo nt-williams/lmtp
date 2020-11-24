@@ -19,15 +19,13 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
 Depends: 
-    R (>= 2.10),
-    SuperLearner (>= 2.0.26)
+    R (>= 2.10)
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
-    slider,
     stats,
     nnls,
     cli,
@@ -37,7 +35,6 @@ Imports:
     origami,
     future (>= 1.17.0),
     progressr,
-    zoo,
     data.table
 Suggests: 
     testthat (>= 2.1.0),
