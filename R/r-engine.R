@@ -27,7 +27,7 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred)
+    rat <- create_ratios(pred, training, cens, t)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
 
@@ -37,7 +37,7 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred)
+    rat <- create_ratios(pred, validation, cens, t)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
 
@@ -48,10 +48,16 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
        sl_weights = sl_weights)
 }
 
-create_ratios <- function(pred) {
-  out <- pred / (1 - pred)
-  ifelse(is.na(out), 0, out)
+create_ratios <- function(pred, data, cens, tau) {
+  out <- pred * rep(censored(data, cens, tau)$i, 2) / (1 - pred)
+  out <- ifelse(is.na(out), -999, out)
+  return(out)
 }
+
+# create_ratios <- function(pred) {
+#   out <- pred / (1 - pred)
+#   ifelse(is.na(out), 0, out)
+# }
 
 ratio_dr <- function(ratios, V, trim) {
   out <- list()

@@ -157,5 +157,5 @@ convert_to_surv <- function(x) {
 }
 
 missing_outcome <- function(x) {
-  ifelse(is.na(x), 999, x)
+  ifelse(is.na(x), 0, x)
 }
