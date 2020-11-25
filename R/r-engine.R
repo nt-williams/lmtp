@@ -54,11 +54,6 @@ create_ratios <- function(pred, data, cens, tau) {
   return(out)
 }
 
-# create_ratios <- function(pred) {
-#   out <- pred / (1 - pred)
-#   ifelse(is.na(out), 0, out)
-# }
-
 ratio_dr <- function(ratios, V, trim) {
   out <- list()
   for (i in 1:V) {

@@ -130,11 +130,13 @@ final_outcome <- function(outcomes) {
 #'
 #' @return A modified dataset with future outcome nodes set to 1 if an observation
 #'  experienced an event at any previous time point.
+#'
+#' @importFrom data.table as.data.table `:=` .SD
 #' @export
 #' @examples
 #' event_locf(sim_point_surv, paste0("Y.", 0:6))
 event_locf <- function(data, outcomes) {
-  DT <- data.table::as.data.table(data)
+  DT <- as.data.table(data)
   tau <- length(outcomes)
   for (j in outcomes[1:(tau - 1)]) {
     modify <- setdiff(outcomes[match(j, outcomes):tau], j)
