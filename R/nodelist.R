@@ -34,10 +34,8 @@ create_node_list <- function(trt, tau, time_vary = NULL, baseline = NULL, k = In
     k <- Inf
   }
 
-  out <- list(trt = trt_node_list(trt, time_vary, baseline, k, tau),
-              outcome = outcome_node_list(trt, time_vary, baseline, k, tau))
-
-  return(out)
+  list(trt = trt_node_list(trt, time_vary, baseline, k, tau),
+       outcome = outcome_node_list(trt, time_vary, baseline, k, tau))
 }
 
 trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
@@ -128,5 +126,5 @@ Lag <- function(x, t, k) {
     return(x[[1]])
   }
   tk <- max(1, t - k)
-  unique(do.call("c", x[tk:t]))
+  unique(do.call(c, x[tk:t]))
 }

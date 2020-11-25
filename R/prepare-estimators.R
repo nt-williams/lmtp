@@ -24,9 +24,10 @@ Meta <- R6::R6Class(
 
       data <- fix_censoring_ind(data, cens, self$tau)
 
-      # need to add a check that if outcome type is survival that outcome is greater than 1
+      # TODO: need to add a check that if outcome type is survival that outcome is greater than 1
       # and that all values are 0 or 1
-      # this same check should probably just exist for binomial as well
+      # TODO: this same check should probably just exist for binomial as well
+      # TODO: add a check/warning if there are factors in the data, ideally we take care of this for the user...
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_censoring(data, cens, final_outcome(outcome))

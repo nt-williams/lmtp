@@ -7,6 +7,7 @@
 -   `bound` parameter renamed to `.bound`.
 -   **slider** dependency removed.
 -   **data.table** added as a dependency.
+-   `event_locf()` speed greatly improved.
 -   Fixed a bug that outputted outcome regressions and density ratios in incorrect order compared to the original data.
 -   Fixed a bug in the missing data check that threw an error for missing data after an observation experiences the outcome.
 -   Fixed a bug that resulted in `NA` censoring indicators throwing an error for missing data.

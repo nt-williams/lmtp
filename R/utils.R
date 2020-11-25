@@ -2,16 +2,14 @@ determine_tau <- function(outcome, trt, cens) {
   surv <- length(outcome) > 1
   if (!surv) {
     return(length(trt))
-  } else {
-    return(length(cens))
   }
+  length(cens)
 }
 
 set_lmtp_options <- function(option, val) {
   switch (option,
-    "bound"  = options(lmtp.bound = val),
-    "trt"    = options(lmtp.trt.length = val),
-    "engine" = options(lmtp.engine = val)
+    "bound" = options(lmtp.bound = val),
+    "trt" = options(lmtp.trt.length = val)
   )
 }
 
@@ -20,28 +18,24 @@ bound <- function(x, p = getOption("lmtp.bound")) {
 }
 
 scale_y_continuous <- function(y, bounds) {
-  out <- (y - bounds[1]) / (bounds[2] - bounds[1])
   if (is.null(bounds)) {
-    out <- y
+    return(y)
   }
-  return(out)
+  (y - bounds[1]) / (bounds[2] - bounds[1])
 }
 
 y_bounds <- function(y, outcome_type, bounds = NULL) {
   if (outcome_type == "binomial" || is.null(outcome_type)) {
-    out <- NULL
-  } else if (is.null(bounds)) {
-    out <- c(min(y, na.rm = T), max(y, na.rm = T))
-  } else {
-    out <- c(bounds[1], bounds[2])
+    return(NULL)
   }
-
-  return(out)
+  if (is.null(bounds)) {
+    return(c(min(y, na.rm = T), max(y, na.rm = T)))
+  }
+  c(bounds[1], bounds[2])
 }
 
 rescale_y_continuous <- function(scaled, bounds) {
-  out <- (scaled*(bounds[2] - bounds[1])) + bounds[1]
-  return(out)
+  (scaled*(bounds[2] - bounds[1])) + bounds[1]
 }
 
 add_scaled_y <- function(data, scaled) {
@@ -138,25 +132,23 @@ final_outcome <- function(outcomes) {
 #'  experienced an event at any previous time point.
 #' @export
 #' @examples
-#' event_locf(sim_point_surv, c(paste0("Y.", 0:6)))
+#' event_locf(sim_point_surv, paste0("Y.", 0:6))
 event_locf <- function(data, outcomes) {
+  DT <- data.table::as.data.table(data)
   tau <- length(outcomes)
-  for (i in outcomes[1:(tau - 1)]) {
-    modify <- setdiff(outcomes[match(i, outcomes):tau], i) # find all outcomes at later time
-    for (j in 1:nrow(data)) {
-      if (data[j, i] == 1 & !is.na(data[j, i])) data[j, modify] <- 1 # if the event is observed at the current time, set all later events to 1
-    }
+  for (j in outcomes[1:(tau - 1)]) {
+    modify <- setdiff(outcomes[match(j, outcomes):tau], j)
+    DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
   }
-  return(data)
+  DT[]
+  return(DT)
 }
 
 create_ids <- function(data, id) {
   if (is.null(id)) {
-    out <- 1:nrow(data)
-  } else {
-    out <- data[[id]]
+    return(1:nrow(data))
   }
-  return(out)
+  data[[id]]
 }
 
 convert_to_surv <- function(x) {
