@@ -8,8 +8,8 @@ determine_tau <- function(outcome, trt, cens) {
 
 set_lmtp_options <- function(option, val) {
   switch (option,
-    "bound" = options(lmtp.bound = val),
-    "trt" = options(lmtp.trt.length = val)
+          "bound" = options(lmtp.bound = val),
+          "trt" = options(lmtp.trt.length = val)
   )
 }
 
