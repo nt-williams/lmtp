@@ -72,11 +72,11 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     fit <- sw(glm(training[i & rt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & rt, tau])),
                                 weights = r$train[i & rt, tau], family = "binomial"))
 
-    training[, pseudo] <- bound(plogis(qlogis(m_shifted$train[, tau]) + coef(fit)))
+    training[jt & rt, pseudo] <- bound(plogis(qlogis(m_shifted$train[jt & rt, tau]) + coef(fit)))
     training[!rt, pseudo] <- 0
 
-    m_natural$valid[, tau] <- bound(plogis(qlogis(m_natural$valid[, tau]) + coef(fit)))
-    m_shifted$valid[, tau] <- bound(plogis(qlogis(m_shifted$valid[, tau]) + coef(fit)))
+    m_natural$valid[jv & rv, tau] <- bound(plogis(qlogis(m_natural$valid[jv & rv, tau]) + coef(fit)))
+    m_shifted$valid[jv & rv, tau] <- bound(plogis(qlogis(m_shifted$valid[jv & rv, tau]) + coef(fit)))
     m_natural$valid[!rv, tau] <- 0
     m_shifted$valid[!rv, tau] <- 0
 

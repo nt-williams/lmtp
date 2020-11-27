@@ -50,7 +50,7 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
 
 create_ratios <- function(pred, data, cens, tau) {
   out <- pred * rep(censored(data, cens, tau)$i, 2) / (1 - pred)
-  out <- ifelse(is.na(out), -999, out)
+  out <- ifelse(is.na(out), 0, out)
   return(out)
 }
 
