@@ -11,7 +11,8 @@ A <- 23 + 5*W + rnorm(n)
 Y <- 7.2*A + 3*W + rnorm(n)
 ex1_dat <- data.frame(W, A, Y)
 d <- function(data, x) data[[x]] - 5
-psi1.1 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2)
+psi1.1 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2,
+                   outcome_type = "continuous", .trim = 0.9975)
 psi1.1
 
 # Example 1.2
@@ -20,7 +21,8 @@ psi1.1
 # units only among observations whose observed A was above 80.
 # The true value under this intervention is about 513.
 d <- function(data, x) (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
-psi1.2 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2)
+psi1.2 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2,
+                   outcome_type = "continuous")
 psi1.2
 
 # Example 2.1
@@ -118,7 +120,7 @@ if (require("twang")) {
   progressr::with_progress({
     psi3.1 <-
       lmtp_ipw(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-               shift = static_binary_on, folds = 2)
+               shift = static_binary_on, folds = 2, outcome_type = "continuous")
   })
   psi3.1
 }

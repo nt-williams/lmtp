@@ -211,8 +211,16 @@ check_is_binary <- function(data, outcome, outcome_type) {
       as.character(unique(na.omit(data[[x]])))
     })
     if (!all(unlist(lapply(vals, function(x) all(x %in% c("0", "1")))))) {
-      stop("Only 0 and 1 alllowed in outcome variables if 'outcome_type' set to binomial or survival.", 
+      stop("Only 0 and 1 alllowed in outcome variables if 'outcome_type' set to binomial or survival.",
            call. = FALSE)
     }
+  }
+}
+
+check_factors <- function(data, trt, baseline, nodes) {
+  vars <- c(trt, baseline, unlist(nodes))
+  if (any(unlist(lapply(data[, vars], is.factor)))) {
+    warning("Some of your variables appear to be factors. Make sure your SuperLearner library is capable of handling factors!",
+            call. = FALSE)
   }
 }
