@@ -13,6 +13,7 @@
 -   Fixed a bug that resulted in `NA` censoring indicators throwing an error for missing data.
 -   Fixed a bug about `values()` being deprecated in the **future** package (issue \#82).
 -   Fixed a warning from the **future** package regarding random number generation (issue \#81).
+-   Fixed `create_node_list()` returns description (issue \#77).
 -   Migrated continuous integration from Travis-CI to GitHub Actions.
 -   Added a `NEWS.md` file to track changes to the package.
 -   License change to GPL-3.

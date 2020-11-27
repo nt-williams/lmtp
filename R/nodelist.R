@@ -16,8 +16,9 @@
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #'
-#' @return A list the same length of the time_vary parameter with the variables
-#' to be used for estimation at that given time point.
+#' @return A list of lists. Each sub-list is the same length of the
+#' \code{time_vary} parameter with the variables to be used for estimation at that given time point
+#' for either the treatment mechanism or outcome regression.
 #' @export
 #' @examples
 #' a <- c("A_1", "A_2", "A_3", "A_4")
