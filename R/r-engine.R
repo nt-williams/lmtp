@@ -1,5 +1,6 @@
 estimate_r <- function(training, validation, trt, cens, risk, shift,
-                       tau, node_list, learners = NULL, pb, sl_weights) {
+                       tau, node_list, learners = NULL, pb, sl_weights,
+                       SL_folds) {
   nt <- nrow(training)
   nv <- nrow(validation)
   rt <- list(natural = matrix(nrow = nt, ncol = tau),
@@ -20,7 +21,8 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
                         subset(stcks$train, jrt & drt)[, c(node_list[[t]], cens[[t]])],
                         learners,
                         "binomial",
-                        subset(stcks$train, jrt & drt)$lmtp_id)
+                        subset(stcks$train, jrt & drt)$lmtp_id,
+                        SL_folds)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     pred <- matrix(-999L, nrow = nt * 2, ncol = 1)

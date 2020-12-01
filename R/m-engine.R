@@ -1,6 +1,6 @@
 estimate_sub <- function(training, shifted, validation, validation_shifted, outcome,
                          node_list, C, risk, tau, outcome_type,
-                         learners = NULL, m, pb, sl_weights) {
+                         learners = NULL, m, pb, sl_weights, SL_folds) {
   if (tau > 0) {
     i <- censored(training, C, tau)$i
     jt <- censored(training, C, tau)$j
@@ -14,7 +14,8 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
                         check_variation(training[i & rt, ][[outcome]],
                                         learners),
                         outcome_type,
-                        id = training[i & rt, ][["lmtp_id"]])
+                        id = training[i & rt, ][["lmtp_id"]],
+                        SL_folds)
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     training[jt & rt, pseudo] <- bound(predict(fit, shifted[jt & rt, node_list[[tau]]])$pred)
@@ -38,7 +39,8 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
       learners = learners,
       m = m,
       pb = pb,
-      sl_weights = sl_weights
+      sl_weights = sl_weights,
+      SL_folds = SL_folds
     )
   } else {
     list(m = m, sl_weights = sl_weights)
@@ -47,7 +49,8 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, risk, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
+                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights,
+                          SL_folds) {
   if (tau > 0) {
     i <- censored(training, C, tau)$i
     jt <- censored(training, C, tau)$j
@@ -61,7 +64,8 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
                         check_variation(training[i & rt, ][[outcome]],
                                         learners),
                         outcome_type,
-                        id = training[i & rt, ][["lmtp_id"]])
+                        id = training[i & rt, ][["lmtp_id"]],
+                        SL_folds)
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     m_natural$train[jt & rt, tau] <- bound(predict(fit, training[jt & rt, node_list[[tau]]])$pred)
@@ -97,7 +101,8 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
       r = r,
       learners = learners,
       pb = pb,
-      sl_weights = sl_weights
+      sl_weights = sl_weights,
+      SL_folds = SL_folds
     )
   } else {
     list(natural = m_natural$valid,
@@ -108,7 +113,8 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
                          outcome, node_list, C, risk, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights, trim) {
+                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights,
+                         trim, SL_folds) {
   if (tau > 0) {
     i <- censored(training, C, tau)$i
     jt <- censored(training, C, tau)$j
@@ -123,7 +129,8 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           check_variation(training[i & rt, ][[outcome]],
                                           learners),
                           outcome_type,
-                          id = training[i & rt, ][["lmtp_id"]])
+                          id = training[i & rt, ][["lmtp_id"]],
+                          SL_folds)
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
       m_natural$train[jt & rt, tau] <- bound(predict(fit, training[jt & rt, node_list[[tau]]])$pred)
@@ -148,7 +155,8 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
                           check_variation(training[i & rt, ][[pseudo]],
                                           learners),
                           outcome_type,
-                          id = training[i & rt, ][["lmtp_id"]])
+                          id = training[i & rt, ][["lmtp_id"]],
+                          SL_folds)
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
       m_natural$train[jt & rt, tau] <- bound(predict(fit, training[jt & rt, node_list[[tau]]])$pred)
@@ -181,7 +189,8 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       r = r,
       pb = pb,
       sl_weights = sl_weights,
-      trim = trim
+      trim = trim,
+      SL_folds = SL_folds
     )
   } else {
     list(natural = m_natural$valid,

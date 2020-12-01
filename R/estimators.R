@@ -41,6 +41,7 @@
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
+#' @param .SL_folds
 
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -67,7 +68,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                       learners_trt = "SL.glm", folds = 10, return_all_ratios = FALSE,
-                      .bound = 1e-5, .trim = 0.999) {
+                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -89,7 +90,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   pb <- progressr::progressor(meta$tau*folds*2)
 
   ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
-                     meta$node_list$trt, learners_trt, pb, meta$weights_r)
+                 meta$node_list$trt, learners_trt, pb, meta$weights_r, .SL_folds)
   cumprod_ratios <- ratio_dr(ratios, folds, .trim)
 
   # dens_ratio <- ratio_dr(
@@ -102,7 +103,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
             cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
-            cumprod_ratios, learners_outcome, pb, meta$weights_m)
+            cumprod_ratios, learners_outcome, pb, meta$weights_m, .SL_folds)
 
   out <- compute_theta(
     estimator = "dr",
@@ -162,11 +163,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
+#' @param return_all_ratios
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
+#' @param .SL_folds
+#'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "SDR".}
@@ -192,7 +196,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                      learners_trt = "SL.glm", folds = 10, return_all_ratios = FALSE,
-                     .bound = 1e-5, .trim = 0.999) {
+                     .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -214,12 +218,12 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
   pb <- progressr::progressor(meta$tau*folds*2)
 
   ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r)
+                 meta$node_list$trt, learners_trt, pb, meta$weights_r, .SL_folds)
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
            cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
-           ratios, learners_outcome, pb, meta$weights_m, .trim)
+           ratios, learners_outcome, pb, meta$weights_m, .trim, .SL_folds)
 
   out <- compute_theta(
     estimator = "dr",
@@ -277,9 +281,9 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
-#' @param return_all_ratios
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
+#' @param .SL_folds
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -301,7 +305,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm", folds = 10,
-                     .bound = 1e-5) {
+                     .bound = 1e-5, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -322,9 +326,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
+  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz",
+                   meta$node_list$outcome,
                    cens, meta$risk, meta$tau, meta$outcome_type,
-                   learners, meta$m, pb, meta$weights_m)
+                   learners, meta$m, pb, meta$weights_m, .SL_folds)
 
   out <- compute_theta(
     estimator = "sub",
@@ -379,6 +384,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
+#' @param .SL_folds
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -398,7 +404,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf,
                      id = NULL, shift, outcome_type = c("binomial", "continuous", "survival"),
                      learners = "SL.glm", folds = 10, return_all_ratios = FALSE,
-                     .bound = 1e-5, .trim = 0.999) {
+                     .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -420,7 +426,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
   pb <- progressr::progressor(meta$tau*folds)
 
   ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk,
-                 meta$tau, meta$node_list$trt, learners, pb, meta$weights_r)
+                 meta$tau, meta$node_list$trt, learners, pb, meta$weights_r,
+                 .SL_folds)
   cumprod_ratios <- ratio_ipw(recombine_ipw(ratios), .trim)
 
   out <- compute_theta(
