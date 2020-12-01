@@ -8,36 +8,38 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
              shifted = matrix(nrow = nv, ncol = tau))
 
   for (t in 1:tau) {
-    irt <- rep(censored(training, cens, t)$j, 2)
+    irt <- rep(censored(training, cens, t)$i, 2)
+    jrt <- rep(censored(training, cens, t)$j, 2)
     drt <- rep(at_risk(training, risk, t), 2)
-    irv <- rep(censored(validation, cens, t)$j, 2)
+    irv <- rep(censored(validation, cens, t)$i, 2)
+    jrv <- rep(censored(validation, cens, t)$j, 2)
     drv <- rep(at_risk(validation, risk, t), 2)
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
-    fit <- run_ensemble(subset(stcks$train, irt & drt)$si,
-                        subset(stcks$train, irt & drt)[, c(node_list[[t]], cens[[t]])],
+    fit <- run_ensemble(subset(stcks$train, jrt & drt)$si,
+                        subset(stcks$train, jrt & drt)[, c(node_list[[t]], cens[[t]])],
                         learners,
                         "binomial",
-                        subset(stcks$train, irt & drt)$lmtp_id)
+                        subset(stcks$train, jrt & drt)$lmtp_id)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
-    pred <- matrix(nrow = nt * 2, ncol = 1)
-    pred[irt & drt, ] <- bound(
-      predict(fit, stcks$train[irt & drt, c(node_list[[t]], cens[[t]])])$pred,
+    pred <- matrix(-999L, nrow = nt * 2, ncol = 1)
+    pred[jrt & drt, ] <- bound(
+      predict(fit, stcks$train[jrt & drt, c(node_list[[t]], cens[[t]])])$pred,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred, training, cens, t)
+    rat <- create_ratios(pred, irt, drt)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
 
-    pred <- matrix(nrow = nv * 2, ncol = 1)
-    pred[irv & drv, ] <- bound(
-      predict(fit, stcks$valid[irv & drv, c(node_list[[t]], cens[[t]])])$pred,
+    pred <- matrix(-999L, nrow = nv * 2, ncol = 1)
+    pred[jrv & drv, ] <- bound(
+      predict(fit, stcks$valid[jrv & drv, c(node_list[[t]], cens[[t]])])$pred,
       .Machine$double.eps
     )
 
-    rat <- create_ratios(pred, validation, cens, t)
+    rat <- create_ratios(pred, irv, drv)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
 
@@ -48,10 +50,8 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
        sl_weights = sl_weights)
 }
 
-create_ratios <- function(pred, data, cens, tau) {
-  out <- pred * rep(censored(data, cens, tau)$i, 2) / (1 - pred)
-  out <- ifelse(is.na(out), 0, out)
-  return(out)
+create_ratios <- function(pred, cens, risk) {
+  (pred * cens * risk) / (1 - pred)
 }
 
 ratio_dr <- function(ratios, V, trim) {
