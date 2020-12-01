@@ -19,8 +19,10 @@ lmtp_sdr(
   learners_outcome = "SL.glm",
   learners_trt = "SL.glm",
   folds = 10,
+  return_all_ratios = FALSE,
   .bound = 1e-05,
-  .trim = 0.999
+  .trim = 0.999,
+  .SL_folds = 10
 )
 }
 \arguments{
@@ -69,12 +71,18 @@ of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
 
+\item{return_all_ratios}{Logical. If \code{TRUE}, the non-cumulative product density
+ratios will be returned. The default is \code{FALSE}.}
+
 \item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 
 \item{.trim}{Determines the amount the density ratios should be trimmed.
 The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 to the 0.999 percentile. A value of 1 indicates no trimming.}
+
+\item{.SL_folds}{Integer. Controls the number of splits to be used for fitting
+the Super Learner. The default is 10.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -89,6 +97,8 @@ A list of class \code{lmtp} containing the following components:
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
 \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
+\item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
+\code{NULL} if \code{return_all_ratios = FALSE}.}
 \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 ensemble weights at each time-point for each fold for the outcome regression.}
 \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner

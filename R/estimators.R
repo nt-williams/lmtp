@@ -35,13 +35,15 @@
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
-#' @param return_all_ratios
+#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
+#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds
+#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
+#'  the Super Learner. The default is 10.
 
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -55,6 +57,8 @@
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
+#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
+#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -92,13 +96,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
                  meta$node_list$trt, learners_trt, pb, meta$weights_r, .SL_folds)
   cumprod_ratios <- ratio_dr(ratios, folds, .trim)
-
-  # dens_ratio <- ratio_dr(
-  #   cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
-  #        meta$node_list$trt, learners_trt, pb, meta$weights_r),
-  #   folds,
-  #   .trim
-  # )
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
@@ -163,13 +160,15 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
-#' @param return_all_ratios
+#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
+#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds
+#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
+#'  the Super Learner. The default is 10.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -183,6 +182,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
+#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
+#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -283,7 +284,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  is two folds.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .SL_folds
+#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
+#'  the Super Learner. The default is 10.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -378,13 +380,15 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
-#' @param return_all_ratios
+#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
+#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds
+#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
+#'  the Super Learner. The default is 10.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -395,6 +399,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
+#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
+#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the propensity.}
 #' @export

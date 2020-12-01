@@ -18,7 +18,8 @@ lmtp_sub(
   bounds = NULL,
   learners = "SL.glm",
   folds = 10,
-  .bound = 1e-05
+  .bound = 1e-05,
+  .SL_folds = 10
 )
 }
 \arguments{
@@ -66,6 +67,9 @@ is two folds.}
 
 \item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
+
+\item{.SL_folds}{Integer. Controls the number of splits to be used for fitting
+the Super Learner. The default is 10.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
