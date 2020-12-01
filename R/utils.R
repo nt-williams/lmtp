@@ -93,6 +93,10 @@ recombine_dens_ratio <- function(r) {
   return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
 }
 
+recombine_raw_ratio <- function(r) {
+  do.call(rbind, lapply(r, function(x) x$valid$natural))
+}
+
 hold_lrnr_weights <- function(folds) {
   lapply(1:folds, function(x) list())
 }

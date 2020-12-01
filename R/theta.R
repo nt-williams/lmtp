@@ -38,6 +38,7 @@ theta_ipw <- function(eta) {
               high = NA_real_,
               shift = eta$shift,
               density_ratios = eta$r[order(i), ],
+              raw_ratios = eta$raw_ratios[order(i), ],
               weights_r = eta$weights_r)
 
   class(out) <- "lmtp"
@@ -82,6 +83,7 @@ theta_dr <- function(eta) {
                 binomial = eta$m$shifted[order(i), ]
               ),
               density_ratios = eta$r[order(i), ],
+              raw_ratios = eta$raw_ratios[order(i), ],
               weights_m = eta$weights_m,
               weights_r = eta$weights_r,
               outcome_type = eta$outcome_type)
