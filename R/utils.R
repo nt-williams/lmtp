@@ -14,7 +14,7 @@ set_lmtp_options <- function(option, val) {
 }
 
 bound <- function(x, p = getOption("lmtp.bound")) {
-  pmax(pmin(x, 1 - p), p)
+  as.vector(pmax(pmin(x, 1 - p), p))
 }
 
 scale_y_continuous <- function(y, bounds) {
