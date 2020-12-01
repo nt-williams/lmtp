@@ -6,3 +6,7 @@ run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
                              env = environment(SuperLearner::SuperLearner),
                              cvControl = cv_control)
 }
+
+SL_predict <- function(fit, newdata, p = getOption("lmtp.bound")) {
+  bound(predict(fit, newdata)$pred[, 1], p)
+}

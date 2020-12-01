@@ -15,31 +15,26 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
     irv <- rep(censored(validation, cens, t)$i, 2)
     jrv <- rep(censored(validation, cens, t)$j, 2)
     drv <- rep(at_risk(validation, risk, t), 2)
+    vars <- c(node_list[[t]], cens[[t]])
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
-    fit <- run_ensemble(subset(stcks$train, jrt & drt)$si,
-                        subset(stcks$train, jrt & drt)[, c(node_list[[t]], cens[[t]])],
+    fit <- run_ensemble(stcks$train[jrt & drt, ]$si,
+                        stcks$train[jrt & drt, vars],
                         learners,
                         "binomial",
-                        subset(stcks$train, jrt & drt)$lmtp_id,
+                        stcks$train[jrt & drt, ]$lmtp_id,
                         SL_folds)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     pred <- matrix(-999L, nrow = nt * 2, ncol = 1)
-    pred[jrt & drt, ] <- bound(
-      predict(fit, stcks$train[jrt & drt, c(node_list[[t]], cens[[t]])])$pred,
-      .Machine$double.eps
-    )
+    pred[jrt & drt, ] <- SL_predict(fit, stcks$train[jrt & drt, vars], .Machine$double.eps)
 
     rat <- create_ratios(pred, irt, drt)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
 
     pred <- matrix(-999L, nrow = nv * 2, ncol = 1)
-    pred[jrv & drv, ] <- bound(
-      predict(fit, stcks$valid[jrv & drv, c(node_list[[t]], cens[[t]])])$pred,
-      .Machine$double.eps
-    )
+    pred[jrv & drv, ] <- SL_predict(fit, stcks$valid[jrv & drv, vars], .Machine$double.eps)
 
     rat <- create_ratios(pred, irv, drv)
     rv$natural[, t] <- rat[stcks$valid$si == 0]
