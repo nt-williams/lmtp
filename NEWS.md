@@ -4,10 +4,12 @@
 -   Survival outcome now estimates survival probability instead of cumulative incidence. This fixes a bug with IPW and survival problems.
 -   Outcome type now accepts "survival" for explicit indication of a survival outcome (issue \#76).
 -   New `.trimming` parameter for trimming extreme density ratios.
+-   New `.SL_folds` parameter that controls the splits used for fitting the SuperLearner (issue \#84).
+-   New `.return_all_ratios` parameter that allows for returning non-cumulative product density ratios to the user.
 -   `bound` parameter renamed to `.bound`.
 -   **slider** dependency removed.
 -   **data.table** added as a dependency.
--   `event_locf()` speed greatly improved.
+-   `event_locf()` speed greatly improved (issue \#80).
 -   Fixed a bug that outputted outcome regressions and density ratios in incorrect order compared to the original data.
 -   Fixed a bug in the missing data check that threw an error for missing data after an observation experiences the outcome.
 -   Fixed a bug that resulted in `NA` censoring indicators throwing an error for missing data.
