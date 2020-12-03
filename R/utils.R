@@ -102,7 +102,7 @@ hold_lrnr_weights <- function(folds) {
 }
 
 extract_sl_weights <- function(fit) {
-  fit$coef
+  as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
 }
 
 pluck_weights <- function(type, x) {

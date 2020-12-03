@@ -23,8 +23,7 @@ cf_r <- function(data, shift, V, trt, cens, deterministic, tau,
       estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, deterministic,
                  shift, tau, node_list, learners, pb, weights_r[[i]], SL_folds)
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
   out <- future::value(out)
   return(out)
@@ -41,8 +40,7 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                    outcome, node_list, C, deterministic, tau, outcome_type,
                    learners, m[[i]]$valid, pb, weights_m[[i]], SL_folds)
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
   out <- future::value(out)
   out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
@@ -63,8 +61,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
                     learners, pb, weights_m[[i]], SL_folds)
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
   m <- future::value(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),
@@ -86,8 +83,7 @@ cf_sdr <- function(data, shifted, V, outcome, node_list, C, deterministic,
                    outcome_type, learners, m_natural[[i]], m_shifted[[i]],
                    r[[i]], pb, weights_m[[i]], trim, SL_folds)
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
   m <- future::value(m)
   out <- list(natural = Reduce(rbind, lapply(m, function(x) x[["natural"]])),

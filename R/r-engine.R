@@ -18,23 +18,23 @@ estimate_r <- function(training, validation, trt, cens, risk, shift,
     vars <- c(node_list[[t]], cens[[t]])
 
     stcks <- create_r_stacks(training, validation, trt, cens, shift, t, nt, nv)
-    fit <- run_ensemble(stcks$train[jrt & drt, ]$si,
-                        stcks$train[jrt & drt, vars],
-                        learners,
-                        "binomial",
-                        stcks$train[jrt & drt, ]$lmtp_id,
-                        SL_folds)
+
+    fit_task <- initiate_sl3_task(stcks$train[jrt & drt, ], "si", vars, "binomial", "lmtp_id", SL_folds)
+    vpred_task <- initiate_sl3_task(stcks$valid[jrv & drv, ], "si", vars, "binomial", "lmtp_id", SL_folds)
+    ensemble <- initiate_ensemble("binomial", learners)
+
+    fit <- run_ensemble(ensemble, fit_task)
     sl_weights[[t]] <- extract_sl_weights(fit)
 
     pred <- matrix(-999L, nrow = nt * 2, ncol = 1)
-    pred[jrt & drt, ] <- SL_predict(fit, stcks$train[jrt & drt, vars], .Machine$double.eps)
+    pred[jrt & drt, ] <- SL_predict(fit, fit_task, .Machine$double.eps)
 
     rat <- create_ratios(pred, irt, drt)
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
 
     pred <- matrix(-999L, nrow = nv * 2, ncol = 1)
-    pred[jrv & drv, ] <- SL_predict(fit, stcks$valid[jrv & drv, vars], .Machine$double.eps)
+    pred[jrv & drv, ] <- SL_predict(fit, vpred_task, .Machine$double.eps)
 
     rat <- create_ratios(pred, irv, drv)
     rv$natural[, t] <- rat[stcks$valid$si == 0]

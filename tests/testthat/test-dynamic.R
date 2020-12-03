@@ -52,15 +52,15 @@ tml.tv <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on,
                     outcome_type = "binomial", folds = 2, .SL_folds = 3))
 
 sdr.tv <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on,
-                   outcome_type = "binomial", folds = 2, .SL_folds = 3))
+                   outcome_type = "binomial", folds = 2, .SL_folds = 2))
 
 # time varying and covariate dynamic
 # truth = 0.345
 tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec,
-                     outcome_type = "binomial", folds = 2, .SL_folds = 3))
+                     outcome_type = "binomial", folds = 2, .SL_folds = 2))
 
 sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec,
-                    outcome_type = "binomial", folds = 2, .SL_folds = 3))
+                    outcome_type = "binomial", folds = 2, .SL_folds = 2))
 
 # tests
 test_that("Dynamic intervention fidelity", {

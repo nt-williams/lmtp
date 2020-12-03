@@ -70,8 +70,10 @@
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       time_vary = NULL, cens = NULL, shift, k = Inf,
                       outcome_type = c("binomial", "continuous", "survival"),
-                      id = NULL, bounds = NULL, learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm", folds = 10, return_all_ratios = FALSE,
+                      id = NULL, bounds = NULL,
+                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                      folds = 10, return_all_ratios = FALSE,
                       .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -195,8 +197,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm", folds = 10, return_all_ratios = FALSE,
+                     id = NULL, bounds = NULL,
+                     learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+                     learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -306,8 +310,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = "SL.glm", folds = 10,
-                     .bound = 1e-5, .SL_folds = 10) {
+                     id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, .bound = 1e-5, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -409,7 +413,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf,
                      id = NULL, shift, outcome_type = c("binomial", "continuous", "survival"),
-                     learners = "SL.glm", folds = 10, return_all_ratios = FALSE,
+                     learners = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
