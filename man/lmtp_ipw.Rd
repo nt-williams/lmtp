@@ -15,7 +15,7 @@ lmtp_ipw(
   id = NULL,
   shift,
   outcome_type = c("binomial", "continuous", "survival"),
-  learners = "SL.glm",
+  learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
   return_all_ratios = FALSE,
   .bound = 1e-05,
@@ -56,8 +56,8 @@ See examples for how to specify shift functions for continuous, binary, and cate
 
 \item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
-\item{learners}{A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{learners}{An optional \code{sl3} learner stack for estimation of the exposure
+mechanism. If not specified, will default to using a main effects generalized linear model.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
@@ -259,7 +259,7 @@ baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_ipw(sim_point_surv, a, y, baseline, cens = cens,
                      shift = static_binary_on, folds = 2,
-                     outcome_type = "survival")
+                     outcome_type = "survival", .SL_folds = 3)
 })
 psi5.1
 }

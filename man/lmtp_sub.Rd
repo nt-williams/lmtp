@@ -16,7 +16,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners = "SL.glm",
+  learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
   .bound = 1e-05,
   .SL_folds = 10
@@ -59,8 +59,8 @@ all time points.}
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners}{A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{learners}{An optional \code{sl3} learner stack for estimation of the outcome
+regression. If not specified, will default to using a main effects generalized linear model.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
@@ -254,7 +254,7 @@ baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_sub(sim_point_surv, a, y, baseline, cens = cens,
                      shift = static_binary_on, folds = 2,
-                     outcome_type = "survival")
+                     outcome_type = "survival", .SL_folds = 3)
 })
 psi5.1
 }

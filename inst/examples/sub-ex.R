@@ -160,7 +160,7 @@ baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_sub(sim_point_surv, a, y, baseline, cens = cens,
                      shift = static_binary_on, folds = 2,
-                     outcome_type = "survival")
+                     outcome_type = "survival", .SL_folds = 3)
 })
 psi5.1
 }
