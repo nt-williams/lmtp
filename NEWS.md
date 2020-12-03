@@ -1,4 +1,4 @@
-# lmtp 1.0.0.9000
+# lmtp 1.0.0.5000
 
 ### New Features
 
@@ -31,8 +31,6 @@
 -   Fixed `create_node_list()` returns description (issue \#77).
 
 ### Dependencies
-
--   Now relies on the **SuperLearner** package for estimation.
 
 -   **slider** dependency removed.
 
