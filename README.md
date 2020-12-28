@@ -43,7 +43,7 @@ computation time when treatment is continuous. Dynamic treatment regimes
 are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying [article]().
+accompanying vignette.
 
 ## Installation
 
@@ -57,6 +57,12 @@ The stable, development version can be installed from GitHub with:
 
 ``` r
 devtools::install_github("nt-williams/lmtp@devel")
+```
+
+The **sl3** compatible version can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
 ## What even is a modified treatment policy?
@@ -101,11 +107,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Loading required package: SuperLearner
-#> Loading required package: nnls
-#> Super Learner
-#> Version: 2.0-27-9000
-#> Package created on 2019-08-12
+#> Major changes in lmtp 1.0.0. Consult NEWS.md for more information.
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
