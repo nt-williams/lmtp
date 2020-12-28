@@ -44,3 +44,4 @@ Suggests:
     knitr, 
     ranger, 
     twang
+VignetteBuilder: knitr
