@@ -16,6 +16,8 @@
 
 ### Bug Fixes
 
+-   Fixed a bug that caused the final estimate to be incorrectly estimated with SDR.
+
 -   Fixed a bug that outputted outcome regressions and density ratios in incorrect order compared to the original data.
 
 -   Fixed a bug in the missing data check that threw an error for missing data after an observation experiences the outcome.
