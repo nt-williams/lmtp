@@ -17,6 +17,7 @@ lmtp_ipw(
   outcome_type = c("binomial", "continuous", "survival"),
   learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
+  weights = NULL,
   return_all_ratios = FALSE,
   .bound = 1e-05,
   .trim = 0.999,
@@ -61,6 +62,8 @@ mechanism. If not specified, will default to using a main effects generalized li
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
+
+\item{weights}{An optional vector of length n containing sampling weights.}
 
 \item{return_all_ratios}{Logical. If \code{TRUE}, the non-cumulative product density
 ratios will be returned. The default is \code{FALSE}.}

@@ -14,12 +14,13 @@ Meta <- R6::R6Class(
     survival = NULL,
     bounds = NULL,
     folds = NULL,
+    weights = NULL,
     weights_m = NULL,
     weights_r = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
                           shift, learners_trt, learners_outcome, id,
-                          outcome_type = NULL, V = 10, bounds = NULL,
-                          bound = NULL) {
+                          outcome_type = NULL, V = 10, weights = NULL,
+                          bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt, cens)
 
       data <- fix_censoring_ind(data, cens, self$tau)
@@ -103,6 +104,10 @@ Meta <- R6::R6Class(
           ),
           self$folds
         )
+
+      if (!is.null(weights)) {
+        self$weights <- get_folded_weights(weights, self$folds)
+      }
 
       self$weights_m <- hold_lrnr_weights(V)
       self$weights_r <- hold_lrnr_weights(V)

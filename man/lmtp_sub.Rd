@@ -18,6 +18,7 @@ lmtp_sub(
   bounds = NULL,
   learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
+  weights = NULL,
   .bound = 1e-05,
   .SL_folds = 10
 )
@@ -64,6 +65,8 @@ regression. If not specified, will default to using a main effects generalized l
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
+
+\item{weights}{An optional vector of length n containing sampling weights.}
 
 \item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}

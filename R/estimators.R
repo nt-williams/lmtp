@@ -35,6 +35,7 @@
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
+#' @param weights An optional vector of length n containing sampling weights.
 #' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
 #'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
@@ -73,7 +74,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
                       learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-                      folds = 10, return_all_ratios = FALSE,
+                      folds = 10, weights = NULL, return_all_ratios = FALSE,
                       .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -89,6 +90,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
+    weights = weights,
     bounds = bounds,
     bound = .bound
   )
@@ -102,7 +104,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
             cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
-            cumprod_ratios, learners_outcome, pb, meta$weights_m, .SL_folds)
+            cumprod_ratios, learners_outcome, pb, meta$weights, meta$weights_m, .SL_folds)
 
   out <- compute_theta(
     estimator = "tml",
@@ -116,6 +118,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
       id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
+      weights = weights,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", cumprod_ratios),
@@ -162,6 +165,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
+#' @param weights An optional vector of length n containing sampling weights.
 #' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
 #'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
@@ -200,7 +204,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
                      id = NULL, bounds = NULL,
                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, return_all_ratios = FALSE,
+                     folds = 10, weights = NULL, return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -216,6 +220,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
+    weights = NULL,
     bounds = bounds,
     bound = .bound
   )
@@ -239,6 +244,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
       raw_ratios = if (return_all_ratios) recombine_raw_ratio(ratios),
       tau = meta$tau,
       folds = meta$folds,
+      weights = weights,
       id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
@@ -286,6 +292,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  regression. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
+#' @param weights An optional vector of length n containing sampling weights.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .SL_folds Integer. Controls the number of splits to be used for fitting
@@ -311,7 +318,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, shift, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, .bound = 1e-5, .SL_folds = 10) {
+                     folds = 10, weights = NULL, .bound = 1e-5, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
@@ -326,6 +333,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
+    weights = NULL,
     bounds = bounds,
     bound = .bound
   )
@@ -344,6 +352,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       folds = meta$folds,
+      weights = weights,
       shift = deparse(substitute((shift))),
       weights_m = pluck_weights("m", estims),
       outcome_type = meta$outcome_type
@@ -384,6 +393,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
+#' @param weights An optional vector of length n containing sampling weights.
 #' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
 #'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
@@ -414,7 +424,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
                      time_vary = NULL, cens = NULL, k = Inf,
                      id = NULL, shift, outcome_type = c("binomial", "continuous", "survival"),
                      learners = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, return_all_ratios = FALSE,
+                     folds = 10, weights = NULL, return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -430,6 +440,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
+    weights = NULL,
     bounds = NULL,
     bound = .bound
   )
@@ -452,6 +463,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
         data[[final_outcome(outcome)]]
       },
       folds = meta$folds,
+      weights = weights,
       tau = meta$tau,
       shift = deparse(substitute((shift))),
       weights_r = cumprod_ratios$sl_weights

@@ -50,8 +50,8 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
                           outcome, node_list, C, risk, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights,
-                          SL_folds) {
+                          m_natural, m_shifted, r, learners = NULL, pb,
+                          weights = NULL, sl_weights, SL_folds) {
   if (tau > 0) {
     i <- censored(training, C, tau)$i
     jt <- censored(training, C, tau)$j
@@ -76,8 +76,16 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     m_natural$valid[jv & rv, tau] <- SL_predict(fit, vnshift_task)
     m_shifted$valid[jv & rv, tau] <- SL_predict(fit, vshift_task)
 
-    fit <- sw(glm(training[i & rt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & rt, tau])),
-                                weights = r$train[i & rt, tau], family = "binomial"))
+    wts <- {
+      if (is.null(weights))
+        r$train[i & rt, tau]
+      else
+        r$train[i & rt, tau] * weights[i & rt]
+    }
+
+    fit <- sw(glm(training[i & rt, ][[outcome]]
+                  ~ offset(qlogis(m_natural$train[i & rt, tau])),
+                  weights = wts, family = "binomial"))
 
     training[jt & rt, pseudo] <- bound(plogis(qlogis(m_shifted$train[jt & rt, tau]) + coef(fit)))
     m_natural$valid[jv & rv, tau] <- bound(plogis(qlogis(m_natural$valid[jv & rv, tau]) + coef(fit)))
