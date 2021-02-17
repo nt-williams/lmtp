@@ -13,6 +13,14 @@ get_folded_data <- function(data, folds) {
   return(out)
 }
 
+get_folded_weights <- function(weights, folds) {
+  out <- list()
+  for (i in 1:length(folds)) {
+    out[[i]] <- weights[folds[[i]]$training_set]
+  }
+  return(out)
+}
+
 cf_r <- function(data, shift, V, trt, cens, deterministic, tau,
                  node_list, learners, pb, weights_r, SL_folds) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
@@ -51,8 +59,8 @@ cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
 }
 
 cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
-                    outcome_type, m_natural, m_shifted, r, learners, pb, weights_m,
-                    SL_folds) {
+                    outcome_type, m_natural, m_shifted, r, learners, pb,
+                    weights, weights_m, SL_folds) {
   fopts <- options("lmtp.bound")
   m <- list()
   for (i in 1:V) {
@@ -61,7 +69,7 @@ cf_tmle <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
       estimate_tmle(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid,
                     shifted[[i]]$valid, outcome, node_list, C, deterministic, tau,
                     outcome_type, m_natural[[i]], m_shifted[[i]], r[[i]],
-                    learners, pb, weights_m[[i]], SL_folds)
+                    learners, pb, weights[[i]], weights_m[[i]], SL_folds)
     },
     seed = TRUE,
     globals = structure(TRUE, add = learners))

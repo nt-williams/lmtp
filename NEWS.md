@@ -1,6 +1,8 @@
-# lmtp 1.0.0.9000
+# lmtp 0.9.0.9000
 
 ### New Features
+
+-   New `weights` parameter for observation sampling weights (issue \#78).
 
 -   For time-to-event analysis, survival probability is now estimated instead of the cumulative incidence. This fixes a bug with IPW and survival problems.
 
@@ -16,7 +18,7 @@
 
 ### Bug Fixes
 
--   Fixed a bug that caused the final estimate to be incorrectly estimated with SDR.
+-   Fixed a bug that caused the final estimate to be incorrectly estimated with SDR (issue \#87).
 
 -   Fixed a bug that outputted outcome regressions and density ratios in incorrect order compared to the original data.
 
