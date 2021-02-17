@@ -2,7 +2,8 @@ compute_theta <- function(estimator, eta) {
   out <- switch(estimator,
                 "ipw" = theta_ipw(eta),
                 "sub" = theta_sub(eta),
-                "dr"  = theta_dr(eta))
+                "sdr" = theta_dr(eta, TRUE),
+                "tml" = theta_dr(eta, FALSE))
 
   return(out)
 }
@@ -53,11 +54,16 @@ eif <- function(r, tau, shifted, natural) {
   return(out)
 }
 
-theta_dr <- function(eta) {
+theta_dr <- function(eta, augmented = FALSE) {
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
   inflnce <- eif(r = eta$r, tau = eta$tau, shifted = eta$m$shifted,
                  natural = eta$m$natural)[order(i)]
-  theta <- mean(eta$m$shifted[, 1])
+
+  if (augmented) {
+    theta <- mean(inflnce)
+  } else {
+    theta <- mean(eta$m$shifted[, 1])
+  }
 
   if (eta$outcome_type == "continuous") {
     inflnce <- rescale_y_continuous(inflnce, eta$bounds)
