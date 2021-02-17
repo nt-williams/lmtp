@@ -105,7 +105,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
             cumprod_ratios, learners_outcome, pb, meta$weights_m, .SL_folds)
 
   out <- compute_theta(
-    estimator = "dr",
+    estimator = "tml",
     eta = list(
       estimator = "TMLE",
       m = estims,
@@ -231,7 +231,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
            ratios, learners_outcome, pb, meta$weights_m, .trim, .SL_folds)
 
   out <- compute_theta(
-    estimator = "dr",
+    estimator = "sdr",
     eta = list(
       estimator = "SDR",
       m = estims,
