@@ -98,6 +98,7 @@ regimes for binary, continuous, and survival outcomes.
 | Binary outcome                  |   ✓    |
 | Censored outcome                |   ✓    |
 | Mediation                       |        |
+| Survey weights                  |   ✓    |
 | Super learner                   |   ✓    |
 | Clustered data                  |   ✓    |
 | Parallel processing             |   ✓    |
@@ -107,7 +108,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Major changes in lmtp 1.0.0. Consult NEWS.md for more information.
+#> This is the sl3 compatible version of lmtp!
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
