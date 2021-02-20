@@ -1,6 +1,4 @@
 \donttest{
-library(lmtp)
-
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units
@@ -49,7 +47,7 @@ psi2.1
 
 # Example 2.2
 # Example 2.1 assumed that the outcome (as well as the treatment variables)
-# were directly affected by all other nodes in the past. In certain situtations,
+# were directly affected by all other nodes in the past. In certain situations,
 # domain specific knowledge may suggest otherwise leading to a Markov processes.
 # This can be controlled using the k argument.
 progressr::with_progress({
@@ -113,17 +111,19 @@ psi2.4
 # Longitudinal setting, time-varying binary treatment, time-varying covariates
 # and baseline covariates with no loss-to-follow-up. Interested in a traditional
 # causal effect where treatment is set to 1 at all time points for all observations.
-data("iptwExWide", package = "twang")
-a <- paste0("tx", 1:3)
-baseline <- c("gender", "age")
-tv <- list(c("use0"), c("use1"), c("use2"))
-progressr::with_progress({
-  psi3.1 <-
-    lmtp_tmle(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-              shift = static_binary_on, outcome_type = "continuous",
-              folds = 2)
-})
-psi3.1
+if (require("twang")) {
+  data("iptwExWide", package = "twang")
+  a <- paste0("tx", 1:3)
+  baseline <- c("gender", "age")
+  tv <- list(c("use0"), c("use1"), c("use2"))
+  progressr::with_progress({
+    psi3.1 <-
+      lmtp_tmle(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+                shift = static_binary_on, outcome_type = "continuous",
+                folds = 2)
+  })
+  psi3.1
+}
 
 # Example 4.1
 # Longitudinal setting, time-varying continuous treatment, time-varying covariates,
@@ -159,7 +159,8 @@ cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens,
-                      shift = static_binary_on, folds = 2)
+                      shift = static_binary_on, folds = 2,
+                      outcome_type = "survival")
 })
 psi5.1
 }

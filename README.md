@@ -1,18 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
-======================================================================
+# lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/lmtp)](https://CRAN.R-project.org/package=lmtp)
-![](http://cranlogs.r-pkg.org/badges/grand-total/lmtp) [![Build
-Status](https://travis-ci.com/nt-williams/lmtp.svg?token=DA4a53nWMx6q9LisKdRD&branch=master)](https://travis-ci.com/nt-williams/lmtp)
+![](http://cranlogs.r-pkg.org/badges/grand-total/lmtp) [![R build
+status](https://github.com/nt-williams/lmtp/workflows/R-CMD-check/badge.svg)](https://github.com/nt-williams/lmtp/actions)
 [![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
-[![MIT
-license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+[![License: GPL
+v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -24,20 +23,6 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 Nick Williams and Ivan Diaz
 
-------------------------------------------------------------------------
-
-Installation
-------------
-
-**lmtp** can be installed from CRAN with:
-
-    install.packages("lmtp")
-
-The stable, development version can be installed from GitHub with:
-
-    devtools::install_github("nt-williams/lmtp@devel")
-
-Scope
 -----
 
 **lmtp** is an R package that provides an estimation framework for the
@@ -50,20 +35,56 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
-machine learning for estimation. The treatment mechanism is estimated
-via a density ratio classification procedure irrespective of treatment
-variable type providing decreased computation time when treatment is
-continuous. Dynamic treatment regimes are also supported.
+[`SuperLearner`](https://cran.r-project.org/package=SuperLearner)
+package to utilize ensemble machine learning for estimation. The
+treatment mechanism is estimated via a density ratio classification
+procedure irrespective of treatment variable type providing decreased
+computation time when treatment is continuous. Dynamic treatment regimes
+are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying
-[article](https://htmlpreview.github.io/?https://gist.githubusercontent.com/nt-williams/ddd44c48390b8d976fad71750e48d8bf/raw/45db700a02bf92e2a55790e60ed48266a97ca4e7/intro-lmtp.html).
+accompanying vignette.
+
+## Installation
+
+**lmtp** can be installed from CRAN with:
+
+``` r
+install.packages("lmtp")
+```
+
+The stable, development version can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@devel")
+```
+
+The **sl3** compatible version can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@sl3")
+```
+
+## What even is a modified treatment policy?
+
+Modified treatment policies (MTP) are interventions that can depend on
+the *natural* value of the treatment (the treatment value in the absence
+of intervention). A key assumption for causal inference is the
+*positivity assumption* which states that all observations have a
+non-zero probability of experiencing a treatment value. **When working
+with continuous or multivalued treatments, violations of the positivity
+assumption are likely to occur. MTPs offer a solution to this problem.**
+
+## Can lmtp estimation other effects?
+
+Yes\! **lmtp** can estimate the effects of deterministic, static
+treatment effects (such as the ATE) and deterministic, dynamic treatment
+regimes for binary, continuous, and survival outcomes.
 
 ### Features
 
 | Feature                         | Status |
-|---------------------------------|:------:|
+| ------------------------------- | :----: |
 | Point treatment                 |   ✓    |
 | Longitudinal treatment          |   ✓    |
 | Modified treatment intervention |   ✓    |
@@ -82,52 +103,59 @@ accompanying
 | Parallel processing             |   ✓    |
 | Progress bars                   |   ✓    |
 
-Example
--------
+## Example
 
-    library(lmtp)
+``` r
+library(lmtp)
+#> Major changes in lmtp 1.0.0. Consult NEWS.md for more information.
 
-    # the data: 4 treatment nodes with time varying covariates and a binary outcome
-    head(sim_t4)
-    #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y
-    #> 1  1   2   3   0   1   1   1   1   3 0
-    #> 2  2   2   1   1   4   0   3   1   2 0
-    #> 3  3   1   0   1   3   1   2   1   1 1
-    #> 4  4   1   0   0   3   1   3   1   2 0
-    #> 5  5   3   3   1   1   0   1   1   2 0
-    #> 6  6   1   0   0   2   0   3   1   4 0
+# the data: 4 treatment nodes with time varying covariates and a binary outcome
+head(sim_t4)
+#>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y
+#> 1  1   2   3   0   1   1   1   1   3 0
+#> 2  2   2   1   1   4   0   3   1   2 0
+#> 3  3   1   0   1   3   1   2   1   1 1
+#> 4  4   1   0   0   3   1   3   1   2 0
+#> 5  5   3   3   1   1   0   1   1   2 0
+#> 6  6   1   0   0   2   0   3   1   4 0
+```
 
 We’re interested in a treatment policy, `d`, where exposure is decreased
 by 1 only among subjects whose exposure won’t go below 1 if intervened
 upon. The true population outcome under this policy is about 0.305.
 
-    # our treatment policy function to be applied at all time points
-    policy <- function(data, trt) {
-      (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
-    }
+``` r
+# our treatment policy function to be applied at all time points
+policy <- function(data, trt) {
+  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+}
+```
 
 In addition to specifying a treatment policy, we need to specify our
 treatment variables and time-varying covariates.
 
-    # our treatment nodes, a character vector of length 4
-    a <- c("A_1", "A_2", "A_3", "A_4")
-    # our time varying nodes, a list of length 4
-    time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+``` r
+# our treatment nodes, a character vector of length 4
+a <- c("A_1", "A_2", "A_3", "A_4")
+# our time varying nodes, a list of length 4
+time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+```
 
 We can now estimate the effect of our treatment policy, `d`. In this
 example, we’ll use the cross-validated TML estimator with 10 folds.
 
-    lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
-    #> LMTP Estimator: TMLE
-    #>    Trt. Policy: (policy)
-    #> 
-    #> Population intervention effect
-    #>       Estimate: 0.2598
-    #>     Std. error: 0.0188
-    #>         95% CI: (0.2228, 0.2967)
+``` r
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
+#> LMTP Estimator: TMLE
+#>    Trt. Policy: (policy)
+#> 
+#> Population intervention effect
+#>       Estimate: 0.2598
+#>     Std. error: 0.0188
+#>         95% CI: (0.2228, 0.2967)
+```
 
-Similar Implementations
------------------------
+## Similar Implementations
 
 A variety of other R packages perform similar tasks as **lmtp**.
 However, **lmtp** is the only R package currently capable of estimating
@@ -135,14 +163,13 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+  - [`txshift`](https://github.com/nhejazi/txshift)  
+  - [`tmle3`](https://github.com/tlverse/tmle3)  
+  - [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+  - [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+  - [`tmle`](https://CRAN.R-project.org/package=tmle)
 
-Citation
---------
+## Citation
 
 Please cite the following when using **lmtp** in publications. Citation
 should include both the R package and the paper establishing the
@@ -156,7 +183,7 @@ statistical methodology.
         doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }
-
+    
     @Article{,
         journal = {arxiv},
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},
@@ -165,9 +192,8 @@ statistical methodology.
         url = {https://arxiv.org/abs/2006.01366v2}
     }
 
-References
-----------
+## References
 
 Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric
 Causal Effects Based on Longitudinal Modified Treatment Policies*.
-<a href="https://arxiv.org/abs/2006.01366" class="uri">https://arxiv.org/abs/2006.01366</a>
+<https://arxiv.org/abs/2006.01366>

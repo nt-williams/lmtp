@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 0.0.6
+Version: 0.9.0
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -17,16 +17,15 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   and traditional longitudinal effects. Continuous, binary, and categorical treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
-  can be calculated and relative risks and odds ratios may be calculated for binary outcomes. Estimation is enhanced 
-  using the Super Learner from 'sl3' available for download from GitHub using 'remotes::install_github("tlverse/sl3@devel")'. 
-Depends: R (>= 2.10)
+  can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
+Depends: 
+    R (>= 2.10)
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: 
-    slider,
     stats,
     nnls,
     cli,
@@ -35,7 +34,9 @@ Imports:
     generics,
     origami,
     future (>= 1.17.0),
-    progressr
+    progressr,
+    data.table,
+    SuperLearner
 Suggests: 
     testthat (>= 2.1.0),
     covr,
@@ -43,5 +44,4 @@ Suggests:
     knitr, 
     ranger, 
     twang
-Enhances:
-    sl3 (>= 1.3.7)
+VignetteBuilder: knitr

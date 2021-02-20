@@ -1,22 +1,6 @@
-
 no_stderr_warning <- function(estimator) {
   cat("\n")
   cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
-}
-
-no_sl3 <- function() {
-  cli::cli_text("Enhancement package, {.pkg sl3}, not detected.")
-  cli::cli_text("{.pkg sl3} can be installed with: {.code remotes::install_github('tlverse/sl3@devel')}")
-}
-
-check_sd <- function(x, learner_stack) {
-  if (sd(x) > .Machine$double.eps) {
-    out <- learner_stack
-  } else {
-    out <- sl3::Lrnr_mean
-  }
-
-  return(out)
 }
 
 check_censoring <- function(data, C, Y) {
@@ -27,11 +11,11 @@ check_censoring <- function(data, C, Y) {
 
 check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, tau) {
   for (t in 1:tau) {
-    i <- create_censoring_indicators(data, cens, t)$j
-    if (any(is.na(as.matrix(data[i, c(check_trt_length(trt, time_vary, cens, tau)[t],
-                                      baseline, unlist(time_vary[t]))])))) {
+    ci <- censored(data, cens, t)$j
+    di <- at_risk(data, cens, t)
+    if (any(is.na(as.matrix(data[ci & !di, c(check_trt_length(trt, time_vary, cens, tau)[t], baseline, unlist(time_vary[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
-           call. = F)
+           call. = FALSE)
     }
   }
 }
@@ -41,7 +25,7 @@ check_for_variables <- function(data, trt, outcome, baseline, nodes, cens) {
   if (!all(vars %in% names(data))) {
     warn <- vars[which(!(vars %in% names(data)))]
     stop("Variable(s) ", paste(warn, collapse = ", "), " not found in data.",
-         call. = F)
+         call. = FALSE)
   }
 }
 
@@ -76,13 +60,13 @@ check_scaled_conflict <- function(data) {
   )
 }
 
-check_extreme_ratio <- function(ratio) {
-  return(apply(ratio, 2, function(x) pmin(x, quantile(x, 0.999))))
+check_extreme_ratio <- function(ratio, trim) {
+  return(apply(ratio, 2, function(x) pmin(x, quantile(x, trim))))
 }
 
-check_variation <- function(data, outcome, learners) {
-  if (sd(data[[outcome]]) < .Machine$double.eps) {
-    learners <- sl3::make_learner(sl3::Lrnr_mean)
+check_variation <- function(outcome, learners) {
+  if (sd(outcome) < .Machine$double.eps) {
+    return("SL.mean")
   }
   return(learners)
 }
@@ -102,7 +86,7 @@ check_outcome_type <- function(fits, ref, type) {
 
   if (isFALSE(check)) {
     stop(toupper(type), " contrast specified but one or more outcome types are non-binary.",
-         call. = F)
+         call. = FALSE)
   }
 }
 
@@ -116,9 +100,8 @@ check_lmtp_type <- function(fits, ref) {
 
   if (isFALSE(check)) {
     stop("Contrasts not implemented for substitution/IPW estimators.",
-         call. = F)
+         call. = FALSE)
   }
-
 }
 
 check_ref_type <- function(ref, type) {
@@ -126,13 +109,13 @@ check_ref_type <- function(ref, type) {
     if (class(ref) %in% c("numeric", "integer", "double")) {
       if (length(ref) != 1) {
         stop("Reference value should be a single object.",
-             call. = F)
+             call. = FALSE)
       }
       message("Non-estimated reference value, defaulting type = 'additive'.")
       out <- "additive"
     } else {
       stop("Reference must either be a single numeric value or another lmtp object.",
-           call. = F)
+           call. = FALSE)
     }
   } else {
     out <- type
@@ -149,7 +132,7 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
         return(trt)
       } else {
         stop("It appears there is a mismatch in your data. Make sure parameters `trt`, `time_vary`, and `cens` are of the same length.",
-             call. = F)
+             call. = FALSE)
       }
     } else if (!is.null(time_vary) & is.null(cens)) {
       if (tau == length(time_vary)) {
@@ -157,7 +140,7 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
         return(trt)
       } else {
         stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `time_vary` are of the same length.",
-             call. = F)
+             call. = FALSE)
       }
     } else if (is.null(time_vary & !is.null(cens))) {
       if (tau == length(cens)) {
@@ -165,7 +148,7 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
         return(trt)
       } else {
         stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `cens` are of the same length",
-             call. = F)
+             call. = FALSE)
       }
     } else {
       set_lmtp_options("trt", "standard")
@@ -177,38 +160,28 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   }
 }
 
-check_deterministic <- function(outcomes, tau) {
+check_at_risk <- function(outcomes, tau) {
   if (length(outcomes) == 1) {
     return(NULL)
   } else if (length(outcomes) == tau) {
     return(outcomes[1:tau - 1])
   } else {
     stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
-         call. = F)
+         call. = FALSE)
   }
 }
 
 check_folds <- function(V) {
-  if (V > 1) {
-    on.exit()
-  } else {
-    stop("The number of folds must be greater than 1.", call. = F)
+  if (V <= 1) {
+    stop("The number of folds must be greater than 1.", call. = FALSE)
   }
 }
 
  check_time_vary <- function(time_vary = NULL) {
    if (!is.null(time_vary)) {
      if (!is.list(time_vary)) {
-       stop("time_vary must be a list.", call. = F)
+       stop("time_vary must be a list.", call. = FALSE)
      }
-   }
- }
-
- check_estimation_engine <- function(learners_trt, learners_outcome) {
-   if (is.null(learners_trt) & is.null(learners_outcome)) {
-     set_lmtp_options("engine", "glm")
-   } else {
-     set_lmtp_options("engine", "sl3")
    }
  }
 
@@ -221,3 +194,33 @@ check_folds <- function(V) {
      return(outcome_type)
    }
  }
+
+check_mult_outcomes <- function(outcome, outcome_type) {
+  if (outcome_type == "survival") {
+    if (length(outcome) == 1) {
+      stop("'outcome_type' set to survival, but the length of 'outcome' is one.", call. = FALSE)
+    }
+  } else if (length(outcome) > 1) {
+    stop("The length of 'outcome' is greater than one, but 'outcome_type' not set to survival.", call. = FALSE)
+  }
+}
+
+check_is_binary <- function(data, outcome, outcome_type) {
+  if (outcome_type %in% c("binomial", "survival")) {
+    vals <- lapply(outcome, function(x) {
+      as.character(unique(na.omit(data[[x]])))
+    })
+    if (!all(unlist(lapply(vals, function(x) all(x %in% c("0", "1")))))) {
+      stop("Only 0 and 1 alllowed in outcome variables if 'outcome_type' set to binomial or survival.",
+           call. = FALSE)
+    }
+  }
+}
+
+check_factors <- function(data, trt, baseline, nodes) {
+  vars <- c(trt, baseline, unlist(nodes))
+  if (any(unlist(lapply(data[, vars], is.factor)))) {
+    warning("Some of your variables appear to be factors. Make sure your SuperLearner library is capable of handling factors!",
+            call. = FALSE)
+  }
+}

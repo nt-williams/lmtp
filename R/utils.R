@@ -1,18 +1,15 @@
-
 determine_tau <- function(outcome, trt, cens) {
   surv <- length(outcome) > 1
   if (!surv) {
     return(length(trt))
-  } else {
-    return(length(cens))
   }
+  length(cens)
 }
 
 set_lmtp_options <- function(option, val) {
   switch (option,
-    "bound"  = options(lmtp.bound = val),
-    "trt"    = options(lmtp.trt.length = val),
-    "engine" = options(lmtp.engine = val)
+          "bound" = options(lmtp.bound = val),
+          "trt" = options(lmtp.trt.length = val)
   )
 }
 
@@ -21,28 +18,24 @@ bound <- function(x, p = getOption("lmtp.bound")) {
 }
 
 scale_y_continuous <- function(y, bounds) {
-  out <- (y - bounds[1]) / (bounds[2] - bounds[1])
   if (is.null(bounds)) {
-    out <- y
+    return(y)
   }
-  return(out)
+  (y - bounds[1]) / (bounds[2] - bounds[1])
 }
 
 y_bounds <- function(y, outcome_type, bounds = NULL) {
   if (outcome_type == "binomial" || is.null(outcome_type)) {
-    out <- NULL
-  } else if (is.null(bounds)) {
-    out <- c(min(y, na.rm = T), max(y, na.rm = T))
-  } else {
-    out <- c(bounds[1], bounds[2])
+    return(NULL)
   }
-
-  return(out)
+  if (is.null(bounds)) {
+    return(c(min(y, na.rm = T), max(y, na.rm = T)))
+  }
+  c(bounds[1], bounds[2])
 }
 
 rescale_y_continuous <- function(scaled, bounds) {
-  out <- (scaled*(bounds[2] - bounds[1])) + bounds[1]
-  return(out)
+  (scaled*(bounds[2] - bounds[1])) + bounds[1]
 }
 
 add_scaled_y <- function(data, scaled) {
@@ -50,8 +43,7 @@ add_scaled_y <- function(data, scaled) {
   return(data)
 }
 
-create_censoring_indicators <- function(data, cens, tau) {
-
+censored <- function(data, cens, tau) {
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
     i <- rep(TRUE, nrow(data))
@@ -73,13 +65,13 @@ create_censoring_indicators <- function(data, cens, tau) {
   return(out)
 }
 
-create_determ_indicators <- function(data, determ, tau) {
-  if (is.null(determ)) {
-    return(rep(FALSE, nrow(data)))
+at_risk <- function(data, risk, tau) {
+  if (is.null(risk)) {
+    return(rep(TRUE, nrow(data)))
   } else if (tau == 1) {
-    return(rep(FALSE, nrow(data)))
+    return(rep(TRUE, nrow(data)))
   } else {
-    return(data[[determ[tau - 1]]] == 1 & !is.na(data[[determ[tau - 1]]]))
+    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
   }
 }
 
@@ -101,16 +93,16 @@ recombine_dens_ratio <- function(r) {
   return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
 }
 
+recombine_raw_ratio <- function(r) {
+  do.call(rbind, lapply(r, function(x) x$valid$natural))
+}
+
 hold_lrnr_weights <- function(folds) {
   lapply(1:folds, function(x) list())
 }
 
 extract_sl_weights <- function(fit) {
-  if (getOption("lmtp.engine") == "sl3") {
-    as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
-  } else {
-    NULL
-  }
+  fit$coef
 }
 
 pluck_weights <- function(type, x) {
@@ -142,26 +134,34 @@ final_outcome <- function(outcomes) {
 #'
 #' @return A modified dataset with future outcome nodes set to 1 if an observation
 #'  experienced an event at any previous time point.
+#'
+#' @importFrom data.table as.data.table `:=` .SD
 #' @export
 #' @examples
-#' event_locf(sim_point_surv, c(paste0("Y.", 0:6)))
+#' event_locf(sim_point_surv, paste0("Y.", 0:6))
 event_locf <- function(data, outcomes) {
+  DT <- as.data.table(data)
   tau <- length(outcomes)
-  for (i in outcomes[1:(tau - 1)]) {
-    modify <- setdiff(outcomes[match(i, outcomes):tau], i) # find all outcomes at later time
-    for (j in 1:nrow(data)) {
-      if (data[j, i] == 1 & !is.na(data[j, i])) data[j, modify] <- 1 # if the event is observed at the current time, set all later events to 1
-    }
+  for (j in outcomes[1:(tau - 1)]) {
+    modify <- setdiff(outcomes[match(j, outcomes):tau], j)
+    DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
   }
-  return(data)
+  DT[]
+  return(DT)
 }
 
 create_ids <- function(data, id) {
   if (is.null(id)) {
-    out <- 1:nrow(data)
-  } else {
-    out <- data[[id]]
+    return(1:nrow(data))
   }
-  return(out)
+  data[[id]]
 }
 
+convert_to_surv <- function(x) {
+  data.table::fcase(x == 0, 1,
+                    x == 1, 0)
+}
+
+missing_outcome <- function(x) {
+  ifelse(is.na(x), 0, x)
+}

@@ -13,13 +13,17 @@ lmtp_tmle(
   cens = NULL,
   shift,
   k = Inf,
-  outcome_type = c("binomial", "continuous"),
+  outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners_outcome = NULL,
-  learners_trt = NULL,
+  learners_outcome = "SL.glm",
+  learners_trt = "SL.glm",
   folds = 10,
-  bound = 1e-05
+  weights = NULL,
+  return_all_ratios = FALSE,
+  .bound = 1e-05,
+  .trim = 0.999,
+  .SL_folds = 10
 )
 }
 \arguments{
@@ -33,8 +37,8 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{baseline}{An optional vector of columns names of baseline covariates to be
-included for adjustment at every timepoint.}
+\item{baseline}{An optional vector containing the column names of baseline covariates to be
+included for adjustment at every time point.}
 
 \item{time_vary}{A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
@@ -51,7 +55,7 @@ See examples for how to specify shift functions for continuous, binary, and cate
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial).}
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{id}{An optional column name containing cluster level identifiers.}
 
@@ -59,17 +63,29 @@ all time points.}
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners_outcome}{An optional \code{sl3} learner stack for estimation of the outcome
-regression. If not specified, will default to using a generalized linear model.}
+\item{learners_outcome}{A vector of \code{SuperLearner} algorithms for estimation
+of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 
-\item{learners_trt}{An optional \code{sl3} learner stack for estimation of the exposure
-mechanism. If not specified, will default to using a generalized linear model.}
+\item{learners_trt}{A vector of \code{SuperLearner} algorithms for estimation
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
 
-\item{bound}{Determines that maximum and minimum values (scaled) predictions
+\item{weights}{An optional vector of length n containing sampling weights.}
+
+\item{return_all_ratios}{Logical. If \code{TRUE}, the non-cumulative product density
+ratios will be returned. The default is \code{FALSE}.}
+
+\item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
+
+\item{.trim}{Determines the amount the density ratios should be trimmed.
+The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+to the 0.999 percentile. A value of 1 indicates no trimming.}
+
+\item{.SL_folds}{Integer. Controls the number of splits to be used for fitting
+the Super Learner. The default is 10.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -84,6 +100,8 @@ A list of class \code{lmtp} containing the following components:
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
 \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
+\item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
+\code{NULL} if \code{return_all_ratios = FALSE}.}
 \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 ensemble weights at each time-point for each fold for the outcome regression.}
 \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -97,8 +115,6 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 }
 \examples{
 \donttest{
-library(lmtp)
-
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
 # Interested in the effect of a population wide decrease in A of 5 units
@@ -147,7 +163,7 @@ psi2.1
 
 # Example 2.2
 # Example 2.1 assumed that the outcome (as well as the treatment variables)
-# were directly affected by all other nodes in the past. In certain situtations,
+# were directly affected by all other nodes in the past. In certain situations,
 # domain specific knowledge may suggest otherwise leading to a Markov processes.
 # This can be controlled using the k argument.
 progressr::with_progress({
@@ -211,17 +227,19 @@ psi2.4
 # Longitudinal setting, time-varying binary treatment, time-varying covariates
 # and baseline covariates with no loss-to-follow-up. Interested in a traditional
 # causal effect where treatment is set to 1 at all time points for all observations.
-data("iptwExWide", package = "twang")
-a <- paste0("tx", 1:3)
-baseline <- c("gender", "age")
-tv <- list(c("use0"), c("use1"), c("use2"))
-progressr::with_progress({
-  psi3.1 <-
-    lmtp_tmle(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-              shift = static_binary_on, outcome_type = "continuous",
-              folds = 2)
-})
-psi3.1
+if (require("twang")) {
+  data("iptwExWide", package = "twang")
+  a <- paste0("tx", 1:3)
+  baseline <- c("gender", "age")
+  tv <- list(c("use0"), c("use1"), c("use2"))
+  progressr::with_progress({
+    psi3.1 <-
+      lmtp_tmle(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+                shift = static_binary_on, outcome_type = "continuous",
+                folds = 2)
+  })
+  psi3.1
+}
 
 # Example 4.1
 # Longitudinal setting, time-varying continuous treatment, time-varying covariates,
@@ -257,7 +275,8 @@ cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_tmle(sim_point_surv, a, y, baseline, cens = cens,
-                      shift = static_binary_on, folds = 2)
+                      shift = static_binary_on, folds = 2,
+                      outcome_type = "survival")
 })
 psi5.1
 }

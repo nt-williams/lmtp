@@ -1,233 +1,211 @@
-
-estimate_sub <- function(training, shifted, validation, outcome,
-                         node_list, C, deterministic, tau, outcome_type,
-                         learners = NULL, m, pb, sl_weights) {
-
+estimate_sub <- function(training, shifted, validation, validation_shifted, outcome,
+                         node_list, C, risk, tau, outcome_type,
+                         learners = NULL, m, pb, sl_weights, SL_folds) {
   if (tau > 0) {
-    # setup
-    i          <- create_censoring_indicators(training, C, tau)$i
-    js         <- create_censoring_indicators(shifted, C, tau)$j
-    jv         <- create_censoring_indicators(validation, C, tau)$j
-    dt         <- create_determ_indicators(training, deterministic, tau)
-    dv         <- create_determ_indicators(validation, deterministic, tau)
-    pseudo     <- paste0("psi", tau)
-    fit_task   <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type, "lmtp_id")
-    shift_task <- sw(initiate_sl3_task(shifted[js, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    valid_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    ensemble   <- initiate_ensemble(outcome_type, check_variation(training[i, ], outcome, learners))
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    rt <- at_risk(training, risk, tau)
+    rv <- at_risk(validation, risk, tau)
+    pseudo <- paste0("psi", tau)
+    vars <- node_list[[tau]]
 
-    # progress bar
-    pb()
-
-    # run SL
-    fit <- run_ensemble(ensemble, fit_task, envir = environment())
+    fit <- run_ensemble(training[i & rt, ][[outcome]],
+                        training[i & rt, vars],
+                        check_variation(training[i & rt, ][[outcome]],
+                                        learners),
+                        outcome_type,
+                        id = training[i & rt, ][["lmtp_id"]],
+                        SL_folds)
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    # predict on shifted data for training
-    training[js, pseudo] <- bound(predict_sl3(fit, shift_task, envir = environment()))
-    training[dt, pseudo] <- 1
+    training[jt & rt, pseudo] <- SL_predict(fit, shifted[jt & rt, vars])
+    m[jv & rv, tau] <- SL_predict(fit, validation_shifted[jv & rv, vars])
 
-    # predict on validation shifted data
-    m[jv, tau] <- bound(predict_sl3(fit, valid_task, envir = environment()))
-    m[dv, tau] <- 1
+    training[!rt, pseudo] <- 0
+    m[!rv, tau] <- 0
 
-    # recursion
-    estimate_sub(training = training,
-                 shifted = shifted,
-                 validation = validation,
-                 outcome = pseudo,
-                 node_list = node_list,
-                 C = C,
-                 deterministic = deterministic,
-                 tau = tau - 1,
-                 outcome_type = "continuous",
-                 learners,
-                 m = m,
-                 pb = pb,
-                 sl_weights = sl_weights)
-
+    pb()
+    estimate_sub(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      validation_shifted = validation_shifted,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      risk = risk,
+      tau = tau - 1,
+      outcome_type = "continuous",
+      learners = learners,
+      m = m,
+      pb = pb,
+      sl_weights = sl_weights,
+      SL_folds = SL_folds
+    )
   } else {
-    out <- list(m = m,
-                sl_weights = sl_weights)
-    # returns
-    return(out)
+    list(m = m, sl_weights = sl_weights)
   }
 }
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
-                          outcome, node_list, C, deterministic, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb, sl_weights) {
-
+                          outcome, node_list, C, risk, tau, outcome_type,
+                          m_natural, m_shifted, r, learners = NULL, pb,
+                          weights = NULL, sl_weights, SL_folds) {
   if (tau > 0) {
-    # setup
-    i            <- create_censoring_indicators(training, C, tau)$i
-    jt           <- create_censoring_indicators(training, C, tau)$j
-    jv           <- create_censoring_indicators(validation, C, tau)$j
-    dt           <- create_determ_indicators(training, deterministic, tau)
-    dv           <- create_determ_indicators(validation, deterministic, tau)
-    pseudo       <- paste0("psi", tau)
-    fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type, "lmtp_id")
-    nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-    ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    rt <- at_risk(training, risk, tau)
+    rv <- at_risk(validation, risk, tau)
+    pseudo <- paste0("psi", tau)
+    vars <- node_list[[tau]]
 
-    # progress bar
-    pb()
-
-    # run SL
-    fit <- run_ensemble(ensemble, fit_task, envir = environment())
+    fit <- run_ensemble(training[i & rt, ][[outcome]],
+                        training[i & rt, vars],
+                        check_variation(training[i & rt, ][[outcome]],
+                                        learners),
+                        outcome_type,
+                        id = training[i & rt, ][["lmtp_id"]],
+                        SL_folds)
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
-    # predict on data
-    m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task, envir = environment()))
-    m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task, envir = environment()))
-    m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task, envir = environment()))
-    m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task, envir = environment()))
+    m_natural$train[jt & rt, tau] <- SL_predict(fit, training[jt & rt, vars])
+    m_shifted$train[jt & rt, tau] <- SL_predict(fit, shifted[jt & rt, vars])
+    m_natural$valid[jv & rv, tau] <- SL_predict(fit, validation[jv & rv, vars])
+    m_shifted$valid[jv & rv, tau] <- SL_predict(fit, validation_shifted[jv & rv, vars])
 
-    # tilt estimates
-    fit <- sw(glm(training[i & !dt, ][[outcome]] ~ offset(qlogis(m_natural$train[i & !dt, tau])),
-                                weights = r$train[i & !dt, tau], family = "binomial"))
+    wts <- {
+      if (is.null(weights))
+        r$train[i & rt, tau]
+      else
+        r$train[i & rt, tau] * weights[i & rt]
+    }
 
-    # update training estimates
-    training[, pseudo] <- bound(plogis(qlogis(m_shifted$train[, tau]) + coef(fit)))
-    training[dt, pseudo] <- 1
+    fit <- sw(glm(training[i & rt, ][[outcome]]
+                  ~ offset(qlogis(m_natural$train[i & rt, tau])),
+                  weights = wts, family = "binomial"))
 
-    # update validation estiamtes
-    m_natural$valid[, tau] <- bound(plogis(qlogis(m_natural$valid[, tau]) + coef(fit)))
-    m_shifted$valid[, tau] <- bound(plogis(qlogis(m_shifted$valid[, tau]) + coef(fit)))
-    m_natural$valid[dv, tau] <- 1
-    m_shifted$valid[dv, tau] <- 1
+    training[jt & rt, pseudo] <- bound(plogis(qlogis(m_shifted$train[jt & rt, tau]) + coef(fit)))
+    m_natural$valid[jv & rv, tau] <- bound(plogis(qlogis(m_natural$valid[jv & rv, tau]) + coef(fit)))
+    m_shifted$valid[jv & rv, tau] <- bound(plogis(qlogis(m_shifted$valid[jv & rv, tau]) + coef(fit)))
 
-    # recursion
-    estimate_tmle(training = training,
-                  shifted = shifted,
-                  validation = validation,
-                  validation_shifted = validation_shifted,
-                  outcome = pseudo,
-                  node_list = node_list,
-                  C = C,
-                  deterministic = deterministic,
-                  tau = tau - 1,
-                  outcome_type = "continuous",
-                  m_natural = m_natural,
-                  m_shifted = m_shifted,
-                  r = r,
-                  learners = learners,
-                  pb = pb,
-                  sl_weights = sl_weights)
+    training[!rt, pseudo] <- 0
+    m_natural$valid[!rv, tau] <- 0
+    m_shifted$valid[!rv, tau] <- 0
+
+    pb()
+    estimate_tmle(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      validation_shifted = validation_shifted,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      risk = risk,
+      tau = tau - 1,
+      outcome_type = "continuous",
+      m_natural = m_natural,
+      m_shifted = m_shifted,
+      r = r,
+      learners = learners,
+      pb = pb,
+      sl_weights = sl_weights,
+      SL_folds = SL_folds
+    )
   } else {
-    # returns
-    out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid,
-                sl_weights = sl_weights)
-
-    return(out)
+    list(natural = m_natural$valid,
+         shifted = m_shifted$valid,
+         sl_weights = sl_weights)
   }
-
 }
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
-                         outcome, node_list, C, deterministic, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights) {
-
+                         outcome, node_list, C, risk, tau, max, outcome_type,
+                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights,
+                         trim, SL_folds) {
   if (tau > 0) {
-
-    # global setup
-    i      <- create_censoring_indicators(training, C, tau)$i
-    jt     <- create_censoring_indicators(training, C, tau)$j
-    jv     <- create_censoring_indicators(validation, C, tau)$j
-    dt     <- create_determ_indicators(training, deterministic, tau)
-    dv     <- create_determ_indicators(validation, deterministic, tau)
+    i <- censored(training, C, tau)$i
+    jt <- censored(training, C, tau)$j
+    jv <- censored(validation, C, tau)$j
+    rt <- at_risk(training, risk, tau)
+    rv <- at_risk(validation, risk, tau)
     pseudo <- paste0("psi", tau + 1)
-
-    # progress bar
-    pb()
+    vars <- node_list[[tau]]
 
     if (tau == max) {
-
-      # setup
-      fit_task     <- initiate_sl3_task(training[i & !dt, ], outcome, node_list[[tau]], outcome_type, "lmtp_id")
-      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], NULL, "lmtp_id"))
-      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], outcome, learners))
-
-      # run SL
-      fit <- run_ensemble(ensemble, fit_task, envir = environment())
+      fit <- run_ensemble(training[i & rt, ][[outcome]],
+                          training[i & rt, vars],
+                          check_variation(training[i & rt, ][[outcome]],
+                                          learners),
+                          outcome_type,
+                          id = training[i & rt, ][["lmtp_id"]],
+                          SL_folds)
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
-      # predict on training data
-      m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task, envir = environment()))
-      m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task, envir = environment()))
-      m_natural$train[dt, tau] <- 1
-      m_shifted$train[dt, tau] <- 1
+      m_natural$train[jt & rt, tau] <- SL_predict(fit, training[jt & rt, vars])
+      m_shifted$train[jt & rt, tau] <- SL_predict(fit, shifted[jt & rt, vars])
+      m_natural$valid[jv & rv, tau] <- SL_predict(fit, validation[jv & rv, vars])
+      m_shifted$valid[jv & rv, tau] <- SL_predict(fit, validation_shifted[jv & rv, vars])
 
-      # predict on validation data
-      m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task, envir = environment()))
-      m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task, envir = environment()))
-      m_natural$valid[dv, tau] <- 1
-      m_shifted$valid[dv, tau] <- 1
-
-    } else if (tau < max) {
-
-      # outcome transformation
-      training[, pseudo]  <-
-        shifted[, pseudo] <-
-        transform_sdr(ratio_sdr(r$train, tau, max),
-                      tau, max, m_shifted$train, m_natural$train)
-
-      # run SL on outcome transformation and get predictions
-      fit_task     <- initiate_sl3_task(training[i & !dt, ], pseudo, node_list[[tau]], outcome_type, "lmtp_id")
-      nshift_task  <- sw(initiate_sl3_task(training[jt, ], NULL, node_list[[tau]], outcome_type, "lmtp_id"))
-      shift_task   <- sw(initiate_sl3_task(shifted[jt, ], NULL, node_list[[tau]], outcome_type, "lmtp_id"))
-      vnshift_task <- sw(initiate_sl3_task(validation[jv, ], NULL, node_list[[tau]], outcome_type, "lmtp_id"))
-      vshift_task  <- sw(initiate_sl3_task(validation_shifted[jv, ], NULL, node_list[[tau]], outcome_type, "lmtp_id"))
-      ensemble     <- initiate_ensemble(outcome_type, check_variation(training[i & !dt, ], pseudo, learners))
-
-      # run SL
-      fit <- run_ensemble(ensemble, fit_task, envir = environment())
-      sl_weights[[tau]] <- extract_sl_weights(fit)
-
-      # predictions
-      m_natural$train[jt, tau] <- bound(predict_sl3(fit, nshift_task, envir = environment()))
-      m_shifted$train[jt, tau] <- bound(predict_sl3(fit, shift_task, envir = environment()))
-      m_natural$train[dt, tau] <- 1
-      m_shifted$train[dt, tau] <- 1
-      m_natural$valid[jv, tau] <- bound(predict_sl3(fit, vnshift_task, envir = environment()))
-      m_shifted$valid[jv, tau] <- bound(predict_sl3(fit, vshift_task, envir = environment()))
-      m_natural$valid[dv, tau] <- 1
-      m_shifted$valid[dv, tau] <- 1
-
+      m_natural$train[!rt, tau] <- 0
+      m_shifted$train[!rt, tau] <- 0
+      m_natural$valid[!rv, tau] <- 0
+      m_shifted$valid[!rv, tau] <- 0
     }
 
-    # recursion
-    estimate_sdr(training = training,
-                 shifted = shifted,
-                 validation = validation,
-                 validation_shifted = validation_shifted,
-                 outcome = pseudo,
-                 node_list = node_list,
-                 C = C,
-                 deterministic = deterministic,
-                 tau = tau - 1,
-                 max = max,
-                 outcome_type = "continuous",
-                 learners = learners,
-                 m_shifted = m_shifted,
-                 m_natural = m_natural,
-                 r = r,
-                 pb = pb,
-                 sl_weights = sl_weights)
+    if (tau < max) {
+      training[, pseudo]  <-
+        shifted[, pseudo] <-
+        transform_sdr(ratio_sdr(r$train, tau, max, trim),
+                      tau, max, m_shifted$train, m_natural$train)
+
+      fit <- run_ensemble(training[i & rt, ][[pseudo]],
+                          training[i & rt, vars],
+                          check_variation(training[i & rt, ][[pseudo]],
+                                          learners),
+                          outcome_type,
+                          id = training[i & rt, ][["lmtp_id"]],
+                          SL_folds)
+      sl_weights[[tau]] <- extract_sl_weights(fit)
+
+      m_natural$train[jt & rt, tau] <- SL_predict(fit, training[jt & rt, vars])
+      m_shifted$train[jt & rt, tau] <- SL_predict(fit, shifted[jt & rt, vars])
+      m_natural$valid[jv & rv, tau] <- SL_predict(fit, validation[jv & rv, vars])
+      m_shifted$valid[jv & rv, tau] <- SL_predict(fit, validation_shifted[jv & rv, vars])
+
+      m_natural$train[!rt, tau] <- 0
+      m_shifted$train[!rt, tau] <- 0
+      m_natural$valid[!rv, tau] <- 0
+      m_shifted$valid[!rv, tau] <- 0
+    }
+
+    pb()
+    estimate_sdr(
+      training = training,
+      shifted = shifted,
+      validation = validation,
+      validation_shifted = validation_shifted,
+      outcome = pseudo,
+      node_list = node_list,
+      C = C,
+      risk = risk,
+      tau = tau - 1,
+      max = max,
+      outcome_type = "continuous",
+      learners = learners,
+      m_shifted = m_shifted,
+      m_natural = m_natural,
+      r = r,
+      pb = pb,
+      sl_weights = sl_weights,
+      trim = trim,
+      SL_folds = SL_folds
+    )
   } else {
-    # returns
-    out <- list(natural = m_natural$valid,
-                shifted = m_shifted$valid,
-                sl_weights = sl_weights)
-
-    return(out)
+    list(natural = m_natural$valid,
+         shifted = m_shifted$valid,
+         sl_weights = sl_weights)
   }
-
 }

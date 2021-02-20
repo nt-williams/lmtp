@@ -23,8 +23,9 @@ used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 }
 \value{
-A list the same length of the time_vary parameter with the variables
-to be used for estimation at that given time point.
+A list of lists. Each sub-list is the same length of the
+\code{time_vary} parameter with the variables to be used for estimation at that given time point
+for either the treatment mechanism or outcome regression.
 }
 \description{
 Creates a node list specification that is used by the provided estimators.

@@ -1,5 +1,4 @@
 \donttest{
-library(lmtp)
 
 # Example 1.1
 # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
@@ -12,7 +11,8 @@ A <- 23 + 5*W + rnorm(n)
 Y <- 7.2*A + 3*W + rnorm(n)
 ex1_dat <- data.frame(W, A, Y)
 d <- function(data, x) data[[x]] - 5
-psi1.1 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2)
+psi1.1 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2,
+                   outcome_type = "continuous", .trim = 0.9975)
 psi1.1
 
 # Example 1.2
@@ -21,7 +21,8 @@ psi1.1
 # units only among observations whose observed A was above 80.
 # The true value under this intervention is about 513.
 d <- function(data, x) (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
-psi1.2 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2)
+psi1.2 <- lmtp_ipw(ex1_dat, "A", "Y", baseline = "W", shift = d, folds = 2,
+                   outcome_type = "continuous")
 psi1.2
 
 # Example 2.1
@@ -111,16 +112,18 @@ psi2.4
 # Longitudinal setting, time-varying binary treatment, time-varying covariates
 # and baseline covariates with no loss-to-follow-up. Interested in a traditional
 # causal effect where treatment is set to 1 at all time points for all observations.
-data("iptwExWide", package = "twang")
-a <- paste0("tx", 1:3)
-baseline <- c("gender", "age")
-tv <- list(c("use0"), c("use1"), c("use2"))
-progressr::with_progress({
-  psi3.1 <-
-    lmtp_ipw(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
-             shift = static_binary_on, folds = 2)
-})
-psi3.1
+if (require("twang")) {
+  data("iptwExWide", package = "twang")
+  a <- paste0("tx", 1:3)
+  baseline <- c("gender", "age")
+  tv <- list(c("use0"), c("use1"), c("use2"))
+  progressr::with_progress({
+    psi3.1 <-
+      lmtp_ipw(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+               shift = static_binary_on, folds = 2, outcome_type = "continuous")
+  })
+  psi3.1
+}
 
 # Example 4.1
 # Longitudinal setting, time-varying continuous treatment, time-varying covariates,
@@ -146,10 +149,10 @@ psi4.2
 
 # Example 5.1
 # Time-to-event analysis with a binary time-invariant exposure. Interested in
-# the effect of treatment being given to all observations on the cumulative
-# incidence of our time-to-event outcome.
+# the effect of treatment being given to all observations on the probability of being event
+# free at the end of follow-up.
 a <- "trt"
-# for a survival problem, the outcome arugment now takes a vector of outcomes
+# for a survival problem, the outcome argument now takes a vector of outcomes
 # if an observation experiences the event prior to the end of follow-up, all future
 # outcome nodes should be set to 1 (i.e., last observation carried forward).
 y <- paste0("Y.", 1:6)
@@ -157,7 +160,8 @@ cens <- paste0("C.", 0:5)
 baseline <- c("W1", "W2")
 progressr::with_progress({
   psi5.1 <- lmtp_ipw(sim_point_surv, a, y, baseline, cens = cens,
-                     shift = static_binary_on, folds = 2)
+                     shift = static_binary_on, folds = 2,
+                     outcome_type = "survival")
 })
 psi5.1
 }

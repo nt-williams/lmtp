@@ -1,4 +1,3 @@
-
 #' Perform Contrasts of LMTP Fits
 #'
 #' Estimates contrasts of multiple LMTP fits compared to either a known reference value
@@ -19,7 +18,6 @@
 #'
 #' @example inst/examples/contrasts-ex.R
 lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
-
   fits <- list(...)
 
   check_lmtp_type(fits, ref)
@@ -29,7 +27,6 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
          "additive" = contrast_additive(fits = fits, ref = ref),
          "rr"       = contrast_rr(fits = fits, ref = ref),
          "or"       = contrast_or(fits = fits, ref = ref))
-
 }
 
 contrast_additive <- function(fits, ref) {
@@ -46,19 +43,18 @@ contrast_additive <- function(fits, ref) {
 }
 
 contrast_additive_single <- function(fit, ref) {
-
   if (is.lmtp(ref)) {
     theta <- fit$theta - ref$theta
-    eif   <- fit$eif - ref$eif
+    eif <- fit$eif - ref$eif
   } else {
     theta <- fit$theta - ref
-    eif   <- fit$eif
+    eif <- fit$eif
   }
 
   std.error <- sd(eif) / sqrt(length(eif))
-  conf.low  <- theta - qnorm(0.975) * std.error
+  conf.low <- theta - qnorm(0.975) * std.error
   conf.high <- theta + qnorm(0.975) * std.error
-  p.value   <- pnorm(abs(theta) / std.error, lower.tail = FALSE) * 2
+  p.value <- pnorm(abs(theta) / std.error, lower.tail = FALSE) * 2
 
   out <-
     list(vals = data.frame(
@@ -76,7 +72,7 @@ contrast_additive_single <- function(fit, ref) {
 }
 
 contrast_rr <- function(fits, ref) {
-  res  <- lapply(fits, function(x) contrast_rr_single(x, ref))
+  res <- lapply(fits, function(x) contrast_rr_single(x, ref))
   vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
   eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
 
@@ -84,18 +80,18 @@ contrast_rr <- function(fits, ref) {
               null = 1,
               vals = vals,
               eifs = eifs)
+
   class(out) <- "lmtp_contrast"
   return(out)
 }
 
 contrast_rr_single <- function(fit, ref) {
-
-  theta     <- fit$theta / ref$theta
-  log_eif   <- (fit$eif / fit$theta) - (ref$eif / ref$theta)
+  theta <- fit$theta / ref$theta
+  log_eif <- (fit$eif / fit$theta) - (ref$eif / ref$theta)
   std.error <- sd(log_eif) / sqrt(length(log_eif))
-  conf.low  <- exp(log(theta) - qnorm(0.975) * std.error)
+  conf.low <- exp(log(theta) - qnorm(0.975) * std.error)
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
-  p.value   <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
+  p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
 
   out <-
     list(vals = data.frame(
@@ -113,7 +109,7 @@ contrast_rr_single <- function(fit, ref) {
 }
 
 contrast_or <- function(fits, ref) {
-  res  <- lapply(fits, function(x) contrast_or_single(x, ref))
+  res <- lapply(fits, function(x) contrast_or_single(x, ref))
   vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
   eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
 
@@ -126,13 +122,12 @@ contrast_or <- function(fits, ref) {
 }
 
 contrast_or_single <- function(fit, ref) {
-
-  theta     <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
-  log_eif   <- (fit$eif / (fit$theta * (1 - fit$theta))) - (ref$eif / (ref$theta * (1 - ref$theta)))
+  theta <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
+  log_eif <- (fit$eif / (fit$theta * (1 - fit$theta))) - (ref$eif / (ref$theta * (1 - ref$theta)))
   std.error <- sd(log_eif) / sqrt(length(log_eif))
   conf.low  <- exp(log(theta) - qnorm(0.975) * std.error)
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
-  p.value   <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
+  p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
 
   out <-
     list(vals = data.frame(

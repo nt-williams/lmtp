@@ -1,4 +1,3 @@
-
 #' Simulated Longitudinal Data
 #'
 #' A dataset with a binary outcome, four time varying treatment nodes,
@@ -61,3 +60,26 @@
 #'   \item{Y.6}{Final outcome node.}
 #' }
 "sim_point_surv"
+
+#' Simulated Time-varying Survival Data
+#'
+#' A dataset with a time-to-event outcome, one baseline nodes, two time-varying
+#' covariates, a binary time-varying treatment, two outcome nodes,
+#' and two censoring indicators. Data-generating mechanism taken from
+#' Lendle, Schwab, Petersen, and van der Laan (<https://www.jstatsoft.org/article/view/v081i01>).
+#'
+#' @format A data frame with 500 rows and 11 variables:
+#' \describe{
+#'   \item{L0.a}{Continuous baseline variable.}
+#'   \item{L0.b}{Time varying covariate at baseline.}
+#'   \item{L0.c}{Time varying covariate at baseline.}
+#'   \item{A0}{Treatment variable at baseline}
+#'   \item{C0}{Censoring indicator that the observation is observed future time points.}
+#'   \item{L1.a}{Time varying covariate at time 1.}
+#'   \item{L1.b}{Time varying covariate at time 1.}
+#'   \item{Y1}{Outcome node at time 1.}
+#'   \item{A1}{Treatment variable at time 1.}
+#'   \item{C1}{Censoring indicator that the observation is observed future time points.}
+#'   \item{Y2}{Final outcome node.}
+#' }
+"sim_timevary_surv"

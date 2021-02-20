@@ -72,57 +72,7 @@ The following table describes `lmtp` parameters across the provided estimators:
 
 While many parameters aren't required, the default options will likely give sub par (or incorrect) results. Special attention should be given to the `k` parameter which is fully described in the [Node lists & Markov processes] section.
 
-### sl3
-
-`lmtp` can be enhanced by using the [`sl3`](https://tlverse.org/sl3/) package for ensemble machine learning during estimation procedures. `sl3` may be installed from GitHub using: 
-
-```{r, eval = FALSE}
-remotes::install_github("tlverse/sl3@devel")
-```
-
-```{r, include = FALSE}
-# installing sl3 if possible
-if (curl::has_internet()) {
-  # adding tmpdir to libPath
-  temp_path <- file.path(tempdir(), "sl3_dir")
-  dir.create(temp_path)
-  lib_path <-.libPaths()
-  .libPaths(c(lib_path, temp_path))
-  
-  # installing gt
-  remotes::install_github("tlverse/sl3@devel", lib = temp_path)
-}
-```
-
-To fully take advantage of the provided estimators, users must create `sl3` learner stacks. Learner stacks are passed to `lmtp` estimators either through the `learners` argument for `lmtp_sub()` and `lmtp_ipw()` or the `learners_trt` and `learners_outcome` arguments for `lmtp_tmle()` and `lmtp_sdr()`. A full list of supplied `sl3` learners can be found [here](https://tlverse.org/sl3/reference/index.html). 
-
-The easiest way to create an `sl3` learner stack is using `sl3::make_learner_stack()`. 
-
-```{r eval = FALSE}
-library(sl3)
-
-# using learner defaults
-lrnrs <- make_learner_stack(Lrnr_mean, 
-                            Lrnr_glm, 
-                            Lrnr_ranger)
-
-# specifying learner parameters
-lrnrs <- 
-  make_learner_stack(
-    Lrnr_mean, 
-    Lrnr_glm,
-    list(Lrnr_ranger, 
-         num.trees = 1000)
-  )
-```
-
-The outcome type should guide users on selecting the appropriate learners for a stack when specifying `learners` with `lmtp_sub()` or `learners_outcome` with `lmtp_tmle()` and `lmtp_sdr()`. Regardless of whether an exposure/treatment is continuous, binary, or categorical, the exposure mechanism is estimated through classification, thus the analyst should only use `sl3` learners that can handle a binary outcome when specifying `learners` with `lmtp_ipw()` or `learners_trt` with `lmtp_tmle()` or `lmtp_sdr()`. 
-
-The ensemble meta-learner is always set to `Lrnr_nnls`. If learner stacks aren't provided, `lmtp` estimators default to an ensemble only made of `Lrnr_mean` and `Lrnr_glm`. 
-
-> *`lmtp` is a peacock, if you want to let it fly, you should use a more comprehensive learner than supplied by the defaults.*
-
-**It is recommended the analyst reads through the `sl3` [documentation](https://tlverse.org/sl3/index.html) to fully utilize `lmtp`.**
+### SuperLearner
 
 ### Node lists & Markov processes
 

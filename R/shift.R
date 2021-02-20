@@ -1,4 +1,3 @@
-
 shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
     return(shift_cens(data, cens))
