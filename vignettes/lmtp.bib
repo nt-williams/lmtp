@@ -71,8 +71,7 @@
 	month = jul,
 	year = {2019},
 	note = {arXiv: 1907.04004},
-	keywords = {Statistics - Methodology, Statistics - Machine Learning},
-	file = {arXiv Fulltext PDF:/Users/Nick/Zotero/storage/X6HN2GWJ/Kim et al. - 2019 - Incremental Intervention Effects in Studies with M.pdf:application/pdf;arXiv.org Snapshot:/Users/Nick/Zotero/storage/K5GPSKHR/1907.html:text/html}
+	keywords = {Statistics - Methodology, Statistics - Machine Learning}
 }
 
 @article{kennedyNonparametricCausalEffects2019,
@@ -202,7 +201,7 @@ Section: Statistical Applications in Genetics and Molecular Biology},
 
 @article{diazNonparametricCausalEffects2020a,
 	title = {Non-parametric causal effects based on longitudinal modified treatment policies},
-	url = {http://arxiv.org/abs/2006.01366},
+	url = {https://arxiv.org/abs/2006.01366},
 	abstract = {Most causal inference methods consider counterfactual variables under interventions that set the treatment deterministically. With continuous or multi-valued treatments or exposures, such counterfactuals may be of little practical interest because no feasible intervention can be implemented that would bring them about. Furthermore, violations to the positivity assumption, necessary for identification, are exacerbated with continuous and multi-valued treatments and deterministic interventions. In this paper we propose longitudinal modified treatment policies (LMTPs) as a non-parametric alternative. LMTPs can be designed to guarantee positivity, and yield effects of immediate practical relevance with an interpretation that is familiar to regular users of linear regression adjustment. We study the identification of the LMTP parameter, study properties of the statistical estimand such as the efficient influence function, and propose four different estimators. Two of our estimators are efficient, and one is sequentially doubly robust in the sense that it is consistent if, for each time point, either an outcome regression or a treatment mechanism is consistently estimated. We perform a simulation study to illustrate the properties of the estimators, and present the results of our motivating study on hypoxemia and mortality in Intensive Care Unit (ICU) patients. Software implementing our methods is provided in the form of the open source {\textbackslash}texttt\{R\} package {\textbackslash}texttt\{lmtp\} freely available on GitHub ({\textbackslash}url\{https://github.com/nt-williams/lmtp\}).},
 	urldate = {2020-07-01},
 	journal = {arXiv:2006.01366},
@@ -1022,27 +1021,14 @@ Section: Statistical Applications in Genetics and Molecular Biology},
 	pages = {560--570}
 }
 
-@misc{laanUnifiedCrossValidationMethodology2003,
-	title = {Unified {Cross}-{Validation} {Methodology} {For} {Selection} {Among} {Estimators} and a {General} {Cross}-{Validated} {Adaptive} {Epsilon}-{Net} {Estimator}: {Finite} {Sample} {Oracle} {Inequalities} and {Examples}},
-	shorttitle = {Unified {Cross}-{Validation} {Methodology} {For} {Selection} {Among} {Estimators} and a {General} {Cross}-{Validated} {Adaptive} {Epsilon}-{Net} {Estimator}},
-	url = {/paper/Unified-Cross-Validation-Methodology-For-Selection-Laan-Dudoit/8e3cfaa13b97d152833b429b179eed389394eecf},
-	abstract = {In Part I of this article we propose a general cross-validation criterian for selecting among a collection of estimators of a particular parameter of interest based on n i.i.d. observations. It is assumed that the parameter of interest minimizes the expectation (w.r.t. to the distribution of the observed data structure) of a particular loss function of a candidate parameter value and the observed data structure, possibly indexed by a nuisance parameter. The proposed cross-validation criterian is defined as the empirical mean over the validation sample of the loss function at the parameter estimate based on the training sample, averaged over random splits of the observed sample. The cross-validation selector is now the estimator which minimizes this cross-validation criterion. We illustrate that this general methodology covers, in particular, the selection problems in the current literature, but results in a wide range of new selection methods. We prove a finite sample oracle inequality, and asymptotic optimality of the cross-validated selector under general conditions. The asymptotic optimality states that the cross-validation selector performs asymptotically exactly as well as the selector which for each given data set makes the best choice (knowing the true data generating distribution). Our general framework allows, in particular, the situation in which the observed data structure is a censored version of the full data structure of interest, and where the parameter of interest is a parameter of the full data structure distribution. As examples of the parameter of the full data distribution we consider a density of (a part of) the full data structure, a conditional expectation of an outcome, given explanatory variables, a marginal survival function of a failure time, and multivariate conditional expectation of an outcome vector, given covariates. In part II of this article we show that the general estimating function methodology for censored data structures as provided in van der Laan, Robins (2002) yields the wished loss functions for the selection among estimators of a full-data distribution parameter of interest based on censored data. The corresponding cross-validation selector generalizes any of the existing selection methods in regression and density estimation (including model selection) to the censored data case. Under general conditions, our optimality results now show that the corresponing cross-validation selector performs asymptotically exactly as well as the selector which for each given data set makes the best choice (knowing the true full data distribution). In Part III of this article we propose a general estimator which is defined as follows. For a collection of subspaces and the complete parameter space, one defines an epsilon-net (i.e., a finite set of points whose epsilon-spheres cover the complete parameter space). For each epsilon and subspace one defines now a corresponding minimum cross-valided empirical risk estimator as the minimizer of cross-validated risk over the subspace-specific epsilon-net. In the special case that the loss function has no nuisance parameter, which thus covers the classical regression and density estimation cases, this epsilon and subspace specific minimum risk estimator reduces to the minimizer of the empirical risk over the corresponding epsilon-net. Finally, one selects epsilon and the subspace with the cross-validation selector. We refer to the resulting estimator as the cross-validated adaptive epsilon-net estimator. We prove an oracle inequality for this estimator which implies that the estimator minimax adaptive in the sense that it achieves the minimax optimal rate of convergence for the smallest of the guessed subspaces containing the true parameter value. Cross-Validation for Estimator Selection 1 Stating the Selection Problem. Let O1, . . . , On be n i.i.d. observations of O ∼ P0, where P0 is known to be an element of a statistical model M. Let ψ0(·) = ψ(· {\textbar} P0) be a parameter (function) of P0 of interest. Let the parameter set for this parameter be Ψ = \{ψ(· {\textbar} P ) : P ∈ M\}. Let (O,ψ) → L(O,ψ {\textbar} η0) ∈ IR be a “loss function”, possibly depending on a nuisance parameter η0 = η(P0), which maps a candidate parameter value ψ and observation O into a real number, whose expectation is minimized at ψ0: ψ0 = argminψ∈Ψ ∫ L(o, ψ {\textbar} η0)dP0(o) (1) = argminψ∈ΨE0L(O,ψ {\textbar} η0). Let Pn be the empirical distribution of O1, . . . , On. Let ψk(·) = ψk(· {\textbar} Pn) ∈ Ψ, k = 1, . . . , K(n), be a collection of estimators (i.e., algorithms one can apply to data) of ψ0(·). The choice of loss function. Different choices of loss functions can satisfy (1). In fact, (1) can define a class of possible loss functions. Different choices of loss functions result in estimators of ψ0 with different behavior. Consequently, the choice of loss function is an interesting issue to be addressed. We suggest the following reasonable strategy for selecting a loss function. Firstly, among the loss functions identifying ψ0 as the minimizer of its risk (i.e., satisfying (1), one wishes to choose a loss function which identifies the wished measure of performance/Risk θ(ψ {\textbar} P0) ≡ ∫ L(O,ψ {\textbar} η0)dP0(O) for a candidate ψ ∈ Ψ. Identifying such a function θ(ψ {\textbar} P0) on the parameter set Ψ does still not uniquely identify the loss function L(O,ψ {\textbar} η0). Secondly, given this function θ(ψ {\textbar} P0), we now wish to choose the loss function so that for a locally consistent estimator ηn of η0, 1/n ∑ i L(Oi, ψ {\textbar} ηn) is a locally efficient estimator of θ(ψ {\textbar} P0). That is, let L(O,ψ {\textbar} η0) be a parametrization of},
-	language = {en},
-	urldate = {2020-08-27},
-	author = {Laan, M. and Dudoit, S.},
-	year = {2003},
-	file = {Snapshot:/Users/Nick/Zotero/storage/2WXSNSE2/8e3cfaa13b97d152833b429b179eed389394eecf.html:text/html}
-}
-
 @article{vanderlaanUnifiedCrossValidationMethodology2003,
 	title = {Unified {Cross}-{Validation} {Methodology} {For} {Selection} {Among} {Estimators} and a {General} {Cross}-{Validated} {Adaptive} {Epsilon}-{Net} {Estimator}: {Finite} {Sample} {Oracle} {Inequalities} and {Examples}},
 	shorttitle = {Unified {Cross}-{Validation} {Methodology} {For} {Selection} {Among} {Estimators} and a {General} {Cross}-{Validated} {Adaptive} {Epsilon}-{Net} {Estimator}},
-	url = {https://biostats.bepress.com/ucbbiostat/paper130},
+	url = {https://biostats.bepress.com/ucbbiostat/paper130/},
 	journal = {U.C. Berkeley Division of Biostatistics Working Paper Series},
 	author = {van der Laan, Mark and Dudoit, Sandrine},
 	month = nov,
-	year = {2003},
-	file = {"Unified Cross-Validation Methodology For Selection Among Estimators an" by Mark J. van der Laan and Sandrine Dudoit:/Users/Nick/Zotero/storage/89LHAEW9/paper130.html:text/html}
+	year = {2003}
 }
 
 @article{rotnitzkyDoublyRobustEstimation2006,
@@ -1064,7 +1050,7 @@ Section: Statistical Applications in Genetics and Molecular Biology},
 
 @article{rubinDoublyRobustCensoring2006,
 	title = {Doubly {Robust} {Censoring} {Unbiased} {Transformations}},
-	url = {https://biostats.bepress.com/ucbbiostat/paper208},
+	url = {https://biostats.bepress.com/ucbbiostat/paper208/},
 	journal = {U.C. Berkeley Division of Biostatistics Working Paper Series},
 	author = {Rubin, Daniel and Laan, Mark van der},
 	month = jun,
