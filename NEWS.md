@@ -1,4 +1,8 @@
-# lmtp 0.9.0.5000
+# lmtp 0.9.1.5000
+
+### New Features
+
+-   New `shifted` parameter for directly passing shifted data instead of using a shift function (issue \#89).
 
 ### New Features
 

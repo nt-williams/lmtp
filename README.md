@@ -23,7 +23,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 Nick Williams and Ivan Diaz
 
-------------------------------------------------------------------------
+-----
 
 **lmtp** is an R package that provides an estimation framework for the
 casual effects of feasible interventions based on point-treatment and
@@ -61,14 +61,14 @@ assumption are likely to occur. MTPs offer a solution to this problem.**
 
 ## Can lmtp estimate other effects?
 
-Yes! **lmtp** can estimate the effects of deterministic, static
+Yes\! **lmtp** can estimate the effects of deterministic, static
 treatment effects (such as the ATE) and deterministic, dynamic treatment
 regimes for binary, continuous, and survival outcomes.
 
 ### Features
 
 | Feature                         | Status |
-|---------------------------------|:------:|
+| ------------------------------- | :----: |
 | Point treatment                 |   ✓    |
 | Longitudinal treatment          |   ✓    |
 | Modified treatment intervention |   ✓    |
@@ -82,6 +82,7 @@ regimes for binary, continuous, and survival outcomes.
 | Binary outcome                  |   ✓    |
 | Censored outcome                |   ✓    |
 | Mediation                       |        |
+| Survey weights                  |   ✓    |
 | Super learner                   |   ✓    |
 | Clustered data                  |   ✓    |
 | Parallel processing             |   ✓    |
@@ -91,11 +92,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Loading required package: SuperLearner
-#> Loading required package: nnls
-#> Super Learner
-#> Version: 2.0-26
-#> Package created on 2019-10-27
+#> Major changes in lmtp 0.9.0. Consult NEWS.md for more information.
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -151,11 +148,11 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+  - [`txshift`](https://github.com/nhejazi/txshift)  
+  - [`tmle3`](https://github.com/tlverse/tmle3)  
+  - [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+  - [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+  - [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
@@ -171,7 +168,7 @@ statistical methodology.
         doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }
-
+    
     @Article{,
         journal = {arxiv},
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},

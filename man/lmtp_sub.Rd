@@ -11,7 +11,8 @@ lmtp_sub(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
-  shift,
+  shift = NULL,
+  shifted = NULL,
   k = Inf,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
@@ -47,6 +48,9 @@ present or if time-to-event outcome, must be provided.}
 
 \item{shift}{A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
+
+\item{shifted}{An optional data frame, the same as in \code{data}, but modified according
+to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},

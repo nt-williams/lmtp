@@ -18,7 +18,7 @@ Meta <- R6::R6Class(
     weights_m = NULL,
     weights_r = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, learners_trt, learners_outcome, id,
+                          shift, shifted, learners_trt, learners_outcome, id,
                           outcome_type = NULL, V = 10, weights = NULL,
                           bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt, cens)
@@ -52,6 +52,17 @@ Meta <- R6::R6Class(
         for (outcomes in outcome) {
           data.table::set(data, j = outcomes, value = convert_to_surv(data[[outcomes]]))
         }
+      }
+
+      shd <- {
+        if (is.null(shifted) && !is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (is.null(shifted) && is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (!is.null(shifted) && !is.null(data))
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+        else
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
       }
 
       self$m <-
@@ -92,7 +103,7 @@ Meta <- R6::R6Class(
         get_folded_data(
           fix_censoring_ind(
             add_scaled_y(
-              shift_data(data, trt, cens, shift),
+              shd,
               scale_y_continuous(
                 data[[final_outcome(outcome)]],
                 y_bounds(data[[final_outcome(outcome)]],

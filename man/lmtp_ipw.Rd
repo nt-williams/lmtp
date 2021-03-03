@@ -13,7 +13,8 @@ lmtp_ipw(
   cens = NULL,
   k = Inf,
   id = NULL,
-  shift,
+  shift = NULL,
+  shifted = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
   learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
@@ -54,6 +55,9 @@ all time points.}
 
 \item{shift}{A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
+
+\item{shifted}{An optional data frame, the same as in \code{data}, but modified according
+to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
 \item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
