@@ -224,3 +224,22 @@ check_factors <- function(data, trt, baseline, nodes) {
             call. = FALSE)
   }
 }
+
+check_shifted <- function(data, shifted, outcome, baseline, nodes, cens) {
+  unchngd <- c(outcome, baseline, unlist(nodes))
+  if (!(all.equal(data[unchngd], shifted[unchngd]))) {
+    stop("If supplying data to `shifted`, the only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`", .call = FALSE)
+  }
+
+  if (is.null(cens)) {
+    return(shifted)
+  }
+
+  for (i in cens) {
+    if (!(all(shifted[[i]] == 1))) {
+      stop("If supplying data to `shifted`, censoring columns should be set to 1.", call. = FALSE)
+    }
+  }
+  return(shifted)
+}
+

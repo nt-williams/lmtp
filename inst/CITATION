@@ -20,4 +20,4 @@ bibentry(bibtype = "Article",
                     person("Katherine", "Hoffman", "L"),
                     person("Edward", "Schneck", "J")),
          year = "2020",
-         url = "https://arxiv.org/abs/2006.01366v2")
+         url = "https://arxiv.org/abs/2006.01366")
