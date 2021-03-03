@@ -21,6 +21,8 @@
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#'  to the treatment policy of interest. If specified, \code{shift} is ignored.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -68,8 +70,8 @@
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
-lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
-                      time_vary = NULL, cens = NULL, shift, k = Inf,
+lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
+                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                       learners_trt = "SL.glm", folds = 10, weights = NULL,
@@ -84,6 +86,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    shifted = shifted,
     learners_trt = learners_trt,
     learners_outcome = learners_outcome,
     id = id,
@@ -118,7 +121,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
       weights = weights,
-      shift = deparse(substitute((shift))),
+      shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", cumprod_ratios),
       outcome_type = meta$outcome_type
@@ -150,6 +153,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#'  to the treatment policy of interest. If specified, \code{shift} is ignored.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -197,8 +202,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sdr-ex.R
-lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, shift, k = Inf,
+lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
+                     cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners_outcome = "SL.glm",
                      learners_trt = "SL.glm", folds = 10, weights = NULL,
@@ -213,6 +218,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    shifted = shifted,
     learners_trt = learners_trt,
     learners_outcome = learners_outcome,
     id = id,
@@ -246,7 +252,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
       id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
-      shift = deparse(substitute((shift))),
+      shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       weights_m = pluck_weights("m", estims),
       weights_r = pluck_weights("r", ratios),
       outcome_type = meta$outcome_type
@@ -278,6 +284,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#'  to the treatment policy of interest. If specified, \code{shift} is ignored.
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
@@ -312,8 +320,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
-lmtp_sub <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, shift, k = Inf,
+lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+                     shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm", folds = 10,
                      weights = NULL, .bound = 1e-5, .SL_folds = 10) {
@@ -326,6 +334,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    shifted = shifted,
     learners_trt = NULL,
     learners_outcome = learners,
     id = id,
@@ -351,7 +360,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
       bounds = meta$bounds,
       folds = meta$folds,
       weights = weights,
-      shift = deparse(substitute((shift))),
+      shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       weights_m = pluck_weights("m", estims),
       outcome_type = meta$outcome_type
     ))
@@ -382,6 +391,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #'  present or if time-to-event outcome, must be provided.
 #' @param shift A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
+#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#'  to the treatment policy of interest. If specified, \code{shift} is ignored.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
@@ -418,9 +429,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL,
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, k = Inf,
-                     id = NULL, shift, outcome_type = c("binomial", "continuous", "survival"),
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+                     shift = NULL, shifted = NULL,
+                     outcome_type = c("binomial", "continuous", "survival"),
+                     k = Inf, id = NULL,
                      learners = "SL.glm", folds = 10, weights = NULL,
                      return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
@@ -433,6 +445,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
     cens = cens,
     k = k,
     shift = shift,
+    shifted = shifted,
     learners_trt = learners,
     learners_outcome = NULL,
     id = id,
@@ -463,7 +476,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
       folds = meta$folds,
       weights = weights,
       tau = meta$tau,
-      shift = deparse(substitute((shift))),
+      shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       weights_r = cumprod_ratios$sl_weights
     ))
 

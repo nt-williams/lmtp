@@ -11,10 +11,11 @@ lmtp_ipw(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  shift = NULL,
+  shifted = NULL,
+  outcome_type = c("binomial", "continuous", "survival"),
   k = Inf,
   id = NULL,
-  shift,
-  outcome_type = c("binomial", "continuous", "survival"),
   learners = "SL.glm",
   folds = 10,
   weights = NULL,
@@ -46,16 +47,19 @@ should be ordered following the time ordering of the model.}
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
+\item{shift}{A two argument function that specifies how treatment variables should be shifted.
+See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
+
+\item{shifted}{An optional data frame, the same as in \code{data}, but modified according
+to the treatment policy of interest. If specified, \code{shift} is ignored.}
+
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
+
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
 \item{id}{An optional column name containing cluster level identifiers.}
-
-\item{shift}{A two argument function that specifies how treatment variables should be shifted.
-See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
-
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{learners}{A vector of \code{SuperLearner} algorithms for estimation
 of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
