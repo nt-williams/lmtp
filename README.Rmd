@@ -55,6 +55,12 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
+The **sl3** development compatible version can be installed from GitHub with: 
+
+```r
+devtools::install_github("nt-williams/lmtp@sl3-devel")
+```
+
 ## What even is a modified treatment policy? 
 
 Modified treatment policies (MTP) are interventions that can depend on the *natural* value of the treatment (the treatment value in the absence of intervention). A key assumption for causal inference is the *positivity assumption* which states that all observations have a non-zero probability of experiencing a treatment value. **When working with continuous or multivalued treatments, violations of the positivity assumption are likely to occur. MTPs offer a solution to this problem.** 

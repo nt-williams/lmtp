@@ -65,6 +65,13 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
+The **sl3** development compatible version can be installed from GitHub
+with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@sl3-devel")
+```
+
 ## What even is a modified treatment policy?
 
 Modified treatment policies (MTP) are interventions that can depend on
@@ -108,7 +115,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> This is the sl3 compatible version of lmtp!
+#> Major changes in lmtp 0.9.0. Consult NEWS.md for more information.
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
