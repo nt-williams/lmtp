@@ -54,6 +54,17 @@ Meta <- R6::R6Class(
         }
       }
 
+      shd <- {
+        if (is.null(shifted) && !is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (is.null(shifted) && is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (!is.null(shifted) && !is.null(data))
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+        else
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+      }
+
       self$m <-
         get_folded_data(
           cbind(
@@ -92,7 +103,7 @@ Meta <- R6::R6Class(
         get_folded_data(
           fix_censoring_ind(
             add_scaled_y(
-              if (is.null(shifted) && is.null(shift)) shift_data(data, trt, cens, shift) else shifted,
+              shd,
               scale_y_continuous(
                 data[[final_outcome(outcome)]],
                 y_bounds(data[[final_outcome(outcome)]],
