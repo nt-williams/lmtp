@@ -26,7 +26,6 @@ Meta <- R6::R6Class(
       data <- fix_censoring_ind(data, cens, self$tau)
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
-      check_factors(data, trt, baseline, time_vary) # for now will just be warning, custom learners can avoid this issue.
       check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, outcome, time_vary, baseline, cens, self$tau)
       check_mult_outcomes(outcome, outcome_type)
@@ -59,10 +58,16 @@ Meta <- R6::R6Class(
           shift_data(data, trt, cens, shift)
         else if (is.null(shifted) && is.null(shift))
           shift_data(data, trt, cens, shift)
-        else if (!is.null(shifted) && !is.null(data))
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
-        else
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+        else if (!is.null(shifted) && !is.null(data)) {
+          tmp <- check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          tmp$lmtp_id <- create_ids(tmp, id)
+          tmp
+        }
+        else {
+          tmp <- check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          tmp$lmtp_id <- create_ids(tmp, id)
+          tmp
+        }
       }
 
       self$m <-

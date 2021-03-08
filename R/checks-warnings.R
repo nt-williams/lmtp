@@ -226,6 +226,7 @@ check_factors <- function(data, trt, baseline, nodes) {
 }
 
 check_shifted <- function(data, shifted, outcome, baseline, nodes, cens) {
+  shifted <- as.data.frame(shifted)
   unchngd <- c(outcome, baseline, unlist(nodes))
   if (!(all.equal(data[unchngd], shifted[unchngd]))) {
     stop("If supplying data to `shifted`, the only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`", .call = FALSE)
