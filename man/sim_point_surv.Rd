@@ -10,7 +10,6 @@ A data frame with 2000 rows and 16 variables:
 \item{W1}{Binary baseline variable.}
 \item{W2}{Categorical baseline variable.}
 \item{trt}{Binary treatment variable.}
-\item{Y.0}{Outcome node at time 0.}
 \item{C.0}{Censoring indicator that the observation is observed future time points.}
 \item{Y.1}{Outcome node at time 1.}
 \item{C.1}{Censoring indicator that the observation is observed future time points.}
