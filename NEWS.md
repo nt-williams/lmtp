@@ -4,6 +4,10 @@
 
 -   New `shifted` parameter for directly passing shifted data instead of using a shift function (issue \#89).
 
+### Bug Fixes
+
+-   No longer fails when `data` is a `data.table` (issue \#88).
+
 ### General
 
 -   Removing extra column in `sim_point_surv` data set (issue \#91).

@@ -23,7 +23,7 @@ Meta <- R6::R6Class(
                           bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt, cens)
 
-      data <- fix_censoring_ind(data, cens, self$tau)
+      data <- as.data.frame(fix_censoring_ind(data, cens, self$tau))
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_factors(data, trt, baseline, time_vary) # for now will just be warning, custom learners can avoid this issue.
