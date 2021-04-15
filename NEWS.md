@@ -7,6 +7,7 @@
 ### Bug Fixes
 
 -   Fixed a bug that caused failure when no variation existed in the outcome at a type point (issue \#92).
+-   No longer fails when `data` is a `data.table` (issue \#88).
 
 ### General
 
