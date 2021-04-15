@@ -6,7 +6,7 @@
 
 ### General
 
--   Removing extra column in `sim_point_surv` data set (issue \#92).
+-   Removing extra column in `sim_point_surv` data set (issue \#91).
 
 # lmtp 0.9.0
 
