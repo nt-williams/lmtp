@@ -138,7 +138,7 @@ final_outcome <- function(outcomes) {
 #' @importFrom data.table as.data.table `:=` .SD
 #' @export
 #' @examples
-#' event_locf(sim_point_surv, paste0("Y.", 0:6))
+#' event_locf(sim_point_surv, paste0("Y.", 1:6))
 event_locf <- function(data, outcomes) {
   DT <- as.data.table(data)
   tau <- length(outcomes)
