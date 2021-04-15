@@ -44,7 +44,9 @@ test_that("variable length mismatch", {
 })
 
 test_that("no variation is caught", {
-  expect_equal(check_variation(rep(0.5, 10), "SL.glm"), "SL.mean")
+  x <- check_variation(rep(0.5, 10), sl3::make_learner(sl3::Lrnr_glm))
+  y <- sl3::make_learner(sl3::Lrnr_mean)
+  expect_equal(x$name, y$name)
 })
 
 test_that("only 0 and 1", {

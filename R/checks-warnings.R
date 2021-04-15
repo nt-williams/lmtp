@@ -66,7 +66,7 @@ check_extreme_ratio <- function(ratio, trim) {
 
 check_variation <- function(outcome, learners) {
   if (sd(outcome) < .Machine$double.eps) {
-    return("SL.mean")
+    return(sl3::make_learner(sl3::Lrnr_mean))
   }
   return(learners)
 }

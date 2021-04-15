@@ -4,6 +4,10 @@
 
 -   New `shifted` parameter for directly passing shifted data instead of using a shift function (issue \#89).
 
+### Bug Fixes
+
+-   Fixed a bug that caused failure when no variation existed in the outcome at a type point (issue \#92).
+
 ### General
 
 -   Removing extra column in `sim_point_surv` data set (issue \#91).
