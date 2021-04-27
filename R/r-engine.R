@@ -59,20 +59,20 @@ create_ratios <- function(pred, cens, risk, followed) {
 ratio_dr <- function(ratios, V, trim) {
   out <- list()
   for (i in 1:V) {
-      out[[i]] <- list()
-      out[[i]]$train <- check_extreme_ratio(
-        matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
-               nrow = nrow(ratios[[i]]$train$natural),
-               ncol = ncol(ratios[[i]]$train$natural)),
-        trim
-      )
-      out[[i]]$valid <- check_extreme_ratio(
-        matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
-               nrow = nrow(ratios[[i]]$valid$natural),
-               ncol = ncol(ratios[[i]]$valid$natural)),
-        trim
-      )
-      out[[i]]$sl_weights <- ratios[[i]]$sl_weights
+    out[[i]] <- list()
+    out[[i]]$train <- check_extreme_ratio(
+      matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
+             nrow = nrow(ratios[[i]]$train$natural),
+             ncol = ncol(ratios[[i]]$train$natural)),
+      trim
+    )
+    out[[i]]$valid <- check_extreme_ratio(
+      matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
+             nrow = nrow(ratios[[i]]$valid$natural),
+             ncol = ncol(ratios[[i]]$valid$natural)),
+      trim
+    )
+    out[[i]]$sl_weights <- ratios[[i]]$sl_weights
   }
   return(out)
 }

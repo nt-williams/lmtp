@@ -470,7 +470,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   pb <- progressr::progressor(meta$tau*folds)
 
   ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
+                 meta$node_list$trt, learners, pb, meta$weights_r,
                  match.arg(intervention_type), .SL_folds)
   cumprod_ratios <- ratio_ipw(recombine_ipw(ratios), .trim)
 

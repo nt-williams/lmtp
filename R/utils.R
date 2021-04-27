@@ -80,7 +80,7 @@ followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
     return(rep(TRUE, length(obs_trt)))
   }
 
-  obs_trt == shifted_trt
+  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(obs_trt), as.list(shifted_trt))
 }
 
 transform_sdr <- function(r, tau, max, shifted, natural) {
