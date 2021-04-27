@@ -36,10 +36,10 @@
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
-  # Now estimating the effect of a dynamic modified treatment policy.
+  # Now estimating the effect of a modified treatment policy that also depends on time and covariates.
   a <- c("A_1", "A_2", "A_3", "A_4")
   time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-  # creating a dynamic MTP that applies the shift function
+  # creating an MTP that applies the shift function
   # but also depends on history and the current time
   dynamic_mtp <- function(data, trt) {
     if (trt == "A_1") {
