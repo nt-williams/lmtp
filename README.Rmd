@@ -116,7 +116,8 @@ time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 We can now estimate the effect of our treatment policy, `d`. In this example, we'll use the cross-validated TML estimator with 10 folds. 
 
 ```{r, eval = FALSE}
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
+          intervention_type = "mtp", folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 

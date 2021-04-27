@@ -3,6 +3,7 @@
 ### New Features
 
 -   New `shifted` parameter for directly passing shifted data instead of using a shift function (issue \#89).
+-   New `intervention_type` parameter required for specifying if the intervention of interest is a static regime, a dynamic regime, or a modified treatment policy (issue \#94).
 
 ### Bug Fixes
 

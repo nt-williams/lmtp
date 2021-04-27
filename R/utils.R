@@ -75,6 +75,14 @@ at_risk <- function(data, risk, tau) {
   }
 }
 
+followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
+  if (intervention_type == "mtp") {
+    return(rep(TRUE, length(obs_trt)))
+  }
+
+  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(obs_trt), as.list(shifted_trt))
+}
+
 transform_sdr <- function(r, tau, max, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
