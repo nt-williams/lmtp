@@ -28,42 +28,43 @@ or a reference LMTP fit.
 }
 \examples{
 \donttest{
-a <- c("A1", "A2")
-nodes <- list(c("L1"), c("L2"))
-cens <- c("C1", "C2")
-y <- "Y"
-# mean population outcome
-psi_null <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
-                      cens = cens, shift = NULL, folds = 2)
+  a <- c("A1", "A2")
+  nodes <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+  y <- "Y"
 
-# treatment rule, everyone is increased by 0.5
-d <- function(data, x) data[[x]] + 0.5
-psi_rule1 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
-                       cens = cens, shift = d, folds = 2)
+  # mean population outcome
+  psi_null <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
+                        cens = cens, shift = NULL, folds = 2)
 
-# treatment rule, everyone is decreased by 0.5
-d <- function(data, x) data[[x]] - 0.5
-psi_rule2 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
-                       cens = cens, shift = d, folds = 2)
+  # treatment rule, everyone is increased by 0.5
+  d <- function(data, x) data[[x]] + 0.5
+  psi_rule1 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
+                         cens = cens, shift = d, folds = 2, intervention_type = "mtp")
 
-# Example 1.1
-# Additive effect of rule 1 compared to a known constant
-lmtp_contrast(psi_rule1, ref = 0.9)
+  # treatment rule, everyone is decreased by 0.5
+  d <- function(data, x) data[[x]] - 0.5
+  psi_rule2 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
+                         cens = cens, shift = d, folds = 2, intervention_type = "mtp")
 
-# Example 1.2
-# Additive effect of rule 1 compared to the population mean outcome
-lmtp_contrast(psi_rule1, ref = psi_null)
+  # Example 1.1
+  # Additive effect of rule 1 compared to a known constant
+  lmtp_contrast(psi_rule1, ref = 0.9)
 
-# Example 1.3
-# Additive effects of rule 1 and 2 compared to the population mean outcome
-lmtp_contrast(psi_rule1, psi_rule2, ref = psi_null)
+  # Example 1.2
+  # Additive effect of rule 1 compared to the population mean outcome
+  lmtp_contrast(psi_rule1, ref = psi_null)
 
-# Example 1.4
-# Relative risk of rule 1 compared to observed exposure
-lmtp_contrast(psi_rule1, ref = psi_null, type = "rr")
+  # Example 1.3
+  # Additive effects of rule 1 and 2 compared to the population mean outcome
+  lmtp_contrast(psi_rule1, psi_rule2, ref = psi_null)
 
-# Example 1.5
-# Odds of rule 1 compared to observed exposure
-lmtp_contrast(psi_rule1, ref = psi_null, type = "or")
+  # Example 1.4
+  # Relative risk of rule 1 compared to observed exposure
+  lmtp_contrast(psi_rule1, ref = psi_null, type = "rr")
+
+  # Example 1.5
+  # Odds of rule 1 compared to observed exposure
+  lmtp_contrast(psi_rule1, ref = psi_null, type = "or")
 }
 }

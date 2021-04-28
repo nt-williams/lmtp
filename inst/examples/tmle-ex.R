@@ -1,4 +1,11 @@
 \donttest{
+  set.seed(56)
+  n <- 1000
+  W <- rnorm(n, 10, 5)
+  A <- 23 + 5*W + rnorm(n)
+  Y <- 7.2*A + 3*W + rnorm(n)
+  ex1_dat <- data.frame(W, A, Y)
+
   # Example 1.1
   # Point treatment, continuous exposure, continuous outcome, no loss-to-follow-up
   # Interested in the effect of a modified treatment policy where A is decreased by 15
@@ -36,11 +43,8 @@
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
-  # Now estimating the effect of a modified treatment policy that also depends on time and covariates.
-  a <- c("A_1", "A_2", "A_3", "A_4")
-  time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-  # creating an MTP that applies the shift function
-  # but also depends on history and the current time
+  # Now estimating the effect of a modified treatment policy that also depends on
+  # time and covariates.
   dynamic_mtp <- function(data, trt) {
     if (trt == "A_1") {
       # if its the first time point, follow the same mtp as before
@@ -49,10 +53,10 @@
       # otherwise check if the time varying covariate equals 1
       ifelse(data[[sub("A", "L", trt)]] == 1,
              d(data, trt), # if yes continue with the policy
-             data[[trt]])      # otherwise do nothing
+             data[[trt]])  # otherwise do nothing
     }
   }
-  lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = dynamic_mtp, folds = 2,
+  lmtp_tmle(sim_t4, a, "Y", time_vary = tv, k = 0, shift = dynamic_mtp, folds = 2,
             intervention_type = "mtp")
 
   # Example 2.4
