@@ -23,7 +23,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 Nick Williams and Ivan Diaz
 
------
+------------------------------------------------------------------------
 
 **lmtp** is an R package that provides an estimation framework for the
 casual effects of feasible interventions based on point-treatment and
@@ -61,14 +61,14 @@ assumption are likely to occur. MTPs offer a solution to this problem.**
 
 ## Can lmtp estimate other effects?
 
-Yes\! **lmtp** can estimate the effects of deterministic, static
+Yes! **lmtp** can estimate the effects of deterministic, static
 treatment effects (such as the ATE) and deterministic, dynamic treatment
 regimes for binary, continuous, and survival outcomes.
 
 ### Features
 
 | Feature                         | Status |
-| ------------------------------- | :----: |
+|---------------------------------|:------:|
 | Point treatment                 |   ✓    |
 | Longitudinal treatment          |   ✓    |
 | Modified treatment intervention |   ✓    |
@@ -130,7 +130,8 @@ We can now estimate the effect of our treatment policy, `d`. In this
 example, we’ll use the cross-validated TML estimator with 10 folds.
 
 ``` r
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, folds = 10)
+lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
+          intervention_type = "mtp", folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
@@ -148,11 +149,11 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
-  - [`txshift`](https://github.com/nhejazi/txshift)  
-  - [`tmle3`](https://github.com/tlverse/tmle3)  
-  - [`tmle3shift`](https://github.com/tlverse/tmle3shift)
-  - [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
-  - [`tmle`](https://CRAN.R-project.org/package=tmle)
+-   [`txshift`](https://github.com/nhejazi/txshift)  
+-   [`tmle3`](https://github.com/tlverse/tmle3)  
+-   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+-   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+-   [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
@@ -168,7 +169,7 @@ statistical methodology.
         doi = {10.5281/zenodo.3874931}, 
         url = {https://github.com/nt-williams/lmtp}
     }
-    
+
     @Article{,
         journal = {arxiv},
         title = {Non-parametric causal effects based on longitudinal modified treatment policies},

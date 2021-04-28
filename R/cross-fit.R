@@ -21,15 +21,17 @@ get_folded_weights <- function(weights, folds) {
   return(out)
 }
 
-cf_r <- function(data, shift, V, trt, cens, deterministic, tau,
-                 node_list, learners, pb, weights_r, SL_folds) {
+cf_r <- function(data, shifted, V, trt, cens, deterministic, tau,
+                 node_list, learners, pb, weights_r,
+                 intervention_type, SL_folds) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
   for (i in 1:V) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_r(data[[i]]$train, data[[i]]$valid, trt, cens, deterministic,
-                 shift, tau, node_list, learners, pb, weights_r[[i]], SL_folds)
+      estimate_r(data[[i]], shifted[[i]], trt, cens, deterministic,
+                 tau, node_list, learners, pb, weights_r[[i]],
+                 intervention_type, SL_folds)
     },
     seed = TRUE)
   }

@@ -1,40 +1,31 @@
 
 context("Fidelity of estimators for a point treatment")
 
-# data generation
-set.seed(429153)
-n_obs <- 200
-W <- replicate(2, rbinom(n_obs, 1, 0.5))
-A <- rnorm(n_obs, mean = 2 * W, sd = 1)
-Y <- rbinom(n_obs, 1, plogis(A + W + rnorm(n_obs, mean = 0, sd = 1)))
-bs <- c("X1", "X2")
-df <- data.frame(W, A, Y)
-truth <- 0.76451
+set.seed(543523)
 
-rule <- function(data, x) {
-  data[[x]] + 0.5
-}
+n <- 1e4
+W1 <- rbinom(n, size = 1, prob = 0.5)
+W2 <- rbinom(n, size = 1, prob = 0.65)
+A <- rbinom(n, size = 1, prob = plogis(-0.4 + 0.2 * W2 + 0.15 * W1))
+Y.1 <-rbinom(n, size = 1, prob = plogis(-1 + 1 - 0.1 * W1 + 0.3 * W2))
+Y.0 <- rbinom(n, size = 1, prob = plogis(-1 + 0 - 0.1 * W1 + 0.3 * W2))
 
-# estimators
-sub <-
-  lmtp_sub(df, "A", "Y", baseline = bs, shift = rule,
-           outcome_type = "binomial", folds = 2)
+Y <- Y.1 * A + Y.0 * (1 - A)
+tmp <- data.frame(W1, W2, A, Y, Y.1, Y.0)
+truth <- mean(tmp$Y.1)
 
-ipw <-
-  lmtp_ipw(df, "A", "Y", baseline = bs, shift = rule, folds = 2)
+sub <- lmtp_sub(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 2)
 
-tmle <-
-  lmtp_tmle(df, "A", "Y", baseline = bs, shift = rule,
-            outcome_type = "binomial", folds = 2)
+ipw <- lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 2)
 
-sdr <-
-  lmtp_sdr(df, "A", "Y", baseline = bs, shift = rule,
-           outcome_type = "binomial", folds = 2)
+tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 2)
+
+sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 2)
 
 # tests
 test_that("point treatment fidelity", {
-  expect_equal(truth, sub$theta, tolerance = 0.1)
-  expect_equal(truth, ipw$theta, tolerance = 0.1)
-  expect_equal(truth, tmle$theta, tolerance = 0.1)
-  expect_equal(truth, sdr$theta, tolerance = 0.1)
+  expect_equal(truth, sub$theta, tolerance = 0.025)
+  expect_equal(truth, ipw$theta, tolerance = 0.025)
+  expect_equal(truth, tmle$theta, tolerance = 0.025)
+  expect_equal(truth, sdr$theta, tolerance = 0.025)
 })

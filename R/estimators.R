@@ -26,6 +26,8 @@
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
+#' @param intervention_type The intervetion type, should be one of \code{"static"},
+#'   \code{"dynamic"}, \code{"mtp"}.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
@@ -72,6 +74,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                      intervention_type = c("static", "dynamic", "mtp"),
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
@@ -100,8 +103,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r, .SL_folds)
+  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
+                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
+                 match.arg(intervention_type), .SL_folds)
   cumprod_ratios <- ratio_dr(ratios, folds, .trim)
 
   estims <-
@@ -159,6 +163,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
+#' @param intervention_type The intervetion type, should be one of \code{"static"},
+#'   \code{"dynamic"}, \code{"mtp"}.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
@@ -205,6 +211,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                     intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
@@ -233,8 +240,9 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r, .SL_folds)
+  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
+                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
+                 match.arg(intervention_type), .SL_folds)
 
   estims <-
     cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
@@ -395,6 +403,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
 #' @param shifted An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
+#' @param intervention_type The intervetion type, should be one of \code{"static"},
+#'   \code{"dynamic"}, \code{"mtp"}.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
@@ -431,9 +441,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
-                     time_vary = NULL, cens = NULL, k = Inf,
-                     id = NULL, shift = NULL, shifted = NULL,
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+                     shift = NULL, shifted = NULL,
+                     intervention_type = c("static", "dynamic", "mtp"),
+                     k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = sl3::make_learner(sl3::Lrnr_glm),
                      folds = 10, weights = NULL, return_all_ratios = FALSE,
@@ -460,9 +471,9 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL,
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  ratios <- cf_r(meta$data, shift, folds, meta$trt, cens, meta$risk,
-                 meta$tau, meta$node_list$trt, learners, pb, meta$weights_r,
-                 .SL_folds)
+  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
+                 meta$node_list$trt, learners, pb, meta$weights_r,
+                 match.arg(intervention_type), .SL_folds)
   cumprod_ratios <- ratio_ipw(recombine_ipw(ratios), .trim)
 
   out <- compute_theta(

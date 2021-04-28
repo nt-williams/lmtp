@@ -131,22 +131,31 @@ Meta <- R6::R6Class(
   )
 )
 
-prepare_r_engine <- function(data, shifted, n) {
+prepare_r_engine <- function(data, shifted) {
+  n <- nrow(data)
   out <- rbind(data, shifted)
   out$si <- c(rep(0, n), rep(1, n))
   return(out)
 }
 
-create_r_stacks <- function(training, validation, trt, cens, shift, t, nt, nv) {
-  # need to re-think this option setting here
-  if (getOption("lmtp.trt.length") == "standard" || t == 1) {
-    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
-    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
-  } else if (getOption("lmtp.trt.length") == "point.wise" && t > 1) {
-    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
-    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
+create_r_stacks <- function(natural, shifted, trt, cens, tau) {
+  trt_tau <- trt[tau]
+  use_shifted_train <- natural$train
+  use_shifted_valid <- natural$valid
+
+  if (getOption("lmtp.trt.length") == "standard" || tau == 1) {
+    use_shifted_train[[trt_tau]] <- shifted$train[[trt_tau]]
+    use_shifted_valid[[trt_tau]] <- shifted$valid[[trt_tau]]
   }
-  out <- list(train = train_stck,
-              valid = valid_stck)
-  return(out)
+
+  if (!is.null(cens)) {
+    cens_tau <- cens[tau]
+    use_shifted_train[[cens_tau]] <- shifted$train[[cens_tau]]
+    use_shifted_valid[[cens_tau]] <- shifted$valid[[cens_tau]]
+  }
+
+  train_stck <- prepare_r_engine(natural$train, use_shifted_train)
+  valid_stck <- prepare_r_engine(natural$valid, use_shifted_valid)
+  list(train = train_stck,
+       valid = valid_stck)
 }
