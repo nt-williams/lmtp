@@ -10,7 +10,7 @@ shift_cens <- function(data, cens) {
   for (ce in cens) {
     out[[ce]] <- 1
   }
-  return(as.data.frame(out))
+  return(as.data.frame(out, check.names = FALSE))
 }
 
 shift_trt <- function(data, trt, .f) {
