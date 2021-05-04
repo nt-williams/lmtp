@@ -11,14 +11,12 @@
   # treatment rule, everyone is increased by 0.5
   d <- function(data, x) data[[x]] + 0.5
   psi_rule1 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
-                         cens = cens, shift = d, folds = 2,
-                         intervention_type = "mtp")
+                         cens = cens, shift = d, folds = 2, intervention_type = "mtp")
 
   # treatment rule, everyone is decreased by 0.5
   d <- function(data, x) data[[x]] - 0.5
   psi_rule2 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes,
-                         cens = cens, shift = d, folds = 2,
-                         intervention_type = "mtp")
+                         cens = cens, shift = d, folds = 2, intervention_type = "mtp")
 
   # Example 1.1
   # Additive effect of rule 1 compared to a known constant

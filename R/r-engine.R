@@ -38,14 +38,14 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
     pred <- matrix(-999L, nrow = nt * 2, ncol = 1)
     pred[jrt & drt, ] <- SL_predict(fit, fit_task, .Machine$double.eps)
 
-    rat <- create_ratios(pred, irt, drt, frt)
+    rat <- create_ratios(pred, irt, drt, frt, intervention_type == "mtp")
     rt$natural[, t] <- rat[stcks$train$si == 0]
     rt$shifted[, t] <- rat[stcks$train$si == 1]
 
     pred <- matrix(-999L, nrow = nv * 2, ncol = 1)
     pred[jrv & drv, ] <- SL_predict(fit, vpred_task, .Machine$double.eps)
 
-    rat <- create_ratios(pred, irv, drv, frv)
+    rat <- create_ratios(pred, irv, drv, frv, intervention_type == "mtp")
     rv$natural[, t] <- rat[stcks$valid$si == 0]
     rv$shifted[, t] <- rat[stcks$valid$si == 1]
 
@@ -56,8 +56,9 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
        sl_weights = sl_weights)
 }
 
-create_ratios <- function(pred, cens, risk, followed) {
-  (pred * cens * risk * followed) / (1 - pred)
+create_ratios <- function(pred, cens, risk, followed, mtp) {
+  use <- ifelse(followed & isFALSE(mtp), pmax(pred, 0.5), pred)
+  (use * cens * risk * followed) / (1 - use)
 }
 
 ratio_dr <- function(ratios, V, trim) {
