@@ -7,8 +7,8 @@
 \method{tidy}{lmtp}(x, ...)
 }
 \arguments{
-\item{x}{A \code{lmtp} object produced by a call to \code{\link[lmtp:lmtp_tmle]{lmtp::lmtp_tmle()}}, \code{\link[lmtp:lmtp_sdr]{lmtp::lmtp_sdr()}},
-\code{\link[lmtp:lmtp_sub]{lmtp::lmtp_sub()}}, or \code{\link[lmtp:lmtp_ipw]{lmtp::lmtp_ipw()}}.}
+\item{x}{A \code{lmtp} object produced by a call to \code{\link[=lmtp_tmle]{lmtp_tmle()}}, \code{\link[=lmtp_sdr]{lmtp_sdr()}},
+\code{\link[=lmtp_sub]{lmtp_sub()}}, or \code{\link[=lmtp_ipw]{lmtp_ipw()}}.}
 
 \item{...}{Unused, included for generic consistency only.}
 }
