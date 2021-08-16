@@ -5,7 +5,7 @@ Authors@R:
     c(person(given = "Nicholas",
              family = "Williams",
              role = c("aut", "cre", "cph"),
-             email = "niw4001@med.cornell.edu", 
+             email = "ntwilliams.personal@gmail.com", 
              comment = c(ORCID = "0000-0002-1378-4831")),
       person(given = "Iván", 
              family = "Díaz", 
