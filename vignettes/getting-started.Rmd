@@ -127,7 +127,7 @@ Further details on this algorithm may be found in our technical paper [@diazNonp
 Modified treatment policies and deterministic static/dynamic treatment rules are specified using the `shift` argument, which accepts a user-defined function that returns a vector of exposure values modified according to the policy of interest. Shift functions should take two arguments, the first for specifying a data set and the second for specifying the current exposure variable. For example, a possible MTP may decrease exposure by 1 unit if the natural exposure value was greater than two and do nothing otherwise. A shift function for this MTP would look like
 
 ```{r}
-shift <- function(data, trt) {
+mtp <- function(data, trt) {
   (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
 ```
@@ -137,7 +137,7 @@ It is then passed to estimators using the `shift` argument
 ```{r}
 A <- c("A_1", "A_2", "A_3", "A_4")
 L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-lmtp_sdr(sim_t4, A, "Y", time_vary = L, k = 0, shift = shift, folds = 5)
+lmtp_sdr(sim_t4, A, "Y", time_vary = L, k = 0, shift = mtp, folds = 5)
 ```
 
 This framework is flexible and allows for specifying complex treatment regimes that can depend on time and covariates. In the case of a binary exposure, two shift functions are installed with the package: `static_binary_on()` which sets $A_{i, t} = 1$, and `static_binary_off()` which sets $A_{i, t} = 0$.
@@ -159,22 +159,23 @@ Dynamic treatment regimes are treatment rules where treatment is applied based o
 ```{r warning = FALSE}
 A <- c("A_1", "A_2", "A_3", "A_4")
 L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-shift <- function(data, trt) {
-  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
-}
 
 # creating a dynamic mtp that applies the shift function 
 # but also depends on history and the current time
 dynamic_mtp <- function(data, trt) {
-  if (trt == "A_1") {
-    # if its the first time point, follow the same mtp as before
-    shift(data, trt)
-  } else {
-    # otherwise check if the time varying covariate equals 1
-    ifelse(data[[sub("A", "L", trt)]] == 1, 
-           shift(data, trt), # if yes continue with the policy
-           data[[trt]])      # otherwise do nothing
+  mtp <- function(data, trt) {
+    (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
   }
+  
+  # if its the first time point, follow the same mtp as before
+  if (trt == "A_1") return(mtp(data, trt))
+  
+  # otherwise check if the time varying covariate equals 1
+  ifelse(
+    data[[sub("A", "L", trt)]] == 1, 
+    mtp(data, trt), # if yes continue with the policy
+    data[[trt]]     # otherwise do nothing
+  )      
 }
 
 lmtp_tmle(sim_t4, A, "Y", time_vary = L, k = 0, 
