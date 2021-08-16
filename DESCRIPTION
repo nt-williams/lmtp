@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 0.9.0
+Version: 0.9.1
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -37,11 +37,14 @@ Imports:
     progressr,
     data.table,
     SuperLearner
+URL: https://github.com/nt-williams/lmtp
+BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),
     covr,
     rmarkdown,
-    knitr, 
-    ranger, 
-    twang
+    knitr,
+    ranger,
+    twang,
+    markdown
 VignetteBuilder: knitr

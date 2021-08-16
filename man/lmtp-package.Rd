@@ -13,6 +13,14 @@ Non-parametric estimators for casual effects based on longitudinal modified trea
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/nt-williams/lmtp}
+  \item Report bugs at \url{https://github.com/nt-williams/lmtp/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Nicholas Williams \email{niw4001@med.cornell.edu} (\href{https://orcid.org/0000-0002-1378-4831}{ORCID}) [copyright holder]
 

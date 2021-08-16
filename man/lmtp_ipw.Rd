@@ -163,22 +163,23 @@ psi2.2
 # Now estimating the effect of a dynamic modified treatment policy.
 a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-# our same shift function
-shift <- function(data, trt) {
-  (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
-}
+
 # creating a dynamic mtp that applies the shift function
 # but also depends on history and the current time
 dynamic_mtp <- function(data, trt) {
-  if (trt == "A_1") {
-    # if its the first time point, follow the same mtp as before
-    shift(data, trt)
-  } else {
-    # otherwise check if the time varying covariate equals 1
-    ifelse(data[[sub("A", "L", trt)]] == 1,
-           shift(data, trt), # if yes continue with the policy
-           data[[trt]]) # otherwise do nothing
+  mtp <- function(data, trt) {
+    (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
   }
+
+  # if its the first time point, follow the same mtp as before
+  if (trt == "A_1") return(mtp(data, trt))
+
+  # otherwise check if the time varying covariate equals 1
+  ifelse(
+    data[[sub("A", "L", trt)]] == 1,
+    mtp(data, trt), # if yes continue with the policy
+    data[[trt]]     # otherwise do nothing
+  )
 }
 psi2.3 <- lmtp_ipw(sim_t4, a, "Y", time_vary = time_varying,
                    k = 0, shift = dynamic_mtp, folds = 2)
