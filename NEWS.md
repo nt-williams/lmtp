@@ -1,4 +1,14 @@
-# lmtp 0.9.0.9000
+# lmtp 0.9.1
+
+### Bug Fixes
+
+- Fixed a bug that caused failure when knitting the `getting-started.Rmd` vignette (issue \#100).
+
+### General
+
+- GitHub links added to DESCRIPTION (issue \# 99).
+
+# lmtp 0.9.0
 
 ### New Features
 
