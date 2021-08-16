@@ -4,8 +4,7 @@
 \name{sim_timevary_surv}
 \alias{sim_timevary_surv}
 \title{Simulated Time-varying Survival Data}
-\format{
-A data frame with 500 rows and 11 variables:
+\format{A data frame with 500 rows and 11 variables:
 \describe{
 \item{L0.a}{Continuous baseline variable.}
 \item{L0.b}{Time varying covariate at baseline.}
@@ -18,8 +17,7 @@ A data frame with 500 rows and 11 variables:
 \item{A1}{Treatment variable at time 1.}
 \item{C1}{Censoring indicator that the observation is observed future time points.}
 \item{Y2}{Final outcome node.}
-}
-}
+}}
 \usage{
 sim_timevary_surv
 }

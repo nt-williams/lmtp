@@ -37,6 +37,8 @@ Imports:
     progressr,
     data.table,
     SuperLearner
+URL: https://github.com/nt-williams/lmtp
+BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),
     covr,

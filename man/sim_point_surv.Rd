@@ -4,8 +4,7 @@
 \name{sim_point_surv}
 \alias{sim_point_surv}
 \title{Simulated Point-treatment Survival Data}
-\format{
-A data frame with 2000 rows and 16 variables:
+\format{A data frame with 2000 rows and 16 variables:
 \describe{
 \item{W1}{Binary baseline variable.}
 \item{W2}{Categorical baseline variable.}
@@ -23,8 +22,7 @@ A data frame with 2000 rows and 16 variables:
 \item{Y.5}{Outcome node at time 5.}
 \item{C.5}{Censoring indicator that the observation is observed future time points.}
 \item{Y.6}{Final outcome node.}
-}
-}
+}}
 \usage{
 sim_point_surv
 }
