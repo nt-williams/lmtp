@@ -43,7 +43,8 @@ Suggests:
     testthat (>= 2.1.0),
     covr,
     rmarkdown,
-    knitr, 
-    ranger, 
-    twang
+    knitr,
+    ranger,
+    twang,
+    markdown
 VignetteBuilder: knitr
