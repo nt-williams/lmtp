@@ -102,10 +102,18 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
-                 match.arg(intervention_type), .SL_folds)
-  cumprod_ratios <- ratio_dr(ratios, folds, .trim)
+  ratios <- cf_r(
+    meta$data, meta$shifted_data,
+    meta$folds, meta$trt,
+    cens, meta$risk, meta$tau,
+    meta$node_list$trt, learners_trt,
+    pb, meta$weights_r,
+    match.arg(intervention_type),
+    .SL_folds,
+    .trim
+  )
+
+  cumprod_ratios <- ratio_tmle(ratios)
 
   estims <-
     cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,

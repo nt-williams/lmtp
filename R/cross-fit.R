@@ -1,6 +1,5 @@
 setup_cv <- function(data, id, V = 10) {
-  out <- origami::make_folds(data, cluster_ids = id, V = V)
-  return(out)
+  origami::make_folds(data, cluster_ids = id, V = V)
 }
 
 get_folded_data <- function(data, folds) {
@@ -10,7 +9,7 @@ get_folded_data <- function(data, folds) {
     out[[i]][["train"]] <- data[folds[[i]]$training_set, ]
     out[[i]][["valid"]] <- data[folds[[i]]$validation_set, ]
   }
-  return(out)
+  out
 }
 
 get_folded_weights <- function(weights, folds) {
@@ -18,26 +17,33 @@ get_folded_weights <- function(weights, folds) {
   for (i in 1:length(folds)) {
     out[[i]] <- weights[folds[[i]]$training_set]
   }
-  return(out)
+  out
 }
 
-cf_r <- function(data, shifted, V, trt, cens, deterministic, tau,
+cf_r <- function(data, shifted, folds, trt, cens, deterministic, tau,
                  node_list, learners, pb, weights_r,
-                 intervention_type, SL_folds) {
+                 intervention_type, SL_folds, trim) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
-  for (i in 1:V) {
+
+  for (i in seq_along(folds)) {
     out[[i]] <- future::future({
       options(fopts)
-      estimate_r(data[[i]], shifted[[i]], trt, cens, deterministic,
-                 tau, node_list, learners, pb, weights_r[[i]],
-                 intervention_type, SL_folds)
+
+      estimate_r(
+        get_folded_data(data, folds)[[i]],
+        get_folded_data(shifted, folds)[[i]],
+        trt, cens, deterministic,
+        tau, node_list, learners,
+        pb, weights_r[[i]],
+        intervention_type, SL_folds
+      )
     },
     seed = TRUE,
     globals = structure(TRUE, add = learners))
   }
-  out <- future::value(out)
-  return(out)
+
+  trim_ratios(recombine_ratios(future::value(out), folds), trim)
 }
 
 cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,

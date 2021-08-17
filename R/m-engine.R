@@ -10,13 +10,15 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
     pseudo <- paste0("psi", tau)
     vars <- node_list[[tau]]
 
-    fit <- run_ensemble(training[i & rt, ][[outcome]],
-                        training[i & rt, vars],
-                        check_variation(training[i & rt, ][[outcome]],
-                                        learners),
-                        outcome_type,
-                        id = training[i & rt, ][["lmtp_id"]],
-                        SL_folds)
+    fit <- run_ensemble(
+      training[i & rt, ][[outcome]],
+      training[i & rt, vars],
+      check_variation(training[i & rt, ][[outcome]], learners),
+      outcome_type,
+      id = training[i & rt, ][["lmtp_id"]],
+      SL_folds
+    )
+
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     training[jt & rt, pseudo] <- SL_predict(fit, shifted[jt & rt, vars])
@@ -61,13 +63,15 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
     pseudo <- paste0("psi", tau)
     vars <- node_list[[tau]]
 
-    fit <- run_ensemble(training[i & rt, ][[outcome]],
-                        training[i & rt, vars],
-                        check_variation(training[i & rt, ][[outcome]],
-                                        learners),
-                        outcome_type,
-                        id = training[i & rt, ][["lmtp_id"]],
-                        SL_folds)
+    fit <- run_ensemble(
+      training[i & rt, ][[outcome]],
+      training[i & rt, vars],
+      check_variation(training[i & rt, ][[outcome]], learners),
+      outcome_type,
+      id = training[i & rt, ][["lmtp_id"]],
+      SL_folds
+    )
+
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     m_natural$train[jt & rt, tau] <- SL_predict(fit, training[jt & rt, vars])

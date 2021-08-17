@@ -68,11 +68,13 @@ censored <- function(data, cens, tau) {
 at_risk <- function(data, risk, tau) {
   if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
-  } else if (tau == 1) {
-    return(rep(TRUE, nrow(data)))
-  } else {
-    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
   }
+
+  if (tau == 1) {
+    return(rep(TRUE, nrow(data)))
+  }
+
+  data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
 }
 
 followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
@@ -87,14 +89,39 @@ transform_sdr <- function(r, tau, max, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, (tau + 2):(max + 1), drop = FALSE] - natural[, (tau + 1):max, drop = FALSE]
-  out <- rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
-  return(out)
+  rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
 }
 
 recombine_ipw <- function(r) {
   out <- list(r = Reduce(rbind, Reduce(rbind, lapply(r, function(x) x[["valid"]]))[, "natural"]),
               sl_weights = lapply(r, function(x) x[["sl_weights"]]))
   return(out)
+}
+
+recombine_ratios <- function(x, folds) {
+  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
+
+  returns <- list()
+  returns$shifted <- Reduce(
+    rbind,
+    lapply(x, function(x) x[["ratios"]][["shifted"]])
+  )[order(ind), ]
+
+  returns$natural <- Reduce(
+    rbind,
+    lapply(x, function(x) x[["ratios"]][["natural"]])
+  )[order(ind), ]
+
+  returns$sl_weights <- lapply(x, function(x) x$sl_weights)
+  returns
+}
+
+trim_ratios <- function(x, trim) {
+  for (ratio in c("natural", "shifted")) {
+    bound <- quantile(x[[ratio]], trim)
+    x[[ratio]] <- pmin(x[[ratio]], bound)
+  }
+  x
 }
 
 recombine_dens_ratio <- function(r) {

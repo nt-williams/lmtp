@@ -3,58 +3,74 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
                        intervention_type, SL_folds) {
   training <- data$train
   validation <- data$valid
+
   nt <- nrow(training)
   nv <- nrow(validation)
-  rt <- list(natural = matrix(nrow = nt, ncol = tau),
-             shifted = matrix(nrow = nt, ncol = tau))
-  rv <- list(natural = matrix(nrow = nv, ncol = tau),
-             shifted = matrix(nrow = nv, ncol = tau))
+
+  returns <- list(
+    natural = matrix(nrow = nv, ncol = tau),
+    shifted = matrix(nrow = nv, ncol = tau)
+  )
 
   for (t in 1:tau) {
-    irt <- rep(censored(training, cens, t)$i, 2)
     jrt <- rep(censored(training, cens, t)$j, 2)
     drt <- rep(at_risk(training, risk, t), 2)
     irv <- rep(censored(validation, cens, t)$i, 2)
     jrv <- rep(censored(validation, cens, t)$j, 2)
     drv <- rep(at_risk(validation, risk, t), 2)
-    frt <- followed_rule(training[[trt[t]]], shifted$train[[trt[t]]], intervention_type)
-    frv <- followed_rule(validation[[trt[t]]], shifted$valid[[trt[t]]], intervention_type)
+
+    frv <- followed_rule(
+      validation[[trt[t]]],
+      shifted$valid[[trt[t]]],
+      intervention_type
+    )
+
     vars <- c(node_list[[t]], cens[[t]])
     stcks <- create_r_stacks(data, shifted, trt, cens, t)
 
-    fit <- run_ensemble(stcks$train[jrt & drt, ]$si,
-                        stcks$train[jrt & drt, vars],
-                        learners,
-                        "binomial",
-                        stcks$train[jrt & drt, ]$lmtp_id,
-                        SL_folds)
+    fit <- run_ensemble(
+      stcks$train[jrt & drt, ]$si,
+      stcks$train[jrt & drt, vars],
+      learners,
+      "binomial",
+      stcks$train[jrt & drt, ]$lmtp_id,
+      SL_folds
+    )
 
     sl_weights[[t]] <- extract_sl_weights(fit)
 
-    pred <- matrix(-999L, nrow = nt * 2, ncol = 1)
-    pred[jrt & drt, ] <- SL_predict(fit, stcks$train[jrt & drt, vars], .Machine$double.eps)
-
-    rat <- create_ratios(pred, irt, drt, frt, intervention_type == "mtp")
-    rt$natural[, t] <- rat[stcks$train$si == 0]
-    rt$shifted[, t] <- rat[stcks$train$si == 1]
-
     pred <- matrix(-999L, nrow = nv * 2, ncol = 1)
-    pred[jrv & drv, ] <- SL_predict(fit, stcks$valid[jrv & drv, vars], .Machine$double.eps)
 
-    rat <- create_ratios(pred, irv, drv, frv, intervention_type == "mtp")
-    rv$natural[, t] <- rat[stcks$valid$si == 0]
-    rv$shifted[, t] <- rat[stcks$valid$si == 1]
+    pred[jrv & drv, ] <- SL_predict(
+      fit, stcks$valid[jrv & drv, vars],
+      .Machine$double.eps
+    )
+
+    ratios <- create_ratios(
+      pred, irv, drv, frv,
+      intervention_type == "mtp"
+    )
+
+    returns$natural[, t] <- ratios[stcks$valid$si == 0]
+    returns$shifted[, t] <- ratios[stcks$valid$si == 1]
 
     pb()
   }
-  list(train = rt,
-       valid = rv,
-       sl_weights = sl_weights)
+
+  list(ratios = returns, sl_weights = sl_weights)
 }
 
 create_ratios <- function(pred, cens, risk, followed, mtp) {
   use <- ifelse(followed & isFALSE(mtp), pmax(pred, 0.5), pred)
-  (use * cens * risk * followed) / (1 - use)
+  (use * cens * risk * followed) / (1 - pmin(use, 0.99))
+}
+
+ratio_tmle <- function(ratios) {
+  matrix(
+    t(apply(ratios[["natural"]], 1, cumprod)),
+    nrow = nrow(ratios[["natural"]]),
+    ncol = ncol(ratios[["natural"]])
+  )
 }
 
 ratio_dr <- function(ratios, V, trim) {

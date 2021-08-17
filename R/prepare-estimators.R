@@ -65,56 +65,43 @@ Meta <- R6::R6Class(
           check_shifted(data, shifted, outcome, baseline, time_vary, cens)
       }
 
-      self$m <-
-        get_folded_data(
-          cbind(
-            matrix(
-              nrow = nrow(data),
-              ncol = self$tau
-            ),
-            scale_y_continuous(
+      self$m <- cbind(
+        matrix(nrow = nrow(data), ncol = self$tau),
+        scale_y_continuous(
+          data[[final_outcome(outcome)]],
+          y_bounds(
+            data[[final_outcome(outcome)]],
+            self$outcome_type,
+            bounds
+          )
+        )
+      )
+
+      self$data <- fix_censoring_ind(
+        add_scaled_y(
+          data, scale_y_continuous(
+            data[[final_outcome(outcome)]],
+            y_bounds(
               data[[final_outcome(outcome)]],
-              y_bounds(data[[final_outcome(outcome)]],
-                       self$outcome_type,
-                       bounds)
+              self$outcome_type,
+              bounds
             )
-          ),
-          self$folds
-        )
+          )
+        ), cens, self$tau
+      )
 
-      self$data <-
-        get_folded_data(
-          fix_censoring_ind(
-            add_scaled_y(
-              data,
-              scale_y_continuous(
-                data[[final_outcome(outcome)]],
-                y_bounds(data[[final_outcome(outcome)]],
-                         self$outcome_type,
-                         bounds)
-              )
-            ),
-            cens, self$tau
-          ),
-          self$folds
-        )
-
-      self$shifted_data <-
-        get_folded_data(
-          fix_censoring_ind(
-            add_scaled_y(
-              shd,
-              scale_y_continuous(
-                data[[final_outcome(outcome)]],
-                y_bounds(data[[final_outcome(outcome)]],
-                         self$outcome_type,
-                         bounds)
-              )
-            ),
-            cens, self$tau
-          ),
-          self$folds
-        )
+      self$shifted_data <- fix_censoring_ind(
+        add_scaled_y(
+          shd, scale_y_continuous(
+            data[[final_outcome(outcome)]],
+            y_bounds(
+              data[[final_outcome(outcome)]],
+              self$outcome_type,
+              bounds
+            )
+          )
+        ), cens, self$tau
+      )
 
       if (!is.null(weights)) {
         self$weights <- get_folded_weights(weights, self$folds)
@@ -130,7 +117,7 @@ prepare_r_engine <- function(data, shifted) {
   n <- nrow(data)
   out <- rbind(data, shifted)
   out$si <- c(rep(0, n), rep(1, n))
-  return(out)
+  out
 }
 
 create_r_stacks <- function(natural, shifted, trt, cens, tau) {
@@ -151,6 +138,6 @@ create_r_stacks <- function(natural, shifted, trt, cens, tau) {
 
   train_stck <- prepare_r_engine(natural$train, use_shifted_train)
   valid_stck <- prepare_r_engine(natural$valid, use_shifted_valid)
-  list(train = train_stck,
-       valid = valid_stck)
+
+  list(train = train_stck, valid = valid_stck)
 }
