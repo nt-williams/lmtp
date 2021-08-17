@@ -102,26 +102,29 @@ recombine_ratios <- function(x, folds) {
   ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
 
   returns <- list()
-  returns$shifted <- Reduce(
+
+  returns$ratios <- Reduce(
     rbind,
-    lapply(x, function(x) x[["ratios"]][["shifted"]])
+    lapply(x, function(x) x[["ratios"]])
   )[order(ind), ]
 
-  returns$natural <- Reduce(
-    rbind,
-    lapply(x, function(x) x[["ratios"]][["natural"]])
-  )[order(ind), ]
+  returns$sl_weights <- recombine_sl_weights(x)
 
-  returns$sl_weights <- lapply(x, function(x) x$sl_weights)
   returns
 }
 
 trim_ratios <- function(x, trim) {
-  for (ratio in c("natural", "shifted")) {
-    bound <- quantile(x[[ratio]], trim)
-    x[[ratio]] <- pmin(x[[ratio]], bound)
-  }
+  x[["ratios"]] <- pmin(x[["ratios"]], quantile(x[["ratios"]], trim))
   x
+}
+
+recombine_outcome_reg <- function(x, part, folds) {
+  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
+  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), ]
+}
+
+recombine_sl_weights <- function(x) {
+  lapply(x, function(x) x[["sl_weights"]])
 }
 
 recombine_dens_ratio <- function(r) {

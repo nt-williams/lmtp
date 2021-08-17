@@ -22,7 +22,6 @@ lmtp_tmle(
   learners_trt = "SL.glm",
   folds = 10,
   weights = NULL,
-  return_all_ratios = FALSE,
   .bound = 1e-05,
   .trim = 0.999,
   .SL_folds = 10
@@ -82,9 +81,6 @@ is two folds.}
 
 \item{weights}{An optional vector of length n containing sampling weights.}
 
-\item{return_all_ratios}{Logical. If \code{TRUE}, the non-cumulative product density
-ratios will be returned. The default is \code{FALSE}.}
-
 \item{.bound}{Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 
@@ -108,8 +104,6 @@ A list of class \code{lmtp} containing the following components:
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
 \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-\item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
-\code{NULL} if \code{return_all_ratios = FALSE}.}
 \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 ensemble weights at each time-point for each fold for the outcome regression.}
 \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner

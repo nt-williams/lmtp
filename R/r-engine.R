@@ -7,10 +7,7 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
   nt <- nrow(training)
   nv <- nrow(validation)
 
-  returns <- list(
-    natural = matrix(nrow = nv, ncol = tau),
-    shifted = matrix(nrow = nv, ncol = tau)
-  )
+  returns <- matrix(nrow = nv, ncol = tau)
 
   for (t in 1:tau) {
     jrt <- rep(censored(training, cens, t)$j, 2)
@@ -51,8 +48,7 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
       intervention_type == "mtp"
     )
 
-    returns$natural[, t] <- ratios[stcks$valid$si == 0]
-    returns$shifted[, t] <- ratios[stcks$valid$si == 1]
+    returns[, t] <- ratios[stcks$valid$si == 0]
 
     pb()
   }
@@ -67,31 +63,10 @@ create_ratios <- function(pred, cens, risk, followed, mtp) {
 
 ratio_tmle <- function(ratios) {
   matrix(
-    t(apply(ratios[["natural"]], 1, cumprod)),
-    nrow = nrow(ratios[["natural"]]),
-    ncol = ncol(ratios[["natural"]])
+    t(apply(ratios[["ratios"]], 1, cumprod)),
+    nrow = nrow(ratios[["ratios"]]),
+    ncol = ncol(ratios[["ratios"]])
   )
-}
-
-ratio_dr <- function(ratios, V, trim) {
-  out <- list()
-  for (i in 1:V) {
-    out[[i]] <- list()
-    out[[i]]$train <- check_extreme_ratio(
-      matrix(t(apply(ratios[[i]]$train$natural, 1, cumprod)),
-             nrow = nrow(ratios[[i]]$train$natural),
-             ncol = ncol(ratios[[i]]$train$natural)),
-      trim
-    )
-    out[[i]]$valid <- check_extreme_ratio(
-      matrix(t(apply(ratios[[i]]$valid$natural, 1, cumprod)),
-             nrow = nrow(ratios[[i]]$valid$natural),
-             ncol = ncol(ratios[[i]]$valid$natural)),
-      trim
-    )
-    out[[i]]$sl_weights <- ratios[[i]]$sl_weights
-  }
-  return(out)
 }
 
 ratio_ipw <- function(ratio, trim) {

@@ -1,13 +1,3 @@
-compute_theta <- function(estimator, eta) {
-  out <- switch(estimator,
-                "ipw" = theta_ipw(eta),
-                "sub" = theta_sub(eta),
-                "sdr" = theta_dr(eta, TRUE),
-                "tml" = theta_dr(eta, FALSE))
-
-  return(out)
-}
-
 theta_sub <- function(eta) {
   i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
   out <- list(estimator = "substitution",
@@ -61,9 +51,11 @@ eif <- function(r, tau, shifted, natural) {
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
-  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-  inflnce <- eif(r = eta$r, tau = eta$tau, shifted = eta$m$shifted,
-                 natural = eta$m$natural)[order(i)]
+  inflnce <- eif(
+    r = eta$r, tau = eta$tau,
+    shifted = eta$m$shifted,
+    natural = eta$m$natural
+  )
 
   theta <- {
     if (augmented)
@@ -75,7 +67,7 @@ theta_dr <- function(eta, augmented = FALSE) {
       if (is.null(eta$weights))
         mean(eta$m$shifted[, 1])
       else
-        weighted.mean(eta$m$shifted[order(i), 1], eta$weights)
+        weighted.mean(eta$m$shifted[, 1], eta$weights)
   }
 
   if (eta$outcome_type == "continuous") {
@@ -89,23 +81,24 @@ theta_dr <- function(eta, augmented = FALSE) {
   ci_low  <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
 
-  out <- list(estimator = eta$estimator,
-              theta = theta,
-              standard_error = se,
-              low = ci_low,
-              high = ci_high,
-              eif = inflnce,
-              shift = eta$shift,
-              outcome_reg = switch(
-                eta$outcome_type,
-                continuous = rescale_y_continuous(eta$m$shifted, eta$bounds)[order(i), ],
-                binomial = eta$m$shifted[order(i), ]
-              ),
-              density_ratios = eta$r[order(i), ],
-              raw_ratios = eta$raw_ratios[order(i), ],
-              weights_m = eta$weights_m,
-              weights_r = eta$weights_r,
-              outcome_type = eta$outcome_type)
+  out <- list(
+    estimator = eta$estimator,
+    theta = theta,
+    standard_error = se,
+    low = ci_low,
+    high = ci_high,
+    eif = inflnce,
+    shift = eta$shift,
+    outcome_reg = switch(
+      eta$outcome_type,
+      continuous = rescale_y_continuous(eta$m$shifted, eta$bounds),
+      binomial = eta$m$shifted
+    ),
+    density_ratios = eta$r,
+    weights_m = eta$weights_m,
+    weights_r = eta$weights_r,
+    outcome_type = eta$outcome_type
+  )
 
   class(out) <- "lmtp"
   return(out)
