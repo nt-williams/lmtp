@@ -30,14 +30,16 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
 }
 
 contrast_additive <- function(fits, ref) {
-  res  <- lapply(fits, function(x) contrast_additive_single(x, ref))
+  res <- lapply(fits, function(x) contrast_additive_single(x, ref))
   vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
   eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
 
-  out <- list(type = "additive",
-              null = 0,
-              vals = vals,
-              eifs = eifs)
+  out <- list(
+    type = "additive",
+    null = 0,
+    vals = vals,
+    eifs = eifs
+  )
   class(out) <- "lmtp_contrast"
   return(out)
 }
@@ -46,7 +48,9 @@ contrast_additive_single <- function(fit, ref) {
   if (is.lmtp(ref)) {
     theta <- fit$theta - ref$theta
     eif <- fit$eif - ref$eif
-  } else {
+  }
+
+  if (isFALSE(is.lmtp(ref))) {
     theta <- fit$theta - ref
     eif <- fit$eif
   }
@@ -56,8 +60,8 @@ contrast_additive_single <- function(fit, ref) {
   conf.high <- theta + qnorm(0.975) * std.error
   p.value <- pnorm(abs(theta) / std.error, lower.tail = FALSE) * 2
 
-  out <-
-    list(vals = data.frame(
+  list(
+    vals = data.frame(
       theta = theta,
       shift = fit$theta,
       ref = ifelse(is.lmtp(ref), ref$theta, ref),
@@ -66,9 +70,8 @@ contrast_additive_single <- function(fit, ref) {
       conf.high = conf.high,
       p.value = p.value
     ),
-    eif = eif)
-
-  return(out)
+    eif = eif
+  )
 }
 
 contrast_rr <- function(fits, ref) {
@@ -76,10 +79,12 @@ contrast_rr <- function(fits, ref) {
   vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
   eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
 
-  out <- list(type = "relative risk",
-              null = 1,
-              vals = vals,
-              eifs = eifs)
+  out <- list(
+    type = "relative risk",
+    null = 1,
+    vals = vals,
+    eifs = eifs
+  )
 
   class(out) <- "lmtp_contrast"
   return(out)
@@ -93,8 +98,8 @@ contrast_rr_single <- function(fit, ref) {
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
   p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
 
-  out <-
-    list(vals = data.frame(
+  list(
+    vals = data.frame(
       theta = theta,
       shift = fit$theta,
       ref = ref$theta,
@@ -103,9 +108,8 @@ contrast_rr_single <- function(fit, ref) {
       conf.high = conf.high,
       p.value = p.value
     ),
-    eif = log_eif)
-
-  return(out)
+    eif = log_eif
+  )
 }
 
 contrast_or <- function(fits, ref) {
@@ -113,12 +117,14 @@ contrast_or <- function(fits, ref) {
   vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
   eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
 
-  out <- list(type = "odds ratio",
-              null = 1,
-              vals = vals,
-              eifs = eifs)
+  out <- list(
+    type = "odds ratio",
+    null = 1,
+    vals = vals,
+    eifs = eifs
+  )
   class(out) <- "lmtp_contrast"
-  return(out)
+  out
 }
 
 contrast_or_single <- function(fit, ref) {
@@ -129,8 +135,8 @@ contrast_or_single <- function(fit, ref) {
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
   p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
 
-  out <-
-    list(vals = data.frame(
+  list(
+    vals = data.frame(
       theta = theta,
       shift = fit$theta,
       ref = ref$theta,
@@ -139,8 +145,7 @@ contrast_or_single <- function(fit, ref) {
       conf.high = conf.high,
       p.value = p.value
     ),
-    eif = log_eif)
-
-    return(out)
+    eif = log_eif
+  )
 }
 
