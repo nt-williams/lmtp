@@ -178,24 +178,27 @@ should include both the R package and the paper establishing the
 statistical methodology.
 
     @Manual{,
-        title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
-        author = {Nicholas T Williams and Iván Díaz},
-        year = {2020},
-        note = {R package version 0.0.5},
-        doi = {10.5281/zenodo.3874931}, 
-        url = {https://github.com/nt-williams/lmtp}
+      title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+      author = {Nicholas T Williams and Iván Díaz},
+      year = {2021},
+      note = {R package version 1.0.0},
+      doi = {10.5281/zenodo.3874931}, 
+      url = {https://github.com/nt-williams/lmtp}
     }
 
-    @Article{,
-        journal = {arxiv},
-        title = {Non-parametric causal effects based on longitudinal modified treatment policies},
-        author = {Iván Díaz and Nicholas Williams and Katherine L Hoffman and Edward J Schneck},
-        year = {2020},
-        url = {https://arxiv.org/abs/2006.01366v2}
+    @article{
+      doi:10.1080/01621459.2021.1955691,
+      author = {Iván Díaz and Nicholas Williams and Katherine L. Hoffman and Edward J. Schenck},
+      title = {Non-parametric causal effects based on longitudinal modified treatment policies},
+      journal = {Journal of the American Statistical Association},
+      year  = {2021},
+      doi = {10.1080/01621459.2021.1955691},
+      URL = {https://doi.org/10.1080/01621459.2021.1955691},
     }
 
 ## References
 
-Diaz I, Williams N, Hoffman KL, Schenck, EJ (2020). *Non-Parametric
-Causal Effects Based on Longitudinal Modified Treatment Policies*.
-<https://arxiv.org/abs/2006.01366>
+Iván Díaz, Nicholas Williams, Katherine L. Hoffman & Edward J. Schenck
+(2021) Non-parametric causal effects based on longitudinal modified
+treatment policies, Journal of the American Statistical Association,
+DOI: 10.1080/01621459.2021.1955691
