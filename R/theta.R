@@ -1,45 +1,57 @@
 theta_sub <- function(eta) {
-  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-  out <- list(estimator = "substitution",
-              theta = if (is.null(eta$weights)) mean(eta$m[, 1]) else weighted.mean(eta$m[order(i), 1], eta$weights),
-              standard_error = NA_real_,
-              low = NA_real_,
-              high = NA_real_,
-              shift = eta$shift,
-              outcome_reg = switch(
-                eta$outcome_type,
-                continuous = rescale_y_continuous(eta$m, eta$bounds)[order(i), ],
-                binomial = eta$m[order(i)]
-              ),
-              weights_m = eta$weights_m,
-              outcome_type = eta$outcome_type)
+  if (is.null(eta$weights)) {
+    theta <- mean(eta$m[, 1])
+  }
+
+  if (!is.null(eta$weights)) {
+    theta <- weighted.mean(eta$m[, 1], eta$weights)
+  }
+
+  out <- list(
+    estimator = "substitution",
+    theta = theta,
+    standard_error = NA_real_,
+    low = NA_real_,
+    high = NA_real_,
+    shift = eta$shift,
+    outcome_reg = switch(
+      eta$outcome_type,
+      continuous = rescale_y_continuous(eta$m, eta$bounds),
+      binomial = eta$m
+    ),
+    weights_m = eta$weights_m,
+    outcome_type = eta$outcome_type
+  )
 
   class(out) <- "lmtp"
-  return(out)
+  out
 }
 
 theta_ipw <- function(eta) {
-  i <- Reduce(c, lapply(eta$folds, function(x) x[["validation_set"]]))
-
   if (is.null(eta$weights)) {
-    theta <- mean(eta$r[, eta$tau]*missing_outcome(eta$y[i]))
-  } else {
-    theta <- weighted.mean(eta$r[, eta$tau]*missing_outcome(eta$y[i]),
-                           eta$weights[i])
+    theta <- mean(eta$r[, eta$tau]*missing_outcome(eta$y))
   }
 
-  out <- list(estimator = "IPW",
-              theta = theta,
-              standard_error = NA_real_,
-              low = NA_real_,
-              high = NA_real_,
-              shift = eta$shift,
-              density_ratios = eta$r[order(i), ],
-              raw_ratios = eta$raw_ratios[order(i), ],
-              weights_r = eta$weights_r)
+  if (!is.null(eta$weights)) {
+    theta <- weighted.mean(
+      eta$r[, eta$tau]*missing_outcome(eta$y),
+      eta$weights
+    )
+  }
+
+  out <- list(
+    estimator = "IPW",
+    theta = theta,
+    standard_error = NA_real_,
+    low = NA_real_,
+    high = NA_real_,
+    shift = eta$shift,
+    density_ratios = eta$r,
+    weights_r = eta$weights_r
+  )
 
   class(out) <- "lmtp"
-  return(out)
+  out
 }
 
 eif <- function(r, tau, shifted, natural) {
@@ -100,5 +112,5 @@ theta_dr <- function(eta, augmented = FALSE) {
   )
 
   class(out) <- "lmtp"
-  return(out)
+  out
 }

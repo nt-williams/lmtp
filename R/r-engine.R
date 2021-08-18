@@ -61,24 +61,12 @@ create_ratios <- function(pred, cens, risk, followed, mtp) {
   (use * cens * risk * followed) / (1 - pmin(use, 0.99))
 }
 
-ratio_tmle <- function(ratios) {
+ratio_tmle_ipw <- function(ratios) {
   matrix(
     t(apply(ratios[["ratios"]], 1, cumprod)),
     nrow = nrow(ratios[["ratios"]]),
     ncol = ncol(ratios[["ratios"]])
   )
-}
-
-ratio_ipw <- function(ratio, trim) {
-    list(r = check_extreme_ratio(
-      matrix(
-        t(apply(ratio$r, 1, cumprod)),
-        nrow = nrow(ratio$r),
-        ncol = ncol(ratio$r)
-      ),
-      trim
-    ),
-    sl_weights = ratio$sl_weights)
 }
 
 ratio_sdr <- function(ratio, tau, max_tau) {

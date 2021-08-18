@@ -119,7 +119,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     meta$node_list$outcome,
     meta$outcome_type,
     meta$m, meta$m,
-    ratio_tmle(ratios),
+    ratio_tmle_ipw(ratios),
     learners_outcome,
     meta$weights,
     meta$weights_m,
@@ -441,8 +441,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
-#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
-#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
@@ -460,8 +458,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
-#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the propensity.}
 #' @export
@@ -497,16 +493,20 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners, pb, meta$weights_r,
-                 match.arg(intervention_type), .SL_folds)
-  cumprod_ratios <- ratio_ipw(recombine_ipw(ratios), .trim)
+  ratios <- cf_r(
+    meta$data, meta$shifted_data,
+    meta$folds, meta$trt,
+    cens, meta$risk, meta$tau,
+    meta$node_list$trt, learners,
+    pb, meta$weights_r,
+    match.arg(intervention_type),
+    .SL_folds,
+    .trim
+  )
 
-  out <- compute_theta(
-    estimator = "ipw",
+  theta_ipw(
     eta = list(
-      r = cumprod_ratios$r,
-      raw_ratios = if (return_all_ratios) recombine_raw_ratio(ratios),
+      r = ratio_tmle_ipw(ratios),
       y = if (meta$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
@@ -516,8 +516,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = weights,
       tau = meta$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_r = cumprod_ratios$sl_weights
-    ))
-
-  return(out)
+      weights_r = ratios$sl_weights
+    )
+  )
 }
