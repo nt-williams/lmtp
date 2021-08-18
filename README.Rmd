@@ -104,7 +104,7 @@ head(sim_t4)
 We're interested in a treatment policy, `d`, where exposure is decreased by 1 only among subjects whose exposure won't go below 1 if intervened upon. The true population outcome under this policy is about 0.305.
 
 ```{r}
-# our treatment policy function to be applied at all time points
+# a treatment policy function to be applied at all time points
 policy <- function(data, trt) {
   (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
 }
@@ -113,24 +113,23 @@ policy <- function(data, trt) {
 In addition to specifying a treatment policy, we need to specify our treatment variables and time-varying covariates.
 
 ```{r}
-# our treatment nodes, a character vector of length 4
-a <- c("A_1", "A_2", "A_3", "A_4")
-# our time varying nodes, a list of length 4
-time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+# treatment nodes, a character vector of length 4
+A <- c("A_1", "A_2", "A_3", "A_4")
+# time varying nodes, a list of length 4
+L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 ```
 
 We can now estimate the effect of our treatment policy, `d`. In this example, we'll use the cross-validated TML estimator with 10 folds. 
 
 ```{r, eval = FALSE}
-lmtp_tmle(sim_t4, a, "Y", time_vary = time_varying, k = 0, shift = policy, 
-          intervention_type = "mtp", folds = 10)
+lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mtp", folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
 #> Population intervention effect
-#>       Estimate: 0.2598
-#>     Std. error: 0.0188
-#>         95% CI: (0.2228, 0.2967)
+#>       Estimate: 0.2526
+#>     Std. error: 0.0105
+#>         95% CI: (0.2321, 0.2732)
 ```
 
 ## Similar Implementations
