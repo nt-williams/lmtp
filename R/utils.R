@@ -46,21 +46,17 @@ add_scaled_y <- function(data, scaled) {
 censored <- function(data, cens, tau) {
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
-    i <- rep(TRUE, nrow(data))
-    j <- rep(TRUE, nrow(data))
-    return(list(i = i, j = j))
+    return(list(i = rep(TRUE, nrow(data)), j = rep(TRUE, nrow(data))))
   }
 
   # other wise find censored observations
   i <- data[[cens[tau]]] == 1
 
   if (tau > 1) {
-    j <- data[[cens[tau - 1]]] == 1
-  } else {
-    j <- rep(TRUE, nrow(data))
+    return(list(i = i, j = data[[cens[tau - 1]]] == 1))
   }
 
-  list(i = i, j = j)
+  list(i = i, j = rep(TRUE, nrow(data)))
 }
 
 at_risk <- function(data, risk, tau) {
@@ -170,7 +166,7 @@ event_locf <- function(data, outcomes) {
     DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
   }
   DT[]
-  return(DT)
+  DT
 }
 
 create_ids <- function(data, id) {

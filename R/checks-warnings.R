@@ -207,6 +207,7 @@ check_mult_outcomes <- function(outcome, outcome_type) {
     if (length(outcome) == 1) {
       stop("'outcome_type' set to survival, but the length of 'outcome' is one.", call. = FALSE)
     }
+    return()
   }
 
   if (length(outcome) > 1) {
