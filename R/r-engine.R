@@ -81,8 +81,18 @@ ratio_ipw <- function(ratio, trim) {
     sl_weights = ratio$sl_weights)
 }
 
-ratio_sdr <- function(ratio, tau, max_tau, trim) {
-  out <- t(apply(ratio$natural[, (tau + 1):max_tau, drop = FALSE], 1, cumprod))
-  if (tau == max_tau - 1) out <- t(out)
-  check_extreme_ratio(out, trim)
+ratio_sdr <- function(ratio, tau, max_tau) {
+  out <- t(
+    apply(
+      ratio[, (tau + 1):max_tau, drop = FALSE],
+      1,
+      cumprod
+    )
+  )
+
+  if (tau != max_tau - 1) {
+    return(out)
+  }
+
+  t(out)
 }

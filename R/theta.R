@@ -46,8 +46,7 @@ eif <- function(r, tau, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  out <- rowSums(r * m, na.rm = TRUE) + shifted[, 1]
-  return(out)
+  rowSums(r * m, na.rm = TRUE) + shifted[, 1]
 }
 
 theta_dr <- function(eta, augmented = FALSE) {

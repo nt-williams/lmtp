@@ -59,7 +59,7 @@ to the treatment policy of interest. If specified, \code{shift} is ignored.}
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{intervention_type}{The intervetion type, should be one of \code{"static"},
+\item{intervention_type}{The intervention type, should be one of \code{"static"},
 \code{"dynamic"}, \code{"mtp"}.}
 
 \item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
