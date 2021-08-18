@@ -7,9 +7,9 @@ determine_tau <- function(outcome, trt, cens) {
 }
 
 set_lmtp_options <- function(option, val) {
-  switch (option,
-          "bound" = options(lmtp.bound = val),
-          "trt" = options(lmtp.trt.length = val)
+  switch(option,
+         "bound" = options(lmtp.bound = val),
+         "trt" = options(lmtp.trt.length = val)
   )
 }
 
@@ -40,7 +40,7 @@ rescale_y_continuous <- function(scaled, bounds) {
 
 add_scaled_y <- function(data, scaled) {
   data$xyz <- scaled
-  return(data)
+  data
 }
 
 censored <- function(data, cens, tau) {
@@ -48,8 +48,7 @@ censored <- function(data, cens, tau) {
   if (is.null(cens)) {
     i <- rep(TRUE, nrow(data))
     j <- rep(TRUE, nrow(data))
-    out <- list(i = i, j = j)
-    return(out)
+    return(list(i = i, j = j))
   }
 
   # other wise find censored observations
@@ -61,8 +60,7 @@ censored <- function(data, cens, tau) {
     j <- rep(TRUE, nrow(data))
   }
 
-  out <- list(i = i, j = j)
-  return(out)
+  list(i = i, j = j)
 }
 
 at_risk <- function(data, risk, tau) {
@@ -92,12 +90,6 @@ transform_sdr <- function(r, tau, max, shifted, natural) {
   rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
 }
 
-recombine_ipw <- function(r) {
-  out <- list(r = Reduce(rbind, Reduce(rbind, lapply(r, function(x) x[["valid"]]))[, "natural"]),
-              sl_weights = lapply(r, function(x) x[["sl_weights"]]))
-  return(out)
-}
-
 recombine_ratios <- function(x, folds) {
   ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
 
@@ -109,7 +101,6 @@ recombine_ratios <- function(x, folds) {
   )[order(ind), ]
 
   returns$sl_weights <- recombine_sl_weights(x)
-
   returns
 }
 
@@ -127,26 +118,12 @@ recombine_sl_weights <- function(x) {
   lapply(x, function(x) x[["sl_weights"]])
 }
 
-recombine_dens_ratio <- function(r) {
-  return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
-}
-
-recombine_raw_ratio <- function(r) {
-  do.call(rbind, lapply(r, function(x) x$valid$natural))
-}
-
 hold_lrnr_weights <- function(folds) {
   lapply(1:folds, function(x) list())
 }
 
 extract_sl_weights <- function(fit) {
   fit$coef
-}
-
-pluck_weights <- function(type, x) {
-  switch(type,
-         "m" = x$sl_weights,
-         "r" = lapply(x, function(x) x$sl_weights))
 }
 
 is.lmtp <- function(x) {
