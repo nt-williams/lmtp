@@ -479,7 +479,6 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      outcome_type = c("binomial", "continuous", "survival"),
                      k = Inf, id = NULL,
                      learners = "SL.glm", folds = 10, weights = NULL,
-                     return_all_ratios = FALSE,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,

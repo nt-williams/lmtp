@@ -24,7 +24,8 @@ d <- function(data, trt) {
 truth <- 0.305
 
 # estimators
-sub <- sw(lmtp_sub(tmp, a, "Y", time_vary = time_varying, shift = d, folds = 2, .SL_folds = 2))
+sub <- sw(lmtp_sub(tmp, a, "Y", time_vary = time_varying, shift = d,
+                   folds = 2, .SL_folds = 2))
 
 ipw <- sw(lmtp_ipw(tmp, a, "Y", time_vary = time_varying, shift = d,
                    intervention_type = "mtp", folds = 2, .SL_folds = 2))
@@ -38,7 +39,7 @@ sdr <- sw(lmtp_sdr(tmp, a, "Y", time_vary = time_varying, shift = d,
 # tests
 test_that("time varying treatment fidelity, t = 4", {
   expect_equal(truth, sub$theta, tolerance = 0.025)
-  expect_equal(truth, ipw$theta, tolerance = 0.025)
+  expect_equal(truth, ipw$theta, tolerance = 0.05)
   expect_equal(truth, tmle$theta, tolerance = 0.025)
   expect_equal(truth, sdr$theta, tolerance = 0.025)
 })

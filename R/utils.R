@@ -100,6 +100,14 @@ recombine_ratios <- function(x, folds) {
     lapply(x, function(x) x[["ratios"]])
   )[order(ind), ]
 
+  if (is.null(dim(returns[["ratios"]]))) {
+    returns[["ratios"]] <- as.matrix(
+      returns[["ratios"]],
+      nrow = length(returns[["ratios"]]),
+      ncol = 1
+    )
+  }
+
   returns$sl_weights <- recombine_sl_weights(x)
   returns
 }
