@@ -162,9 +162,6 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
   # Now estimating the effect of a dynamic modified treatment policy.
-  A <- c("A_1", "A_2", "A_3", "A_4")
-  L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-
   # creating a dynamic mtp that applies the shift function
   # but also depends on history and the current time
   policy <- function(data, trt) {
@@ -194,7 +191,7 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   tmp <- sim_t4
-  for (i in a) {
+  for (i in A) {
     tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
   }
 

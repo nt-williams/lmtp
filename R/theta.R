@@ -7,6 +7,10 @@ theta_sub <- function(eta) {
     theta <- weighted.mean(eta$m[, 1], eta$weights)
   }
 
+  if (eta$outcome_type == "continuous") {
+    theta <- rescale_y_continuous(theta, eta$bounds)
+  }
+
   out <- list(
     estimator = "substitution",
     theta = theta,
