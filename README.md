@@ -65,6 +65,13 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
+The **sl3** development compatible version can be installed from GitHub
+with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@sl3-devel")
+```
+
 ## What even is a modified treatment policy?
 
 Modified treatment policies (MTP) are interventions that can depend on

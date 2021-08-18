@@ -1,4 +1,4 @@
-# lmtp 0.9.1
+# lmtp 1.0.0
 
 ### New Features
 
@@ -12,6 +12,16 @@
 ### General
 
 -   Removing extra column in `sim_point_surv` data set (issue \#91).
+
+# lmtp 0.9.1
+
+### Bug Fixes
+
+- Fixed a bug that caused failure when knitting the `getting-started.Rmd` vignette when using new version of the *future* package (issue \#100).
+
+### General
+
+- GitHub links added to DESCRIPTION (issue \# 99).
 
 # lmtp 0.9.0
 
