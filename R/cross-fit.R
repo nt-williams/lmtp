@@ -91,24 +91,45 @@ cf_tmle <- function(data, shifted, folds, outcome, cens,
   )
 }
 
-cf_sub <- function(data, shifted, V, outcome, node_list, C, deterministic, tau,
-                   outcome_type, learners, m, pb, weights_m, SL_folds) {
+cf_sub <- function(data, shifted, folds, outcome,
+                   node_list, cens, deterministic, tau,
+                   outcome_type, learners, m,
+                   pb, weights_m, SL_folds) {
   fopts <- options("lmtp.bound")
-  out <- list()
-  for (i in 1:V) {
-    out[[i]] <- future::future({
+  estims <- list()
+
+  for (i in seq_along(folds)) {
+    estims[[i]] <- future::future({
       options(fopts)
-      estimate_sub(data[[i]]$train, shifted[[i]]$train, data[[i]]$valid, shifted[[i]]$valid,
-                   outcome, node_list, C, deterministic, tau, outcome_type,
-                   learners, m[[i]]$valid, pb, weights_m[[i]], SL_folds)
+
+      estimate_sub(
+        get_folded_data(data, folds)[[i]]$train,
+        get_folded_data(shifted, folds)[[i]]$train,
+        get_folded_data(data, folds)[[i]]$valid,
+        get_folded_data(shifted, folds)[[i]]$valid,
+        outcome,
+        node_list,
+        cens,
+        deterministic,
+        tau,
+        outcome_type,
+        learners,
+        get_folded_data(m, folds)[[i]]$valid,
+        pb,
+        weights_m[[i]],
+        SL_folds
+      )
     },
     seed = TRUE,
     globals = structure(TRUE, add = learners))
   }
-  out <- future::value(out)
-  out <- list(m = Reduce(rbind, lapply(out, function(x) x[["m"]])),
-              sl_weights = lapply(out, function(x) x[["sl_weights"]]))
-  return(out)
+
+  estims <- future::value(estims)
+
+  list(
+    m = recombine_outcome_reg(estims, "m", folds),
+    sl_weights = recombine_sl_weights(estims)
+  )
 }
 
 cf_sdr <- function(data, shifted, folds, outcome, cens,

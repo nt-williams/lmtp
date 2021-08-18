@@ -1,19 +1,23 @@
 estimate_sub <- function(training, shifted, validation, validation_shifted, outcome,
-                         node_list, C, risk, tau, outcome_type,
-                         learners = NULL, m, pb, sl_weights, SL_folds) {
+                         node_list, cens, risk, tau, outcome_type,
+                         learners, m, pb, sl_weights, SL_folds) {
   if (tau > 0) {
-    i <- censored(training, C, tau)$i
-    jt <- censored(training, C, tau)$j
-    jv <- censored(validation, C, tau)$j
+    i <- censored(training, cens, tau)$i
+    jt <- censored(training, cens, tau)$j
+    jv <- censored(validation, cens, tau)$j
     rt <- at_risk(training, risk, tau)
     rv <- at_risk(validation, risk, tau)
+
     pseudo <- paste0("psi", tau)
     vars <- node_list[[tau]]
 
     fit <- run_ensemble(
       training[i & rt, ][[outcome]],
       training[i & rt, vars],
-      check_variation(training[i & rt, ][[outcome]], learners),
+      check_variation(
+        training[i & rt, ][[outcome]],
+        learners
+      ),
       outcome_type,
       id = training[i & rt, ][["lmtp_id"]],
       SL_folds
@@ -28,6 +32,7 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
     m[!rv, tau] <- 0
 
     pb()
+
     estimate_sub(
       training = training,
       shifted = shifted,
@@ -35,7 +40,7 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
       validation_shifted = validation_shifted,
       outcome = pseudo,
       node_list = node_list,
-      C = C,
+      cens = cens,
       risk = risk,
       tau = tau - 1,
       outcome_type = "continuous",

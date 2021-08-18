@@ -383,13 +383,24 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz",
-                   meta$node_list$outcome,
-                   cens, meta$risk, meta$tau, meta$outcome_type,
-                   learners, meta$m, pb, meta$weights_m, .SL_folds)
+  estims <- cf_sub(
+    meta$data,
+    meta$shifted_data,
+    meta$folds,
+    "xyz",
+    meta$node_list$outcome,
+    cens,
+    meta$risk,
+    meta$tau,
+    meta$outcome_type,
+    learners,
+    meta$m,
+    pb,
+    meta$weights_m,
+    .SL_folds
+  )
 
-  out <- compute_theta(
-    estimator = "sub",
+  theta_sub(
     eta = list(
       m = estims$m,
       outcome_type = meta$outcome_type,
@@ -397,11 +408,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       folds = meta$folds,
       weights = weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = pluck_weights("m", estims),
+      weights_m = estims$sl_weights,
       outcome_type = meta$outcome_type
-    ))
-
-  return(out)
+    )
+  )
 }
 
 #' LMTP IPW Estimator
