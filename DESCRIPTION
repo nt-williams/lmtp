@@ -1,11 +1,11 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 0.9.1.5001
+Version: 1.0.0.5001
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
              role = c("aut", "cre", "cph"),
-             email = "niw4001@med.cornell.edu", 
+             email = "ntwilliams.personal@gmail.com", 
              comment = c(ORCID = "0000-0002-1378-4831")),
       person(given = "Iván", 
              family = "Díaz", 
@@ -13,7 +13,7 @@ Authors@R:
              role = c("aut", "cph"),
              comment = c(ORCID = "0000-0001-9056-2047")))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
-  policies as described in Diaz, Williams, and Hoffman (<arXiv:2006.01366>), traditional point treatment, 
+  policies as described in Diaz, Williams, Hoffman, and Schenck (DOI:10.1080/01621459.2021.1955691), traditional point treatment, 
   and traditional longitudinal effects. Continuous, binary, and categorical treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
@@ -37,6 +37,8 @@ Imports:
     progressr,
     data.table,
     sl3 (>= 1.3.7)
+URL: https://github.com/nt-williams/lmtp
+BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),
     covr,

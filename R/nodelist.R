@@ -35,8 +35,10 @@ create_node_list <- function(trt, tau, time_vary = NULL, baseline = NULL, k = In
     k <- Inf
   }
 
-  list(trt = trt_node_list(trt, time_vary, baseline, k, tau),
-       outcome = outcome_node_list(trt, time_vary, baseline, k, tau))
+  list(
+    trt = trt_node_list(trt, time_vary, baseline, k, tau),
+    outcome = outcome_node_list(trt, time_vary, baseline, k, tau)
+  )
 }
 
 trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
@@ -56,7 +58,9 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
           out[[i]] <- c(time_vary[[i]])
         }
       }
-    } else {
+    }
+
+    if (length(trt) != tau) {
       for (i in 1:tau) {
         out[[i]] <- c(time_vary[[i]], trt)
       }
@@ -70,7 +74,9 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
           out[[i]] <- c(out[[i]], time_vary[[i]])
         }
       }
-    } else {
+    }
+
+    if (length(trt) != tau) {
       for (i in 1:tau) {
         out[[i]] <- c(out[[i]], time_vary[[i]], trt)
       }
@@ -79,35 +85,41 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
 
   out <- slide(out, k)
 
-  if (length(trt) == tau) {
-    for (i in 1:tau) {
-      out[[i]] <- c(out[[i]], trt[[i]])
-    }
+  if (length(trt) != tau) {
+    return(out)
   }
 
-  return(out)
+  for (i in 1:tau) {
+    out[[i]] <- c(out[[i]], trt[[i]])
+  }
+
+  out
 }
 
 outcome_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
   out <- list()
+
   if (length(trt) == tau) {
     for (i in 1:tau) {
       out[[i]] <- c(time_vary[[i]], trt[i])
     }
-  } else {
+  }
+
+  if (length(trt) != tau) {
     for (i in 1:tau) {
       out[[i]] <- c(time_vary[[i]], trt)
     }
   }
 
   out <- slide(out, k)
-
-  if (!is.null(baseline)) {
-    for (i in 1:tau) {
-      out[[i]] <- c(baseline, out[[i]])
-    }
+  if (is.null(baseline)) {
+    return(out)
   }
-  return(out)
+
+  for (i in 1:tau) {
+    out[[i]] <- c(baseline, out[[i]])
+  }
+  out
 }
 
 slide <- function(x, k) {

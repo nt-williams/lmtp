@@ -1,22 +1,50 @@
 estimate_sub <- function(training, shifted, validation, validation_shifted, outcome,
-                         node_list, C, risk, tau, outcome_type,
-                         learners = NULL, m, pb, sl_weights, SL_folds) {
+                         node_list, cens, risk, tau, outcome_type,
+                         learners, m, pb, sl_weights, SL_folds) {
   if (tau > 0) {
-    i <- censored(training, C, tau)$i
-    jt <- censored(training, C, tau)$j
-    jv <- censored(validation, C, tau)$j
+    i <- censored(training, cens, tau)$i
+    jt <- censored(training, cens, tau)$j
+    jv <- censored(validation, cens, tau)$j
     rt <- at_risk(training, risk, tau)
     rv <- at_risk(validation, risk, tau)
+
     pseudo <- paste0("psi", tau)
     vars <- node_list[[tau]]
 
-    fit_task <- initiate_sl3_task(training[i & rt, ], outcome, vars, outcome_type, "lmtp_id", SL_folds)
-    shift_task <- initiate_sl3_task(shifted[jt & rt, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    valid_task <- initiate_sl3_task(validation_shifted[jv & rv, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    ensemble <- initiate_ensemble(outcome_type,
-                                  check_variation(training[i & rt, ][[outcome]], learners))
+    fit_task <- initiate_sl3_task(
+      training[i & rt, ],
+      outcome,
+      vars,
+      outcome_type,
+      "lmtp_id",
+      SL_folds
+    )
+
+    shift_task <- initiate_sl3_task(
+      shifted[jt & rt, ],
+      NULL,
+      vars,
+      NULL,
+      "lmtp_id",
+      SL_folds
+    )
+
+    valid_task <- initiate_sl3_task(
+      validation_shifted[jv & rv, ],
+      NULL,
+      vars,
+      NULL,
+      "lmtp_id",
+      SL_folds
+    )
+
+    ensemble <- initiate_ensemble(
+      outcome_type,
+      check_variation(training[i & rt, ][[outcome]], learners)
+    )
 
     fit <- run_ensemble(ensemble, fit_task)
+
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     training[jt & rt, pseudo] <- SL_predict(fit, shift_task)
@@ -26,6 +54,7 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
     m[!rv, tau] <- 0
 
     pb()
+
     estimate_sub(
       training = training,
       shifted = shifted,
@@ -33,7 +62,7 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
       validation_shifted = validation_shifted,
       outcome = pseudo,
       node_list = node_list,
-      C = C,
+      cens = cens,
       risk = risk,
       tau = tau - 1,
       outcome_type = "continuous",
@@ -49,26 +78,43 @@ estimate_sub <- function(training, shifted, validation, validation_shifted, outc
 }
 
 estimate_tmle <- function(training, shifted, validation, validation_shifted,
-                          outcome, node_list, C, risk, tau, outcome_type,
-                          m_natural, m_shifted, r, learners = NULL, pb,
-                          weights = NULL, sl_weights, SL_folds) {
+                          outcome, node_list, cens, risk, tau, outcome_type,
+                          m_natural, m_shifted, ratios, learners, pb,
+                          weights, sl_weights, SL_folds) {
   if (tau > 0) {
-    i <- censored(training, C, tau)$i
-    jt <- censored(training, C, tau)$j
-    jv <- censored(validation, C, tau)$j
+    i <- censored(training, cens, tau)$i
+    jt <- censored(training, cens, tau)$j
+    jv <- censored(validation, cens, tau)$j
+
     rt <- at_risk(training, risk, tau)
     rv <- at_risk(validation, risk, tau)
+
     pseudo <- paste0("psi", tau)
     vars <- node_list[[tau]]
 
-    fit_task <- initiate_sl3_task(training[i & rt, ], outcome, vars, outcome_type, "lmtp_id", SL_folds)
-    nshift_task <- initiate_sl3_task(training[jt & rt, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    shift_task <- initiate_sl3_task(shifted[jt & rt, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    vnshift_task <- initiate_sl3_task(validation[jv & rv, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    vshift_task <- initiate_sl3_task(validation_shifted[jv & rv, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-    ensemble <- initiate_ensemble(outcome_type, check_variation(training[i & rt, ][[outcome]], learners))
+    fit_task <-
+      initiate_sl3_task(training[i & rt,], outcome, vars, outcome_type, "lmtp_id", SL_folds)
+
+    nshift_task <-
+      initiate_sl3_task(training[jt & rt,], NULL, vars, NULL, "lmtp_id", SL_folds)
+
+    shift_task <-
+      initiate_sl3_task(shifted[jt & rt,], NULL, vars, NULL, "lmtp_id", SL_folds)
+
+    vnshift_task <-
+      initiate_sl3_task(validation[jv & rv,], NULL, vars, NULL, "lmtp_id", SL_folds)
+
+    vshift_task <-
+      initiate_sl3_task(validation_shifted[jv & rv,], NULL, vars, NULL, "lmtp_id", SL_folds)
+
+    ensemble <-
+      initiate_ensemble(
+        outcome_type,
+        check_variation(training[i & rt,][[outcome]], learners)
+      )
 
     fit <- run_ensemble(ensemble, fit_task)
+
     sl_weights[[tau]] <- extract_sl_weights(fit)
 
     m_natural$train[jt & rt, tau] <- SL_predict(fit, nshift_task)
@@ -78,24 +124,41 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
 
     wts <- {
       if (is.null(weights))
-        r$train[i & rt, tau]
+        ratios[i & rt, tau]
       else
-        r$train[i & rt, tau] * weights[i & rt]
+        ratios[i & rt, tau] * weights[i & rt]
     }
 
-    fit <- sw(glm(training[i & rt, ][[outcome]]
-                  ~ offset(qlogis(m_natural$train[i & rt, tau])),
-                  weights = wts, family = "binomial"))
+    fit <- sw(
+      glm(
+        training[i & rt, ][[outcome]]
+        ~ offset(qlogis(m_natural$train[i & rt, tau])),
+        weights = wts,
+        family = "binomial"
+      )
+    )
 
-    training[jt & rt, pseudo] <- bound(plogis(qlogis(m_shifted$train[jt & rt, tau]) + coef(fit)))
-    m_natural$valid[jv & rv, tau] <- bound(plogis(qlogis(m_natural$valid[jv & rv, tau]) + coef(fit)))
-    m_shifted$valid[jv & rv, tau] <- bound(plogis(qlogis(m_shifted$valid[jv & rv, tau]) + coef(fit)))
+    training[jt & rt, pseudo] <-
+      bound(
+        plogis(qlogis(m_shifted$train[jt & rt, tau]) + coef(fit))
+      )
+
+    m_natural$valid[jv & rv, tau] <-
+      bound(
+        plogis(qlogis(m_natural$valid[jv & rv, tau]) + coef(fit))
+      )
+
+    m_shifted$valid[jv & rv, tau] <-
+      bound(
+        plogis(qlogis(m_shifted$valid[jv & rv, tau]) + coef(fit))
+      )
 
     training[!rt, pseudo] <- 0
     m_natural$valid[!rv, tau] <- 0
     m_shifted$valid[!rv, tau] <- 0
 
     pb()
+
     estimate_tmle(
       training = training,
       shifted = shifted,
@@ -103,46 +166,92 @@ estimate_tmle <- function(training, shifted, validation, validation_shifted,
       validation_shifted = validation_shifted,
       outcome = pseudo,
       node_list = node_list,
-      C = C,
+      cens = cens,
       risk = risk,
       tau = tau - 1,
       outcome_type = "continuous",
       m_natural = m_natural,
       m_shifted = m_shifted,
-      r = r,
+      ratios = ratios,
       learners = learners,
       pb = pb,
+      weights = weights,
       sl_weights = sl_weights,
       SL_folds = SL_folds
     )
   } else {
-    list(natural = m_natural$valid,
-         shifted = m_shifted$valid,
-         sl_weights = sl_weights)
+    list(
+      natural = m_natural$valid,
+      shifted = m_shifted$valid,
+      sl_weights = sl_weights
+    )
   }
 }
 
 estimate_sdr <- function(training, shifted, validation, validation_shifted,
-                         outcome, node_list, C, risk, tau, max, outcome_type,
-                         learners = NULL, m_shifted, m_natural, r, pb, sl_weights,
-                         trim, SL_folds) {
+                         outcome, node_list, cens, risk, tau, max, outcome_type,
+                         learners, m_shifted, m_natural, ratios,
+                         pb, sl_weights, SL_folds) {
   if (tau > 0) {
-    i <- censored(training, C, tau)$i
-    jt <- censored(training, C, tau)$j
-    jv <- censored(validation, C, tau)$j
+    i <- censored(training, cens, tau)$i
+    jt <- censored(training, cens, tau)$j
+    jv <- censored(validation, cens, tau)$j
     rt <- at_risk(training, risk, tau)
     rv <- at_risk(validation, risk, tau)
+
     pseudo <- paste0("psi", tau + 1)
     vars <- node_list[[tau]]
 
     if (tau == max) {
-      fit_task <- initiate_sl3_task(training[i & rt, ], outcome, vars, outcome_type, "lmtp_id", SL_folds)
-      nshift_task <- initiate_sl3_task(training[jt & rt, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-      shift_task <- initiate_sl3_task(shifted[jt & rt, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-      vnshift_task <- initiate_sl3_task(validation[jv & rv, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-      vshift_task <- initiate_sl3_task(validation_shifted[jv & rv, ], NULL, vars, NULL, "lmtp_id", SL_folds)
-      ensemble <- initiate_ensemble(outcome_type,
-                                    check_variation(training[i & rt, ][[outcome]], learners))
+      fit_task <- initiate_sl3_task(
+        training[i & rt, ],
+        outcome,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      nshift_task <- initiate_sl3_task(
+        training[jt & rt, ],
+        NULL,
+        vars,
+        NULL,
+        "lmtp_id",
+        SL_folds
+      )
+
+      shift_task <- initiate_sl3_task(
+        shifted[jt & rt, ],
+        NULL,
+        vars,
+        NULL,
+        "lmtp_id",
+        SL_folds
+      )
+
+      vnshift_task <- initiate_sl3_task(
+        validation[jv & rv, ],
+        NULL,
+        vars,
+        NULL,
+        "lmtp_id",
+        SL_folds
+      )
+
+      vshift_task <- initiate_sl3_task(
+        validation_shifted[jv & rv, ],
+        NULL,
+        vars,
+        NULL,
+        "lmtp_id",
+        SL_folds
+      )
+
+      ensemble <- initiate_ensemble(
+        outcome_type,
+        check_variation(training[i & rt, ][[outcome]], learners)
+      )
 
       fit <- run_ensemble(ensemble, fit_task)
       sl_weights[[tau]] <- extract_sl_weights(fit)
@@ -161,18 +270,65 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     if (tau < max) {
       training[, pseudo]  <-
         shifted[, pseudo] <-
-        transform_sdr(ratio_sdr(r$train, tau, max, trim),
-                      tau, max, m_shifted$train, m_natural$train)
+        transform_sdr(
+          ratio_sdr(ratios, tau, max),
+          tau, max,
+          m_shifted$train,
+          m_natural$train
+        )
 
-      fit_task <- initiate_sl3_task(training[i & rt, ], pseudo, vars, outcome_type, "lmtp_id", SL_folds)
-      nshift_task <- initiate_sl3_task(training[jt & rt, ], NULL, vars, outcome_type, "lmtp_id", SL_folds)
-      shift_task <- initiate_sl3_task(shifted[jt & rt, ], NULL, vars, outcome_type, "lmtp_id", SL_folds)
-      vnshift_task <- initiate_sl3_task(validation[jv & rv, ], NULL, vars, outcome_type, "lmtp_id", SL_folds)
-      vshift_task <- initiate_sl3_task(validation_shifted[jv & rv, ], NULL, vars, outcome_type, "lmtp_id", SL_folds)
-      ensemble <- initiate_ensemble(outcome_type,
-                                    check_variation(training[i & rt, ][[pseudo]], learners))
+      fit_task <- initiate_sl3_task(
+        training[i & rt, ],
+        pseudo,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      nshift_task <- initiate_sl3_task(
+        training[jt & rt, ],
+        NULL,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      shift_task <- initiate_sl3_task(
+        shifted[jt & rt, ],
+        NULL,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      vnshift_task <- initiate_sl3_task(
+        validation[jv & rv, ],
+        NULL,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      vshift_task <- initiate_sl3_task(
+        validation_shifted[jv & rv, ],
+        NULL,
+        vars,
+        outcome_type,
+        "lmtp_id",
+        SL_folds
+      )
+
+      ensemble <- initiate_ensemble(
+        outcome_type,
+        check_variation(training[i & rt, ][[pseudo]], learners)
+      )
 
       fit <- run_ensemble(ensemble, fit_task)
+
       sl_weights[[tau]] <- extract_sl_weights(fit)
 
       m_natural$train[jt & rt, tau] <- SL_predict(fit, nshift_task)
@@ -187,6 +343,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
     }
 
     pb()
+
     estimate_sdr(
       training = training,
       shifted = shifted,
@@ -194,7 +351,7 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       validation_shifted = validation_shifted,
       outcome = pseudo,
       node_list = node_list,
-      C = C,
+      cens = cens,
       risk = risk,
       tau = tau - 1,
       max = max,
@@ -202,15 +359,16 @@ estimate_sdr <- function(training, shifted, validation, validation_shifted,
       learners = learners,
       m_shifted = m_shifted,
       m_natural = m_natural,
-      r = r,
+      ratios = ratios,
       pb = pb,
       sl_weights = sl_weights,
-      trim = trim,
       SL_folds = SL_folds
     )
   } else {
-    list(natural = m_natural$valid,
-         shifted = m_shifted$valid,
-         sl_weights = sl_weights)
+    list(
+      natural = m_natural$valid,
+      shifted = m_shifted$valid,
+      sl_weights = sl_weights
+    )
   }
 }

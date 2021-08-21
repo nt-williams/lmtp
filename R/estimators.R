@@ -26,7 +26,7 @@
 #' @param k An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type The intervetion type, should be one of \code{"static"},
+#' @param intervention_type The intervention type, should be one of \code{"static"},
 #'   \code{"dynamic"}, \code{"mtp"}.
 #' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id An optional column name containing cluster level identifiers.
@@ -40,8 +40,6 @@
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
-#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
-#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
@@ -62,8 +60,6 @@
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
-#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -79,7 +75,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
                       learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-                      folds = 10, weights = NULL, return_all_ratios = FALSE,
+                      folds = 10, weights = NULL,
                       .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -103,23 +99,41 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
-                 match.arg(intervention_type), .SL_folds)
-  cumprod_ratios <- ratio_dr(ratios, folds, .trim)
+  ratios <- cf_r(
+    meta$data, meta$shifted_data,
+    meta$folds, meta$trt,
+    cens, meta$risk, meta$tau,
+    meta$node_list$trt, learners_trt,
+    pb, meta$weights_r,
+    match.arg(intervention_type),
+    .SL_folds,
+    .trim
+  )
 
-  estims <-
-    cf_tmle(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
-            cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
-            cumprod_ratios, learners_outcome, pb, meta$weights, meta$weights_m, .SL_folds)
+  estims <- cf_tmle(
+    meta$data,
+    meta$shifted_data,
+    meta$folds,
+    "xyz", # CHANGE THIS TO "*tmp_lmtp_outcome*",
+    cens,
+    meta$risk,
+    meta$tau,
+    meta$node_list$outcome,
+    meta$outcome_type,
+    meta$m, meta$m,
+    ratio_tmle_ipw(ratios),
+    learners_outcome,
+    meta$weights,
+    meta$weights_m,
+    .SL_folds,
+    pb
+  )
 
-  out <- compute_theta(
-    estimator = "tml",
-    eta = list(
+  theta_dr(
+    list(
       estimator = "TMLE",
-      m = estims,
-      r = recombine_dens_ratio(cumprod_ratios),
-      raw_ratios = if (return_all_ratios) recombine_raw_ratio(ratios),
+      m = list(natural = estims$natural, shifted = estims$shifted),
+      r = ratios$ratios,
       tau = meta$tau,
       folds = meta$folds,
       id = meta$id,
@@ -127,12 +141,12 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       bounds = meta$bounds,
       weights = weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = pluck_weights("m", estims),
-      weights_r = pluck_weights("r", cumprod_ratios),
+      weights_m = estims$sl_weights,
+      weights_r = ratios$sl_weights,
       outcome_type = meta$outcome_type
-    ))
-
-  return(out)
+    ),
+    FALSE
+  )
 }
 
 #' LMTP Sequential Doubly Robust Estimator
@@ -177,8 +191,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
-#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
-#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
@@ -199,8 +211,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
-#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the outcome regression.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
@@ -216,7 +226,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      id = NULL, bounds = NULL,
                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, weights = NULL, return_all_ratios = FALSE,
+                     folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -240,35 +250,55 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(meta$tau*folds*2)
 
-  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners_trt, pb, meta$weights_r,
-                 match.arg(intervention_type), .SL_folds)
+  ratios <- cf_r(
+    meta$data, meta$shifted_data,
+    meta$folds, meta$trt,
+    cens, meta$risk, meta$tau,
+    meta$node_list$trt, learners_trt,
+    pb, meta$weights_r,
+    match.arg(intervention_type),
+    .SL_folds,
+    .trim
+  )
 
   estims <-
-    cf_sdr(meta$data, meta$shifted_data, folds, "xyz", meta$node_list$outcome,
-           cens, meta$risk, meta$tau, meta$outcome_type, meta$m, meta$m,
-           ratios, learners_outcome, pb, meta$weights_m, .trim, .SL_folds)
+    cf_sdr(
+      meta$data,
+      meta$shifted_data,
+      meta$folds,
+      "xyz",
+      cens,
+      meta$risk,
+      meta$tau,
+      meta$node_list$outcome,
+      meta$outcome_type,
+      meta$m, meta$m,
+      ratios$ratios,
+      learners_outcome,
+      meta$weights,
+      meta$weights_m,
+      .SL_folds,
+      pb
+    )
 
-  out <- compute_theta(
-    estimator = "sdr",
-    eta = list(
+  theta_dr(
+    list(
       estimator = "SDR",
-      m = estims,
-      r = recombine_dens_ratio(ratio_dr(ratios, folds, .trim)),
-      raw_ratios = if (return_all_ratios) recombine_raw_ratio(ratios),
+      m = list(natural = estims$natural, shifted = estims$shifted),
+      r = ratios$ratios,
       tau = meta$tau,
       folds = meta$folds,
-      weights = weights,
       id = meta$id,
       outcome_type = meta$outcome_type,
       bounds = meta$bounds,
+      weights = weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = pluck_weights("m", estims),
-      weights_r = pluck_weights("r", ratios),
+      weights_m = estims$sl_weights,
+      weights_r = ratios$sl_weights,
       outcome_type = meta$outcome_type
-    ))
-
-  return(out)
+    ),
+    TRUE
+  )
 }
 
 #' LMTP Substitution Estimator
@@ -357,13 +387,24 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  estims <- cf_sub(meta$data, meta$shifted_data, folds, "xyz",
-                   meta$node_list$outcome,
-                   cens, meta$risk, meta$tau, meta$outcome_type,
-                   learners, meta$m, pb, meta$weights_m, .SL_folds)
+  estims <- cf_sub(
+    meta$data,
+    meta$shifted_data,
+    meta$folds,
+    "xyz",
+    meta$node_list$outcome,
+    cens,
+    meta$risk,
+    meta$tau,
+    meta$outcome_type,
+    learners,
+    meta$m,
+    pb,
+    meta$weights_m,
+    .SL_folds
+  )
 
-  out <- compute_theta(
-    estimator = "sub",
+  theta_sub(
     eta = list(
       m = estims$m,
       outcome_type = meta$outcome_type,
@@ -371,11 +412,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       folds = meta$folds,
       weights = weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = pluck_weights("m", estims),
+      weights_m = estims$sl_weights,
       outcome_type = meta$outcome_type
-    ))
-
-  return(out)
+    )
+  )
 }
 
 #' LMTP IPW Estimator
@@ -415,8 +455,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
-#' @param return_all_ratios Logical. If \code{TRUE}, the non-cumulative product density
-#'  ratios will be returned. The default is \code{FALSE}.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .trim Determines the amount the density ratios should be trimmed.
@@ -434,8 +472,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{raw_ratios}{An n x Tau matrix of the estimated non-cumulative product density ratios.
-#'  \code{NULL} if \code{return_all_ratios = FALSE}.}
 #' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
 #'  ensemble weights at each time-point for each fold for the propensity.}
 #' @export
@@ -447,7 +483,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, weights = NULL, return_all_ratios = FALSE,
+                     folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -471,16 +507,20 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(meta$tau*folds)
 
-  ratios <- cf_r(meta$data, meta$shifted_data, folds, meta$trt, cens, meta$risk, meta$tau,
-                 meta$node_list$trt, learners, pb, meta$weights_r,
-                 match.arg(intervention_type), .SL_folds)
-  cumprod_ratios <- ratio_ipw(recombine_ipw(ratios), .trim)
+  ratios <- cf_r(
+    meta$data, meta$shifted_data,
+    meta$folds, meta$trt,
+    cens, meta$risk, meta$tau,
+    meta$node_list$trt, learners,
+    pb, meta$weights_r,
+    match.arg(intervention_type),
+    .SL_folds,
+    .trim
+  )
 
-  out <- compute_theta(
-    estimator = "ipw",
+  theta_ipw(
     eta = list(
-      r = cumprod_ratios$r,
-      raw_ratios = if (return_all_ratios) recombine_raw_ratio(ratios),
+      r = ratio_tmle_ipw(ratios),
       y = if (meta$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
@@ -490,8 +530,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = weights,
       tau = meta$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_r = cumprod_ratios$sl_weights
-    ))
-
-  return(out)
+      weights_r = ratios$sl_weights
+    )
+  )
 }

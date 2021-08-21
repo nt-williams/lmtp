@@ -7,9 +7,9 @@ determine_tau <- function(outcome, trt, cens) {
 }
 
 set_lmtp_options <- function(option, val) {
-  switch (option,
-          "bound" = options(lmtp.bound = val),
-          "trt" = options(lmtp.trt.length = val)
+  switch(option,
+         "bound" = options(lmtp.bound = val),
+         "trt" = options(lmtp.trt.length = val)
   )
 }
 
@@ -40,39 +40,35 @@ rescale_y_continuous <- function(scaled, bounds) {
 
 add_scaled_y <- function(data, scaled) {
   data$xyz <- scaled
-  return(data)
+  data
 }
 
 censored <- function(data, cens, tau) {
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
-    i <- rep(TRUE, nrow(data))
-    j <- rep(TRUE, nrow(data))
-    out <- list(i = i, j = j)
-    return(out)
+    return(list(i = rep(TRUE, nrow(data)), j = rep(TRUE, nrow(data))))
   }
 
   # other wise find censored observations
   i <- data[[cens[tau]]] == 1
 
   if (tau > 1) {
-    j <- data[[cens[tau - 1]]] == 1
-  } else {
-    j <- rep(TRUE, nrow(data))
+    return(list(i = i, j = data[[cens[tau - 1]]] == 1))
   }
 
-  out <- list(i = i, j = j)
-  return(out)
+  list(i = i, j = rep(TRUE, nrow(data)))
 }
 
 at_risk <- function(data, risk, tau) {
   if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
-  } else if (tau == 1) {
-    return(rep(TRUE, nrow(data)))
-  } else {
-    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
   }
+
+  if (tau == 1) {
+    return(rep(TRUE, nrow(data)))
+  }
+
+  data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
 }
 
 followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
@@ -87,22 +83,43 @@ transform_sdr <- function(r, tau, max, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, (tau + 2):(max + 1), drop = FALSE] - natural[, (tau + 1):max, drop = FALSE]
-  out <- rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
-  return(out)
+  rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
 }
 
-recombine_ipw <- function(r) {
-  out <- list(r = Reduce(rbind, Reduce(rbind, lapply(r, function(x) x[["valid"]]))[, "natural"]),
-              sl_weights = lapply(r, function(x) x[["sl_weights"]]))
-  return(out)
+recombine_ratios <- function(x, folds) {
+  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
+
+  returns <- list()
+
+  returns$ratios <- Reduce(
+    rbind,
+    lapply(x, function(x) x[["ratios"]])
+  )[order(ind), ]
+
+  if (is.null(dim(returns[["ratios"]]))) {
+    returns[["ratios"]] <- as.matrix(
+      returns[["ratios"]],
+      nrow = length(returns[["ratios"]]),
+      ncol = 1
+    )
+  }
+
+  returns$sl_weights <- recombine_sl_weights(x)
+  returns
 }
 
-recombine_dens_ratio <- function(r) {
-  return(Reduce(rbind, lapply(r, function(x) x[["valid"]])))
+trim_ratios <- function(x, trim) {
+  x[["ratios"]] <- pmin(x[["ratios"]], quantile(x[["ratios"]], trim))
+  x
 }
 
-recombine_raw_ratio <- function(r) {
-  do.call(rbind, lapply(r, function(x) x$valid$natural))
+recombine_outcome_reg <- function(x, part, folds) {
+  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
+  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), ]
+}
+
+recombine_sl_weights <- function(x) {
+  lapply(x, function(x) x[["sl_weights"]])
 }
 
 hold_lrnr_weights <- function(folds) {
@@ -111,12 +128,6 @@ hold_lrnr_weights <- function(folds) {
 
 extract_sl_weights <- function(fit) {
   as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
-}
-
-pluck_weights <- function(type, x) {
-  switch(type,
-         "m" = x$sl_weights,
-         "r" = lapply(x, function(x) x$sl_weights))
 }
 
 is.lmtp <- function(x) {
@@ -155,7 +166,7 @@ event_locf <- function(data, outcomes) {
     DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
   }
   DT[]
-  return(DT)
+  DT
 }
 
 create_ids <- function(data, id) {
