@@ -150,5 +150,8 @@
   C <- paste0("C.", 0:5)
   W <- c("W1", "W2")
 
-  lmtp_sdr(sim_point_surv, A, Y, W, cens = C, folds = 2, shift = static_binary_on, outcome_type = "survival")
+  lmtp_sdr(
+    sim_point_surv, A, Y, W, cens = C, folds = 2,
+    shift = static_binary_on, outcome_type = "survival"
+  )
 }
