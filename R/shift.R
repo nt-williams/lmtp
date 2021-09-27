@@ -2,7 +2,7 @@ shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
     return(shift_cens(data, cens))
   }
-  return(shift_trt(shift_cens(data, cens), trt, shift))
+  shift_trt(shift_cens(data, cens), trt, shift)
 }
 
 shift_cens <- function(data, cens) {
@@ -10,14 +10,14 @@ shift_cens <- function(data, cens) {
   for (ce in cens) {
     out[[ce]] <- 1
   }
-  return(as.data.frame(out))
+  as.data.frame(out, check.names = FALSE)
 }
 
 shift_trt <- function(data, trt, .f) {
   for (a in trt) {
     data[[a]] <- .f(data, a)
   }
-  return(data)
+  data
 }
 
 #' Turn All Treatment Nodes On

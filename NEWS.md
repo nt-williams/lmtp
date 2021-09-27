@@ -1,8 +1,27 @@
+# lmtp 1.0.0
+
+### New Features
+
+-   New `shifted` parameter for directly passing shifted data instead of using a shift function (issue \#89).
+-   New `intervention_type` parameter required for specifying if the intervention of interest is a static regime, a dynamic regime, or a modified treatment policy (issue \#94).
+-   `return_all_ratios` removed as an argument. Returned density ratios are now non-cumulative product ratios.
+
+### Bug Fixes
+
+-   Density ratio trimming now occurs in the same spot for all estimators and is only performed on non-cumulative product ratios (issue #\93).
+-   Fixed issue where `lmtp_tmle` and `lmtp_sdr` weren't using validation set density ratios.
+-   No longer fails when `data` is a `data.table` (issue \#88).
+
+### General
+
+-   Removing extra column in `sim_point_surv` data set (issue \#91).
+-   Paper citation updated with release in JASA (issue \#103).
+
 # lmtp 0.9.1
 
 ### Bug Fixes
 
-- Fixed a bug that caused failure when knitting the `getting-started.Rmd` vignette (issue \#100).
+- Fixed a bug that caused failure when knitting the `getting-started.Rmd` vignette when using new version of the *future* package (issue \#100).
 
 ### General
 

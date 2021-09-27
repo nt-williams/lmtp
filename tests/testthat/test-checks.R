@@ -100,3 +100,19 @@ test_that("detect factors", {
     lmtp_sub(sim_t4, a, "Y", time_vary = tv, shift = d, k = 0, folds = 2)
   )
 })
+
+test_that("detect issues with supplying shifted", {
+  a <- c("A1", "A2")
+  tv <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+  y <- "Y"
+  sc <- shift_data(sim_cens, a, cens, function(data, trt) data[[trt]] + 0.5)
+  sc$L1 <- 1
+  expect_error(
+    lmtp_tmle(sim_cens, a, y, time_vary = tv, cens = cens, shifted = sc, folds = 2)
+  )
+  sc <- shift_data(sim_cens, a, NULL, function(data, trt) data[[trt]] + 0.5)
+  expect_error(
+    lmtp_tmle(sim_cens, a, y, time_vary = tv, cens = cens, shifted = sc, folds = 2)
+  )
+})

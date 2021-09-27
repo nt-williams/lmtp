@@ -18,12 +18,12 @@ Meta <- R6::R6Class(
     weights_m = NULL,
     weights_r = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, learners_trt, learners_outcome, id,
+                          shift, shifted, learners_trt, learners_outcome, id,
                           outcome_type = NULL, V = 10, weights = NULL,
                           bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt, cens)
 
-      data <- fix_censoring_ind(data, cens, self$tau)
+      data <- as.data.frame(fix_censoring_ind(data, cens, self$tau))
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_factors(data, trt, baseline, time_vary) # for now will just be warning, custom learners can avoid this issue.
@@ -54,56 +54,54 @@ Meta <- R6::R6Class(
         }
       }
 
-      self$m <-
-        get_folded_data(
-          cbind(
-            matrix(
-              nrow = nrow(data),
-              ncol = self$tau
-            ),
-            scale_y_continuous(
+      shd <- {
+        if (is.null(shifted) && !is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (is.null(shifted) && is.null(shift))
+          shift_data(data, trt, cens, shift)
+        else if (!is.null(shifted) && !is.null(data))
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+        else
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+      }
+
+      self$m <- cbind(
+        matrix(nrow = nrow(data), ncol = self$tau),
+        scale_y_continuous(
+          data[[final_outcome(outcome)]],
+          y_bounds(
+            data[[final_outcome(outcome)]],
+            self$outcome_type,
+            bounds
+          )
+        )
+      )
+
+      self$data <- fix_censoring_ind(
+        add_scaled_y(
+          data, scale_y_continuous(
+            data[[final_outcome(outcome)]],
+            y_bounds(
               data[[final_outcome(outcome)]],
-              y_bounds(data[[final_outcome(outcome)]],
-                       self$outcome_type,
-                       bounds)
+              self$outcome_type,
+              bounds
             )
-          ),
-          self$folds
-        )
+          )
+        ), cens, self$tau
+      )
 
-      self$data <-
-        get_folded_data(
-          fix_censoring_ind(
-            add_scaled_y(
-              data,
-              scale_y_continuous(
-                data[[final_outcome(outcome)]],
-                y_bounds(data[[final_outcome(outcome)]],
-                         self$outcome_type,
-                         bounds)
-              )
-            ),
-            cens, self$tau
-          ),
-          self$folds
-        )
-
-      self$shifted_data <-
-        get_folded_data(
-          fix_censoring_ind(
-            add_scaled_y(
-              shift_data(data, trt, cens, shift),
-              scale_y_continuous(
-                data[[final_outcome(outcome)]],
-                y_bounds(data[[final_outcome(outcome)]],
-                         self$outcome_type,
-                         bounds)
-              )
-            ),
-            cens, self$tau
-          ),
-          self$folds
-        )
+      self$shifted_data <- fix_censoring_ind(
+        add_scaled_y(
+          shd, scale_y_continuous(
+            data[[final_outcome(outcome)]],
+            y_bounds(
+              data[[final_outcome(outcome)]],
+              self$outcome_type,
+              bounds
+            )
+          )
+        ), cens, self$tau
+      )
 
       if (!is.null(weights)) {
         self$weights <- get_folded_weights(weights, self$folds)
@@ -115,22 +113,31 @@ Meta <- R6::R6Class(
   )
 )
 
-prepare_r_engine <- function(data, shifted, n) {
+prepare_r_engine <- function(data, shifted) {
+  n <- nrow(data)
   out <- rbind(data, shifted)
   out$si <- c(rep(0, n), rep(1, n))
-  return(out)
+  out
 }
 
-create_r_stacks <- function(training, validation, trt, cens, shift, t, nt, nv) {
-  # need to re-think this option setting here
-  if (getOption("lmtp.trt.length") == "standard" || t == 1) {
-    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], shift), nt)
-    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], shift), nv)
-  } else if (getOption("lmtp.trt.length") == "point.wise" && t > 1) {
-    train_stck <- prepare_r_engine(training, shift_data(training, trt[[t]], cens[[t]], NULL), nt)
-    valid_stck <- prepare_r_engine(validation, shift_data(validation, trt[[t]], cens[[t]], NULL), nv)
+create_r_stacks <- function(natural, shifted, trt, cens, tau) {
+  trt_tau <- trt[tau]
+  use_shifted_train <- natural$train
+  use_shifted_valid <- natural$valid
+
+  if (getOption("lmtp.trt.length") == "standard" || tau == 1) {
+    use_shifted_train[[trt_tau]] <- shifted$train[[trt_tau]]
+    use_shifted_valid[[trt_tau]] <- shifted$valid[[trt_tau]]
   }
-  out <- list(train = train_stck,
-              valid = valid_stck)
-  return(out)
+
+  if (!is.null(cens)) {
+    cens_tau <- cens[tau]
+    use_shifted_train[[cens_tau]] <- shifted$train[[cens_tau]]
+    use_shifted_valid[[cens_tau]] <- shifted$valid[[cens_tau]]
+  }
+
+  train_stck <- prepare_r_engine(natural$train, use_shifted_train)
+  valid_stck <- prepare_r_engine(natural$valid, use_shifted_valid)
+
+  list(train = train_stck, valid = valid_stck)
 }

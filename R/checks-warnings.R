@@ -38,7 +38,7 @@ fix_censoring_ind <- function(data, C = NULL, tau) {
     return(as.data.frame(out))
   }
 
-  return(data)
+  data
 }
 
 check_scaled_conflict <- function(data) {
@@ -60,28 +60,25 @@ check_scaled_conflict <- function(data) {
   )
 }
 
-check_extreme_ratio <- function(ratio, trim) {
-  return(apply(ratio, 2, function(x) pmin(x, quantile(x, trim))))
-}
-
 check_variation <- function(outcome, learners) {
   if (sd(outcome) < .Machine$double.eps) {
     return("SL.mean")
   }
-  return(learners)
+  learners
 }
 
 check_outcome_type <- function(fits, ref, type) {
   if (type == "additive") {
     check <- TRUE
-  } else if (type %in% c("rr", "or")) {
+  }
+
+  if (type %in% c("rr", "or")) {
 
     if (is.lmtp(ref)) {
       fits[["ref"]] <- ref
     }
 
-    types <- lapply(fits, function(x) x[["outcome_type"]])
-    check <- all(types == "binomial")
+    check <- all(lapply(fits, function(x) x[["outcome_type"]]) == "binomial")
   }
 
   if (isFALSE(check)) {
@@ -111,17 +108,17 @@ check_ref_type <- function(ref, type) {
         stop("Reference value should be a single object.",
              call. = FALSE)
       }
+
       message("Non-estimated reference value, defaulting type = 'additive'.")
-      out <- "additive"
-    } else {
-      stop("Reference must either be a single numeric value or another lmtp object.",
-           call. = FALSE)
+      return("additive")
     }
-  } else {
-    out <- type
+
+    stop("Reference must either be a single numeric value or another lmtp object.",
+         call. = FALSE)
   }
 
-  return(out)
+  out <- type
+  out
 }
 
 check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
@@ -130,45 +127,51 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
       if (tau == length(time_vary) & tau == length(cens)) {
         set_lmtp_options("trt", "standard")
         return(trt)
-      } else {
-        stop("It appears there is a mismatch in your data. Make sure parameters `trt`, `time_vary`, and `cens` are of the same length.",
-             call. = FALSE)
       }
-    } else if (!is.null(time_vary) & is.null(cens)) {
+
+      stop("It appears there is a mismatch in your data. Make sure parameters `trt`, `time_vary`, and `cens` are of the same length.",
+           call. = FALSE)
+    }
+
+    if (!is.null(time_vary) & is.null(cens)) {
       if (tau == length(time_vary)) {
         set_lmtp_options("trt", "standard")
         return(trt)
-      } else {
-        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `time_vary` are of the same length.",
-             call. = FALSE)
       }
-    } else if (is.null(time_vary & !is.null(cens))) {
+
+      stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `time_vary` are of the same length.",
+           call. = FALSE)
+    }
+
+    if (is.null(time_vary & !is.null(cens))) {
       if (tau == length(cens)) {
         set_lmtp_options("trt", "standard")
         return(trt)
-      } else {
-        stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `cens` are of the same length",
-             call. = FALSE)
       }
-    } else {
-      set_lmtp_options("trt", "standard")
-      return(trt)
+
+      stop("It appears there is a mismatch in your data. Make sure parameters `trt` and `cens` are of the same length",
+           call. = FALSE)
     }
-  } else if (length(trt) == 1) {
-    set_lmtp_options("trt", "point.wise")
-    return(rep(trt, tau))
+
+    set_lmtp_options("trt", "standard")
+    return(trt)
   }
+
+  set_lmtp_options("trt", "point.wise")
+  rep(trt, tau)
 }
 
 check_at_risk <- function(outcomes, tau) {
   if (length(outcomes) == 1) {
     return(NULL)
-  } else if (length(outcomes) == tau) {
-    return(outcomes[1:tau - 1])
-  } else {
-    stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
-         call. = FALSE)
   }
+
+  if (length(outcomes) == tau) {
+    return(outcomes[1:tau - 1])
+  }
+
+  stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
+       call. = FALSE)
 }
 
 check_folds <- function(V) {
@@ -188,9 +191,13 @@ check_folds <- function(V) {
  check_glm_outcome <- function(outcome_type) {
    if (is.null(outcome_type)) {
      return("gaussian")
-   } else if (outcome_type == "continuous") {
+   }
+
+   if (outcome_type == "continuous") {
      return("gaussian")
-   } else if (outcome_type == "binomial") {
+   }
+
+   if (outcome_type == "binomial") {
      return(outcome_type)
    }
  }
@@ -200,7 +207,10 @@ check_mult_outcomes <- function(outcome, outcome_type) {
     if (length(outcome) == 1) {
       stop("'outcome_type' set to survival, but the length of 'outcome' is one.", call. = FALSE)
     }
-  } else if (length(outcome) > 1) {
+    return()
+  }
+
+  if (length(outcome) > 1) {
     stop("The length of 'outcome' is greater than one, but 'outcome_type' not set to survival.", call. = FALSE)
   }
 }
@@ -210,6 +220,7 @@ check_is_binary <- function(data, outcome, outcome_type) {
     vals <- lapply(outcome, function(x) {
       as.character(unique(na.omit(data[[x]])))
     })
+
     if (!all(unlist(lapply(vals, function(x) all(x %in% c("0", "1")))))) {
       stop("Only 0 and 1 alllowed in outcome variables if 'outcome_type' set to binomial or survival.",
            call. = FALSE)
@@ -224,3 +235,25 @@ check_factors <- function(data, trt, baseline, nodes) {
             call. = FALSE)
   }
 }
+
+check_shifted <- function(data, shifted, outcome, baseline, nodes, cens) {
+  unchngd <- c(outcome, baseline, unlist(nodes))
+  shifted <- as.data.frame(shifted)
+
+  if (!(all.equal(data[unchngd], shifted[unchngd]))) {
+    stop("If supplying data to `shifted`, the only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`", .call = FALSE)
+  }
+
+  if (is.null(cens)) {
+    return(shifted)
+  }
+
+  for (i in cens) {
+    if (!(all(shifted[[i]] == 1))) {
+      stop("If supplying data to `shifted`, censoring columns should be set to 1.", call. = FALSE)
+    }
+  }
+
+  shifted
+}
+
