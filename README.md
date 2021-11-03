@@ -15,7 +15,6 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
@@ -44,6 +43,8 @@ are also supported.
 
 For an in-depth look at the package’s functionality, please consult the
 accompanying vignette.
+
+<script src="https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de.js"></script>
 
 ## Installation
 
@@ -115,8 +116,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Major changes in lmtp 0.9.0. Consult NEWS.md for more information.
-
+#> Major changes in lmtp 1.0.0. Consult NEWS.md for more information.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y

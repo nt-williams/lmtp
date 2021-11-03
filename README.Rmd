@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
@@ -34,6 +33,8 @@ Nick Williams and Ivan Diaz
 **lmtp** is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. **lmtp** is built atop the [`SuperLearner`](https://cran.r-project.org/package=SuperLearner) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous. Dynamic treatment regimes are also supported. 
 
 For an in-depth look at the package's functionality, please consult the accompanying vignette.
+
+<script src="https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de.js"></script>
 
 ## Installation
 
