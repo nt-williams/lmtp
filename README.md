@@ -44,8 +44,6 @@ are also supported.
 For an in-depth look at the package’s functionality, please consult the
 accompanying vignette.
 
-<script src="https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de.js"></script>
-
 ## Installation
 
 **lmtp** can be installed from CRAN with:
