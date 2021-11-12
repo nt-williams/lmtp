@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
+
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -15,7 +17,6 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
@@ -99,8 +100,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Major changes in lmtp 0.9.0. Consult NEWS.md for more information.
-
+#> NOT MAIN VERSION OF LMTP! THIS VERSION IMPLEMENTS DIFFERENTS COVARIATE SETS FOR TREATMENT AND OUTCOME REGRESSIONS.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y

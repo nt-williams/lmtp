@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
+
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -22,7 +24,6 @@ knitr::opts_chunk$set(
 [![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/251356023.svg)](https://zenodo.org/badge/latestdoi/251356023)
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
