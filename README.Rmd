@@ -62,6 +62,12 @@ A version allowing for different covariates sets for the treatment and outcome r
 devtools::install_github("nt-williams/lmtp@2covarSets")
 ```
 
+A version allowing for different covariates sets for the treatment and outcome regressions and that uses **sl3**: 
+
+```r
+devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+```
+
 ## What even is a modified treatment policy? 
 
 Modified treatment policies (MTP) are interventions that can depend on the *natural* value of the treatment (the treatment value in the absence of intervention). A key assumption for causal inference is the *positivity assumption* which states that all observations have a non-zero probability of experiencing a treatment value. **When working with continuous or multivalued treatments, violations of the positivity assumption are likely to occur. MTPs offer a solution to this problem.** 

@@ -74,6 +74,13 @@ outcome regressions:
 devtools::install_github("nt-williams/lmtp@2covarSets")
 ```
 
+A version allowing for different covariates sets for the treatment and
+outcome regressions and that uses **sl3**:
+
+``` r
+devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+```
+
 ## What even is a modified treatment policy?
 
 Modified treatment policies (MTP) are interventions that can depend on
