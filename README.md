@@ -124,7 +124,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> NOT MAIN VERSION OF LMTP! THIS VERSION IMPLEMENTS DIFFERENTS COVARIATE SETS FOR TREATMENT AND OUTCOME REGRESSIONS.
+#> Major changes in lmtp 1.0.0. Consult NEWS.md for more information.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y
