@@ -124,7 +124,7 @@ regimes for binary, continuous, and survival outcomes.
 ## Example
 
 ``` r
-library(lmtp)
+library(lmtp, lib = "~/Desktop/lmtp-alternates/sl3")
 #> NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)

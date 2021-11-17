@@ -104,7 +104,7 @@ Yes! **lmtp** can estimate the effects of deterministic, static treatment effect
 ## Example
 
 ```{r}
-library(lmtp)
+library(lmtp, lib = "~/Desktop/lmtp-alternates/sl3")
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
