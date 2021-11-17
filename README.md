@@ -42,7 +42,25 @@ via a density ratio classification procedure irrespective of treatment
 variable type providing decreased computation time when treatment is
 continuous. Dynamic treatment regimes are also supported.
 
+A list of papers using **lmtp** is
+[here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
+
+For an in-depth look at the package’s functionality, please consult the
+accompanying vignette.
+
 ## Installation
+
+**lmtp** can be installed from CRAN with:
+
+``` r
+install.packages("lmtp")
+```
+
+The stable, development version can be installed from GitHub with:
+
+``` r
+devtools::install_github("nt-williams/lmtp@devel")
+```
 
 The **sl3** compatible version can be installed from GitHub with:
 
@@ -50,11 +68,18 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
-The **sl3** development compatible version can be installed from GitHub
-with:
+A version allowing for different covariates sets for the treatment and
+outcome regressions:
 
 ``` r
-devtools::install_github("nt-williams/lmtp@sl3-devel")
+devtools::install_github("nt-williams/lmtp@2covarSets")
+```
+
+A version allowing for different covariates sets for the treatment and
+outcome regressions and that uses **sl3**:
+
+``` r
+devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
 ```
 
 ## What even is a modified treatment policy?
@@ -100,7 +125,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> NOT MAIN VERSION OF LMTP! THIS VERSION IMPLEMENTS DIFFERENTS COVARIATE SETS FOR TREATMENT AND OUTCOME REGRESSIONS.
+#> NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y

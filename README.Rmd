@@ -34,7 +34,23 @@ Nick Williams and Ivan Diaz
 
 **lmtp** is an R package that provides an estimation framework for the casual effects of feasible interventions based on point-treatment and longitudinal modified treatment policies as described in Diaz, Williams, Hoffman, and Schenck (2020). Two primary estimators are supported, a targeted maximum likelihood (TML) estimator and a sequentially doubly robust (SDR) estimator (a G-computation and an inverse probability of treatment weighting estimator are provided for the sake of being thorough but their use is recommended against in favor of the TML and SDR estimators). Both binary and continuous outcomes (both with censoring) are allowed. **lmtp** is built atop the [`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble machine learning for estimation. The treatment mechanism is estimated via a density ratio classification procedure irrespective of treatment variable type providing decreased computation time when treatment is continuous. Dynamic treatment regimes are also supported. 
 
+A list of papers using **lmtp** is [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
+
+For an in-depth look at the package's functionality, please consult the accompanying vignette.
+
 ## Installation
+
+**lmtp** can be installed from CRAN with: 
+
+```r
+install.packages("lmtp")
+```
+
+The stable, development version can be installed from GitHub with: 
+
+```r
+devtools::install_github("nt-williams/lmtp@devel")
+```
 
 The **sl3** compatible version can be installed from GitHub with: 
 
@@ -42,10 +58,16 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
-The **sl3** development compatible version can be installed from GitHub with: 
+A version allowing for different covariates sets for the treatment and outcome regressions: 
 
 ```r
-devtools::install_github("nt-williams/lmtp@sl3-devel")
+devtools::install_github("nt-williams/lmtp@2covarSets")
+```
+
+A version allowing for different covariates sets for the treatment and outcome regressions and that uses **sl3**: 
+
+```r
+devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
 ```
 
 ## What even is a modified treatment policy? 
