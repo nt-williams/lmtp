@@ -53,7 +53,7 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
     if (length(trt) == tau) {
       for (i in 1:tau) {
         if (i > 1) {
-          out[[i]] <- c(time_vary[[i]], trt[i - 1])
+          out[[i]] <- c(time_vary[[i]], trt[[i - 1]])
         } else {
           out[[i]] <- c(time_vary[[i]])
         }
@@ -62,14 +62,14 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
 
     if (length(trt) != tau) {
       for (i in 1:tau) {
-        out[[i]] <- c(time_vary[[i]], trt)
+        out[[i]] <- c(time_vary[[i]], unlist(trt))
       }
     }
   } else {
     if (length(trt) == tau) {
       for (i in 1:tau) {
         if (i > 1) {
-          out[[i]] <- c(out[[i]], time_vary[[i]], trt[i - 1])
+          out[[i]] <- c(out[[i]], time_vary[[i]], trt[[i - 1]])
         } else {
           out[[i]] <- c(out[[i]], time_vary[[i]])
         }
@@ -78,7 +78,7 @@ trt_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
 
     if (length(trt) != tau) {
       for (i in 1:tau) {
-        out[[i]] <- c(out[[i]], time_vary[[i]], trt)
+        out[[i]] <- c(out[[i]], time_vary[[i]], unlist(trt))
       }
     }
   }
@@ -101,13 +101,13 @@ outcome_node_list <- function(trt, time_vary, baseline = NULL, k, tau) {
 
   if (length(trt) == tau) {
     for (i in 1:tau) {
-      out[[i]] <- c(time_vary[[i]], trt[i])
+      out[[i]] <- c(time_vary[[i]], trt[[i]])
     }
   }
 
   if (length(trt) != tau) {
     for (i in 1:tau) {
-      out[[i]] <- c(time_vary[[i]], trt)
+      out[[i]] <- c(time_vary[[i]], unlist(trt))
     }
   }
 
