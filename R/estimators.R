@@ -37,8 +37,7 @@
 #'  regression. If not specified, will default to using a main effects generalized linear model.
 #' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
-#' is two folds.
+#' @param folds The number of folds to be used for cross-fitting.
 #' @param weights An optional vector of length n containing sampling weights.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
@@ -188,8 +187,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  regression. If not specified, will default to using a main effects generalized linear model.
 #' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
-#' is two folds.
+#' @param folds The number of folds to be used for cross-fitting.
 #' @param weights An optional vector of length n containing sampling weights.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
@@ -336,8 +334,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners An optional \code{sl3} learner stack for estimation of the outcome
 #'  regression. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
-#'  is two folds.
+#' @param folds The number of folds to be used for cross-fitting.
 #' @param weights An optional vector of length n containing sampling weights.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
@@ -452,8 +449,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param id An optional column name containing cluster level identifiers.
 #' @param learners An optional \code{sl3} learner stack for estimation of the exposure
 #'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
-#'  is two folds.
+#' @param folds The number of folds to be used for cross-fitting.
 #' @param weights An optional vector of length n containing sampling weights.
 #' @param .bound Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.

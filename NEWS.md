@@ -1,5 +1,16 @@
+# lmtp 1.1.0
 
-# lmtp 1.0.0.5000
+### New Features
+
+### Bug Fixes
+
+-   Corrected standard errors when providing  `id` with `lmtp_contrast` (issue \#110).
+
+### General
+
+-   Removed the requirement that `folds` must be greater than 1 (issue \#112).
+
+# lmtp 1.0.0
 
 ### New Features
 
@@ -37,7 +48,7 @@
 
 -   Removing extra column in `sim_point_surv` data set (issue \#91).
 
-# lmtp 0.9.0.5000
+# lmtp 0.9.0
 
 ### New Features
 

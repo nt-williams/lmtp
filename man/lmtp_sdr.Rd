@@ -76,8 +76,7 @@ regression. If not specified, will default to using a main effects generalized l
 \item{learners_trt}{An optional \code{sl3} learner stack for estimation of the exposure
 mechanism. If not specified, will default to using a main effects generalized linear model.}
 
-\item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
-is two folds.}
+\item{folds}{The number of folds to be used for cross-fitting.}
 
 \item{weights}{An optional vector of length n containing sampling weights.}
 

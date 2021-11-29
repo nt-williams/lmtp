@@ -67,8 +67,7 @@ Should be left as \code{NULL} if the outcome type is binary.}
 \item{learners}{An optional \code{sl3} learner stack for estimation of the outcome
 regression. If not specified, will default to using a main effects generalized linear model.}
 
-\item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
-is two folds.}
+\item{folds}{The number of folds to be used for cross-fitting.}
 
 \item{weights}{An optional vector of length n containing sampling weights.}
 

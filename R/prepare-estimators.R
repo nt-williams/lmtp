@@ -32,7 +32,6 @@ Meta <- R6::R6Class(
       check_is_binary(data, outcome, outcome_type)
       check_scaled_conflict(data)
       check_time_vary(time_vary)
-      check_folds(V)
 
       self$n <- nrow(data)
       self$trt <- check_trt_length(trt, time_vary, cens, self$tau)

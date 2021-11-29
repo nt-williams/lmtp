@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 1.0.1.5001
+Version: 1.1.1.5000
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",

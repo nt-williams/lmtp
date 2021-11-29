@@ -1,5 +1,10 @@
 setup_cv <- function(data, id, V = 10) {
-  origami::make_folds(data, cluster_ids = id, V = V)
+  out <- origami::make_folds(data, cluster_ids = id, V = V)
+  if (V > 1) {
+    return(out)
+  }
+  out[[1]]$training_set <- out[[1]]$validation_set
+  out
 }
 
 get_folded_data <- function(data, folds) {
