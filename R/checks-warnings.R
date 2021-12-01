@@ -13,7 +13,7 @@ check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, ta
   for (t in 1:tau) {
     ci <- censored(data, cens, t)$j
     di <- at_risk(data, cens, t)
-    if (any(is.na(as.matrix(data[ci & !di, c(check_trt_length(trt, time_vary, cens, tau)[t], baseline, unlist(time_vary[t]))])))) {
+    if (any(is.na(as.matrix(data[ci & !di, c(trt[[t]], baseline, unlist(time_vary[t]))])))) {
       stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
            call. = FALSE)
     }
@@ -21,7 +21,7 @@ check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, ta
 }
 
 check_for_variables <- function(data, trt, outcome, baseline, nodes, cens) {
-  vars <- c(trt, outcome, baseline, unlist(nodes), cens)
+  vars <- c(unlist(trt), outcome, baseline, unlist(nodes), cens)
   if (!all(vars %in% names(data))) {
     warn <- vars[which(!(vars %in% names(data)))]
     stop("Variable(s) ", paste(warn, collapse = ", "), " not found in data.",
@@ -229,7 +229,7 @@ check_is_binary <- function(data, outcome, outcome_type) {
 }
 
 check_factors <- function(data, trt, baseline, nodes) {
-  vars <- c(trt, baseline, unlist(nodes))
+  vars <- c(unlist(trt), baseline, unlist(nodes))
   if (any(unlist(lapply(data[, vars], is.factor)))) {
     warning("Some of your variables appear to be factors. Make sure your SuperLearner library is capable of handling factors!",
             call. = FALSE)

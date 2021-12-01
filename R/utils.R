@@ -73,6 +73,9 @@ at_risk <- function(data, risk, tau) {
 
 followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
   if (intervention_type == "mtp") {
+    if (inherits(obs_trt, "data.frame")) {
+      return(rep(TRUE, nrow(obs_trt)))
+    }
     return(rep(TRUE, length(obs_trt)))
   }
 

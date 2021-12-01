@@ -120,13 +120,15 @@ prepare_r_engine <- function(data, shifted) {
 }
 
 create_r_stacks <- function(natural, shifted, trt, cens, tau) {
-  trt_tau <- trt[tau]
+  trt_tau <- trt[[tau]]
   use_shifted_train <- natural$train
   use_shifted_valid <- natural$valid
 
   if (getOption("lmtp.trt.length") == "standard" || tau == 1) {
-    use_shifted_train[[trt_tau]] <- shifted$train[[trt_tau]]
-    use_shifted_valid[[trt_tau]] <- shifted$valid[[trt_tau]]
+    for (a in trt_tau) {
+      use_shifted_train[[a]] <- shifted$train[[a]]
+      use_shifted_valid[[a]] <- shifted$valid[[a]]
+    }
   }
 
   if (!is.null(cens)) {

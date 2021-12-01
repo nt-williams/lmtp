@@ -17,8 +17,8 @@ estimate_r <- function(data, shifted, trt, cens, risk, tau,
     drv <- rep(at_risk(validation, risk, t), 2)
 
     frv <- followed_rule(
-      validation[[trt[t]]],
-      shifted$valid[[trt[t]]],
+      validation[, trt[[t]]],
+      shifted$valid[, trt[[t]]],
       intervention_type
     )
 
