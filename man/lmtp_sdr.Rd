@@ -31,7 +31,9 @@ lmtp_sdr(
 \item{data}{A data frame in wide format containing all necessary variables
 for the estimation problem.}
 
-\item{trt}{A vector containing the column names of treatment variables ordered by time.}
+\item{trt}{A list of vectors, the same length as the number of time points of observation.
+Vectors should contain column names for the treatment variables at each time point. The list
+should be ordered following the time ordering of the model.}
 
 \item{outcome}{The column name of the outcome variable. In the case of time-to-event
 analysis, a vector containing the columns names of intermediate outcome variables and the final
