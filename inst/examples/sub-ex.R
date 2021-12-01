@@ -12,11 +12,17 @@
   # units only among observations whose observed A was above 80.
   # The true value under this intervention is about 513.
   policy <- function(data, x) {
-    (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
+    out <- list(
+      (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
+    )
+    setNames(out, x)
   }
 
-  lmtp_sub(ex1_dat, "A", "Y", "W", shift = policy,
-           outcome_type = "continuous", folds = 2)
+  A <- list("A")
+  Y <- "Y"
+  W <- "W"
+
+  lmtp_sub(ex1_dat, A, Y, W, shift = policy, outcome_type = "continuous", folds = 1)
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -26,49 +32,58 @@
   # than or equal to 2. The true value under this intervention is about 0.305.
   head(sim_t4)
 
-  A <- c("A_1", "A_2", "A_3", "A_4")
+  A <- list("A_1", "A_2", "A_3", "A_4")
   L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-
   policy <- function(data, trt) {
     a <- data[[trt]]
-    (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+    out <- list(
+      (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+    )
+    setNames(out, trt)
   }
 
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-  lmtp_sub(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 2)
+  lmtp_sub(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 1)
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-  lmtp_sub(sim_t4, A, "Y", time_vary = L, shift = policy, k = 0, folds = 2)
+  lmtp_sub(sim_t4, A, "Y", time_vary = L, shift = policy, k = 0, folds = 1)
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
   # Now estimating the effect of a dynamic modified treatment policy.
-
-  # creating a dynamic mtp that applies the shift function
-  # but also depends on history and the current time
   policy <- function(data, trt) {
     mtp <- function(data, trt) {
-      (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + data[[trt]] * (data[[trt]] - 1 < 1)
+      a <- data[[trt]]
+      out <- list(
+        (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+      )
+      setNames(out, trt)
     }
 
     # if its the first time point, follow the same mtp as before
     if (trt == "A_1") return(mtp(data, trt))
 
     # otherwise check if the time varying covariate equals 1
-    ifelse(
-      data[[sub("A", "L", trt)]] == 1,
-      mtp(data, trt), # if yes continue with the policy
-      data[[trt]]     # otherwise do nothing
-    )
+    out <- list(vector("numeric", nrow(data)))
+    for (i in 1:nrow(data)) {
+      a <- data[i, trt]
+      if (data[i, sub("A", "L", trt)] == 1) {
+        out[[1]][i] <- (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
+      } else {
+        out[[1]][i] <- a
+      }
+    }
+
+    setNames(out, trt)
   }
 
-  lmtp_sub(sim_t4, A, "Y", time_vary = L, k = 0, shift = policy, folds = 2)
+  lmtp_sub(sim_t4, A, "Y", time_vary = L, k = 0, shift = policy, folds = 1)
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
@@ -81,19 +96,21 @@
   }
 
   policy <- function(data, trt) {
-    out <- list()
+    new_a <- vector("numeric", nrow(data))
     a <- data[[trt]]
     for (i in 1:length(a)) {
       if (as.character(a[i]) %in% c("0", "1")) {
-        out[[i]] <- as.character(a[i])
+        new_a[i] <- as.numeric(as.character(a[i]))
       } else {
-        out[[i]] <- as.numeric(as.character(a[i])) - 1
+        new_a[i] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+
+    out <- list(factor(new_a, levels = 0:5, ordered = TRUE))
+    setNames(out, trt)
   }
 
-  lmtp_sub(tmp, A, "Y", time_vary = L, shift = policy, k = 0, folds = 2)
+  lmtp_sub(tmp, A, "Y", time_vary = L, shift = policy, folds = 1)
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -102,7 +119,7 @@
   if (require("twang")) {
     data("iptwExWide", package = "twang")
 
-    A <- paste0("tx", 1:3)
+    A <- as.list(paste0("tx", 1:3))
     W <- c("gender", "age")
     L <- list(c("use0"), c("use1"), c("use2"))
 
@@ -116,12 +133,12 @@
   # the observed exposures in a hypothetical population with no loss-to-follow-up.
   head(sim_cens)
 
-  A <- c("A1", "A2")
+  A <- as.list(c("A1", "A2"))
   L <- list(c("L1"), c("L2"))
   C <- c("C1", "C2")
   Y <- "Y"
 
-  lmtp_sub(sim_cens, A, Y, time_vary = L, cens = C, shift = NULL, folds = 2)
+  lmtp_sub(sim_cens, A, Y, time_vary = L, cens = C, shift = NULL, folds = 1)
 
   # Example 5.1
   # Time-to-event analysis with a binary time-invariant exposure. Interested in
@@ -130,11 +147,11 @@
   # For a survival problem, the outcome argument now takes a vector of outcomes
   # if an observation experiences the event prior to the end of follow-up, all future
   # outcome nodes should be set to 1 (i.e., last observation carried forward).
-  A <- "trt"
+  A <- list("trt")
   Y <- paste0("Y.", 1:6)
   C <- paste0("C.", 0:5)
   W <- c("W1", "W2")
 
-  lmtp_sub(sim_point_surv, A, Y, W, cens = C, folds = 2,
+  lmtp_sub(sim_point_surv, A, Y, W, cens = C, folds = 1,
            shift = static_binary_on, outcome_type = "survival")
 }
