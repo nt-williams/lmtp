@@ -76,8 +76,7 @@ of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 \item{learners_trt}{A vector of \code{SuperLearner} algorithms for estimation
 of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 
-\item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
-is two folds.}
+\item{folds}{The number of folds to be used for cross-fitting.}
 
 \item{weights}{An optional vector of length n containing sampling weights.}
 

@@ -67,8 +67,7 @@ Should be left as \code{NULL} if the outcome type is binary.}
 \item{learners}{A vector of \code{SuperLearner} algorithms for estimation
 of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 
-\item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
-is two folds.}
+\item{folds}{The number of folds to be used for cross-fitting.}
 
 \item{weights}{An optional vector of length n containing sampling weights.}
 

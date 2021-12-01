@@ -123,7 +123,7 @@ regimes for binary, continuous, and survival outcomes.
 ## Example
 
 ``` r
-library(lmtp)
+library(lmtp, lib = "~/Desktop/lmtp-alternates/devel")
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
