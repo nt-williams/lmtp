@@ -45,7 +45,8 @@ shift_trt <- function(data, trt, .f) {
 #'          shift = static_binary_on, outcome_type = "continuous", folds = 2)
 #' }
 static_binary_on <- function(data, trt) {
-  rep(1, length(data[[trt]]))
+  out <- lapply(trt, function(x) rep(1, length(data[[x]])))
+  setNames(out, trt)
 }
 
 #' Turn All Treatment Nodes Off
@@ -70,5 +71,6 @@ static_binary_on <- function(data, trt) {
 #'          shift = static_binary_off, outcome_type = "continuous", folds = 2)
 #' }
 static_binary_off <- function(data, trt) {
-  rep(0, length(data[[trt]]))
+  out <- lapply(trt, function(x) rep(0, length(data[[x]])))
+  setNames(out, trt)
 }

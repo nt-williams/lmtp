@@ -28,14 +28,15 @@ Meta <- R6::R6Class(
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
       check_factors(data, trt, baseline, time_vary) # for now will just be warning, custom learners can avoid this issue.
       check_censoring(data, cens, final_outcome(outcome))
-      check_missing_data(data, trt, outcome, time_vary, baseline, cens, self$tau)
+      self$trt <- check_trt_length(trt, time_vary, cens, self$tau)
+      check_missing_data(data, self$trt, outcome, time_vary, baseline, cens, self$tau)
       check_mult_outcomes(outcome, outcome_type)
       check_is_binary(data, outcome, outcome_type)
       check_scaled_conflict(data)
       check_time_vary(time_vary)
 
       self$n <- nrow(data)
-      self$trt <- check_trt_length(trt, time_vary, cens, self$tau)
+
       self$risk <- check_at_risk(outcome, self$tau)
       self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")

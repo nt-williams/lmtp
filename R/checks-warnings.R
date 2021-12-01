@@ -158,7 +158,7 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   }
 
   set_lmtp_options("trt", "point.wise")
-  rep(trt, tau)
+  lapply(1:tau, function(x) trt[[1]])
 }
 
 check_at_risk <- function(outcomes, tau) {
