@@ -15,7 +15,10 @@ shift_cens <- function(data, cens) {
 
 shift_trt <- function(data, trt, .f) {
   for (a in trt) {
-    data[[a]] <- .f(data, a)
+    new <- .f(data, a)
+    for (col in a) {
+      data[[col]] <- new[[col]]
+    }
   }
   data
 }
