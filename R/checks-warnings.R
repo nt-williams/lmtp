@@ -204,9 +204,9 @@ check_folds <- function(V) {
 
 check_mult_outcomes <- function(outcome, outcome_type) {
   if (outcome_type == "survival") {
-    if (length(outcome) == 1) {
-      stop("'outcome_type' set to survival, but the length of 'outcome' is one.", call. = FALSE)
-    }
+    # if (length(outcome) == 1) {
+    #   stop("'outcome_type' set to survival, but the length of 'outcome' is one.", call. = FALSE)
+    # }
     return()
   }
 
@@ -236,11 +236,17 @@ check_factors <- function(data, trt, baseline, nodes) {
   }
 }
 
-check_shifted <- function(data, shifted, outcome, baseline, nodes, cens) {
+check_shifted <- function(data, shifted, outcome, baseline, nodes, cens, survival = FALSE) {
   unchngd <- c(outcome, baseline, unlist(nodes))
   shifted <- as.data.frame(shifted)
 
-  if (!(all.equal(data[unchngd], shifted[unchngd]))) {
+  if (survival) {
+    for (outcomes in outcome) {
+      data.table::set(shifted, j = outcomes, value = convert_to_surv(shifted[[outcomes]]))
+    }
+  }
+
+  if (!(identical(data[unchngd], shifted[unchngd]))) {
     stop("If supplying data to `shifted`, the only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`", .call = FALSE)
   }
 

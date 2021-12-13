@@ -59,9 +59,9 @@ Meta <- R6::R6Class(
         else if (is.null(shifted) && is.null(shift))
           shift_data(data, trt, cens, shift)
         else if (!is.null(shifted) && !is.null(data))
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens, self$survival)
         else
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          check_shifted(data, shifted, outcome, baseline, time_vary, cens, self$survival)
       }
 
       self$m <- cbind(
