@@ -3,7 +3,7 @@ determine_tau <- function(outcome, trt, cens) {
   if (!surv) {
     return(length(trt))
   }
-  length(cens)
+  length(outcome)
 }
 
 set_lmtp_options <- function(option, val) {
