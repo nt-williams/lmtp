@@ -1,3 +1,4 @@
+
 #' LMTP Targeted Maximum Likelihood Estimator
 #'
 #' Targeted maximum likelihood estimator for the effects of traditional causal effects and
@@ -33,10 +34,10 @@
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a main effects generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
@@ -68,12 +69,14 @@
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
-lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
+lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, comp_risk = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                       intervention_type = c("static", "dynamic", "mtp"),
                       outcome_type = c("binomial", "continuous", "survival"),
-                      id = NULL, bounds = NULL, learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm", folds = 10, weights = NULL,
+                      id = NULL, bounds = NULL,
+                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                      folds = 10, weights = NULL,
                       .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -92,7 +95,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = .bound
+    bound = .bound,
+    comp_risk = comp_risk
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -182,10 +186,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a main effects generalized linear model.
+#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #' is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
@@ -218,11 +222,13 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                     cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                     cens = NULL, comp_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                      intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm", folds = 10, weights = NULL,
+                     id = NULL, bounds = NULL,
+                     learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
+                     learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
@@ -241,7 +247,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = NULL,
     bounds = bounds,
-    bound = .bound
+    bound = .bound,
+    comp_risk = comp_risk
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -330,8 +337,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners An optional \code{sl3} learner stack for estimation of the outcome
+#'  regression. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
@@ -356,15 +363,16 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
-lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL, comp_risk = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = "SL.glm", folds = 10,
-                     weights = NULL, .bound = 1e-5, .SL_folds = 10) {
+                     id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, weights = NULL, .bound = 1e-5, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
     outcome = outcome,
+    comp_risk = comp_risk,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
@@ -446,8 +454,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
 #' @param id An optional column name containing cluster level identifiers.
-#' @param learners A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners An optional \code{sl3} learner stack for estimation of the exposure
+#'  mechanism. If not specified, will default to using a main effects generalized linear model.
 #' @param folds The number of folds to be used for cross-fitting. Minimum allowable number
 #'  is two folds.
 #' @param weights An optional vector of length n containing sampling weights.
@@ -473,17 +481,19 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL, comp_risk = NULL,
                      shift = NULL, shifted = NULL,
                      intervention_type = c("static", "dynamic", "mtp"),
-                     outcome_type = c("binomial", "continuous", "survival"),
                      k = Inf, id = NULL,
-                     learners = "SL.glm", folds = 10, weights = NULL,
+                     outcome_type = c("binomial", "continuous", "survival"),
+                     learners = sl3::make_learner(sl3::Lrnr_glm),
+                     folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
   meta <- Meta$new(
     data = data,
     trt = trt,
     outcome = outcome,
+    comp_risk = comp_risk,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,

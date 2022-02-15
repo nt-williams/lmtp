@@ -39,8 +39,7 @@ cf_r <- function(data, shifted, folds, trt, cens, deterministic, tau,
         intervention_type, SL_folds
       )
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
 
   trim_ratios(recombine_ratios(future::value(out), folds), trim)
@@ -78,8 +77,7 @@ cf_tmle <- function(data, shifted, folds, outcome, cens,
         SL_folds
       )
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
 
   estims <- future::value(estims)
@@ -120,8 +118,7 @@ cf_sub <- function(data, shifted, folds, outcome,
         SL_folds
       )
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
 
   estims <- future::value(estims)
@@ -164,8 +161,7 @@ cf_sdr <- function(data, shifted, folds, outcome, cens,
         SL_folds
       )
     },
-    seed = TRUE,
-    globals = structure(TRUE, add = learners))
+    seed = TRUE)
   }
 
   estims <- future::value(estims)

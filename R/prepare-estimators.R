@@ -17,7 +17,7 @@ Meta <- R6::R6Class(
     weights = NULL,
     weights_m = NULL,
     weights_r = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
+    initialize = function(data, trt, outcome, comp_risk, time_vary, baseline, cens, k,
                           shift, shifted, learners_trt, learners_outcome, id,
                           outcome_type = NULL, V = 10, weights = NULL,
                           bounds = NULL, bound = NULL) {
@@ -26,7 +26,6 @@ Meta <- R6::R6Class(
       data <- as.data.frame(fix_censoring_ind(data, cens, self$tau))
 
       check_for_variables(data, trt, outcome, baseline, time_vary, cens)
-      check_factors(data, trt, baseline, time_vary) # for now will just be warning, custom learners can avoid this issue.
       check_censoring(data, cens, final_outcome(outcome))
       check_missing_data(data, trt, outcome, time_vary, baseline, cens, self$tau)
       check_mult_outcomes(outcome, outcome_type)
@@ -37,7 +36,7 @@ Meta <- R6::R6Class(
 
       self$n <- nrow(data)
       self$trt <- check_trt_length(trt, time_vary, cens, self$tau)
-      self$risk <- check_at_risk(outcome, self$tau)
+      self$risk <- check_at_risk(outcome, self$tau, comp_risk)
       self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
       self$survival <- outcome_type == "survival"
@@ -59,10 +58,16 @@ Meta <- R6::R6Class(
           shift_data(data, trt, cens, shift)
         else if (is.null(shifted) && is.null(shift))
           shift_data(data, trt, cens, shift)
-        else if (!is.null(shifted) && !is.null(data))
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
-        else
-          check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+        else if (!is.null(shifted) && !is.null(data)) {
+          tmp <- check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          tmp$lmtp_id <- create_ids(tmp, id)
+          tmp
+        }
+        else {
+          tmp <- check_shifted(data, shifted, outcome, baseline, time_vary, cens)
+          tmp$lmtp_id <- create_ids(tmp, id)
+          tmp
+        }
       }
 
       self$m <- cbind(

@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
+
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -34,32 +36,13 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://cran.r-project.org/package=SuperLearner)
-package to utilize ensemble machine learning for estimation. The
-treatment mechanism is estimated via a density ratio classification
-procedure irrespective of treatment variable type providing decreased
-computation time when treatment is continuous. Dynamic treatment regimes
-are also supported.
-
-A list of papers using **lmtp** is
-[here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
-
-For an in-depth look at the package’s functionality, please consult the
-accompanying vignette.
+[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
+machine learning for estimation. The treatment mechanism is estimated
+via a density ratio classification procedure irrespective of treatment
+variable type providing decreased computation time when treatment is
+continuous. Dynamic treatment regimes are also supported.
 
 ## Installation
-
-**lmtp** can be installed from CRAN with:
-
-``` r
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
 
 The **sl3** compatible version can be installed from GitHub with:
 
@@ -67,18 +50,11 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
-A version allowing for different covariates sets for the treatment and
-outcome regressions:
+The **sl3** development compatible version can be installed from GitHub
+with:
 
 ``` r
-devtools::install_github("nt-williams/lmtp@2covarSets")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions and that uses **sl3**:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+devtools::install_github("nt-williams/lmtp@sl3-devel")
 ```
 
 ## What even is a modified treatment policy?
@@ -91,7 +67,7 @@ non-zero probability of experiencing a treatment value. **When working
 with continuous or multivalued treatments, violations of the positivity
 assumption are likely to occur. MTPs offer a solution to this problem.**
 
-## Can lmtp estimation other effects?
+## Can lmtp estimate other effects?
 
 Yes! **lmtp** can estimate the effects of deterministic, static
 treatment effects (such as the ATE) and deterministic, dynamic treatment
@@ -124,7 +100,7 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-
+#> NOT MAIN VERSION OF LMTP! THIS VERSION IMPLEMENTS DIFFERENTS COVARIATE SETS FOR TREATMENT AND OUTCOME REGRESSIONS.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y

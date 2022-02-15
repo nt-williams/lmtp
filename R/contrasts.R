@@ -55,9 +55,7 @@ contrast_additive_single <- function(fit, ref) {
     eif <- fit$eif
   }
 
-  clusters <- split(eif, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
+  std.error <- sd(eif) / sqrt(length(eif))
   conf.low <- theta - qnorm(0.975) * std.error
   conf.high <- theta + qnorm(0.975) * std.error
   p.value <- pnorm(abs(theta) / std.error, lower.tail = FALSE) * 2
@@ -95,9 +93,7 @@ contrast_rr <- function(fits, ref) {
 contrast_rr_single <- function(fit, ref) {
   theta <- fit$theta / ref$theta
   log_eif <- (fit$eif / fit$theta) - (ref$eif / ref$theta)
-  clusters <- split(log_eif, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
+  std.error <- sd(log_eif) / sqrt(length(log_eif))
   conf.low <- exp(log(theta) - qnorm(0.975) * std.error)
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
   p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
@@ -134,9 +130,7 @@ contrast_or <- function(fits, ref) {
 contrast_or_single <- function(fit, ref) {
   theta <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
   log_eif <- (fit$eif / (fit$theta * (1 - fit$theta))) - (ref$eif / (ref$theta * (1 - ref$theta)))
-  clusters <- split(log_eif, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
+  std.error <- sd(log_eif) / sqrt(length(log_eif))
   conf.low  <- exp(log(theta) - qnorm(0.975) * std.error)
   conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
   p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2

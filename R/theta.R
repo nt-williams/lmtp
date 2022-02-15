@@ -103,7 +103,6 @@ theta_dr <- function(eta, augmented = FALSE) {
     low = ci_low,
     high = ci_high,
     eif = inflnce,
-    id = eta$id,
     shift = eta$shift,
     outcome_reg = switch(
       eta$outcome_type,

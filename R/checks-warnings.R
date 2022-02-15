@@ -62,7 +62,7 @@ check_scaled_conflict <- function(data) {
 
 check_variation <- function(outcome, learners) {
   if (sd(outcome) < .Machine$double.eps) {
-    return("SL.mean")
+    return(sl3::make_learner(sl3::Lrnr_mean))
   }
   learners
 }
@@ -161,9 +161,15 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   rep(trt, tau)
 }
 
-check_at_risk <- function(outcomes, tau) {
+check_at_risk <- function(outcomes, tau, comp_risks) {
   if (length(outcomes) == 1) {
     return(NULL)
+  }
+
+  # if there's a competing risk, return a risk object that's a list instead of vector
+  if (length(outcomes) == tau & !is.null(comp_risks)) {
+    return(list("outcome" = outcomes[1:tau - 1],
+                "comp_risk" = comp_risks[1:tau - 1]))
   }
 
   if (length(outcomes) == tau) {
@@ -237,6 +243,7 @@ check_factors <- function(data, trt, baseline, nodes) {
 }
 
 check_shifted <- function(data, shifted, outcome, baseline, nodes, cens) {
+  shifted <- as.data.frame(shifted)
   unchngd <- c(outcome, baseline, unlist(nodes))
   shifted <- as.data.frame(shifted)
 

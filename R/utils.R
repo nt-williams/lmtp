@@ -68,7 +68,23 @@ at_risk <- function(data, risk, tau) {
     return(rep(TRUE, nrow(data)))
   }
 
-  data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
+  if (is.list(risk)){
+    # if there is a competing risk, so return T/F w/ same logic as usual
+    # but with the additional logic that the competing risk has not occurred yet
+    return(data[[risk$outcome[tau - 1]]] == 1 &
+      data[[risk$comp_risk[tau - 1]]] == 0 &
+      !is.na(data[[risk$outcome[tau - 1]]]))
+  }
+
+  if(!is.list(risk)){
+    # when there's no competing risk,
+    #return T if the outcome hasn't happened (Y == 1, pkg flips internally)
+    # and censoring hasn't occurred
+    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
+    
+  }
+
+
 }
 
 followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
@@ -127,7 +143,7 @@ hold_lrnr_weights <- function(folds) {
 }
 
 extract_sl_weights <- function(fit) {
-  fit$coef
+  as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
 }
 
 is.lmtp <- function(x) {

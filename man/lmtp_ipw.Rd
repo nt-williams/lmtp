@@ -14,10 +14,10 @@ lmtp_ipw(
   shift = NULL,
   shifted = NULL,
   intervention_type = c("static", "dynamic", "mtp"),
-  outcome_type = c("binomial", "continuous", "survival"),
   k = Inf,
   id = NULL,
-  learners = "SL.glm",
+  outcome_type = c("binomial", "continuous", "survival"),
+  learners = sl3::make_learner(sl3::Lrnr_glm),
   folds = 10,
   weights = NULL,
   .bound = 1e-05,
@@ -56,16 +56,16 @@ to the treatment policy of interest. If specified, \code{shift} is ignored.}
 \item{intervention_type}{The intervetion type, should be one of \code{"static"},
 \code{"dynamic"}, \code{"mtp"}.}
 
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
-
 \item{k}{An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
 \item{id}{An optional column name containing cluster level identifiers.}
 
-\item{learners}{A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
+
+\item{learners}{An optional \code{sl3} learner stack for estimation of the exposure
+mechanism. If not specified, will default to using a main effects generalized linear model.}
 
 \item{folds}{The number of folds to be used for cross-fitting. Minimum allowable number
 is two folds.}
