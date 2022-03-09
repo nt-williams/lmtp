@@ -39,7 +39,7 @@ rescale_y_continuous <- function(scaled, bounds) {
 }
 
 add_scaled_y <- function(data, scaled) {
-  data$xyz <- scaled
+  data[["tmp_lmtp_scaled_outcome"]] <- scaled
   data
 }
 
@@ -104,7 +104,7 @@ recombine_ratios <- function(x, folds) {
     )
   }
 
-  returns$sl_weights <- recombine_sl_weights(x)
+  returns$fits <- lapply(x, function(x) x[["fits"]])
   returns
 }
 
@@ -113,21 +113,9 @@ trim_ratios <- function(x, trim) {
   x
 }
 
-recombine_outcome_reg <- function(x, part, folds) {
+recombine_outcome <- function(x, part, folds) {
   ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
   Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), ]
-}
-
-recombine_sl_weights <- function(x) {
-  lapply(x, function(x) x[["sl_weights"]])
-}
-
-hold_lrnr_weights <- function(folds) {
-  lapply(1:folds, function(x) list())
-}
-
-extract_sl_weights <- function(fit) {
-  as.data.frame(fit$fit_object$full_fit$learner_fits$Lrnr_nnls_TRUE$fits)
 }
 
 is.lmtp <- function(x) {

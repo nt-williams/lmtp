@@ -74,6 +74,14 @@ density_ratios <- function(pred, cens, risk, followed, mtp) {
   (pred * cens * risk * followed) / (1 - pmin(pred, 0.999))
 }
 
+ratio_tmle_ipw <- function(ratios) {
+  matrix(
+    t(apply(ratios, 1, cumprod)),
+    nrow = nrow(ratios),
+    ncol = ncol(ratios)
+  )
+}
+
 ratio_sdr <- function(ratio, tau, max_tau) {
   out <- t(
     apply(

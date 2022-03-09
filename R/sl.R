@@ -7,7 +7,7 @@ initiate_ensemble <- function(outcome_type, learners = NULL) {
   )
 }
 
-initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL, SL_folds) {
+sl3_task <- function(data, Y, X, outcome_type, id = NULL, V = NULL) {
   sl3::sl3_Task$new(
     data = data,
     covariates = X,
@@ -15,7 +15,11 @@ initiate_sl3_task <- function(data, Y, X, outcome_type, id = NULL, SL_folds) {
     outcome_type = outcome_type,
     id = id,
     drop_missing_outcome = drop,
-    folds = origami::make_folds(cluster_ids = data[[id]], V = SL_folds)
+    folds = if (is.null(V)) {
+      V
+    } else {
+      origami::make_folds(cluster_ids = data[[id]], V = V)
+    }
   )
 }
 
