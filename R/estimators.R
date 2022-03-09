@@ -333,8 +333,9 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, weights = NULL, .bound = 1e-5, .SL_folds = 10) {
-  meta <- Meta$new(
+                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = NULL) {
+
+  Task <- lmtp_Task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -344,45 +345,28 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     k = k,
     shift = shift,
     shifted = shifted,
-    learners_trt = NULL,
-    learners_outcome = learners,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    weights = NULL,
+    weights = weights,
     bounds = bounds,
     bound = .bound
   )
 
-  pb <- progressr::progressor(meta$tau*folds)
+  pb <- progressr::progressor(Task$tau*folds)
 
-  estims <- cf_sub(
-    meta$data,
-    meta$shifted_data,
-    meta$folds,
-    "xyz",
-    meta$node_list$outcome,
-    cens,
-    meta$risk,
-    meta$tau,
-    meta$outcome_type,
-    learners,
-    meta$m,
-    pb,
-    meta$weights_m,
-    .SL_folds
-  )
+  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, pb)
 
   theta_sub(
     eta = list(
       m = estims$m,
-      outcome_type = meta$outcome_type,
-      bounds = meta$bounds,
-      folds = meta$folds,
-      weights = weights,
+      outcome_type = Task$outcome_type,
+      bounds = Task$bounds,
+      folds = Task$folds,
+      weights = Task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = estims$sl_weights,
-      outcome_type = meta$outcome_type
+      fits_m = estims$fits,
+      outcome_type = Task$outcome_type
     )
   )
 }
