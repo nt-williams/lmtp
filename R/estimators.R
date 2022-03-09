@@ -196,9 +196,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      id = NULL, bounds = NULL,
                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
-                     folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
-  meta <- Meta$new(
+                     folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
+                     .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
+
+  Task <- lmtp_Task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -208,64 +209,34 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     k = k,
     shift = shift,
     shifted = shifted,
-    learners_trt = learners_trt,
-    learners_outcome = learners_outcome,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    weights = NULL,
+    weights = weights,
     bounds = bounds,
     bound = .bound
   )
 
-  pb <- progressr::progressor(meta$tau*folds*2)
+  pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(
-    meta$data, meta$shifted_data,
-    meta$folds, meta$trt,
-    cens, meta$risk, meta$tau,
-    meta$node_list$trt, learners_trt,
-    pb, meta$weights_r,
-    match.arg(intervention_type),
-    .SL_folds,
-    .trim
-  )
-
-  estims <-
-    cf_sdr(
-      meta$data,
-      meta$shifted_data,
-      meta$folds,
-      "xyz",
-      cens,
-      meta$risk,
-      meta$tau,
-      meta$node_list$outcome,
-      meta$outcome_type,
-      meta$m, meta$m,
-      ratios$ratios,
-      learners_outcome,
-      meta$weights,
-      meta$weights_m,
-      .SL_folds,
-      pb
-    )
+  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, pb)
+  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, pb)
 
   theta_dr(
     list(
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
-      tau = meta$tau,
-      folds = meta$folds,
-      id = meta$id,
-      outcome_type = meta$outcome_type,
-      bounds = meta$bounds,
-      weights = weights,
+      tau = Task$tau,
+      folds = Task$folds,
+      id = Task$id,
+      outcome_type = Task$outcome_type,
+      bounds = Task$bounds,
+      weights = Task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_m = estims$sl_weights,
-      weights_r = ratios$sl_weights,
-      outcome_type = meta$outcome_type
+      fits_m = estims$fits,
+      fits_r = ratios$fits,
+      outcome_type = Task$outcome_type
     ),
     TRUE
   )
