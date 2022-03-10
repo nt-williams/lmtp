@@ -19,16 +19,11 @@ lmtp_Task <- R6::R6Class(
                           shift, shifted, id,
                           outcome_type = NULL, V = 10, weights = NULL,
                           bounds = NULL, bound = NULL) {
-      self$tau <- determine_tau(outcome, trt, cens)
+      self$tau <- determine_tau(outcome, trt)
       data <- as.data.frame(fix_censoring_ind(data, cens, self$tau))
 
-      check_for_variables(data, trt, outcome, baseline, time_vary, cens)
-      check_censoring(data, cens, final_outcome(outcome))
-      check_missing_data(data, trt, outcome, time_vary, baseline, cens, self$tau)
       check_mult_outcomes(outcome, outcome_type)
       check_is_binary(data, outcome, outcome_type)
-      check_scaled_conflict(data)
-      check_time_vary(time_vary)
 
       self$n <- nrow(data)
       self$trt <- check_trt_length(trt, time_vary, cens, self$tau)

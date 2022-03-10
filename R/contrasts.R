@@ -155,3 +155,7 @@ contrast_or_single <- function(fit, ref) {
   )
 }
 
+no_stderr_warning <- function(estimator) {
+  cat("\n")
+  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
+}

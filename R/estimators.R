@@ -77,6 +77,22 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
                       .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
 
+  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  assertReservedNames(data)
+  checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
+  checkmate::assertDataFrame(shifted, null.ok = TRUE)
+  checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
+  checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
+  checkmate::assertNumber(k, lower = 1, upper = Inf)
+  checkmate::assertR6(learners_outcome, "Lrnr_base")
+  checkmate::assertR6(learners_trt, "Lrnr_base")
+  checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
+  checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
+  checkmate::assertNumber(.bound)
+  checkmate::assertNumber(.trim)
+
   Task <- lmtp_Task$new(
     data = data,
     trt = trt,

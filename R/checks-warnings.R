@@ -1,33 +1,74 @@
-no_stderr_warning <- function(estimator) {
-  cat("\n")
-  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
-}
-
-check_censoring <- function(data, C, Y) {
-  if (any(is.na(data[[Y]])) & is.null(C)) {
-    stop("Missing outcomes detected and censoring nodes not indicated.", call. = FALSE)
+check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
+  is_data_frame <- checkmate::checkDataFrame(x)
+  if (!isTRUE(is_data_frame)) {
+    return(is_data_frame)
   }
-}
 
-check_missing_data <- function(data, trt, outcome, time_vary, baseline, cens, tau) {
+  good_outcome <- checkmate::checkCharacter(outcome)
+  if (!isTRUE(good_outcome)) {
+    return(good_outcome)
+  }
+
+  good_trt <- checkmate::checkCharacter(trt)
+  if (!isTRUE(good_trt)) {
+    return(good_trt)
+  }
+
+  tau <- determine_tau(outcome, trt)
+  if (length(trt) != 1 && length(trt) != tau) {
+    return(paste0("'trt' should be of length 1 or ", tau))
+  }
+
+  good_cens <- checkmate::checkCharacter(cens, len = tau, null.ok = !any(is.na(x[[outcome]])))
+  if (!isTRUE(good_cens)) {
+    return(good_cens)
+  }
+
+  good_baseline <- checkmate::checkCharacter(baseline, null.ok = TRUE)
+  if (!isTRUE(good_baseline)) {
+    return(good_baseline)
+  }
+
+  good_time_vary <- checkmate::checkList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  if (!isTRUE(good_time_vary)) {
+    return(good_time_vary)
+  }
+
+  good_id <- checkmate::checkCharacter(id, len = 1, null.ok = TRUE)
+  if (!isTRUE(good_id)) {
+    return(good_id)
+  }
+
+  vars_exist <- checkmate::checkSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(x))
+  if (!isTRUE(vars_exist)) {
+    return(vars_exist)
+  }
+
   for (t in 1:tau) {
-    ci <- censored(data, cens, t)$j
-    di <- at_risk(data, cens, t)
-    if (any(is.na(as.matrix(data[ci & !di, c(check_trt_length(trt, time_vary, cens, tau)[t], baseline, unlist(time_vary[t]))])))) {
-      stop("Missing data found in treatment and/or covariate nodes. Either impute (recommended) or only use observations with complete treatment and covariate data.",
-           call. = FALSE)
+    ci <- censored(x, cens, t)$j
+    di <- at_risk(x, cens, t)
+    trt_t <- ifelse(length(trt) == 1, trt, trt[t])
+    data_t <- x[ci & !di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+
+    if (any(is.na(data_t))) {
+      return("Missing data found in treatment and/or covariate nodes for uncensored observations.")
     }
   }
+
+  TRUE
 }
 
-check_for_variables <- function(data, trt, outcome, baseline, nodes, cens) {
-  vars <- c(trt, outcome, baseline, unlist(nodes), cens)
-  if (!all(vars %in% names(data))) {
-    warn <- vars[which(!(vars %in% names(data)))]
-    stop("Variable(s) ", paste(warn, collapse = ", "), " not found in data.",
-         call. = FALSE)
+assert_lmtp_data <- assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+
+check_reserved_names <- function(x) {
+  bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)
+  if (!any(bad_names)) {
+    return(TRUE)
   }
+  "'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names."
 }
+
+assert_reserved_names <- assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
 
 fix_censoring_ind <- function(data, C = NULL, tau) {
   if (!is.null(C)) {
@@ -41,28 +82,9 @@ fix_censoring_ind <- function(data, C = NULL, tau) {
   data
 }
 
-check_scaled_conflict <- function(data) {
-  nn <- names(data)
-  check <- "xyz" %in% nn
-
-  tryCatch(
-    if (check) {
-      stop()
-    } else {
-      on.exit()
-    },
-    error = function(e) {
-      stop(
-        "A variable named `xyz` was detected in your data. This variable name is reserved for an interal `lmtp` process. Please rename this variable.",
-        call. = FALSE
-      )
-    }
-  )
-}
-
 check_variation <- function(outcome, learners) {
   if (sd(outcome) < .Machine$double.eps) {
-    return(sl3::make_learner(sl3::Lrnr_mean))
+    return(sl3::Lrnr_mean$new())
   }
   learners
 }
@@ -173,20 +195,6 @@ check_at_risk <- function(outcomes, tau) {
   stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
        call. = FALSE)
 }
-
-check_folds <- function(V) {
-  if (V <= 1) {
-    stop("The number of folds must be greater than 1.", call. = FALSE)
-  }
-}
-
- check_time_vary <- function(time_vary = NULL) {
-   if (!is.null(time_vary)) {
-     if (!is.list(time_vary)) {
-       stop("time_vary must be a list.", call. = FALSE)
-     }
-   }
- }
 
  check_glm_outcome <- function(outcome_type) {
    if (is.null(outcome_type)) {
