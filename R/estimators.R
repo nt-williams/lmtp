@@ -407,8 +407,9 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = sl3::make_learner(sl3::Lrnr_glm),
                      folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .SL_folds = 10) {
-  meta <- Meta$new(
+                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
+
+  Task <- lmtp_Task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -418,42 +419,35 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     k = k,
     shift = shift,
     shifted = shifted,
-    learners_trt = learners,
-    learners_outcome = NULL,
     id = id,
     outcome_type = match.arg(outcome_type),
     V = folds,
-    weights = NULL,
+    weights = weights,
     bounds = NULL,
     bound = .bound
   )
 
-  pb <- progressr::progressor(meta$tau*folds)
+  pb <- progressr::progressor(Task$tau*folds)
 
-  ratios <- cf_r(
-    meta$data, meta$shifted_data,
-    meta$folds, meta$trt,
-    cens, meta$risk, meta$tau,
-    meta$node_list$trt, learners,
-    pb, meta$weights_r,
-    match.arg(intervention_type),
-    .SL_folds,
-    .trim
-  )
+  ratios <- cf_r(Task, learners, match.arg(intervention_type), .learners_folds, .trim, pb)
 
   theta_ipw(
     eta = list(
-      r = ratio_tmle_ipw(ratios),
-      y = if (meta$survival) {
+      r = matrix(
+        t(apply(ratios$ratios, 1, cumprod)),
+        nrow = nrow(ratios$ratios),
+        ncol = ncol(ratios$ratios)
+      ),
+      y = if (Task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
         data[[final_outcome(outcome)]]
       },
-      folds = meta$folds,
-      weights = weights,
-      tau = meta$tau,
+      folds = Task$folds,
+      weights = Task$weights,
+      tau = Task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      weights_r = ratios$sl_weights
+      fits_r = ratios$fits
     )
   )
 }
