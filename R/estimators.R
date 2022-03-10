@@ -362,6 +362,31 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
                      folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = NULL) {
 
+  assertNotDataTable(data)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(baseline, null.ok = TRUE)
+
+  tau <- determine_tau(outcome, trt)
+
+  assertTrtCharacter(trt, tau)
+  checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
+  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
+  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  assertOutcomeTypes(data, outcome, match.arg(outcome_type))
+  assertReservedNames(data)
+  checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
+  assertShiftedData(shifted, data, c(outcome, baseline, unlist(time_vary), id), cens)
+  checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
+  checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
+  checkmate::assertNumber(k, lower = 0, upper = Inf)
+  checkmate::assertR6(learners, "Lrnr_base")
+  checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
+  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
+  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
+  checkmate::assertNumber(.bound)
+
   Task <- lmtp_Task$new(
     data = data,
     trt = trt,
@@ -464,6 +489,31 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      learners = sl3::make_learner(sl3::Lrnr_glm),
                      folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
+
+  assertNotDataTable(data)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(baseline, null.ok = TRUE)
+
+  tau <- determine_tau(outcome, trt)
+
+  assertTrtCharacter(trt, tau)
+  checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
+  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
+  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  assertOutcomeTypes(data, outcome, match.arg(outcome_type))
+  assertReservedNames(data)
+  checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
+  assertShiftedData(shifted, data, c(outcome, baseline, unlist(time_vary), id), cens)
+  checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
+  checkmate::assertNumber(k, lower = 0, upper = Inf)
+  checkmate::assertR6(learners, "Lrnr_base")
+  checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
+  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
+  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
+  checkmate::assertNumber(.bound)
+  checkmate::assertNumber(.trim)
 
   Task <- lmtp_Task$new(
     data = data,
