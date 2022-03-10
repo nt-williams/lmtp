@@ -67,7 +67,7 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
       valid_natural_task <- sl3_task(natural$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
       valid_shifted_task <- sl3_task(shifted$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
 
-      learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
+      learners <- check_variation(natural$train[i & rt, ][[pseudo]], learners)
       fit <- learners$train(train_task)
       fits[[t]] <- fit$fit_object
     }
@@ -77,10 +77,10 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     m_natural_valid[jv & rv, t] <- bound(fit$predict(valid_natural_task), 1e-05)
     m_shifted_valid[jv & rv, t] <- bound(fit$predict(valid_shifted_task), 1e-05)
 
-    m_natural_train[!rt, tau] <- 0
-    m_shifted_train[!rt, tau] <- 0
-    m_natural_valid[!rv, tau] <- 0
-    m_shifted_valid[!rv, tau] <- 0
+    m_natural_train[!rt, t] <- 0
+    m_shifted_train[!rt, t] <- 0
+    m_natural_valid[!rv, t] <- 0
+    m_shifted_valid[!rv, t] <- 0
 
     pb()
   }
