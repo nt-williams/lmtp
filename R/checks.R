@@ -1,0 +1,153 @@
+check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
+  is_data_frame <- checkmate::checkDataFrame(x)
+  if (!isTRUE(is_data_frame)) {
+    return(is_data_frame)
+  }
+
+  for (t in 1:determine_tau(outcome, trt)) {
+    ci <- censored(x, cens, t)$j
+    di <- at_risk(x, cens, t)
+    trt_t <- ifelse(length(trt) == 1, trt, trt[t])
+    data_t <- x[ci & !di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+
+    if (any(is.na(data_t))) {
+      return("Missing data found in treatment and/or covariate nodes for uncensored observations")
+    }
+  }
+
+  TRUE
+}
+
+assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+
+check_trt_character <- function(trt, tau) {
+  is_character <- checkmate::check_character(trt)
+  if (!isTRUE(is_character)) {
+    return(is_character)
+  }
+
+  if (length(trt) != 1 && length(trt) != tau) {
+    return(paste0("'trt' should be of length 1 or ", tau))
+  }
+
+  TRUE
+}
+
+assertTrtCharacter <- checkmate::makeAssertionFunction(check_trt_character)
+
+check_reserved_names <- function(x) {
+  bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)
+  if (!any(bad_names)) {
+    return(TRUE)
+  }
+  "'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names"
+}
+
+assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
+
+check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) {
+  if (is.null(x)) {
+    if (null.ok)
+      return(TRUE)
+    return("Can't be 'NULL'")
+  }
+
+  if (!(identical(natural[doesnt_change], x[doesnt_change]))) {
+    return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
+  }
+
+  if (is.null(cens)) {
+    return(TRUE)
+  }
+
+  if (!all(x[cens] == 1)) {
+    return("Censoring variables should be 1 in 'shifted'")
+  }
+
+  TRUE
+}
+
+assertShiftedData <- checkmate::makeAssertionFunction(check_shifted_data)
+
+check_not_data_table <- function(x) {
+  is_data_table <- data.table::is.data.table(x)
+  if (is_data_table) {
+    return("Must be a data.frame, not a data.table")
+  }
+  TRUE
+}
+
+assert_not_data_table <- assertNotDataTable <- checkmate::makeAssertionFunction(check_not_data_table)
+
+check_outcome_types <- function(x, outcomes, outcome_type) {
+  x <- x[, outcomes, drop = FALSE]
+  all_numeric <- checkmate::testDataFrame(x, types = "numeric")
+  if (!all_numeric) {
+    return("Outcome variables must be of type numeric")
+  }
+
+  if (outcome_type %in% c("binomial", "survival")) {
+    vals <- lapply(outcomes, function(var) as.character(unique(na.omit(x[[var]]))))
+    all_binary <- all(unlist(vals) %in% c("0", "1"))
+
+    if (!isTRUE(all_binary))
+      return("Only 0 and 1 allowed in outcome variables if 'outcome_type' set to binomial or survival")
+  }
+  TRUE
+}
+
+assertOutcomeTypes <- checkmate::makeAssertionFunction(check_outcome_types)
+
+check_outcome_type <- function(fits, ref, type) {
+  if (type == "additive") {
+    check <- TRUE
+  }
+
+  if (type %in% c("rr", "or")) {
+
+    if (is.lmtp(ref)) {
+      fits[["ref"]] <- ref
+    }
+
+    check <- all(lapply(fits, function(x) x[["outcome_type"]]) == "binomial")
+  }
+
+  if (isFALSE(check)) {
+    stop(toupper(type), " contrast specified but one or more outcome types are non-binary.",
+         call. = FALSE)
+  }
+}
+
+check_lmtp_type <- function(fits, ref) {
+  if (is.lmtp(ref)) {
+    fits[["ref"]] <- ref
+  }
+
+  types <- lapply(fits, function(x) x[["estimator"]])
+  check <- all(types %in% c("TMLE", "SDR"))
+
+  if (isFALSE(check)) {
+    stop("Contrasts not implemented for substitution/IPW estimators.",
+         call. = FALSE)
+  }
+}
+
+check_ref_type <- function(ref, type) {
+  if (!is.lmtp(ref)) {
+    if (class(ref) %in% c("numeric", "integer", "double")) {
+      if (length(ref) != 1) {
+        stop("Reference value should be a single object.",
+             call. = FALSE)
+      }
+
+      message("Non-estimated reference value, defaulting type = 'additive'.")
+      return("additive")
+    }
+
+    stop("Reference must either be a single numeric value or another lmtp object.",
+         call. = FALSE)
+  }
+
+  out <- type
+  out
+}
