@@ -118,36 +118,34 @@ check_outcome_type <- function(fits, ref, type) {
   }
 }
 
-check_lmtp_type <- function(fits, ref) {
-  if (is.lmtp(ref)) {
-    fits[["ref"]] <- ref
+check_lmtp_list <- function(x) {
+  all_lmtp <- all(unlist(lapply(x, is.lmtp)))
+  if (!all_lmtp) {
+    return("Objects must be of type 'lmtp'")
   }
-
-  types <- lapply(fits, function(x) x[["estimator"]])
-  check <- all(types %in% c("TMLE", "SDR"))
-
-  if (isFALSE(check)) {
-    stop("Contrasts not implemented for substitution/IPW estimators.",
-         call. = FALSE)
-  }
+  TRUE
 }
 
-check_ref_type <- function(ref, type) {
-  if (!is.lmtp(ref)) {
-    if (class(ref) %in% c("numeric", "integer", "double")) {
-      if (length(ref) != 1) {
-        stop("Reference value should be a single object.",
-             call. = FALSE)
-      }
+assertLmtpList <- checkmate::makeAssertionFunction(check_lmtp_list)
 
-      message("Non-estimated reference value, defaulting type = 'additive'.")
-      return("additive")
+check_dr <- function(x) {
+  all_dr <- all(lapply(x, function(x) x[["estimator"]]) %in% c("TMLE", "SDR"))
+  if (!all_dr) {
+    return("Contrasts not implemented for substitution/IPW estimators")
+  }
+  TRUE
+}
+
+assertDr <- checkmate::makeAssertionFunction(check_dr)
+
+check_ref_class <- function(x) {
+  if (!is.lmtp(x)) {
+    is_num <- checkmate::check_number(x)
+    if (!isTRUE(is_num)) {
+      return("Must either be a single numeric value or another lmtp object")
     }
-
-    stop("Reference must either be a single numeric value or another lmtp object.",
-         call. = FALSE)
   }
-
-  out <- type
-  out
+  TRUE
 }
+
+assertRefClass <- checkmate::makeAssertionFunction(check_ref_class)

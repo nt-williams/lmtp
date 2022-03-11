@@ -1,45 +1,60 @@
+context("Argument checks")
 
-context("Various checks")
-
-test_that("detects xyz", {
-  df <- data.frame(xyz = 1:5)
-  expect_error(check_scaled_conflict(df))
-})
-
-test_that("detects incorrect folds", {
-  expect_error(check_folds(1))
-})
-
-test_that("variables dont exist", {
-  a <- c("A", "A2")
-  nodes <- list(c("L1"), c("L2"))
+test_that("Reserved variables", {
+  A <- c("A1", "A2")
+  L <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
-  expect_error(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
-                        cens, k = 1, shift = function(x) x + 0.5))
-})
+  sim_cens$tmp_lmtp_stack_indicator <- sim_cens$Y
 
-test_that("time_vary is a list", {
-  a <- c("A1", "A2")
-  nodes <- c("L1", "L2")
-  cens <- c("C1", "C2")
-  expect_error(lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
-                        cens, k = 1, shift = function(x) x + 0.5))
-})
-
-test_that("variable length mismatch", {
-  a <- c("A1")
-  nodes <- list(c("L1"), c("L2"))
-  cens <- c("C1", "C2")
   expect_error(
-    lmtp_sub(sim_cens, a, "Y", nodes, baseline = NULL,
-             cens, k = 1, shift = function(x) x + 0.5)
+    lmtp_sub(sim_cens, a, "tmp_lmtp_stack_indicator", time_vary = L, cens = cens),
+    "Assertion on 'data' failed: 'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names."
   )
+})
 
-  a <- c("A1", "A2")
-  nodes <- list(c("L1"))
+test_that("Incorrect folds", {
+  A <- c("A1", "A2")
+  L <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+
   expect_error(
-    lmtp_sub(sim_cens[complete.cases(sim_cens), ], a, "Y",
-             nodes, baseline = NULL, k = 1, shift = function(x) x + 0.5)
+    lmtp_sub(sim_cens, a, "Y", time_vary = L, cens = cens, folds = 0),
+    "Assertion on 'folds' failed: Element 1 is not >= 1."
+  )
+})
+
+test_that("Variables dont exist", {
+  A <- c("A", "A2")
+  L <- list(c("L1"), c("L2"))
+  cens <- c("C1", "C2")
+
+  expect_error(
+    lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens),
+    "Assertion on 'c(trt, outcome, baseline, unlist(time_vary), cens, id)' failed: Must be a subset of {'L1','A1','C1','L2','A2','C2','Y'}, but is {'A','A2','Y','L1','L2','C1','C2'}.",
+    fixed = TRUE
+  )
+})
+
+test_that("Time_vary is a list", {
+  A <- c("A1", "A2")
+  L <- c("L1", "L2")
+  cens <- c("C1", "C2")
+
+  expect_error(
+    lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens),
+    "Assertion on 'time_vary' failed: Must be of type 'list' (or 'NULL'), not 'character'.",
+    fixed = TRUE
+  )
+})
+
+test_that("Variable length mismatch", {
+  A <- c("A1")
+  L <- c("L1", "L2")
+  cens <- c("C1", "C2")
+
+  expect_error(
+    lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens),
+    "Assertion on 'cens' failed: Must have length 1, but has length 2."
   )
 })
 

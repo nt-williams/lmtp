@@ -131,7 +131,7 @@ trim_ratios <- function(x, trim) {
 
 recombine_outcome <- function(x, part, folds) {
   ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
-  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), ]
+  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), , drop = FALSE]
 }
 
 is.lmtp <- function(x) {
