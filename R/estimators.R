@@ -78,7 +78,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
 
   assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
+                             min.len = if (match.arg(outcome_type) == "survival") 2)
   checkmate::assertCharacter(baseline, null.ok = TRUE)
 
   tau <- determine_tau(outcome, trt)
@@ -228,7 +229,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
 
   assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
+                             min.len = if (match.arg(outcome_type) == "survival") 2)
   checkmate::assertCharacter(baseline, null.ok = TRUE)
 
   tau <- determine_tau(outcome, trt)
@@ -363,7 +365,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = NULL) {
 
   assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
+                             min.len = if (match.arg(outcome_type) == "survival") 2)
   checkmate::assertCharacter(baseline, null.ok = TRUE)
 
   tau <- determine_tau(outcome, trt)
@@ -491,7 +494,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
 
   assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1)
+  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
+                             min.len = if (match.arg(outcome_type) == "survival") 2)
   checkmate::assertCharacter(baseline, null.ok = TRUE)
 
   tau <- determine_tau(outcome, trt)

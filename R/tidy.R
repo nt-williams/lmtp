@@ -26,5 +26,5 @@ tidy.lmtp <- function(x, ...) {
                     conf.low = x$low,
                     conf.high = x$high)
   class(out) <- c("tbl_df", "tbl", "data.frame")
-  return(out)
+  out
 }

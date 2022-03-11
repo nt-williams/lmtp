@@ -43,8 +43,8 @@ sdr.tv <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, 
 
 # time varying and covariate dynamic
 # truth = 0.345
-tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 2))
-sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, 2))
+tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
+sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
 
 test_that("Dynamic intervention fidelity", {
   expect_equal(0.308, tml.stc$theta, tolerance = 0.1)

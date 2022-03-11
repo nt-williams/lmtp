@@ -1,14 +1,9 @@
 check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
-  is_data_frame <- checkmate::checkDataFrame(x)
-  if (!isTRUE(is_data_frame)) {
-    return(is_data_frame)
-  }
-
   for (t in 1:determine_tau(outcome, trt)) {
     ci <- censored(x, cens, t)$j
     di <- at_risk(x, cens, t)
     trt_t <- ifelse(length(trt) == 1, trt, trt[t])
-    data_t <- x[ci & !di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+    data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
@@ -70,9 +65,14 @@ check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) 
 assertShiftedData <- checkmate::makeAssertionFunction(check_shifted_data)
 
 check_not_data_table <- function(x) {
+  is_data_frame <- checkmate::checkDataFrame(x)
+  if (!isTRUE(is_data_frame)) {
+    return(is_data_frame)
+  }
+
   is_data_table <- data.table::is.data.table(x)
   if (is_data_table) {
-    return("Must be a data.frame, not a data.table")
+    return("Must be a 'data.frame', not a 'data.table'")
   }
   TRUE
 }
@@ -98,25 +98,20 @@ check_outcome_types <- function(x, outcomes, outcome_type) {
 
 assertOutcomeTypes <- checkmate::makeAssertionFunction(check_outcome_types)
 
-check_outcome_type <- function(fits, ref, type) {
-  if (type == "additive") {
-    check <- TRUE
+check_contrast_type <- function(x, fits) {
+  if (x == "additive") {
+    return(TRUE)
   }
 
-  if (type %in% c("rr", "or")) {
-
-    if (is.lmtp(ref)) {
-      fits[["ref"]] <- ref
-    }
-
-    check <- all(lapply(fits, function(x) x[["outcome_type"]]) == "binomial")
+  all_binom <- all(lapply(fits, function(x) x[["outcome_type"]]) == "binomial")
+  if (!all_binom) {
+    return(paste0("'", x, "' specified but one or more outcome types are not 'binomial' or 'survival'"))
   }
 
-  if (isFALSE(check)) {
-    stop(toupper(type), " contrast specified but one or more outcome types are non-binary.",
-         call. = FALSE)
-  }
+  TRUE
 }
+
+assertContrastType <- checkmate::makeAssertionFunction(check_contrast_type)
 
 check_lmtp_list <- function(x) {
   all_lmtp <- all(unlist(lapply(x, is.lmtp)))

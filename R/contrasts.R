@@ -23,6 +23,7 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   assertLmtpList(fits)
   assertDr(fits)
   assertRefClass(ref)
+  assertContrastType(match.arg(type), fits, .var.name = "type")
 
   if (is.numeric(ref)) {
     type <- "additive"
