@@ -4,48 +4,65 @@
 #' modified treatment policies for both point treatment and longitudinal data with binary,
 #' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 #'
-#' @param data A data frame in wide format containing all necessary variables
-#'  for the estimation problem.
-#' @param trt A vector containing the column names of treatment variables ordered by time.
-#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#' @param data \[\code{data.frame}\]\cr
+#'  A \code{data.frame} in wide format containing all necessary variables
+#'  for the estimation problem. Must not be a \code{data.table}.
+#' @param trt \[\code{character}\]\cr
+#'  A vector containing the column names of treatment variables ordered by time.
+#' @param outcome \[\code{character}\]\cr
+#'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline An optional vector containing the column names of baseline covariates to be
+#' @param baseline \[\code{character}\]\cr
+#'  An optional vector containing the column names of baseline covariates to be
 #'  included for adjustment at every time point.
-#' @param time_vary A list the same length as the number of time points of observation with
+#' @param time_vary \[\code{list}\]\cr
+#'  A list the same length as the number of time points of observation with
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
-#' @param cens An optional vector of column names of censoring indicators the same
+#' @param cens \[\code{character}\]\cr
+#'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#' @param shift \[\code{closure}\]\cr
+#'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
-#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#' @param shifted \[\code{data.frame}\]\cr
+#'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
-#' @param k An integer specifying how previous time points should be
+#' @param k \[\code{integer(1)}\]\cr
+#'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type The intervention type, should be one of \code{"static"},
+#' @param intervention_type \[\code{character(1)}\]\cr
+#'  The intervention type, should be one of \code{"static"},
 #'   \code{"dynamic"}, \code{"mtp"}.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
-#' @param id An optional column name containing cluster level identifiers.
-#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
+#' @param outcome_type \[\code{character(1)}\]\cr
+#'  Outcome variable type (i.e., continuous, binomial, survival).
+#' @param id \[\code{character(1)}\]\cr
+#'  An optional column name containing cluster level identifiers.
+#' @param bounds \[\code{numeric(2)}\]\cr
+#'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to using a main effects generalized linear model.
-#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting.
-#' @param weights An optional vector of length n containing sampling weights.
-#' @param .bound Determines that maximum and minimum values (scaled) predictions
+#' @param learners_outcome An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners_trt An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param folds \[\code{integer(1)}\]\cr
+#'  The number of folds to be used for cross-fitting.
+#' @param weights \[\code{numeric(nrow(data))}\]\cr
+#'  An optional vector containing sampling weights.
+#' @param .bound \[\code{numeric(1)}\]\cr
+#'  Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim Determines the amount the density ratios should be trimmed.
+#' @param .trim \[\code{numeric(1)}\]\cr
+#'  Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
-#'  the Super Learner. The default is 10.
+#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_outcome}.
+#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_trt}.
 
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -58,11 +75,11 @@
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
-#' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the outcome regression.}
-#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the propensity.}
+#' \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+#' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+#'  for each fold for the outcome regression.}
+#' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+#' for each fold of density ratio estimation.}
 #' \item{outcome_type}{The outcome variable type.}
 #'
 #' @example inst/examples/tmle-ex.R
@@ -72,8 +89,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       intervention_type = c("static", "dynamic", "mtp"),
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-                      learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                      learners_outcome = sl3::Lrnr_glm$new(),
+                      learners_trt = sl3::Lrnr_glm$new(),
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
                       .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
 
@@ -104,7 +121,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim)
+  checkmate::assertNumber(.trim, upper = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -155,49 +172,66 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' modified treatment policies for both point treatment and longitudinal data with binary,
 #' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 #'
-#' @param data A data frame in wide format containing all necessary variables
-#'  for the estimation problem.
-#' @param trt A vector containing the column names of treatment variables ordered by time.
-#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#' @param data \[\code{data.frame}\]\cr
+#'  A \code{data.frame} in wide format containing all necessary variables
+#'  for the estimation problem. Must not be a \code{data.table}.
+#' @param trt \[\code{character}\]\cr
+#'  A vector containing the column names of treatment variables ordered by time.
+#' @param outcome \[\code{character}\]\cr
+#'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline An optional vector containing the column names of baseline covariates to be
+#' @param baseline \[\code{character}\]\cr
+#'  An optional vector containing the column names of baseline covariates to be
 #'  included for adjustment at every time point.
-#' @param time_vary A list the same length as the number of time points of observation with
+#' @param time_vary \[\code{list}\]\cr
+#'  A list the same length as the number of time points of observation with
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
-#' @param cens An optional vector of column names of censoring indicators the same
+#' @param cens \[\code{character}\]\cr
+#'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#' @param shift \[\code{closure}\]\cr
+#'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
-#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#' @param shifted \[\code{data.frame}\]\cr
+#'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
-#' @param k An integer specifying how previous time points should be
+#' @param k \[\code{integer(1)}\]\cr
+#'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type The intervetion type, should be one of \code{"static"},
+#' @param intervention_type \[\code{character(1)}\]\cr
+#'  The intervention type, should be one of \code{"static"},
 #'   \code{"dynamic"}, \code{"mtp"}.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
-#' @param id An optional column name containing cluster level identifiers.
-#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
+#' @param outcome_type \[\code{character(1)}\]\cr
+#'  Outcome variable type (i.e., continuous, binomial, survival).
+#' @param id \[\code{character(1)}\]\cr
+#'  An optional column name containing cluster level identifiers.
+#' @param bounds \[\code{numeric(2)}\]\cr
+#'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An optional \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to using a main effects generalized linear model.
-#' @param learners_trt An optional \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting.
-#' @param weights An optional vector of length n containing sampling weights.
-#' @param .bound Determines that maximum and minimum values (scaled) predictions
+#' @param learners_outcome An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners_trt An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param folds \[\code{integer(1)}\]\cr
+#'  The number of folds to be used for cross-fitting.
+#' @param weights \[\code{numeric(nrow(data))}\]\cr
+#'  An optional vector containing sampling weights.
+#' @param .bound \[\code{numeric(1)}\]\cr
+#'  Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim Determines the amount the density ratios should be trimmed.
+#' @param .trim \[\code{numeric(1)}\]\cr
+#'  Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
-#'  the Super Learner. The default is 10.
-#'
+#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_outcome}.
+#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_trt}.
+
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "SDR".}
@@ -209,22 +243,22 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
-#' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the outcome regression.}
-#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the propensity.}
+#' \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+#' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+#'  for each fold for the outcome regression.}
+#' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+#' for each fold of density ratio estimation.}
 #' \item{outcome_type}{The outcome variable type.}
-#' @export
 #'
 #' @example inst/examples/sdr-ex.R
+#' @export
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                      intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = sl3::make_learner(sl3::Lrnr_glm),
-                     learners_trt = sl3::make_learner(sl3::Lrnr_glm),
+                     learners_outcome = sl3::Lrnr_glm$new(),
+                     learners_trt = sl3::Lrnr_glm$new(),
                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
                      .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
 
@@ -255,7 +289,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim)
+  checkmate::assertNumber(.trim, upper = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -306,41 +340,55 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' modified treatment policies for both point treatment and longitudinal data with binary,
 #' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 #'
-#' @param data A data frame in wide format containing all necessary variables
-#'  for the estimation problem.
-#' @param trt A vector containing the column names of treatment variables ordered by time.
-#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#' @param data \[\code{data.frame}\]\cr
+#'  A \code{data.frame} in wide format containing all necessary variables
+#'  for the estimation problem. Must not be a \code{data.table}.
+#' @param trt \[\code{character}\]\cr
+#'  A vector containing the column names of treatment variables ordered by time.
+#' @param outcome \[\code{character}\]\cr
+#'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline An optional vector containing the column names of baseline covariates to be
+#' @param baseline \[\code{character}\]\cr
+#'  An optional vector containing the column names of baseline covariates to be
 #'  included for adjustment at every time point.
-#' @param time_vary A list the same length as the number of time points of observation with
+#' @param time_vary \[\code{list}\]\cr
+#'  A list the same length as the number of time points of observation with
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
-#' @param cens An optional vector of column names of censoring indicators the same
+#' @param cens \[\code{character}\]\cr
+#'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#' @param shift \[\code{closure}\]\cr
+#'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
-#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#' @param shifted \[\code{data.frame}\]\cr
+#'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
-#' @param k An integer specifying how previous time points should be
+#' @param k \[\code{integer(1)}\]\cr
+#'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
-#' @param id An optional column name containing cluster level identifiers.
-#' @param bounds An optional vector of the bounds for continuous outcomes. If \code{NULL},
+#' @param outcome_type \[\code{character(1)}\]\cr
+#'  Outcome variable type (i.e., continuous, binomial, survival).
+#' @param id \[\code{character(1)}\]\cr
+#'  An optional column name containing cluster level identifiers.
+#' @param bounds \[\code{numeric(2)}\]\cr
+#'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners An optional \code{sl3} learner stack for estimation of the outcome
-#'  regression. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting.
-#' @param weights An optional vector of length n containing sampling weights.
-#' @param .bound Determines that maximum and minimum values (scaled) predictions
+#' @param learners An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param folds \[\code{integer(1)}\]\cr
+#'  The number of folds to be used for cross-fitting.
+#' @param weights \[\code{numeric(nrow(data))}\]\cr
+#'  An optional vector containing sampling weights.
+#' @param .bound \[\code{numeric(1)}\]\cr
+#'  Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
-#'  the Super Learner. The default is 10.
+#' @param .learners_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -352,8 +400,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
-#' \item{weights_m}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the outcome regression.}
+#' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+#' for each fold for the outcome regression.}
 #' \item{outcome_type}{The outcome variable type.}
 #' @export
 #'
@@ -361,7 +409,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
+                     id = NULL, bounds = NULL, learners = sl3::Lrnr_glm$new(),
                      folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = NULL) {
 
   assertNotDataTable(data)
@@ -432,43 +480,58 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' effects and modified treatment policies for both point treatment and longitudinal data
 #' with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 #'
-#' @param data A data frame in wide format containing all necessary variables
-#'  for the estimation problem.
-#' @param trt A vector containing the column names of treatment variables ordered by time.
-#' @param outcome The column name of the outcome variable. In the case of time-to-event
+#' @param data \[\code{data.frame}\]\cr
+#'  A \code{data.frame} in wide format containing all necessary variables
+#'  for the estimation problem. Must not be a \code{data.table}.
+#' @param trt \[\code{character}\]\cr
+#'  A vector containing the column names of treatment variables ordered by time.
+#' @param outcome \[\code{character}\]\cr
+#'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline An optional vector containing the column names of baseline covariates to be
+#' @param baseline \[\code{character}\]\cr
+#'  An optional vector containing the column names of baseline covariates to be
 #'  included for adjustment at every time point.
-#' @param time_vary A list the same length as the number of time points of observation with
+#' @param time_vary \[\code{list}\]\cr
+#'  A list the same length as the number of time points of observation with
 #'  the column names for new time-varying covariates introduced at each time point. The list
 #'  should be ordered following the time ordering of the model.
-#' @param cens An optional vector of column names of censoring indicators the same
+#' @param cens \[\code{character}\]\cr
+#'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
-#' @param shift A two argument function that specifies how treatment variables should be shifted.
+#' @param shift \[\code{closure}\]\cr
+#'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
-#' @param shifted An optional data frame, the same as in \code{data}, but modified according
+#' @param shifted \[\code{data.frame}\]\cr
+#'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
-#' @param intervention_type The intervetion type, should be one of \code{"static"},
-#'   \code{"dynamic"}, \code{"mtp"}.
-#' @param outcome_type Outcome variable type (i.e., continuous, binomial, survival).
-#' @param k An integer specifying how previous time points should be
+#' @param k \[\code{integer(1)}\]\cr
+#'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param id An optional column name containing cluster level identifiers.
-#' @param learners An optional \code{sl3} learner stack for estimation of the exposure
-#'  mechanism. If not specified, will default to using a main effects generalized linear model.
-#' @param folds The number of folds to be used for cross-fitting.
-#' @param weights An optional vector of length n containing sampling weights.
-#' @param .bound Determines that maximum and minimum values (scaled) predictions
+#' @param intervention_type \[\code{character(1)}\]\cr
+#'  The intervention type, should be one of \code{"static"},
+#'   \code{"dynamic"}, \code{"mtp"}.
+#' @param outcome_type \[\code{character(1)}\]\cr
+#'  Outcome variable type (i.e., continuous, binomial, survival).
+#' @param id \[\code{character(1)}\]\cr
+#'  An optional column name containing cluster level identifiers.
+#' @param learners An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param folds \[\code{integer(1)}\]\cr
+#'  The number of folds to be used for cross-fitting.
+#' @param weights \[\code{numeric(nrow(data))}\]\cr
+#'  An optional vector containing sampling weights.
+#' @param .bound \[\code{numeric(1)}\]\cr
+#'  Determines that maximum and minimum values (scaled) predictions
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim Determines the amount the density ratios should be trimmed.
+#' @param .trim \[\code{numeric(1)}\]\cr
+#'  Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .SL_folds Integer. Controls the number of splits to be used for fitting
-#'  the Super Learner. The default is 10.
+#' @param .learners_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -479,8 +542,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' \item{high}{NA}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-#' \item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
-#'  ensemble weights at each time-point for each fold for the propensity.}
+#' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+#' for each fold of density ratio estimation.}
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
@@ -517,7 +580,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(.learners_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim)
+  checkmate::assertNumber(.trim, upper = 1)
 
   Task <- lmtp_Task$new(
     data = data,
