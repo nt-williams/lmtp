@@ -46,7 +46,7 @@
 
 \begin{document}
 
-\title{lmtp: An R Package for Estimating the Causal Effects of Modified Treatment Policies and Beyond}
+\title{lmtp: An R Package for Estimating the Causal Effects of Modified Treatment Policies}
 
 \author{\name Nicholas Williams \email ntw2117@cumc.columbia.edu \\
        \addr Department of Epidemiology \\
@@ -63,7 +63,7 @@
 \maketitle
 
 \begin{abstract}%   <- trailing '%' for backward compatibility of .sty file
-The majority of causal inference methods consider treatment effects based on counterfactual outcomes where exposure is deterministically assigned. When exposure is continuous, deterministic interventions may be irrelevant and impossible to bring about. As a solution, modified treatment policies offer a generalization that allows for the study of feasible interventions and offer a safeguard against positivity violations. The lmtp package implements the estimators of \citet{jasaLMTP} for estimating causal effects based on non-parametric modified treatment policies in \texttt{R}. In addition to modified treatment policies, the package can be used to estimate effects of deterministic and dynamic interventions. The methods provided can also be applied to both point-treatment and longitudinal settings, and can account for time-varying exposure, covariates, and right censoring, thereby providing a very general tool for causal inference in longitudinal studies. Additionally, two of the provided estimators are based on flexible machine learning regression algorithms, and avoid bias due to parametric model misspecification while maintaining valid statistical inference.
+The majority of causal inference methods consider treatment effects based on counterfactual outcomes where exposure is deterministically assigned. When exposure is continuous, deterministic interventions may be irrelevant and impossible to bring about. As a solution, modified treatment policies offer a generalization that allows for the study of feasible interventions and offer a safeguard against positivity violations. The \pkg{lmtp} package implements the estimators of \citet{jasaLMTP} for estimating causal effects based on non-parametric modified treatment policies in \texttt{R}. In addition to modified treatment policies, the package can be used to estimate effects of deterministic and dynamic interventions. The methods provided can also be applied to both point-treatment and longitudinal settings, and can account for time-varying exposure, covariates, and right censoring, thereby providing a very general tool for causal inference in longitudinal studies. Additionally, two of the provided estimators are based on flexible machine learning regression algorithms, and avoid bias due to parametric model misspecification while maintaining valid statistical inference.
 \end{abstract}
 
 \begin{keywords}
@@ -76,16 +76,16 @@ Most modern causal inference methods consider the effects of a treatment on a po
 
 Modified treatment policies (MTPs) are a class of stochastic treatment regimes that can be formulated to avoid the above problems \citep{munozPopulationInterventionCausal2012, haneuseEstimationEffectInterventions2013}. In a recent article
 \citep{jasaLMTP}, we generalized the theoretical framework for estimation of the effect of MTPs to the longitudinal setting, accounting for time-varying treatment, covariates, and right-censoring of the outcome. Briefly, MTPs are hypothetical interventions where the post-intervention value of treatment can depend on the actual observed treatment level and the
-unit's history. As such, MTPs are useful to assess the effect of continuous treatments. For example, \citet{haneuseEstimationEffectInterventions2013} assess the effect of reducing surgery time by a predetermined amount (e.g., 5 minutes) for lung cancer patients, where the reduction is carried out only for those patients for whom the intervention is feasible. Furthermore, MTPs generalize many important effect estimands, such as the effect of a dynamic treatment rule in which the treatment level is assigned as a function of a unit's history. For example, dynamic treatment rules, a particular case of MTPs, may be used to estimate the effect of policies such as switching HIV treatment once the CD4 T-cell count goes below a predetermined threshold \citep{petersen2014delayed}. MTPs also generalize many interesting causal effects such as the average treatment effects, the causal risk ratio, and causal odds ratio. In this article we describe how lmtp can be used for estimating the causal effects of MTPs, and present examples on the use of the software for several of the above cases.
+unit's history. As such, MTPs are useful to assess the effect of continuous treatments. For example, \citet{haneuseEstimationEffectInterventions2013} assess the effect of reducing surgery time by a predetermined amount (e.g., 5 minutes) for lung cancer patients, where the reduction is carried out only for those patients for whom the intervention is feasible. Furthermore, MTPs generalize many important effect estimands, such as the effect of a dynamic treatment rule in which the treatment level is assigned as a function of a unit's history. For example, dynamic treatment rules, a particular case of MTPs, may be used to estimate the effect of policies such as switching HIV treatment once the CD4 T-cell count goes below a predetermined threshold \citep{petersen2014delayed}. MTPs also generalize many interesting causal effects such as the average treatment effects, the causal risk ratio, and causal odds ratio. In this article we describe how \pkg{lmtp} can be used for estimating the causal effects of MTPs, and present examples on the use of the software for several of the above cases.
 
-The package lmtp implements four methods for estimating the effects of MTP. Two of these estimators, a targeted minimum-loss based estimator \citep{laanTargetedLearningCausal2011a, laanTargetedMaximumLikelihood2006} and a sequentially doubly-robust estimator (SDR) \citep{buckleyLinearRegressionCensored1979, fanCensoredRegressionLocal1994, vanderlaanUnifiedCrossValidationMethodology2003, rotnitzkyDoublyRobustEstimation2006, rubinDoublyRobustCensoring2006, kennedyNonparametricMethodsDoubly2017}, are multiply-robust. TMLE and SDR are implemented using cross-fitting to allow for the use of flexible machine learning regression methodology \citep{jasaLMTP}. The package may be download from CRAN at \url{cran.r-project.org/package=lmtp}.
+The package lmtp implements four methods for estimating the effects of MTPs. Two of these estimators, a targeted minimum-loss based estimator (TMLE) \citep{laanTargetedLearningCausal2011a, laanTargetedMaximumLikelihood2006} and a sequentially doubly-robust estimator (SDR) \citep{buckleyLinearRegressionCensored1979, fanCensoredRegressionLocal1994, vanderlaanUnifiedCrossValidationMethodology2003, rotnitzkyDoublyRobustEstimation2006, rubinDoublyRobustCensoring2006, kennedyNonparametricMethodsDoubly2017}, are multiply-robust. TMLE and SDR are implemented using cross-fitting to allow for the use of flexible machine learning regression methodology \citep{jasaLMTP}. The package may be download from CRAN at \url{cran.r-project.org/package=lmtp}.
 
 \hypertarget{notation-and-modified-treatment-policies}{%
 \section{Notation and modified treatment policies}\label{notation-and-modified-treatment-policies}}
 
 \hypertarget{data-structure}{\subsection{Data structure}\label{data-structure}}
 
-In this article, we will use the notation of \citet{jasaLMTP} with only slight modifications.  Let $i$ be the index of an observation from a data set with $n$ total units and $t$ be the index of time for a total number of time points $\tau$.  The observed data for observation $i$ may be denoted as
+We will use the notation of \citet{jasaLMTP} with only slight modifications.  Let $i$ be the index of an observation from a data set with $n$ total units and $t$ be the index of time for a total number of time points $\tau$.  The observed data for observation $i$ may be denoted as
 
 \begin{equation}
 Z_i = (W, L_1, A_1, L_2, A_2, ..., L_{\tau}, A_{\tau}, Y_{\tau + 1})
@@ -121,7 +121,7 @@ For dynamic treatment rules, consider a hypothetical longitudinal study where tw
 
 In contrast to the previous rule (\ref{eq:mtp}), the dynamic treatment rule (\ref{eq:dyn}) does not depend on the natural value of treatment at time $t$, it only depends on the history. The software and methods presented here handle both cases seamlessly.
 
-In the case of a single time point setting where the data structure is $Z=(W,A,Y)$, it follows trivially from the above definitions that the average treatment effect from a cross-sectional study, defined as $\E[Y(1) - Y(0)]$, can be estimated using MTPs by simply letting $\tau = 1$ and contrasting two MTPs $d(A)=1$ and $d(A)=0$. The \pkg{lmtp} package presented in this article allows the contrast of different MTPs using differences, ratios, and odds ratios. We provide examples of each of these contrasts in \S \ref{examples} below.
+In the case of a single time point setting where the data structure is $Z=(W,A,Y)$, it follows trivially from the above definitions that the average treatment effect from a cross-sectional study, defined as $\E[Y(1) - Y(0)]$, can be estimated using MTPs by simply letting $\tau = 1$ and contrasting two MTPs $d(A)=1$ and $d(A)=0$. The \pkg{lmtp} package presented in this article allows the contrast of different MTPs using differences, ratios, and odds ratios. We provide examples of these contrasts in \S \ref{examples} below.
 
 In what follows we focus on estimating the the causal effect of MTP $d$ on outcome $Y$, using \pkg{lmtp}, through the causal parameter
 
@@ -172,13 +172,13 @@ Targeted minimum-loss based estimation is a general framework for constructing a
 
 TMLE and SDR require estimation of two nuisance parameters at each time point: an outcome mechanism and an intervention mechanism. Both TMLE and SDR are multiply-robust in that they allow certain configurations of nuisance parameters to be inconsistently estimated. Specifically, TMLE is considered $\tau + 1$-multiply robust in that it allows for inconsistent estimation of all the intervention mechanisms prior to any time point $t$, as long as all outcome mechanisms after time $t$ are consistently estimated. SDR is $2^{\tau}$-robust in that at each time point, estimation of at most either the intervention mechanism or outcome mechanism is allowed to be inconsistent. Both TMLE and SDR are efficient when all the treatment mechanism and outcome regression are consistently estimated at a given consistency rate, but the SDR has better protection against model misspecification \citep[see][for more details]{luedtke2017sequential,rotnitzky2017multiply, jasaLMTP}.
 
-It is important to note that the SDR estimator can produce an estimate $\hat{\theta}$ outside of the bounds of the parameter space (e.g., probability estimates outside $[0,1]$), while the TMLE guarantees that the estimate is within bounds of the parameter space. With this in mind and because for a single time-point TMLE and SDR are equally robust, we recommend use of TMLE for the case of a single time-point, while we recommend use of SDR for the longitudinal setting. All examples in this article will demonstrate use of both estimators.
+It is important to note that the SDR estimator can produce an estimate $\hat{\theta}$ outside of the bounds of the parameter space (e.g., probability estimates outside $[0,1]$), while the TMLE guarantees that the estimate is within bounds of the parameter space. With this in mind and because for a single time-point TMLE and SDR are equally robust, we recommend use of TMLE for the case of a single time-point, while we recommend use of SDR for the longitudinal setting.
 
 \hypertarget{required-data-structure}{\subsection{Required data structure}\label{required-data-structure}}
 
-Data is passed to \pkg{lmtp} estimators through the \code{data} argument. Data should be in wide format with one column per variable per time point under study (i.e., there should be one column for every variable in $Z$). These columns do not have to be in any specific order and the data set may contain variables that are not used in estimation. The names of treatment variables, censoring variables, baseline covariates, and time-varying covariates are specified using the \code{trt}, \code{cens}, \code{baseline}, and \code{time\_vary} arguments respectively. The \code{trt}, \code{cens}, and \code{baseline} arguments accept character vectors and the \code{trt} and \code{cens} arguments should be ordered according to the time-ordering of the data generating mechanism. The \code{time\_vary} argument accepts an unnamed list ordered according to the time-ordering of the model with each index containing the name of the time-varying covariates for the given time. The outcome variable is specified through the \code{outcome} argument.
+Data is passed to \pkg{lmtp} estimators through the \code{data} argument. Data should be in wide format with one column per variable per time point under study (i.e., there should be one column for every variable in $Z$). These columns do not have to be in any specific order and the data set may contain variables that are not used in estimation. The names of treatment variables, censoring variables, baseline covariates, and time-varying covariates are specified using the \code{trt}, \code{cens}, \code{baseline}, and \code{time\_vary} arguments respectively. The \code{trt}, \code{cens}, and \code{baseline} arguments accept character vectors and the \code{trt} and \code{cens} arguments should be ordered according to the time-ordering of the data generating mechanism. The \code{time\_vary} argument accepts an unnamed list sorted according to the time-ordering of the model with each index containing the name of the time-varying covariates for the given time. The outcome variable is specified through the \code{outcome} argument.
 
-Estimators are compatible with continuous, dichotomous and survival outcomes. In the case of a dichotomous or continuous outcome, only a single variable name should be passed to the \code{outcome} argument. For survival outcomes, a vector containing the names of the intermediate outcome and final outcome variables, ordered according to time, should be specified with the \code{outcome} argument. Dichotomous and survival outcomes should be coded using zero's and one's where one indicates the occurrence of an event and zero otherwise. If working with a survival outcome, once an observation experiences an outcome, all future outcome variables should also be coded with a one. The \code{outcome\_type} argument should be set to \code{"continuous"} for continuous outcomes and \code{"binomial"} for dichotomous and survival outcomes. If the study is subject to loss-to-follow-up, the \code{cens} argument must be provided. Censoring indicators should be coded using zero's and one's where one indicates an observation is observed at the next time and zero indicates loss-to-follow-up. Once an observation's censoring status is switched to zero it cannot change back to one. Missing data before an observation is lost-to-follow-up is not allowed; a preprocessing step using multiple imputation is recommended for such variables.
+Estimators are compatible with continuous, dichotomous and survival outcomes. In the case of a dichotomous or continuous outcome, only a single variable name should be passed to the \code{outcome} argument. For survival outcomes, a vector containing the names of the intermediate outcome and final outcome variables, ordered according to time, should be specified with the \code{outcome} argument. Dichotomous and survival outcomes should be coded using zero's and one's where one indicates the occurrence of an event and zero otherwise. If working with a survival outcome, once an observation experiences an outcome, all future outcome variables should also be coded with a one. The \code{outcome\_type} argument should be set to \code{"continuous"} for continuous outcomes, \code{"binomial"} for dichotomous outcomes, and \code{"survival"} for time-to-event outcomes. If the study is subject to loss-to-follow-up, the \code{cens} argument must be provided. Censoring indicators should be coded using zero's and one's where one indicates an observation is observed at the next time and zero indicates loss-to-follow-up. Once an observation's censoring status is switched to zero it cannot change back to one. Missing data before an observation is lost-to-follow-up is not allowed; a preprocessing step using multiple imputation is recommended for such variables.
 
 The \code{k} argument controls a Markov assumption on the data generating mechanism. When \code{k = Inf}, the history $H_t$ will be constructed using all previous time-point variables while setting \code{k} to any other value will restrict $H_t$ to time-varying covariates from time $t - k - 1$ until $t-1$. Baseline confounders are always included in $H_t$. The
 \code{create\_node\_list} function may be used to inspect how variables will be used for estimation. It is specified with the same \code{trt}, \code{baseline}, \code{time\_vary}, and \code{k} arguments as \pkg{lmtp} estimators and is used internally to create a ``node list'' that encodes which variables should be used at each time point of estimation. For example, consider a study with the observed data structure
@@ -233,17 +233,21 @@ where $\Lambda_{\lambda, i} = \lambda_i$ indexes duplicate values. For all dupli
     
 Further details on this algorithm may be found in our technical paper \citep{jasaLMTP}.
 
+\hypertarget{shift-functions}{\subsection{Specifying Interventions}\label{shift-functions}}
+
+The treatment rule $d_t$ can be specified using one of two arguments: \code{shift} or \code{shifted}. If using \code{shift}, the analyst provides a two-argument function where the first argument should correspond to a dataset containing the variables in $Z$ and the second argument should accept a string corresponding to the variable $A_t$ in $Z$. This function should return a size $n$ vector of $A_t$ modified according to $d_t$. We provide examples of these functions in \S \ref{examples} below. Alternatively, the analyst can supply a modified version of \code{data} to \code{shifted} where $A_t$ are replaced with $A^d_t$.
+
 \hypertarget{machine-learning}{\subsection{Machine Learnning}\label{machine-learning}}
 
 An attractive property of multiply-robust estimators is that they can incorporate flexible machine-learning algorithms for the estimation of nuisance parameters $\Q_t$ and $\r_t$ while remaining $\sqrt{n}$-consistent. The super learner algorithm is an ensemble learner than incorporates a set of candidate models through a weighted convex-combination based on cross-validation \citep{laanSuperLearner2007}. Asymptotically, this weighted combination of models, called the meta-learner, will outperform any single one of its components.
 
-Our package uses the implementation of the super learner provided by the \pkg{sl3} package \citep{coyleSl3}. Analysts must create \pkg{sl3} learner stacks which are then included in \code{lmtp\_tmle} and \code{lmtp\_sdr} calls with the \code{lrnrs\_trt} and \code{lrnrs\_outcome} arguments. The outcome variable type should guide users on selecting the appropriate candidate learners for use with the \code{lrnrs\_outcome} argument. Regardless of whether an exposure is continuous, dichotomous, or categorical, the exposure mechanism is estimated using classification as discussed above, users should thus only include candidate learners capable of binary classification with the \code{lrnrs\_trt} argument.
+Our package uses the implementation of the super learner provided by the \pkg{SuperLearner} package \citep{SuperLearnerPkg}. The algorithms to be used in the super learner with \code{lmtp\_tmle} and \code{lmtp\_sdr} calls are specified with the \code{lrnrs\_trt} and \code{lrnrs\_outcome} arguments. The outcome variable type should guide users on selecting the appropriate candidate learners for use with the \code{lrnrs\_outcome} argument. Regardless of whether an exposure is continuous, dichotomous, or categorical, the exposure mechanism is estimated using classification as discussed above, users should thus only include candidate learners capable of binary classification with the \code{lrnrs\_trt} argument.
 
 Candidate learners that rely on cross-validation for the tuning of hyper-parameters should support grouped data if used with \code{lrnrs\_trt}. Because estimation of the treatment mechanism relies on the augmented $2n$ duplicated data set, duplicated observations must be put into the same fold during sample-splitting. This is done automatically by the package.
 
 \hypertarget{additional-arguments}{\subsection{Additional arguments}\label{additional-arguments}}
 
-Sample-splitting and cross-fitting is used with all methods to avoid certain technical conditions that may not hold for machine learning estimators \citep{zhengCrossValidatedTargetedMinimumLossBased2011b,chernozhukovDoubleDebiasedMachine2018}. Specifically, the data are split in $V$ volds and each nuisance parameter is estimated $V$ times, excluding data in one fold each time. The number of folds $V$ can be set with the \code{folds} argument; the minimum number of allowed folds is two.  If data has a hierarchical structure, the \code{id} argument is used to indicate the name of a variable in the data set indicating unique groups. These identifiers will be used for generation of cross-validation folds and will be accounted for in standard error calculations. If a continuous outcome has known bounds, these bounds may be specified using the \code{bounds} argument with a length two numeric vector where the first index is the lower bound and the second index is the upper bound.
+Sample-splitting and cross-fitting is used with all methods to avoid certain technical conditions that may not hold for machine learning estimators \citep{zhengCrossValidatedTargetedMinimumLossBased2011b,chernozhukovDoubleDebiasedMachine2018}. Specifically, the data are split in $V$ volds and each nuisance parameter is estimated $V$ times, excluding data in one fold each time. The number of folds $V$ can be set with the \code{folds} argument.  If data has a hierarchical structure, the \code{id} argument is used to indicate the name of a variable in the data set indicating unique groups. These identifiers will be used for generation of cross-validation folds and will be accounted for in standard error calculations. If a continuous outcome has known bounds, these bounds may be specified using the \code{bounds} argument with a length two numeric vector where the first index is the lower bound and the second index is the upper bound.
 
 \hypertarget{examples}{\section{Examples}\label{examples}}
 
@@ -270,7 +274,13 @@ R+           intervention_type = "mtp", folds = 1)
 \end{CodeInput}
 
 \begin{CodeOutput}
-LMTP Estimator: TMLE   Trt. Policy: (f)Population intervention effect      Estimate: 0.2524    Std. error: 0.0104        95% CI: (0.2319, 0.2728)
+LMTP Estimator: TMLE
+   Trt. Policy: (f)
+
+Population intervention effect
+      Estimate: 0.2524
+    Std. error: 0.0104
+        95% CI: (0.2319, 0.2728)
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -287,23 +297,17 @@ Suppose we are interested in the additive effect of an MTP where exposure is inc
 R> A <- c("A1", "A2")
 R> C <- c("C1", "C2")
 R> L <- list(c("L1"), c("L2"))
-R> Y <- "Y"
-R> shift <- function(data, trt) {
-R+   data[[trt]] + 0.5
-R+ }
-R> lrnrs <- c("SL.glm", "SL.ranger", "SL.earth")
-R> lmtp_sdr(sim_cens, A, Y, time_vary = L, cens = C, shift = shift, 
-R+          learners_trt = lrnrs, learners_outcome = lrnrs)
+R+
+R> f <- function(data, trt) data[[trt]] + 0.5
+R> sl_lib <- c("SL.glm", "SL.ranger", "SL.earth")
+R+
+R> lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = C,
+R+         shift = f, intervention_type = "mtp", folds = 1,
+R+         learners_trt = sl_lib, learners_outcome = sl_lib)
 \end{CodeInput}
 
 \begin{CodeOutput}
-LMTP Estimator: SDR
-   Trt. Policy: (shift)
-
-Population intervention effect
-      Estimate: 0.899
-    Std. error: 0.0096
-        95% CI: (0.8802, 0.9178)
+LMTP Estimator: SDR   Trt. Policy: (f)Population intervention effect      Estimate: 0.9011    Std. error: 0.0102        95% CI: (0.8811, 0.9212)
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -312,12 +316,13 @@ If loss-to-follow-up exists, we can estimate the population mean outcome under t
 \begin{CodeChunk}
 
 \begin{CodeInput}
-R> lmtp_sdr(sim_cens, A, Y, time_vary = L, cens = C, shift = NULL, 
-R+          learners_trt = lrnrs, learners_outcome = lrnrs)
+R> lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = C,
+R+          shift = NULL, folds = 1, learners_trt = sl_lib, 
+R+          learners_outcome = sl_lib)
 \end{CodeInput}
 
 \begin{CodeOutput}
-FILL IN
+LMTP Estimator: SDR   Trt. Policy: (NULL)Population intervention effect      Estimate: 0.7978    Std. error: 0.0128        95% CI: (0.7726, 0.8229)
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -333,21 +338,24 @@ R> A <- "trt"
 R> W <- c("W1", "W2")
 R> C <- paste0("C.", 0:5)
 R> Y <- paste0("Y.", 1:6)
-R> a_1 <- lmtp_tmle(sim_point_surv, A, Y, W, cens = C, 
-R+                   learners_trt = lrnrs, learners_outcome = lrnrs,
-R+                   shift = static_binary_on)
-R> a_0 <- lmtp_tmle(sim_point_surv, A, Y, W, cens = C, 
-R+                   learners_trt = lrnrs, learners_outcome = lrnrs,
-R+                   shift = static_binary_off)
+R>
+R> a_1 <- lmtp_tmle(sim_point_surv, A, Y, W, cens = C,
+R+                  outcome_type = "survival", folds = 1,
+R+                  learners_trt = sl_lib,
+R+                  learners_outcome = sl_lib,
+R+                  shift = static_binary_on)
+R> 
+R> a_0 <- lmtp_tmle(sim_point_surv, A, Y, W, cens = C,
+R+                  outcome_type = "survival", folds = 1,
+R+                  learners_trt = sl_lib,
+R+                  learners_outcome = sl_lib,
+R+                  shift = static_binary_off)
+R>                  
 R> lmtp_contrast(a_1, ref = a_0, type = "rr")
 \end{CodeInput}
 
 \begin{CodeOutput}
-  LMTP Contrast: relative risk
-Null hypothesis: theta == 1
-
-  theta shift   ref std.error conf.low conf.high p.value
-1  1.22  0.81 0.664    0.0339     1.14       1.3  <0.001
+  LMTP Contrast: relative riskNull hypothesis: theta == 1  theta shift   ref std.error conf.low conf.high p.value1 0.558 0.187 0.335    0.0382    0.518     0.601  <0.001
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -361,38 +369,39 @@ For this example we will use the same data from example 1. However, we will exte
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> x <- c("A_1", "A_2", "A_3", "A_4")
-R> tv <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
-R> y <- "Y"
-R> shift <- function(data, trt) {
-R+   (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) + 
-R+     data[[trt]] * (data[[trt]] - 1 < 1)
-R+ }
-R> dynamic_shift <- function(data, trt) {
-R+   if (trt == "A_1") {
-R+     shift(data, trt)
-R+   } else {
-R+     ifelse(data[[sub("A", "L", trt)]] == 1, 
-R+            shift(data, trt),
-R+            data[[trt]])
+R> A <- c("A_1", "A_2", "A_3", "A_4")
+R> L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+R> 
+R> f <- function(data, trt) {
+R+   mtp <- function(data, trt) {
+R+     (data[[trt]] - 1) * (data[[trt]] - 1 >= 1) +
+R+       data[[trt]] * (data[[trt]] - 1 < 1)
 R+   }
-R+ }
-R> lmtp_sdr(sim_t4, x, y, time_vary = tv, shift = dynamic_shift, folds = 3, 
-R+          learners_outcome = lrnrs, learners_trt = lrnrs)
+R+ 
+R+   if (trt == "A_1") {
+R+     return(mtp(data, trt))
+R+   }
+R+ 
+R+   ifelse(
+R+     data[[sub("A", "L", trt)]] == 1,
+R+     mtp(data, trt),
+R+     data[[trt]]
+R+   )
+R+ } 
+R>
+R> lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = f,
+R>          intervention_type = "mtp", folds = 1,
+R>          learners_outcome = sl_lib, learners_trt = sl_lib)
 \end{CodeInput}
 
 \begin{CodeOutput}
-LMTP Estimator: SDR
-   Trt. Policy: (dynamic_shift)
-
-Population intervention effect
-      Estimate: 0.3177
-    Std. error: 0.0099
-        95% CI: (0.2983, 0.3371)
-\end{CodeOutput}
+LMTP Estimator: SDR   Trt. Policy: (f)Population intervention effect      Estimate: 0.328    Std. error: 0.0069        95% CI: (0.3144, 0.3416)
+\end{CodeOutput} 
 \end{CodeChunk}
 
 \hypertarget{summary}{\section{Summary}\label{summary}}
+
+The \pkg{lmtp} from a general framework for estimating the causal effects of binary, categorical, and continuous exposures from observational data while leveraging machine learning. 
 
 \newpage
 
