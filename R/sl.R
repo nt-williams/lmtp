@@ -1,14 +1,22 @@
-run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
-  family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
-  cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
-  SuperLearner::SuperLearner(
-    Y, X, family = family[[1]], SL.library = learners,
-    id = id, method = "method.NNLS",
-    env = environment(SuperLearner::SuperLearner),
-    cvControl = cv_control
+sl3_task <- function(data, Y, X, outcome_type, id = NULL, V = NULL) {
+  sl3::sl3_Task$new(
+    data = data,
+    covariates = X,
+    outcome = Y,
+    outcome_type = outcome_type,
+    id = id,
+    drop_missing_outcome = drop,
+    folds = if (is.null(V)) {
+      V
+    } else {
+      origami::make_folds(cluster_ids = data[[id]], V = V)
+    }
   )
 }
 
-SL_predict <- function(fit, newdata, p = getOption("lmtp.bound")) {
-  bound(predict(fit, newdata)$pred[, 1], p)
+check_variation <- function(outcome, learners) {
+  if (sd(outcome) < .Machine$double.eps) {
+    return(sl3::Lrnr_mean$new())
+  }
+  learners
 }

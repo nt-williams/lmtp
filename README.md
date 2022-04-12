@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
+
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -34,12 +36,11 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://cran.r-project.org/package=SuperLearner)
-package to utilize ensemble machine learning for estimation. The
-treatment mechanism is estimated via a density ratio classification
-procedure irrespective of treatment variable type providing decreased
-computation time when treatment is continuous. Dynamic treatment regimes
-are also supported.
+[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
+machine learning for estimation. The treatment mechanism is estimated
+via a density ratio classification procedure irrespective of treatment
+variable type providing decreased computation time when treatment is
+continuous. Dynamic treatment regimes are also supported.
 
 A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
@@ -91,7 +92,7 @@ non-zero probability of experiencing a treatment value. **When working
 with continuous or multivalued treatments, violations of the positivity
 assumption are likely to occur. MTPs offer a solution to this problem.**
 
-## Can lmtp estimation other effects?
+## Can lmtp estimate other effects?
 
 Yes! **lmtp** can estimate the effects of deterministic, static
 treatment effects (such as the ATE) and deterministic, dynamic treatment
@@ -123,8 +124,8 @@ regimes for binary, continuous, and survival outcomes.
 ## Example
 
 ``` r
-library(lmtp, lib = "~/Desktop/lmtp-alternates/devel")
-
+library(lmtp, lib = "~/Desktop/lmtp-alternates/sl3")
+#> NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y

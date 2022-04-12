@@ -39,6 +39,15 @@
 
 - GitHub links added to DESCRIPTION (issue \# 99).
 
+### Bug Fixes
+
+-   Fixed a bug that caused failure when no variation existed in the outcome at a type point (issue \#92).
+-   No longer fails when `data` is a `data.table` (issue \#88).
+
+### General
+
+-   Removing extra column in `sim_point_surv` data set (issue \#91).
+
 # lmtp 0.9.0
 
 ### New Features
@@ -76,8 +85,6 @@
 -   Fixed `create_node_list()` returns description (issue \#77).
 
 ### Dependencies
-
--   Now relies on the **SuperLearner** package for estimation.
 
 -   **slider** dependency removed.
 
