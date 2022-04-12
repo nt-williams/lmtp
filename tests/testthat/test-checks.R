@@ -88,9 +88,9 @@ test_that("Variable length mismatch", {
 })
 
 test_that("No outcome variation changes learners", {
-  x <- check_variation(rep(0.5, 10), sl3::Lrnr_glm$new())
-  y <- sl3::Lrnr_mean$new()
-  expect_equal(x$name, y$name)
+  x <- check_variation(rep(0.5, 10), "SL.glm")
+  y <- "SL.mean"
+  expect_equal(x, y)
 })
 
 test_that("Only 0 and 1 in 'outcome' when binary or surival", {

@@ -44,38 +44,43 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     vars <- node_list[[t]]
 
     if (t == tau) {
-      train_task <- sl3_task(natural$train[i & rt,], outcome, vars, outcome_type, "lmtp_id", lrnr_folds)
-
-      natural_task <- sl3_task(natural$train[jt & rt,], NULL, vars, NULL, "lmtp_id")
-      shift_task <- sl3_task(shifted$train[jt & rt,], NULL, vars, NULL, "lmtp_id")
-      valid_natural_task <- sl3_task(natural$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
-      valid_shifted_task <- sl3_task(shifted$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
-
       learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
-      fit <- learners$train(train_task)
-      fits[[t]] <- fit$fit_object
+
+      fit <- run_ensemble(
+        natural$train[i & rt, ][[outcome]],
+        natural$train[i & rt, vars],
+        learners,
+        outcome_type,
+        id = natural$train[i & rt, ][["lmtp_id"]],
+        lrnr_folds
+      )
+
+      fits[[t]] <- fit
     }
 
     if (t < tau) {
       densratio <- transform_sdr(ratio_sdr(ratios, t, tau), t, tau, m_shifted_train, m_natural_train)
       natural$train[, pseudo] <- shifted$train[, pseudo] <- densratio
 
-      train_task <- sl3_task(natural$train[i & rt,], pseudo, vars, "continuous", "lmtp_id", lrnr_folds)
-
-      natural_task <- sl3_task(natural$train[jt & rt,], NULL, vars, NULL, "lmtp_id")
-      shift_task <- sl3_task(shifted$train[jt & rt,], NULL, vars, NULL, "lmtp_id")
-      valid_natural_task <- sl3_task(natural$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
-      valid_shifted_task <- sl3_task(shifted$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
-
       learners <- check_variation(natural$train[i & rt, ][[pseudo]], learners)
-      fit <- learners$train(train_task)
-      fits[[t]] <- fit$fit_object
+
+      fit <- run_ensemble(
+        natural$train[i & rt, ][[pseudo]],
+        natural$train[i & rt, vars],
+        learners,
+        "continuous",
+        id = natural$train[i & rt, ][["lmtp_id"]],
+        lrnr_folds
+      )
+
+      fits[[t]] <- fit
     }
 
-    m_natural_train[jt & rt, t] <- bound(fit$predict(natural_task), 1e-05)
-    m_shifted_train[jt & rt, t] <- bound(fit$predict(shift_task), 1e-05)
-    m_natural_valid[jv & rv, t] <- bound(fit$predict(valid_natural_task), 1e-05)
-    m_shifted_valid[jv & rv, t] <- bound(fit$predict(valid_shifted_task), 1e-05)
+
+    m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
+    m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
+    m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, vars]), 1e-05)
+    m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
 
     m_natural_train[!rt, t] <- 0
     m_shifted_train[!rt, t] <- 0

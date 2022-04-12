@@ -46,8 +46,10 @@
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An optional object inhering from `Lrnr_base` from the sl3 package.
-#' @param learners_trt An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -89,10 +91,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       intervention_type = c("static", "dynamic", "mtp"),
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = sl3::Lrnr_glm$new(),
-                      learners_trt = sl3::Lrnr_glm$new(),
+                      learners_outcome = "SL.glm",
+                      learners_trt = "SL.glm",
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                      .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
+                      .learners_outcome_folds = 10, .learners_trt_folds = 10) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -114,8 +116,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
-  checkmate::assertR6(learners_outcome, "Lrnr_base")
-  checkmate::assertR6(learners_trt, "Lrnr_base")
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
   checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
   checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
@@ -214,8 +214,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome An optional object inhering from `Lrnr_base` from the sl3 package.
-#' @param learners_trt An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -257,10 +259,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = sl3::Lrnr_glm$new(),
-                     learners_trt = sl3::Lrnr_glm$new(),
+                     learners_outcome = "SL.glm",
+                     learners_trt = "SL.glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                     .learners_outcome_folds = NULL, .learners_trt_folds = NULL) {
+                     .learners_outcome_folds = 10, .learners_trt_folds = 10) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -282,8 +284,6 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
-  checkmate::assertR6(learners_outcome, "Lrnr_base")
-  checkmate::assertR6(learners_trt, "Lrnr_base")
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
   checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
   checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
@@ -379,7 +379,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -409,8 +410,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = sl3::Lrnr_glm$new(),
-                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = NULL) {
+                     id = NULL, bounds = NULL, learners = "SL.glm",
+                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -432,7 +433,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
-  checkmate::assertR6(learners, "Lrnr_base")
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
   checkmate::assertNumber(.learners_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
@@ -518,7 +518,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
-#' @param learners An optional object inhering from `Lrnr_base` from the sl3 package.
+#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -552,7 +553,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     learners = sl3::make_learner(sl3::Lrnr_glm),
+                     learners = "SL.glm",
                      folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
 
@@ -575,7 +576,6 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertShiftedData(shifted, data, c(outcome, baseline, unlist(time_vary), id), cens)
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
-  checkmate::assertR6(learners, "Lrnr_base")
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
   checkmate::assertNumber(.learners_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))

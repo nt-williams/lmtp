@@ -17,7 +17,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
-  learners = sl3::make_learner(sl3::Lrnr_glm),
+  learners = "SL.glm",
   folds = 10,
   weights = NULL,
   .bound = 1e-05,
@@ -76,7 +76,8 @@ An optional column name containing cluster level identifiers.}
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
 
-\item{learners}{An optional object inhering from \code{Lrnr_base} from the sl3 package.}
+\item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}

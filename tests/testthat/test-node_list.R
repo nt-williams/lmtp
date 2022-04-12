@@ -1,4 +1,3 @@
-
 context("Node list creation")
 
 test_that("create proper node lists, t > 1", {

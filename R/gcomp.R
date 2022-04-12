@@ -44,17 +44,21 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
       outcome_type <- "continuous"
     }
 
-    train_task <- sl3_task(natural$train[i & rt,], outcome, vars, outcome_type, "lmtp_id", lrnr_folds)
-
-    shift_task <- sl3_task(shifted$train[jt & rt,], NULL, vars, NULL, "lmtp_id")
-    valid_shift_task <- sl3_task(shifted$valid[jv & rv, ], NULL, vars, NULL, "lmtp_id")
-
     learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
-    fit <- learners$train(train_task)
-    fits[[t]] <- fit$fit_object
 
-    natural$train[jt & rt, pseudo] <- bound(fit$predict(shift_task), 1e-05)
-    m[jv & rv, t] <- bound(fit$predict(valid_shift_task), 1e-05)
+    fit <- run_ensemble(
+      natural$train[i & rt, ][[outcome]],
+      natural$train[i & rt, vars],
+      learners,
+      outcome_type,
+      id = natural$train[i & rt, ][["lmtp_id"]],
+      lrnr_folds
+    )
+
+    fits[[t]] <- fit
+
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
