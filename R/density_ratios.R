@@ -38,7 +38,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
 
     fit <- run_ensemble(
-      stacked[jrt & drt, "tmp_lmtp_stack_indicator"],
+      stacked[jrt & drt, ][["tmp_lmtp_stack_indicator"]],
       stacked[jrt & drt, vars],
       learners,
       "binomial",

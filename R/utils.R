@@ -75,13 +75,17 @@ censored <- function(data, cens, tau) {
   list(i = i, j = rep(TRUE, nrow(data)))
 }
 
-at_risk <- function(data, risk, tau) {
+at_risk <- function(data, risk, tau, check = FALSE) {
   if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
   }
 
   if (tau == 1) {
     return(rep(TRUE, nrow(data)))
+  }
+
+  if (check) {
+    return(data[[risk[tau - 1]]] == 0 & !is.na(data[[risk[tau - 1]]]))
   }
 
   data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
