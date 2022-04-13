@@ -5,19 +5,19 @@ note <- sprintf("R package version %s", meta$Version)
 
 bibentry(bibtype = "Manual",
          title = "lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}",
-         author = c(person("Nicholas", "Williams", "T"),
-                    person("Iván", "Díaz")),
+         author = c(person(given = "Nicholas", family = "Williams"),
+                    person(given = "Iván", family = "Díaz")),
          year = "2020",
          note = note,
          doi = "10.5281/zenodo.3874931",
          url = "https://github.com/nt-williams/lmtp")
 
 bibentry(bibtype = "Article",
-         journal = "arxiv",
+         journal = "Journal of the American Statistical Association",
          title = "Non-parametric causal effects based on longitudinal modified treatment policies",
-         author = c(person("Iván", "Díaz"),
-                    person("Nicholas", "Williams"),
-                    person("Katherine", "Hoffman", "L"),
-                    person("Edward", "Schneck", "J")),
-         year = "2020",
-         url = "https://arxiv.org/abs/2006.01366")
+         author = c(person(given = "Iván", family = "Díaz"),
+                    person(given = "Nicholas", family = "Williams"),
+                    person(given = "Katherine", family = "Hoffman"),
+                    person(given = "Edward", family = "Schneck")),
+         year = "2021",
+         doi = "10.1080/01621459.2021.1955691")
