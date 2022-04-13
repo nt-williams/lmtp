@@ -1,0 +1,203 @@
+\begin{thebibliography}{26}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bang and Robins(2005)]{bang2005doubly}
+Heejung Bang and James~M Robins.
+\newblock Doubly robust estimation in missing data and causal inference models.
+\newblock \emph{Biometrics}, 61\penalty0 (4), 2005.
+
+\bibitem[Buckley and James(1979)]{buckleyLinearRegressionCensored1979}
+Jonathan Buckley and Ian James.
+\newblock Linear {Regression} with {Censored} {Data}.
+\newblock \emph{Biometrika}, 66\penalty0 (3):\penalty0 429--436, 1979.
+\newblock \doi{10.2307/2335161}.
+
+\bibitem[Chernozhukov et~al.(2018)Chernozhukov, Chetverikov, Demirer, Duflo,
+  Hansen, Newey, and Robins]{chernozhukovDoubleDebiasedMachine2018}
+Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian
+  Hansen, Whitney Newey, and James Robins.
+\newblock Double/debiased machine learning for treatment and structural
+  parameters.
+\newblock \emph{The Econometrics Journal}, 21\penalty0 (1), 2018.
+\newblock \doi{10.1111/ectj.12097}.
+
+\bibitem[D{\'\i}az and van~der
+  Laan(2012)]{munozPopulationInterventionCausal2012}
+Iv{\'a}n D{\'\i}az and Mark van~der Laan.
+\newblock Population intervention causal effects based on stochastic
+  interventions.
+\newblock \emph{Biometrics}, 68\penalty0 (2):\penalty0 541--549, 2012.
+\newblock \doi{10.1111/j.1541-0420.2011.01685.x}.
+
+\bibitem[D{\'\i}az et~al.(2021)D{\'\i}az, Williams, Hoffman, and
+  Schenck]{jasaLMTP}
+Iv{\'a}n D{\'\i}az, Nicholas Williams, Katherine~L. Hoffman, and Edward~J.
+  Schenck.
+\newblock Nonparametric causal effects based on longitudinal modified treatment
+  policies.
+\newblock \emph{Journal of the American Statistical Association}, 2021.
+\newblock \doi{10.1080/01621459.2021.1955691}.
+
+\bibitem[Fan and Gijbels(1994)]{fanCensoredRegressionLocal1994}
+Jianqing Fan and Irene Gijbels.
+\newblock Censored {Regression}: {Local} {Linear} {Approximations} and {Their}
+  {Applications}.
+\newblock \emph{Journal of the American Statistical Association}, 89\penalty0
+  (426):\penalty0 560--570, 1994.
+\newblock \doi{10.2307/2290859}.
+
+\bibitem[Haneuse and Rotnitzky(2013)]{haneuseEstimationEffectInterventions2013}
+S.~Haneuse and A.~Rotnitzky.
+\newblock Estimation of the effect of interventions that modify the received
+  treatment.
+\newblock \emph{Statistics in Medicine}, 32\penalty0 (30):\penalty0 5260--5277,
+  2013.
+\newblock \doi{10.1002/sim.5907}.
+
+\bibitem[Kennedy et~al.(2017)Kennedy, Ma, McHugh, and
+  Small]{kennedyNonparametricMethodsDoubly2017}
+Edward~H. Kennedy, Zongming Ma, Matthew~D. McHugh, and Dylan~S. Small.
+\newblock Nonparametric methods for doubly robust estimation of continuous
+  treatment effects.
+\newblock \emph{Journal of the Royal Statistical Society. Series B, Statistical
+  methodology}, 79\penalty0 (4):\penalty0 1229--1245, 2017.
+\newblock \doi{10.1111/rssb.12212}.
+
+\bibitem[Laan and Rose(2011)]{laanTargetedLearningCausal2011a}
+Mark J. van~der Laan and Sherri Rose.
+\newblock \emph{Targeted {Learning}: {Causal} {Inference} for {Observational}
+  and {Experimental} {Data}}.
+\newblock Springer {Series} in {Statistics}. Springer-Verlag, New York, 2011.
+\newblock ISBN 978-1-4419-9781-4.
+\newblock \doi{10.1007/978-1-4419-9782-1}.
+
+\bibitem[Laan and Rubin(2006)]{laanTargetedMaximumLikelihood2006}
+Mark J. van~der Laan and Daniel Rubin.
+\newblock Targeted {Maximum} {Likelihood} {Learning}.
+\newblock \emph{The International Journal of Biostatistics}, 2\penalty0 (1),
+  2006.
+\newblock \doi{10.2202/1557-4679.1043}.
+
+\bibitem[Luedtke et~al.(2017)Luedtke, Sofrygin, van~der Laan, and
+  Carone]{luedtke2017sequential}
+Alexander~R Luedtke, Oleg Sofrygin, Mark~J van~der Laan, and Marco Carone.
+\newblock Sequential double robustness in right-censored longitudinal models.
+\newblock \emph{arXiv preprint arXiv:1705.02459}, 2017.
+
+\bibitem[Mendes et~al.(2018)Mendes, da~Silva, Ramires, Reichert, Martins,
+  Ferreira, and Tomasi]{mendes2018metabolic}
+M{\'a}rcio de~Almeida Mendes, In{\'a}cio da~Silva, Virgilio Ramires, Felipe
+  Reichert, Rafaela Martins, Rodrigo Ferreira, and Elaine Tomasi.
+\newblock Metabolic equivalent of task (mets) thresholds as an indicator of
+  physical activity intensity.
+\newblock \emph{PloS one}, 13\penalty0 (7), 2018.
+
+\bibitem[Milborrow(2019)]{milborrowEarth}
+Stephen Milborrow.
+\newblock \emph{\pkg{earth}: Multivariate Adaptive Regression Splines}, 2019.
+\newblock \proglang{R} package version 5.1.2.
+
+\bibitem[Petersen et~al.(2014)Petersen, Tran, Geng, Reynolds, Kambugu, Wood,
+  Bangsberg, Yiannoutsos, Deeks, and Martin]{petersen2014delayed}
+Maya~L Petersen, Linh Tran, Elvin~H Geng, Steven~J Reynolds, Andrew Kambugu,
+  Robin Wood, David~R Bangsberg, Constantin~T Yiannoutsos, Steven~G Deeks, and
+  Jeffrey~N Martin.
+\newblock Delayed switch of antiretroviral therapy after virologic failure
+  associated with elevated mortality among hiv-infected adults in africa.
+\newblock \emph{AIDS (London, England)}, 28\penalty0 (14), 2014.
+
+\bibitem[Polley et~al.(2021)Polley, LeDell, Kennedy, and {van der
+  Laan}]{SuperLearnerPkg}
+Eric Polley, Erin LeDell, Chris Kennedy, and Mark {van der Laan}.
+\newblock \emph{SuperLearner: Super Learner Prediction}, 2021.
+\newblock URL \url{https://CRAN.R-project.org/package=SuperLearner}.
+\newblock R package version 2.0-28.
+
+\bibitem[Rosenbaum and Rubin(1983)]{rosenbaumCentralRolePropensity1983}
+Paul~R. Rosenbaum and Donald~B. Rubin.
+\newblock The {Central} {Role} of the {Propensity} {Score} in {Observational}
+  {Studies} for {Causal} {Effects}.
+\newblock \emph{Biometrika}, 70\penalty0 (1):\penalty0 41--55, 1983.
+\newblock \doi{10.2307/2335942}.
+
+\bibitem[Rotnitzky et~al.(2006)Rotnitzky, Faraggi, and
+  Schisterman]{rotnitzkyDoublyRobustEstimation2006}
+Andrea Rotnitzky, David Faraggi, and Enrique Schisterman.
+\newblock Doubly {Robust} {Estimation} of the {Area} {Under} the
+  {Receiver}-{Operating} {Characteristic} {Curve} in the {Presence} of
+  {Verification} {Bias}.
+\newblock \emph{Journal of the American Statistical Association}, 101\penalty0
+  (475):\penalty0 1276--1288, 2006.
+\newblock \doi{10.1198/016214505000001339}.
+
+\bibitem[Rotnitzky et~al.(2017)Rotnitzky, Robins, and
+  Babino]{rotnitzky2017multiply}
+Andrea Rotnitzky, James Robins, and Lucia Babino.
+\newblock On the multiply robust estimation of the mean of the g-functional.
+\newblock \emph{arXiv preprint arXiv:1705.08582}, 2017.
+
+\bibitem[Rubin and Laan(2006)]{rubinDoublyRobustCensoring2006}
+Daniel Rubin and Mark van~der Laan.
+\newblock Doubly {Robust} {Censoring} {Unbiased} {Transformations}.
+\newblock \emph{U.C. Berkeley Division of Biostatistics Working Paper Series},
+  June 2006.
+
+\bibitem[van~der Laan and
+  Dudoit(2003)]{vanderlaanUnifiedCrossValidationMethodology2003}
+Mark van~der Laan and Sandrine Dudoit.
+\newblock Unified {Cross}-{Validation} {Methodology} {For} {Selection} {Among}
+  {Estimators} and a {General} {Cross}-{Validated} {Adaptive} {Epsilon}-{Net}
+  {Estimator}: {Finite} {Sample} {Oracle} {Inequalities} and {Examples}.
+\newblock \emph{U.C. Berkeley Division of Biostatistics Working Paper Series},
+  2003.
+
+\bibitem[van~der Laan and Gruber(2011)]{van2011targeted}
+Mark~J van~der Laan and Susan Gruber.
+\newblock Targeted minimum loss based estimation of an intervention specific
+  mean outcome.
+\newblock 2011.
+
+\bibitem[{van der Laan} and Rose(2011)]{vanderLaanRose11}
+Mark~J {van der Laan} and Sherri Rose.
+\newblock \emph{Targeted Learning: Causal Inference for Observational and
+  Experimental Data}.
+\newblock Springer, New York, 2011.
+
+\bibitem[{van der Laan} and Rose(2018)]{vanderLaanRose18}
+Mark~J {van der Laan} and Sherri Rose.
+\newblock \emph{Targeted Learning in Data Science: Causal Inference for Complex
+  longitudinal Studies}.
+\newblock Springer, New York, 2018.
+
+\bibitem[van~der Laan et~al.(2007)van~der Laan, Polley, and
+  Hubbard]{laanSuperLearner2007}
+Mark~J. van~der Laan, Eric~C. Polley, and Alan~E. Hubbard.
+\newblock Super {Learner}.
+\newblock \emph{Statistical Applications in Genetics and Molecular Biology},
+  6\penalty0 (1), 2007.
+\newblock \doi{10.2202/1544-6115.1309}.
+
+\bibitem[Wright and Ziegler(2017)]{wrightRanger}
+Marvin~N. Wright and Andreas Ziegler.
+\newblock \pkg{ranger}: A fast implementation of random forests for high
+  dimensional data in \proglang{C++} and \proglang{R}.
+\newblock \emph{Journal of Statistical Software}, 77\penalty0 (1):\penalty0
+  1--17, 2017.
+\newblock \doi{10.18637/jss.v077.i01}.
+
+\bibitem[Zheng and van~der
+  Laan(2011)]{zhengCrossValidatedTargetedMinimumLossBased2011b}
+Wenjing Zheng and Mark~J. van~der Laan.
+\newblock Cross-{Validated} {Targeted} {Minimum}-{Loss}-{Based} {Estimation}.
+\newblock In Mark~J. van~der Laan and Sherri Rose, editors, \emph{Targeted
+  {Learning}: {Causal} {Inference} for {Observational} and {Experimental}
+  {Data}}, Springer {Series} in {Statistics}, pages 459--474. Springer, New
+  York, NY, 2011.
+\newblock ISBN 978-1-4419-9782-1.
+\newblock \doi{10.1007/978-1-4419-9782-1_27}.
+
+\end{thebibliography}

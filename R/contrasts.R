@@ -20,13 +20,22 @@
 lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   fits <- list(...)
 
-  check_lmtp_type(fits, ref)
-  check_outcome_type(fits, ref, match.arg(type))
+  assertLmtpList(fits)
+  assertDr(fits)
+  assertRefClass(ref)
+  assertContrastType(match.arg(type), fits, .var.name = "type")
 
-  switch(check_ref_type(ref, match.arg(type)),
+  if (is.numeric(ref)) {
+    type <- "additive"
+    message("Non-estimated reference value, defaulting type = 'additive'")
+  } else {
+    type <- match.arg(type)
+  }
+
+  switch(type,
          "additive" = contrast_additive(fits = fits, ref = ref),
-         "rr"       = contrast_rr(fits = fits, ref = ref),
-         "or"       = contrast_or(fits = fits, ref = ref))
+         "rr" = contrast_rr(fits = fits, ref = ref),
+         "or" = contrast_or(fits = fits, ref = ref))
 }
 
 contrast_additive <- function(fits, ref) {
@@ -155,3 +164,7 @@ contrast_or_single <- function(fit, ref) {
   )
 }
 
+no_stderr_warning <- function(estimator) {
+  cat("\n")
+  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
+}
