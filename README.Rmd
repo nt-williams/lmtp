@@ -13,8 +13,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
-
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -104,7 +102,7 @@ Yes! **lmtp** can estimate the effects of deterministic, static treatment effect
 ## Example
 
 ```{r}
-library(lmtp, lib = "~/Desktop/lmtp-alternates/sl3")
+library(lmtp)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)

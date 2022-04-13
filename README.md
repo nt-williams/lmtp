@@ -1,8 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-**NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.**
-
 # lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
@@ -124,8 +122,8 @@ regimes for binary, continuous, and survival outcomes.
 ## Example
 
 ``` r
-library(lmtp, lib = "~/Desktop/lmtp-alternates/sl3")
-#> NOT MAIN VERSION OF LMTP! THIS IS THE SL3 COMPATIBLE VERSION.
+library(lmtp)
+
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
 #>   ID L_1 A_1 L_2 A_2 L_3 A_3 L_4 A_4 Y
