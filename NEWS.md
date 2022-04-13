@@ -1,3 +1,14 @@
+# lmtp 1.3.0
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+-   Major internal refactor. Argument checking is now performed using *checkmate* package. 
+-   `.SL_folds` argument split into `.learners_outcome_folds` and `.learners_trt_folds`.
+
 # lmtp 1.1.0
 
 ### New Features
