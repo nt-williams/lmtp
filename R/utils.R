@@ -1,23 +1,44 @@
-determine_tau <- function(outcome, trt, cens) {
+determine_tau <- function(outcome, trt) {
   surv <- length(outcome) > 1
   if (!surv) {
     return(length(trt))
   }
-  length(cens)
+  length(outcome)
 }
 
-set_lmtp_options <- function(option, val) {
-  switch(option,
-         "bound" = options(lmtp.bound = val),
-         "trt" = options(lmtp.trt.length = val)
-  )
+setup_cv <- function(data, id, V = 10) {
+  out <- origami::make_folds(data, cluster_ids = id, V = V)
+  if (V > 1) {
+    return(out)
+  }
+  out[[1]]$training_set <- out[[1]]$validation_set
+  out
 }
 
-bound <- function(x, p = getOption("lmtp.bound")) {
+get_folded_data <- function(data, folds, index) {
+  out <- list()
+  out[["train"]] <- data[folds[[index]]$training_set, , drop = FALSE]
+  out[["valid"]] <- data[folds[[index]]$validation_set, , drop = FALSE]
+  out
+}
+
+fix_censoring_ind <- function(data, cens) {
+  if (is.null(cens)) {
+    return(data)
+  }
+
+  data <- data.table::copy(data)
+  for (cen in cens) {
+    data.table::set(data, j = cen, value = ifelse(is.na(data[[cen]]), 0, data[[cen]]))
+  }
+  data
+}
+
+bound <- function(x, p = 1e-05) {
   pmax(pmin(x, 1 - p), p)
 }
 
-scale_y_continuous <- function(y, bounds) {
+scale_y <- function(y, bounds) {
   if (is.null(bounds)) {
     return(y)
   }
@@ -38,11 +59,6 @@ rescale_y_continuous <- function(scaled, bounds) {
   (scaled*(bounds[2] - bounds[1])) + bounds[1]
 }
 
-add_scaled_y <- function(data, scaled) {
-  data$xyz <- scaled
-  data
-}
-
 censored <- function(data, cens, tau) {
   # when no censoring return TRUE for all obs
   if (is.null(cens)) {
@@ -59,13 +75,17 @@ censored <- function(data, cens, tau) {
   list(i = i, j = rep(TRUE, nrow(data)))
 }
 
-at_risk <- function(data, risk, tau) {
+at_risk <- function(data, risk, tau, check = FALSE) {
   if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
   }
 
   if (tau == 1) {
     return(rep(TRUE, nrow(data)))
+  }
+
+  if (check) {
+    return(data[[risk[tau - 1]]] == 0 & !is.na(data[[risk[tau - 1]]]))
   }
 
   data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
@@ -104,7 +124,7 @@ recombine_ratios <- function(x, folds) {
     )
   }
 
-  returns$sl_weights <- recombine_sl_weights(x)
+  returns$fits <- lapply(x, function(x) x[["fits"]])
   returns
 }
 
@@ -113,21 +133,9 @@ trim_ratios <- function(x, trim) {
   x
 }
 
-recombine_outcome_reg <- function(x, part, folds) {
+recombine_outcome <- function(x, part, folds) {
   ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
-  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), ]
-}
-
-recombine_sl_weights <- function(x) {
-  lapply(x, function(x) x[["sl_weights"]])
-}
-
-hold_lrnr_weights <- function(folds) {
-  lapply(1:folds, function(x) list())
-}
-
-extract_sl_weights <- function(fit) {
-  fit$coef
+  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), , drop = FALSE]
 }
 
 is.lmtp <- function(x) {
@@ -177,10 +185,20 @@ create_ids <- function(data, id) {
 }
 
 convert_to_surv <- function(x) {
-  data.table::fcase(x == 0, 1,
-                    x == 1, 0)
+  data.table::fcase(
+    x == 0, 1,
+    x == 1, 0
+  )
 }
 
 missing_outcome <- function(x) {
   ifelse(is.na(x), 0, x)
+}
+
+risk_indicators <- function(x) {
+  if (length(x) == 1) {
+    return(NULL)
+  }
+
+  x[1:(length(x) - 1)]
 }

@@ -1,3 +1,10 @@
+check_variation <- function(outcome, learners) {
+  if (sd(outcome) < .Machine$double.eps) {
+    return("SL.mean")
+  }
+  learners
+}
+
 run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
   family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
   cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
@@ -9,6 +16,6 @@ run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
   )
 }
 
-SL_predict <- function(fit, newdata, p = getOption("lmtp.bound")) {
-  bound(predict(fit, newdata)$pred[, 1], p)
+SL_predict <- function(fit, newdata) {
+  predict(fit, newdata)$pred[, 1]
 }

@@ -1,3 +1,26 @@
+# lmtp 1.3.0
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+-   Major internal refactor. Argument checking is now performed using *checkmate* package. 
+-   `.SL_folds` argument split into `.learners_outcome_folds` and `.learners_trt_folds`.
+
+# lmtp 1.1.0
+
+### New Features
+
+### Bug Fixes
+
+-   Corrected standard errors when providing  `id` with `lmtp_contrast` (issue \#110).
+
+### General
+
+-   Removed the requirement that `folds` must be greater than 1 (issue \#112).
+
 # lmtp 1.0.0
 
 ### New Features
@@ -26,6 +49,15 @@
 ### General
 
 - GitHub links added to DESCRIPTION (issue \# 99).
+
+### Bug Fixes
+
+-   Fixed a bug that caused failure when no variation existed in the outcome at a type point (issue \#92).
+-   No longer fails when `data` is a `data.table` (issue \#88).
+
+### General
+
+-   Removing extra column in `sim_point_surv` data set (issue \#91).
 
 # lmtp 0.9.0
 
@@ -64,8 +96,6 @@
 -   Fixed `create_node_list()` returns description (issue \#77).
 
 ### Dependencies
-
--   Now relies on the **SuperLearner** package for estimation.
 
 -   **slider** dependency removed.
 
