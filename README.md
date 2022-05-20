@@ -9,7 +9,7 @@
 status](https://www.r-pkg.org/badges/version/lmtp)](https://CRAN.R-project.org/package=lmtp)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/lmtp) [![R build
 status](https://github.com/nt-williams/lmtp/workflows/R-CMD-check/badge.svg)](https://github.com/nt-williams/lmtp/actions)
-[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
+[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://app.codecov.io/gh/nt-williams/lmtp)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable
