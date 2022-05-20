@@ -59,7 +59,7 @@ test_that("Variables dont exist", {
 
   expect_error(
     lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens),
-    "Assertion on 'c(trt, outcome, baseline, unlist(time_vary), cens, id)' failed: Must be a subset of {'L1','A1','C1','L2','A2','C2','Y'}, but is {'A','A2','Y','L1','L2','C1','C2'}.",
+    "Assertion on 'c(trt, outcome, baseline, unlist(time_vary), cens, id)' failed: Must be a subset of {'L1','A1','C1','L2','A2','C2','Y'}, but has additional elements {'A'}.",
     fixed = TRUE
   )
 })

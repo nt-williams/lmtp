@@ -36,7 +36,7 @@ Imports:
     future (>= 1.17.0),
     progressr,
     data.table,
-    checkmate,
+    checkmate (>= 2.1.0),
     SuperLearner
 URL: https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
