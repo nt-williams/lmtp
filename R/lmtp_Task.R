@@ -1,3 +1,4 @@
+#' @importFrom R6 R6Class
 lmtp_Task <- R6::R6Class(
   "lmtp_Task",
   public = list(
