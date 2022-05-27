@@ -170,6 +170,24 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 #>         95% CI: (0.2321, 0.2732)
 ```
 
+## Data structure
+
+#### Single time point
+
+<img src='man/figures/pointtrt.png' height="300" />
+
+#### Time-varying exposure and confounders, not survival outcome
+
+<img src='man/figures/timevary.png' height="300" />
+
+#### Single exposure, survival outcome
+
+<img src='man/figures/survival.png' height="300" />
+
+#### Time-varying exposure and confounders, survival outcome
+
+<img src='man/figures/timevarysurvival.png' height="300" />
+
 ## Similar Implementations
 
 A variety of other R packages perform similar tasks as **lmtp**.
