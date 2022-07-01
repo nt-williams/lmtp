@@ -161,15 +161,21 @@ check_trt_length <- function(trt, time_vary = NULL, cens = NULL, tau) {
   rep(trt, tau)
 }
 
-check_at_risk <- function(outcomes, tau) {
+check_at_risk <- function(outcomes, tau, comp_risks) {
   if (length(outcomes) == 1) {
     return(NULL)
   }
-
+  
+  # if there's a competing risk, return a risk object that's a list instead of vector
+  if (length(outcomes) == tau & !is.null(comp_risks)) {
+    return(list("outcome" = outcomes[1:tau - 1],
+                "comp_risk" = comp_risks[1:tau - 1]))
+  }
+  
   if (length(outcomes) == tau) {
     return(outcomes[1:tau - 1])
   }
-
+  
   stop("It appears there is a mismatch between the length of `outcome` and other parameters.",
        call. = FALSE)
 }

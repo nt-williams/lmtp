@@ -68,7 +68,7 @@
 #' @example inst/examples/tmle-ex.R
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                      cens = NULL, comp_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                       intervention_type = c("static", "dynamic", "mtp"),
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
@@ -93,7 +93,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = .bound
+    bound = .bound,
+    comp_risk = comp_risk
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -218,7 +219,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'
 #' @example inst/examples/sdr-ex.R
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                     cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                     cens = NULL, comp_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                      intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
@@ -243,7 +244,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = NULL,
     bounds = bounds,
-    bound = .bound
+    bound = .bound,
+    comp_risk = comp_risk
   )
 
   pb <- progressr::progressor(meta$tau*folds*2)
@@ -357,7 +359,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @export
 #'
 #' @example inst/examples/sub-ex.R
-lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL, comp_risk = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = sl3::make_learner(sl3::Lrnr_glm),
@@ -366,6 +368,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     data = data,
     trt = trt,
     outcome = outcome,
+    comp_risk = comp_risk,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
@@ -474,7 +477,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL,
+                     comp_risk = NULL, shift = NULL, shifted = NULL,
                      intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
@@ -485,6 +488,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     data = data,
     trt = trt,
     outcome = outcome,
+    comp_risk = comp_risk,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,

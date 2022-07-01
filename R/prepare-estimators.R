@@ -17,7 +17,7 @@ Meta <- R6::R6Class(
     weights = NULL,
     weights_m = NULL,
     weights_r = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
+    initialize = function(data, trt, outcome, comp_risk, time_vary, baseline, cens, k,
                           shift, shifted, learners_trt, learners_outcome, id,
                           outcome_type = NULL, V = 10, weights = NULL,
                           bounds = NULL, bound = NULL) {
@@ -35,7 +35,7 @@ Meta <- R6::R6Class(
 
       self$n <- nrow(data)
       self$trt <- check_trt_length(trt, time_vary, cens, self$tau)
-      self$risk <- check_at_risk(outcome, self$tau)
+      self$risk <- check_at_risk(outcome, self$tau, comp_risk)
       self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
       self$survival <- outcome_type == "survival"
