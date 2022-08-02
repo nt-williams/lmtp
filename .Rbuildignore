@@ -11,3 +11,4 @@
 ^CRAN-RELEASE$
 ^inst/examples$
 ^paper/
+^CRAN-SUBMISSION$

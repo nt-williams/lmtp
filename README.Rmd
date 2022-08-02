@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![CRAN status](https://www.r-pkg.org/badges/version/lmtp)](https://CRAN.R-project.org/package=lmtp)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/lmtp)
 [![R build status](https://github.com/nt-williams/lmtp/workflows/R-CMD-check/badge.svg)](https://github.com/nt-williams/lmtp/actions)
-[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
+[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://app.codecov.io/gh/nt-williams/lmtp)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 <!-- badges: end -->
@@ -138,6 +138,24 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 #>     Std. error: 0.0105
 #>         95% CI: (0.2321, 0.2732)
 ```
+
+## Data structure
+
+#### Single time point
+
+<img src='man/figures/pointtrt.png' height="300" />
+
+#### Time-varying exposure and confounders, not survival outcome
+
+<img src='man/figures/timevary.png' height="300" />
+
+#### Single exposure, survival outcome
+
+<img src='man/figures/survival.png' height="300" />
+
+#### Time-varying exposure and confounders, survival outcome
+
+<img src='man/figures/timevarysurvival.png' height="300" />
 
 ## Similar Implementations
 

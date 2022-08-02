@@ -5,6 +5,7 @@ check_variation <- function(outcome, learners) {
   learners
 }
 
+#' @importFrom nnls nnls
 run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
   family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
   cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
