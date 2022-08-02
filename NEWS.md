@@ -1,3 +1,13 @@
+# lmtp 1.3.1
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+-   Changed 'effect' to 'estimate' in 'Population mean effects' portion of output (issue \#120).
+
 # lmtp 1.3.0
 
 ### New Features
