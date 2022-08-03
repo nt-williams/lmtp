@@ -6,6 +6,8 @@
 
 ### Bug Fixes
 
+-   Added a check for `fits$id` being `NULL`. Fixes a backwards compatibility bug (issue \#117).
+
 ### General
 
 -   Changed 'effect' to 'estimate' in 'Population mean effects' portion of output (issue \#120).
