@@ -64,6 +64,10 @@ contrast_additive_single <- function(fit, ref) {
     eif <- fit$eif
   }
 
+  if (is.null(fit$id)) {
+    fit$id <- 1:length(eif)
+  }
+
   clusters <- split(eif, fit$id)
   j <- length(clusters)
   std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
@@ -104,6 +108,11 @@ contrast_rr <- function(fits, ref) {
 contrast_rr_single <- function(fit, ref) {
   theta <- fit$theta / ref$theta
   log_eif <- (fit$eif / fit$theta) - (ref$eif / ref$theta)
+
+  if (is.null(fit$id)) {
+    fit$id <- 1:length(eif)
+  }
+
   clusters <- split(log_eif, fit$id)
   j <- length(clusters)
   std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
@@ -143,6 +152,11 @@ contrast_or <- function(fits, ref) {
 contrast_or_single <- function(fit, ref) {
   theta <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
   log_eif <- (fit$eif / (fit$theta * (1 - fit$theta))) - (ref$eif / (ref$theta * (1 - ref$theta)))
+
+  if (is.null(fit$id)) {
+    fit$id <- 1:length(eif)
+  }
+
   clusters <- split(log_eif, fit$id)
   j <- length(clusters)
   std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
