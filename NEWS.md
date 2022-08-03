@@ -2,6 +2,8 @@
 
 ### New Features
 
+-   Added parameter `.return_full_fits`. Allows the user to decide if full SuperLearner fit should be returned (issue \#119).
+
 ### Bug Fixes
 
 ### General
