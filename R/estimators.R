@@ -65,6 +65,8 @@
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -94,7 +96,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       learners_outcome = "SL.glm",
                       learners_trt = "SL.glm",
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                      .learners_outcome_folds = 10, .learners_trt_folds = 10) {
+                      .learners_outcome_folds = 10, .learners_trt_folds = 10,
+                      .return_full_fits = FALSE) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -122,6 +125,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -143,8 +147,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, pb)
+  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, .return_full_fits, pb)
+  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
 
   theta_dr(
     list(
@@ -233,6 +237,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -262,7 +268,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      learners_outcome = "SL.glm",
                      learners_trt = "SL.glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                     .learners_outcome_folds = 10, .learners_trt_folds = 10) {
+                     .learners_outcome_folds = 10, .learners_trt_folds = 10,
+                     .return_full_fits = FALSE) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -290,6 +297,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -311,8 +319,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, pb)
+  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, .return_full_fits, pb)
+  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
 
   theta_dr(
     list(
@@ -390,6 +398,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .learners_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -411,7 +421,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10) {
+                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
+                     .return_full_fits = FALSE) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -437,6 +448,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(.learners_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -458,7 +470,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, pb)
+  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, .return_full_fits, pb)
 
   theta_sub(
     eta = list(
@@ -533,6 +545,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
 #' @param .learners_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -555,7 +569,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = "SL.glm",
                      folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
+                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10,
+                     .return_full_fits = FALSE) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -581,6 +596,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -602,7 +618,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  ratios <- cf_r(Task, learners, match.arg(intervention_type), .learners_folds, .trim, pb)
+  ratios <- cf_r(Task, learners, match.arg(intervention_type), .learners_folds, .trim, .return_full_fits, pb)
 
   theta_ipw(
     eta = list(

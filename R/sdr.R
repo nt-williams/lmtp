@@ -1,4 +1,4 @@
-cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, pb) {
+cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
   out <- list()
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
@@ -8,7 +8,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, pb) {
         outcome, Task$node_list$outcome,
         Task$cens, Task$risk, Task$tau, Task$outcome_type,
         get_folded_data(ratios, Task$folds, fold)$train,
-        learners, lrnr_folds, pb
+        learners, lrnr_folds, pb, full_fits
       )
     },
     seed = TRUE)
@@ -24,7 +24,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, pb) {
 }
 
 estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
-                         outcome_type, ratios, learners, lrnr_folds, pb) {
+                         outcome_type, ratios, learners, lrnr_folds, pb, full_fits) {
 
   m_natural_train <- m_shifted_train <-
     cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
@@ -55,7 +55,11 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
         lrnr_folds
       )
 
-      fits[[t]] <- fit
+      if (full_fits) {
+        fits[[t]] <- fit
+      } else {
+        fits[[t]] <- extract_sl_weights(fit)
+      }
     }
 
     if (t < tau) {
@@ -73,7 +77,11 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
         lrnr_folds
       )
 
-      fits[[t]] <- fit
+      if (full_fits) {
+        fits[[t]] <- fit
+      } else {
+        fits[[t]] <- extract_sl_weights(fit)
+      }
     }
 
 

@@ -21,7 +21,8 @@ lmtp_sub(
   folds = 10,
   weights = NULL,
   .bound = 1e-05,
-  .learners_folds = 10
+  .learners_folds = 10,
+  .return_full_fits = FALSE
 )
 }
 \arguments{
@@ -91,6 +92,9 @@ will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999
 
 \item{.learners_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:

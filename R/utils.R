@@ -150,6 +150,10 @@ final_outcome <- function(outcomes) {
   outcomes[length(outcomes)]
 }
 
+extract_sl_weights <- function(fit) {
+  fit$coef
+}
+
 #' Time To Event Last Outcome Carried Forward
 #'
 #' A helper function to prepare survival data for use with LMTP estimators

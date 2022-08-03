@@ -22,7 +22,8 @@ lmtp_ipw(
   weights = NULL,
   .bound = 1e-05,
   .trim = 0.999,
-  .learners_folds = 10
+  .learners_folds = 10,
+  .return_full_fits = FALSE
 )
 }
 \arguments{
@@ -96,6 +97,9 @@ to the 0.999 percentile. A value of 1 indicates no trimming.}
 
 \item{.learners_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:

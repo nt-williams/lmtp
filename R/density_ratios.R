@@ -1,4 +1,4 @@
-cf_r <- function(Task, learners, type, lrnr_folds, trim, pb) {
+cf_r <- function(Task, learners, type, lrnr_folds, trim, full_fits, pb) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
 
@@ -10,7 +10,7 @@ cf_r <- function(Task, learners, type, lrnr_folds, trim, pb) {
         get_folded_data(Task$natural, Task$folds, fold),
         get_folded_data(Task$shifted, Task$folds, fold),
         Task$trt, Task$cens, Task$risk, Task$tau, Task$node_list$trt,
-        learners, pb, type, lrnr_folds
+        learners, pb, type, lrnr_folds, full_fits
       )
     },
     seed = TRUE)
@@ -19,7 +19,7 @@ cf_r <- function(Task, learners, type, lrnr_folds, trim, pb) {
   trim_ratios(recombine_ratios(future::value(out), Task$folds), trim)
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, type, lrnr_folds) {
+estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, type, lrnr_folds, full_fits) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
 
@@ -46,7 +46,12 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
       lrnr_folds
     )
 
-    fits[[t]] <- fit
+    if (full_fits) {
+      fits[[t]] <- fit
+    } else {
+      fits[[t]] <- extract_sl_weights(fit)
+    }
+
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, vars]), .Machine$double.eps)
 

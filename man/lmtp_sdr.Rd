@@ -25,7 +25,8 @@ lmtp_sdr(
   .bound = 1e-05,
   .trim = 0.999,
   .learners_outcome_folds = 10,
-  .learners_trt_folds = 10
+  .learners_trt_folds = 10,
+  .return_full_fits = FALSE
 )
 }
 \arguments{
@@ -110,6 +111,9 @@ The number of cross-validation folds for \code{learners_outcome}.}
 
 \item{.learners_trt_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_trt}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
