@@ -7,6 +7,7 @@
 ### Bug Fixes
 
 -   Added a check for `fits$id` being `NULL`. Fixes a backwards compatibility bug (issue \#117).
+-   `data.table` version must be 1.13.0 or later. This was when the function `fcase` was released (issue \#122).
 
 ### General
 
