@@ -78,7 +78,8 @@ An optional column name containing cluster level identifiers.}
 Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}

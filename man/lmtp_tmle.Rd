@@ -89,7 +89,8 @@ Should be left as \code{NULL} if the outcome type is binary.}
 of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
