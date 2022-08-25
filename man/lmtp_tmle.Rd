@@ -159,11 +159,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  lmtp_tmle(
-    ex1_dat, "A", "Y", "W", shift = policy,
-    outcome_type = "continuous",
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(ex1_dat, "A", "Y", "W", shift = policy,
+            outcome_type = "continuous", folds = 2, mtp = TRUE)
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -183,20 +180,16 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-  lmtp_tmle(
-    sim_t4, A, "Y", time_vary = L, shift = policy,
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy,
+            folds = 2, mtp = TRUE)
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-  lmtp_tmle(
-    sim_t4, A, "Y", time_vary = L, shift = policy,
-    k = 0, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy,
+            k = 0, folds = 2, mtp = TRUE)
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -219,7 +212,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
     )
   }
 
-  lmtp_tmle(sim_t4, A, "Y", time_vary = L,
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
             k = 0, shift = policy, folds = 2)
 
   # Example 2.4
@@ -246,7 +239,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   }
 
   lmtp_tmle(tmp, A, "Y", time_vary = L, shift = policy,
-            k = 0, folds = 2, intervention_type = "mtp")
+            k = 0, folds = 2, mtp = TRUE)
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -261,7 +254,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 
     lmtp_tmle(iptwExWide, A, "outcome", baseline = W, time_vary = L,
               shift = static_binary_on, outcome_type = "continuous",
-              intervention_type = "static", folds = 2)
+              mtp = FALSE, folds = 2)
   }
 
   # Example 4.1
