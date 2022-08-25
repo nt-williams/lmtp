@@ -14,7 +14,7 @@ lmtp_sdr(
   shift = NULL,
   shifted = NULL,
   k = Inf,
-  intervention_type = c("static", "dynamic", "mtp"),
+  mtp = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
@@ -26,7 +26,8 @@ lmtp_sdr(
   .trim = 0.999,
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
-  .return_full_fits = FALSE
+  .return_full_fits = FALSE,
+  ...
 )
 }
 \arguments{
@@ -70,9 +71,9 @@ An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{intervention_type}{[\code{character(1)}]\cr
-The intervention type, should be one of \code{"static"},
-\code{"dynamic"}, \code{"mtp"}.}
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}

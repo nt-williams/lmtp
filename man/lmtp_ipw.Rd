@@ -13,7 +13,7 @@ lmtp_ipw(
   cens = NULL,
   shift = NULL,
   shifted = NULL,
-  intervention_type = c("static", "dynamic", "mtp"),
+  mtp = FALSE,
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
@@ -23,7 +23,8 @@ lmtp_ipw(
   .bound = 1e-05,
   .trim = 0.999,
   .learners_folds = 10,
-  .return_full_fits = FALSE
+  .return_full_fits = FALSE,
+  ...
 )
 }
 \arguments{
@@ -62,9 +63,9 @@ See examples for how to specify shift functions for continuous, binary, and cate
 An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
-\item{intervention_type}{[\code{character(1)}]\cr
-The intervention type, should be one of \code{"static"},
-\code{"dynamic"}, \code{"mtp"}.}
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
 \item{k}{[\code{integer(1)}]\cr
 An integer specifying how previous time points should be
