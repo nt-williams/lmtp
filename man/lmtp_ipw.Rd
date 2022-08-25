@@ -102,6 +102,8 @@ The number of cross-validation folds for \code{learners}.}
 
 \item{.return_full_fits}{[\code{logical(1)}]\cr
 Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+
+\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -120,6 +122,17 @@ for each fold of density ratio estimation.}
 Inverse probability of treatment weighting estimator for the effects of traditional causal
 effects and modified treatment policies for both point treatment and longitudinal data
 with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+}
+\details{
+\subsection{Should \code{mtp = TRUE}?}{
+
+A modified treatment policy (MTP) is an intervention that depends
+on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+This differs from other causal effects,
+such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+\bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+by some amount, use \code{mtp = TRUE}}.
+}
 }
 \examples{
 \donttest{

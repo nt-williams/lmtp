@@ -68,7 +68,17 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
+#'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "TMLE".}
@@ -248,7 +258,17 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
+#'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "SDR".}
@@ -565,6 +585,16 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  The number of cross-validation folds for \code{learners}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
