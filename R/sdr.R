@@ -6,7 +6,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
         get_folded_data(Task$natural, Task$folds, fold),
         get_folded_data(Task$shifted, Task$folds, fold),
         outcome, Task$node_list$outcome,
-        Task$cens, Task$risk, Task$tau, Task$outcome_type,
+        Task$cens, Task$risk, Task$competing_risk, Task$tau, Task$outcome_type,
         get_folded_data(ratios, Task$folds, fold)$train,
         learners, lrnr_folds, pb, full_fits
       )
@@ -23,7 +23,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
   )
 }
 
-estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
+estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, competing_risk, tau,
                          outcome_type, ratios, learners, lrnr_folds, pb, full_fits) {
 
   m_natural_train <- m_shifted_train <-
@@ -37,8 +37,8 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     i  <- censored(natural$train, cens, t)$i
     jt <- censored(natural$train, cens, t)$j
     jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+    rt <- at_risk(natural$train, risk, competing_risk, t)
+    rv <- at_risk(natural$valid, risk, competing_risk, t)
 
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]

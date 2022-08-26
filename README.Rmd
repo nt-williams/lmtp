@@ -92,6 +92,7 @@ Yes! **lmtp** can estimate the effects of deterministic, static treatment effect
 | Continuous outcome              |   &check;   |
 | Binary outcome                  |   &check;   |
 | Censored outcome                |   &check;   |
+| Competing risks                 |   &check;   |
 | Mediation                       |             |
 | Survey weights                  |   &check;   |
 | Super learner                   |   &check;   |

@@ -1,3 +1,13 @@
+# lmtp 1.4.0
+
+### New Features
+
+-   Implements competing risks with the `competing_risk` argument. Courtesy of Kat Hoffman. 
+
+### Bug Fixes
+
+### General
+
 # lmtp 1.3.1
 
 ### New Features

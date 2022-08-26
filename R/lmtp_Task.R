@@ -7,6 +7,7 @@ lmtp_Task <- R6::R6Class(
     trt = NULL,
     cens = NULL,
     risk = NULL,
+    competing_risk = NULL,
     node_list = NULL,
     n = NULL,
     tau = NULL,
@@ -16,11 +17,17 @@ lmtp_Task <- R6::R6Class(
     bounds = NULL,
     folds = NULL,
     weights = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k, shift, shifted, id, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL, bound = NULL) {
+    initialize = function(data, trt, outcome, time_vary, baseline, cens, competing_risk, k, shift, shifted, id, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt)
       self$n <- nrow(data)
       self$trt <- trt
       self$risk <- risk_indicators(outcome)
+
+      if (outcome_type != "survival" & !is.null(competing_risk)) {
+        stop("Competing risks only allowed with `outcome_type = 'survival`", call. = FALSE)
+      }
+
+      self$competing_risk <- risk_indicators(competing_risk)
       self$cens <- cens
       self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
