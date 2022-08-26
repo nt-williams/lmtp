@@ -25,6 +25,8 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param competing_risk \[\code{character}\]\cr
+#'  TODO
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -100,7 +102,7 @@
 #' @example inst/examples/tmle-ex.R
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                      cens = NULL, competing_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
                       # intervention_type = c("static", "dynamic", "mtp"),
                       id = NULL, bounds = NULL,
@@ -120,6 +122,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -152,6 +155,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
+    competing_risk = competing_risk,
     k = k,
     shift = shift,
     shifted = shifted,
@@ -215,6 +219,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param competing_risk \[\code{character}\]\cr
+#'  TODO
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -290,8 +296,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @example inst/examples/sdr-ex.R
 #' @export
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                     cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                     mtp = FALSE,
+                     cens = NULL, competing_risk = NULL,
+                     shift = NULL, shifted = NULL, k = Inf, mtp = FALSE,
                      # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
@@ -311,6 +317,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -336,6 +343,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
+    competing_risk = competing_risk,
     k = k,
     shift = shift,
     shifted = shifted,
@@ -406,6 +414,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param competing_risk \[\code{character}\]\cr
+#'  TODO
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -455,7 +465,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL, k = Inf,
+                     competing_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
@@ -471,6 +481,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -494,6 +505,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
+    competing_risk = competing_risk,
     k = k,
     shift = shift,
     shifted = shifted,
@@ -550,6 +562,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param competing_risk \[\code{character}\]\cr
+#'  TODO
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -610,7 +624,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @export
 #'
 #' @example inst/examples/ipw-ex.R
-lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
+lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
+                     cens = NULL, competing_risk = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
                      # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
@@ -630,6 +645,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -653,6 +669,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     time_vary = time_vary,
     baseline = baseline,
     cens = cens,
+    competing_risk = competing_risk,
     k = k,
     shift = shift,
     shifted = shifted,

@@ -24,5 +24,10 @@ Authors:
   \item Iván Díaz \email{ild2005@med.cornell.edu} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID}) [copyright holder]
 }
 
+Other contributors:
+\itemize{
+  \item Katherine Hoffman \email{kah2797@med.cornell.edu} [contributor]
+}
+
 }
 \keyword{internal}

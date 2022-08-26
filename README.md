@@ -113,6 +113,7 @@ regimes for binary, continuous, and survival outcomes.
 | Continuous outcome              |   ✓    |
 | Binary outcome                  |   ✓    |
 | Censored outcome                |   ✓    |
+| Competing risks                 |   ✓    |
 | Mediation                       |        |
 | Survey weights                  |   ✓    |
 | Super learner                   |   ✓    |

@@ -75,7 +75,7 @@ censored <- function(data, cens, tau) {
   list(i = i, j = rep(TRUE, nrow(data)))
 }
 
-at_risk <- function(data, risk, tau, check = FALSE) {
+at_risk <- function(data, risk, competing_risk, tau, check = FALSE) {
   if (is.null(risk)) {
     return(rep(TRUE, nrow(data)))
   }
@@ -88,7 +88,13 @@ at_risk <- function(data, risk, tau, check = FALSE) {
     return(data[[risk[tau - 1]]] == 0 & !is.na(data[[risk[tau - 1]]]))
   }
 
-  data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
+  if (is.null(competing_risk)) {
+    return(data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]]))
+  }
+
+  data[[risk[tau - 1]]] == 1 &
+    data[[competing_risk[tau - 1]]] == 0 &
+    !is.na(data[[risk[tau - 1]]])
 }
 
 followed_rule <- function(obs_trt, shifted_trt, mtp) {
@@ -200,6 +206,10 @@ missing_outcome <- function(x) {
 }
 
 risk_indicators <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+
   if (length(x) == 1) {
     return(NULL)
   }

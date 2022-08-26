@@ -11,6 +11,7 @@ lmtp_ipw(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  competing_risk = NULL,
   shift = NULL,
   shifted = NULL,
   mtp = FALSE,
@@ -54,6 +55,9 @@ should be ordered following the time ordering of the model.}
 An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
+
+\item{competing_risk}{[\code{character}]\cr
+TODO}
 
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
