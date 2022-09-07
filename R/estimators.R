@@ -141,7 +141,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
     mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_tmle()` is deprecated as of lmtp 1.4.0.",
+    warning("The `intervention_type` argument of `lmtp_tmle()` is deprecated as of lmtp 1.3.1",
             call. = FALSE)
   }
 
@@ -350,7 +350,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
     mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_sdr()` is deprecated as of lmtp 1.4.0.",
+    warning("The `intervention_type` argument of `lmtp_sdr()` is deprecated as of lmtp 1.3.1",
             call. = FALSE)
   }
 
@@ -669,7 +669,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
     mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_ipw()` is deprecated as of lmtp 1.4.0.",
+    warning("The `intervention_type` argument of `lmtp_ipw()` is deprecated as of lmtp 1.3.1",
             call. = FALSE)
   }
 
