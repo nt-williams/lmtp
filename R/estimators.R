@@ -35,9 +35,9 @@
 #'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type \[\code{character(1)}\]\cr
-#'  The intervention type, should be one of \code{"static"},
-#'   \code{"dynamic"}, \code{"mtp"}.
+#' @param mtp \[\code{logical(1)}\]\cr
+#'  Is the intervention of interest a modified treatment policy?
+#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -50,6 +50,7 @@
 #'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -65,7 +66,19 @@
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
-
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
+#'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "TMLE".}
@@ -88,13 +101,14 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                      intervention_type = c("static", "dynamic", "mtp"),
-                      outcome_type = c("binomial", "continuous", "survival"),
+                      mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
+                      # intervention_type = c("static", "dynamic", "mtp"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "SL.glm",
                       learners_trt = "SL.glm",
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                      .learners_outcome_folds = 10, .learners_trt_folds = 10) {
+                      .learners_outcome_folds = 10, .learners_trt_folds = 10,
+                      .return_full_fits = FALSE, ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -122,6 +136,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
+
+  extras <- list(...)
+  if ("intervention_type" %in% names(extras)) {
+    mtp <- extras$intervention_type == "mtp"
+    warning("The `intervention_type` argument of `lmtp_tmle()` is deprecated as of lmtp 1.3.1",
+            call. = FALSE)
+  }
 
   Task <- lmtp_Task$new(
     data = data,
@@ -143,8 +165,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
+  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
 
   theta_dr(
     list(
@@ -203,9 +225,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type \[\code{character(1)}\]\cr
-#'  The intervention type, should be one of \code{"static"},
-#'   \code{"dynamic"}, \code{"mtp"}.
+#' @param mtp \[\code{logical(1)}\]\cr
+#'  Is the intervention of interest a modified treatment policy?
+#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -218,6 +240,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -233,7 +256,19 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
-
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
+#'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
 #' \item{estimator}{The estimator used, in this case "SDR".}
@@ -256,13 +291,15 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @export
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                     intervention_type = c("static", "dynamic", "mtp"),
+                     mtp = FALSE,
+                     # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = "SL.glm",
                      learners_trt = "SL.glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                     .learners_outcome_folds = 10, .learners_trt_folds = 10) {
+                     .learners_outcome_folds = 10, .learners_trt_folds = 10,
+                     .return_full_fits = FALSE, ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -290,6 +327,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -309,10 +347,17 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bound = .bound
   )
 
+  extras <- list(...)
+  if ("intervention_type" %in% names(extras)) {
+    mtp <- extras$intervention_type == "mtp"
+    warning("The `intervention_type` argument of `lmtp_sdr()` is deprecated as of lmtp 1.3.1",
+            call. = FALSE)
+  }
+
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, match.arg(intervention_type), .learners_trt_folds, .trim, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
+  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
 
   theta_dr(
     list(
@@ -390,6 +435,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
 #' @param .learners_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -411,7 +458,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10) {
+                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
+                     .return_full_fits = FALSE) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -437,6 +485,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(.learners_folds, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -458,7 +507,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, pb)
+  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, .return_full_fits, pb)
 
   theta_sub(
     eta = list(
@@ -511,15 +560,16 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
 #'  all time points.
-#' @param intervention_type \[\code{character(1)}\]\cr
-#'  The intervention type, should be one of \code{"static"},
-#'   \code{"dynamic"}, \code{"mtp"}.
+#' @param mtp \[\code{logical(1)}\]\cr
+#'  Is the intervention of interest a modified treatment policy?
+#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
 #'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -533,6 +583,18 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
 #' @param .learners_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param ... Extra arguments. Exists for backwards compatibility.
+#'
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -549,13 +611,14 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL,
-                     intervention_type = c("static", "dynamic", "mtp"),
+                     shift = NULL, shifted = NULL, mtp = FALSE,
+                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = "SL.glm",
                      folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10) {
+                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10,
+                     .return_full_fits = FALSE, ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -581,6 +644,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
+  checkmate::assertLogical(.return_full_fits, len = 1)
 
   Task <- lmtp_Task$new(
     data = data,
@@ -602,7 +666,14 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  ratios <- cf_r(Task, learners, match.arg(intervention_type), .learners_folds, .trim, pb)
+  extras <- list(...)
+  if ("intervention_type" %in% names(extras)) {
+    mtp <- extras$intervention_type == "mtp"
+    warning("The `intervention_type` argument of `lmtp_ipw()` is deprecated as of lmtp 1.3.1",
+            call. = FALSE)
+  }
+
+  ratios <- cf_r(Task, learners, mtp, .learners_folds, .trim, .return_full_fits, pb)
 
   theta_ipw(
     eta = list(

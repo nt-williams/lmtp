@@ -13,7 +13,7 @@ lmtp_ipw(
   cens = NULL,
   shift = NULL,
   shifted = NULL,
-  intervention_type = c("static", "dynamic", "mtp"),
+  mtp = FALSE,
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
@@ -22,7 +22,9 @@ lmtp_ipw(
   weights = NULL,
   .bound = 1e-05,
   .trim = 0.999,
-  .learners_folds = 10
+  .learners_folds = 10,
+  .return_full_fits = FALSE,
+  ...
 )
 }
 \arguments{
@@ -61,9 +63,9 @@ See examples for how to specify shift functions for continuous, binary, and cate
 An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
-\item{intervention_type}{[\code{character(1)}]\cr
-The intervention type, should be one of \code{"static"},
-\code{"dynamic"}, \code{"mtp"}.}
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
 \item{k}{[\code{integer(1)}]\cr
 An integer specifying how previous time points should be
@@ -77,7 +79,8 @@ An optional column name containing cluster level identifiers.}
 Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
@@ -96,6 +99,11 @@ to the 0.999 percentile. A value of 1 indicates no trimming.}
 
 \item{.learners_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+
+\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -115,6 +123,17 @@ Inverse probability of treatment weighting estimator for the effects of traditio
 effects and modified treatment policies for both point treatment and longitudinal data
 with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 }
+\details{
+\subsection{Should \code{mtp = TRUE}?}{
+
+A modified treatment policy (MTP) is an intervention that depends
+on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+This differs from other causal effects,
+such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+\bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+by some amount, use \code{mtp = TRUE}}.
+}
+}
 \examples{
 \donttest{
   set.seed(56)
@@ -133,11 +152,8 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  lmtp_ipw(
-    ex1_dat, "A", "Y", "W",
-    shift = policy, outcome_type = "continuous",
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(ex1_dat, "A", "Y", "W", mtp = TRUE, shift = policy,
+           outcome_type = "continuous", folds = 2)
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -158,21 +174,16 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    shift = policy, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           shift = policy, folds = 2, mtp = TRUE)
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    shift = policy, k = 0, folds = 2,
-    intervention_type = "mtp"
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
+           shift = policy, k = 0, folds = 2)
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -195,10 +206,8 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     )
   }
 
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    k = 0, shift = policy, folds = 2
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           k = 0, mtp = TRUE, shift = policy, folds = 2)
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
@@ -223,10 +232,8 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     factor(unlist(out), levels = 0:5, ordered = TRUE)
   }
 
-  lmtp_ipw(
-    tmp, A, "Y", time_vary = L, shift = policy,
-    k = 0, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(tmp, A, "Y", time_vary = L, shift = policy,
+           k = 0, folds = 2, mtp = TRUE)
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -239,11 +246,9 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     W <- c("gender", "age")
     L <- list(c("use0"), c("use1"), c("use2"))
 
-    lmtp_ipw(
-      iptwExWide, A, "outcome", baseline = W, time_vary = L,
-      shift = static_binary_on, outcome_type = "continuous",
-      intervention_type = "static", folds = 2
-    )
+    lmtp_ipw(iptwExWide, A, "outcome", baseline = W, time_vary = L,
+             shift = static_binary_on, outcome_type = "continuous",
+             mtp = FALSE, folds = 2)
   }
 
   # Example 4.1

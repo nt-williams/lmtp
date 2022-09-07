@@ -91,8 +91,8 @@ at_risk <- function(data, risk, tau, check = FALSE) {
   data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
 }
 
-followed_rule <- function(obs_trt, shifted_trt, intervention_type) {
-  if (intervention_type == "mtp") {
+followed_rule <- function(obs_trt, shifted_trt, mtp) {
+  if (mtp) {
     return(rep(TRUE, length(obs_trt)))
   }
 
@@ -148,6 +148,10 @@ sw <- function(x) {
 
 final_outcome <- function(outcomes) {
   outcomes[length(outcomes)]
+}
+
+extract_sl_weights <- function(fit) {
+  fit$coef
 }
 
 #' Time To Event Last Outcome Carried Forward

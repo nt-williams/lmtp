@@ -14,7 +14,7 @@ lmtp_tmle(
   shift = NULL,
   shifted = NULL,
   k = Inf,
-  intervention_type = c("static", "dynamic", "mtp"),
+  mtp = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
@@ -25,7 +25,9 @@ lmtp_tmle(
   .bound = 1e-05,
   .trim = 0.999,
   .learners_outcome_folds = 10,
-  .learners_trt_folds = 10
+  .learners_trt_folds = 10,
+  .return_full_fits = FALSE,
+  ...
 )
 }
 \arguments{
@@ -69,9 +71,9 @@ An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{intervention_type}{[\code{character(1)}]\cr
-The intervention type, should be one of \code{"static"},
-\code{"dynamic"}, \code{"mtp"}.}
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
@@ -88,7 +90,8 @@ Should be left as \code{NULL} if the outcome type is binary.}
 of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
@@ -110,6 +113,11 @@ The number of cross-validation folds for \code{learners_outcome}.}
 
 \item{.learners_trt_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_trt}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+
+\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -135,6 +143,17 @@ Targeted maximum likelihood estimator for the effects of traditional causal effe
 modified treatment policies for both point treatment and longitudinal data with binary,
 continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 }
+\details{
+\subsection{Should \code{mtp = TRUE}?}{
+
+A modified treatment policy (MTP) is an intervention that depends
+on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+This differs from other causal effects,
+such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+\bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+by some amount, use \code{mtp = TRUE}}.
+}
+}
 \examples{
 \donttest{
   set.seed(56)
@@ -153,11 +172,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  lmtp_tmle(
-    ex1_dat, "A", "Y", "W", shift = policy,
-    outcome_type = "continuous",
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(ex1_dat, "A", "Y", "W", shift = policy,
+            outcome_type = "continuous", folds = 2, mtp = TRUE)
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -177,20 +193,16 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-  lmtp_tmle(
-    sim_t4, A, "Y", time_vary = L, shift = policy,
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy,
+            folds = 2, mtp = TRUE)
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-  lmtp_tmle(
-    sim_t4, A, "Y", time_vary = L, shift = policy,
-    k = 0, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy,
+            k = 0, folds = 2, mtp = TRUE)
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -213,7 +225,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
     )
   }
 
-  lmtp_tmle(sim_t4, A, "Y", time_vary = L,
+  lmtp_tmle(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
             k = 0, shift = policy, folds = 2)
 
   # Example 2.4
@@ -240,7 +252,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   }
 
   lmtp_tmle(tmp, A, "Y", time_vary = L, shift = policy,
-            k = 0, folds = 2, intervention_type = "mtp")
+            k = 0, folds = 2, mtp = TRUE)
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -255,7 +267,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 
     lmtp_tmle(iptwExWide, A, "outcome", baseline = W, time_vary = L,
               shift = static_binary_on, outcome_type = "continuous",
-              intervention_type = "static", folds = 2)
+              mtp = FALSE, folds = 2)
   }
 
   # Example 4.1

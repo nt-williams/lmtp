@@ -15,11 +15,8 @@
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  lmtp_ipw(
-    ex1_dat, "A", "Y", "W",
-    shift = policy, outcome_type = "continuous",
-    folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(ex1_dat, "A", "Y", "W", mtp = TRUE, shift = policy,
+           outcome_type = "continuous", folds = 2)
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -40,21 +37,16 @@
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    shift = policy, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           shift = policy, folds = 2, mtp = TRUE)
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    shift = policy, k = 0, folds = 2,
-    intervention_type = "mtp"
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
+           shift = policy, k = 0, folds = 2)
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -77,10 +69,8 @@
     )
   }
 
-  lmtp_ipw(
-    sim_t4, A, "Y", time_vary = L,
-    k = 0, shift = policy, folds = 2
-  )
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           k = 0, mtp = TRUE, shift = policy, folds = 2)
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
@@ -105,10 +95,8 @@
     factor(unlist(out), levels = 0:5, ordered = TRUE)
   }
 
-  lmtp_ipw(
-    tmp, A, "Y", time_vary = L, shift = policy,
-    k = 0, folds = 2, intervention_type = "mtp"
-  )
+  lmtp_ipw(tmp, A, "Y", time_vary = L, shift = policy,
+           k = 0, folds = 2, mtp = TRUE)
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -121,11 +109,9 @@
     W <- c("gender", "age")
     L <- list(c("use0"), c("use1"), c("use2"))
 
-    lmtp_ipw(
-      iptwExWide, A, "outcome", baseline = W, time_vary = L,
-      shift = static_binary_on, outcome_type = "continuous",
-      intervention_type = "static", folds = 2
-    )
+    lmtp_ipw(iptwExWide, A, "outcome", baseline = W, time_vary = L,
+             shift = static_binary_on, outcome_type = "continuous",
+             mtp = FALSE, folds = 2)
   }
 
   # Example 4.1

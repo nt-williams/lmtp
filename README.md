@@ -34,11 +34,12 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`sl3`](https://github.com/tlverse/sl3) package to utilize ensemble
-machine learning for estimation. The treatment mechanism is estimated
-via a density ratio classification procedure irrespective of treatment
-variable type providing decreased computation time when treatment is
-continuous. Dynamic treatment regimes are also supported.
+[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
+package to utilize ensemble machine learning for estimation. The
+treatment mechanism is estimated via a density ratio classification
+procedure irrespective of treatment variable type providing decreased
+computation time when treatment is continuous. Dynamic treatment regimes
+are also supported.
 
 A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
@@ -212,7 +213,7 @@ statistical methodology.
       title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
       author = {Nicholas T Williams and Iván Díaz},
       year = {2021},
-      note = {R package version 1.0.0},
+      note = {R package version 1.3.1},
       doi = {10.5281/zenodo.3874931}, 
       url = {https://github.com/nt-williams/lmtp}
     }

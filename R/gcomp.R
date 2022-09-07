@@ -1,4 +1,4 @@
-cf_sub <- function(Task, outcome, learners, lrnr_folds, pb) {
+cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
   out <- list()
 
   for (fold in seq_along(Task$folds)) {
@@ -9,7 +9,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, pb) {
         outcome,
         Task$node_list$outcome, Task$cens,
         Task$risk, Task$tau, Task$outcome_type,
-        learners, lrnr_folds, pb
+        learners, lrnr_folds, pb, full_fits
       )
     },
     seed = TRUE)
@@ -24,7 +24,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, pb) {
 }
 
 estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
-                         tau, outcome_type, learners, lrnr_folds, pb) {
+                         tau, outcome_type, learners, lrnr_folds, pb, full_fits) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
@@ -55,7 +55,11 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
       lrnr_folds
     )
 
-    fits[[t]] <- fit
+    if (full_fits) {
+      fits[[t]] <- fit
+    } else {
+      fits[[t]] <- extract_sl_weights(fit)
+    }
 
     natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
     m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
