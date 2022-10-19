@@ -1,5 +1,4 @@
 #' @importFrom stats as.formula coef glm plogis predict qlogis qnorm pnorm sd quantile var binomial gaussian na.omit weighted.mean
-#' @import SuperLearner
 #' @keywords internal
 "_PACKAGE"
 

@@ -1,4 +1,3 @@
-
 dynamic_vec <- function(data, trt) {
   # the function should either be vectorized or iterate over the rows
   if (trt == "A1") { # if the first time point set to 1
@@ -13,8 +12,7 @@ time_vary_on <- function(data, trt) {
   else return(rep(0, nrow(data)))
 }
 
-# test adapted from the ltmle package vignette for a
-# dynamic intervention example with censoring
+# test adapted from the ltmle package vignette for a dynamic intervention example with censoring
 rexpit <- function(x) rbinom(n = length(x), size = 1, prob = plogis(x))
 n <- 10000
 W <- rnorm(n)
@@ -33,36 +31,21 @@ baseline <- "W"
 cens <- c("C1", "C2")
 nodes <- list(c(NULL), c("L"))
 
-# static on or off at all time points
 # truth = 0.308
-tml.stc <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes,
-                     cens, shift = static_binary_on,
-                     outcome_type = "binomial", folds = 2,
-                     .SL_folds = 3))
+tml.stc <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = static_binary_on, folds = 1))
 
 # truth = 0.528
-sdr.stc <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes,
-                    cens, shift = static_binary_off,
-                    outcome_type = "binomial", folds = 2,
-                    .SL_folds = 3))
+sdr.stc <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = static_binary_off, folds = 1))
 
-# time varying dynamic
 # truth = 0.433
-tml.tv <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on,
-                    outcome_type = "binomial", folds = 2, .SL_folds = 3))
-
-sdr.tv <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on,
-                   outcome_type = "binomial", folds = 2, .SL_folds = 3))
+tml.tv <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, folds = 1))
+sdr.tv <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, folds = 1))
 
 # time varying and covariate dynamic
 # truth = 0.345
-tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec,
-                     outcome_type = "binomial", folds = 2, .SL_folds = 3))
+tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
+sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
 
-sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec,
-                    outcome_type = "binomial", folds = 2, .SL_folds = 3))
-
-# tests
 test_that("Dynamic intervention fidelity", {
   expect_equal(0.308, tml.stc$theta, tolerance = 0.1)
   expect_equal(0.528, sdr.stc$theta, tolerance = 0.1)

@@ -23,7 +23,7 @@ theta_sub <- function(eta) {
       continuous = rescale_y_continuous(eta$m, eta$bounds),
       binomial = eta$m
     ),
-    weights_m = eta$weights_m,
+    fits_m = eta$fits_m,
     outcome_type = eta$outcome_type
   )
 
@@ -51,7 +51,7 @@ theta_ipw <- function(eta) {
     high = NA_real_,
     shift = eta$shift,
     density_ratios = eta$r,
-    weights_r = eta$weights_r
+    fits_r = eta$fits_r
   )
 
   class(out) <- "lmtp"
@@ -111,8 +111,8 @@ theta_dr <- function(eta, augmented = FALSE) {
       binomial = eta$m$shifted
     ),
     density_ratios = eta$r,
-    weights_m = eta$weights_m,
-    weights_r = eta$weights_r,
+    fits_m = eta$fits_m,
+    fits_r = eta$fits_r,
     outcome_type = eta$outcome_type
   )
 

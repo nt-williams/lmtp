@@ -13,17 +13,15 @@ shift <- function(data, a) {
 # truth is -0.603ish
 lmtp_tmle(multivariate_data, A, Y, W, shift = shift,
           outcome_type = "continuous", folds = 1,
-          intervention_type = "mtp",
-          learners_outcome = c("SL.glm", "SL.earth"),
-          learners_trt = c("SL.glm", "SL.earth"))
+          mtp = TRUE)
 
 lmtp_sdr(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1,
-         intervention_type = "mtp")
+         mtp = TRUE)
 
 lmtp_sub(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1)
 
 lmtp_ipw(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1,
-         intervention_type = "mtp")
+         mtp = TRUE)

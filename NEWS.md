@@ -1,3 +1,30 @@
+# lmtp 1.3.1
+
+### New Features
+
+-   Added parameter `.return_full_fits`. Allows the user to decide if full SuperLearner fit should be returned (issue \#119).
+-   `intervention_type` argument replaced with `mtp`. 
+
+### Bug Fixes
+
+-   Added a check for `fits$id` being `NULL`. Fixes a backwards compatibility bug (issue \#117).
+-   `data.table` version must be 1.13.0 or later. This was when the function `fcase` was released (issue \#122).
+
+### General
+
+-   Changed 'effect' to 'estimate' in 'Population mean effects' portion of output (issue \#120).
+
+# lmtp 1.3.0
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+-   Major internal refactor. Argument checking is now performed using *checkmate* package. 
+-   `.SL_folds` argument split into `.learners_outcome_folds` and `.learners_trt_folds`.
+
 # lmtp 1.1.0
 
 ### New Features
@@ -39,6 +66,15 @@
 
 - GitHub links added to DESCRIPTION (issue \# 99).
 
+### Bug Fixes
+
+-   Fixed a bug that caused failure when no variation existed in the outcome at a type point (issue \#92).
+-   No longer fails when `data` is a `data.table` (issue \#88).
+
+### General
+
+-   Removing extra column in `sim_point_surv` data set (issue \#91).
+
 # lmtp 0.9.0
 
 ### New Features
@@ -76,8 +112,6 @@
 -   Fixed `create_node_list()` returns description (issue \#77).
 
 ### Dependencies
-
--   Now relies on the **SuperLearner** package for estimation.
 
 -   **slider** dependency removed.
 

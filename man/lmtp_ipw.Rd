@@ -13,75 +13,103 @@ lmtp_ipw(
   cens = NULL,
   shift = NULL,
   shifted = NULL,
-  intervention_type = c("static", "dynamic", "mtp"),
-  outcome_type = c("binomial", "continuous", "survival"),
+  mtp = FALSE,
   k = Inf,
   id = NULL,
+  outcome_type = c("binomial", "continuous", "survival"),
   learners = "SL.glm",
   folds = 10,
   weights = NULL,
   .bound = 1e-05,
   .trim = 0.999,
-  .SL_folds = 10
+  .learners_folds = 10,
+  .return_full_fits = FALSE,
+  ...
 )
 }
 \arguments{
-\item{data}{A data frame in wide format containing all necessary variables
-for the estimation problem.}
+\item{data}{[\code{data.frame}]\cr
+A \code{data.frame} in wide format containing all necessary variables
+for the estimation problem. Must not be a \code{data.table}.}
 
+<<<<<<< HEAD
 \item{trt}{A list of vectors, the same length as the number of time points of observation.
 Vectors should contain column names for the treatment variables at each time point. The list
 should be ordered following the time ordering of the model.}
+=======
+\item{trt}{[\code{character}]\cr
+A vector containing the column names of treatment variables ordered by time.}
+>>>>>>> master
 
-\item{outcome}{The column name of the outcome variable. In the case of time-to-event
+\item{outcome}{[\code{character}]\cr
+The column name of the outcome variable. In the case of time-to-event
 analysis, a vector containing the columns names of intermediate outcome variables and the final
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{baseline}{An optional vector containing the column names of baseline covariates to be
+\item{baseline}{[\code{character}]\cr
+An optional vector containing the column names of baseline covariates to be
 included for adjustment at every time point.}
 
-\item{time_vary}{A list the same length as the number of time points of observation with
+\item{time_vary}{[\code{list}]\cr
+A list the same length as the number of time points of observation with
 the column names for new time-varying covariates introduced at each time point. The list
 should be ordered following the time ordering of the model.}
 
-\item{cens}{An optional vector of column names of censoring indicators the same
+\item{cens}{[\code{character}]\cr
+An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
-\item{shift}{A two argument function that specifies how treatment variables should be shifted.
+\item{shift}{[\code{closure}]\cr
+A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
 
-\item{shifted}{An optional data frame, the same as in \code{data}, but modified according
+\item{shifted}{[\code{data.frame}]\cr
+An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
-\item{intervention_type}{The intervetion type, should be one of \code{"static"},
-\code{"dynamic"}, \code{"mtp"}.}
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
-\item{outcome_type}{Outcome variable type (i.e., continuous, binomial, survival).}
-
-\item{k}{An integer specifying how previous time points should be
+\item{k}{[\code{integer(1)}]\cr
+An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
 all time points.}
 
-\item{id}{An optional column name containing cluster level identifiers.}
+\item{id}{[\code{character(1)}]\cr
+An optional column name containing cluster level identifiers.}
 
-\item{learners}{A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{outcome_type}{[\code{character(1)}]\cr
+Outcome variable type (i.e., continuous, binomial, survival).}
 
-\item{folds}{The number of folds to be used for cross-fitting.}
+\item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\bold{Only include candidate learners capable of binary classification}.}
 
-\item{weights}{An optional vector of length n containing sampling weights.}
+\item{folds}{[\code{integer(1)}]\cr
+The number of folds to be used for cross-fitting.}
 
-\item{.bound}{Determines that maximum and minimum values (scaled) predictions
+\item{weights}{[\code{numeric(nrow(data))}]\cr
+An optional vector containing sampling weights.}
+
+\item{.bound}{[\code{numeric(1)}]\cr
+Determines that maximum and minimum values (scaled) predictions
 will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
 
-\item{.trim}{Determines the amount the density ratios should be trimmed.
+\item{.trim}{[\code{numeric(1)}]\cr
+Determines the amount the density ratios should be trimmed.
 The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 to the 0.999 percentile. A value of 1 indicates no trimming.}
 
-\item{.SL_folds}{Integer. Controls the number of splits to be used for fitting
-the Super Learner. The default is 10.}
+\item{.learners_folds}{[\code{integer(1)}]\cr
+The number of cross-validation folds for \code{learners}.}
+
+\item{.return_full_fits}{[\code{logical(1)}]\cr
+Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+
+\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -93,13 +121,24 @@ A list of class \code{lmtp} containing the following components:
 \item{high}{NA}
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{density_ratios}{An n x Tau matrix of the estimated density ratios.}
-\item{weights_r}{A list the same length as \code{folds}, containing the Super Learner
-ensemble weights at each time-point for each fold for the propensity.}
+\item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+for each fold of density ratio estimation.}
 }
 \description{
 Inverse probability of treatment weighting estimator for the effects of traditional causal
 effects and modified treatment policies for both point treatment and longitudinal data
 with binary, continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
+}
+\details{
+\subsection{Should \code{mtp = TRUE}?}{
+
+A modified treatment policy (MTP) is an intervention that depends
+on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+This differs from other causal effects,
+such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+\bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+by some amount, use \code{mtp = TRUE}}.
+}
 }
 \examples{
 \donttest{
@@ -122,11 +161,16 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     setNames(out, x)
   }
 
+<<<<<<< HEAD
   lmtp_ipw(
     ex1_dat, "A", "Y", "W",
     shift = policy, outcome_type = "continuous",
     folds = 1, intervention_type = "mtp"
   )
+=======
+  lmtp_ipw(ex1_dat, "A", "Y", "W", mtp = TRUE, shift = policy,
+           outcome_type = "continuous", folds = 2)
+>>>>>>> master
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -149,14 +193,24 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
+<<<<<<< HEAD
   lmtp_ipw(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 1, intervention_type = "mtp")
+=======
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           shift = policy, folds = 2, mtp = TRUE)
+>>>>>>> master
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
+<<<<<<< HEAD
   lmtp_ipw(sim_t4, A, "Y", time_vary = L, shift = policy, k = 0, folds = 1, intervention_type = "mtp")
+=======
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
+           shift = policy, k = 0, folds = 2)
+>>>>>>> master
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -187,7 +241,12 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     setNames(out, trt)
   }
 
+<<<<<<< HEAD
   lmtp_ipw(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 2, intervention_type = "mtp")
+=======
+  lmtp_ipw(sim_t4, A, "Y", time_vary = L,
+           k = 0, mtp = TRUE, shift = policy, folds = 2)
+>>>>>>> master
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
@@ -214,7 +273,12 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     setNames(out, trt)
   }
 
+<<<<<<< HEAD
   lmtp_ipw(tmp, A, "Y", time_vary = L, shift = policy, folds = 1, intervention_type = "mtp")
+=======
+  lmtp_ipw(tmp, A, "Y", time_vary = L, shift = policy,
+           k = 0, folds = 2, mtp = TRUE)
+>>>>>>> master
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -228,7 +292,12 @@ with binary, continuous, or time-to-event outcomes. Supports binary, categorical
     L <- list(c("use0"), c("use1"), c("use2"))
 
     lmtp_ipw(iptwExWide, A, "outcome", baseline = W, time_vary = L,
+<<<<<<< HEAD
              shift = static_binary_on, outcome_type = "continuous", folds = 1)
+=======
+             shift = static_binary_on, outcome_type = "continuous",
+             mtp = FALSE, folds = 2)
+>>>>>>> master
   }
 
   # Example 4.1

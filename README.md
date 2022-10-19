@@ -9,7 +9,7 @@
 status](https://www.r-pkg.org/badges/version/lmtp)](https://CRAN.R-project.org/package=lmtp)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/lmtp) [![R build
 status](https://github.com/nt-williams/lmtp/workflows/R-CMD-check/badge.svg)](https://github.com/nt-williams/lmtp/actions)
-[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://codecov.io/gh/nt-williams/lmtp)
+[![codecov](https://codecov.io/gh/nt-williams/lmtp/branch/master/graph/badge.svg)](https://app.codecov.io/gh/nt-williams/lmtp)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Project Status: Active – The project has reached a stable, usable
@@ -34,7 +34,7 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://cran.r-project.org/package=SuperLearner)
+[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
@@ -91,7 +91,7 @@ non-zero probability of experiencing a treatment value. **When working
 with continuous or multivalued treatments, violations of the positivity
 assumption are likely to occur. MTPs offer a solution to this problem.**
 
-## Can lmtp estimation other effects?
+## Can lmtp estimate other effects?
 
 Yes! **lmtp** can estimate the effects of deterministic, static
 treatment effects (such as the ATE) and deterministic, dynamic treatment
@@ -123,7 +123,7 @@ regimes for binary, continuous, and survival outcomes.
 ## Example
 
 ``` r
-library(lmtp, lib = "~/Desktop/lmtp-alternates/devel")
+library(lmtp)
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -171,6 +171,24 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 #>         95% CI: (0.2321, 0.2732)
 ```
 
+## Data structure
+
+#### Single time point
+
+<img src='man/figures/pointtrt.png' height="300" />
+
+#### Time-varying exposure and confounders, not survival outcome
+
+<img src='man/figures/timevary.png' height="300" />
+
+#### Single exposure, survival outcome
+
+<img src='man/figures/survival.png' height="300" />
+
+#### Time-varying exposure and confounders, survival outcome
+
+<img src='man/figures/timevarysurvival.png' height="300" />
+
 ## Similar Implementations
 
 A variety of other R packages perform similar tasks as **lmtp**.
@@ -195,7 +213,7 @@ statistical methodology.
       title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
       author = {Nicholas T Williams and Iván Díaz},
       year = {2021},
-      note = {R package version 1.0.0},
+      note = {R package version 1.3.1},
       doi = {10.5281/zenodo.3874931}, 
       url = {https://github.com/nt-williams/lmtp}
     }
