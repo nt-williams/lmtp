@@ -10,18 +10,24 @@ shift <- function(data, a) {
   setNames(out, a)
 }
 
-# truth is -0.603ish
-lmtp_tmle(multivariate_data, A, Y, W, shift = shift,
+tml <- lmtp_tmle(multivariate_data, A, Y, W, shift = shift,
           outcome_type = "continuous", folds = 1,
           mtp = TRUE)
 
-lmtp_sdr(multivariate_data, A, Y, W, shift = shift,
+sdr <- lmtp_sdr(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1,
          mtp = TRUE)
 
-lmtp_sub(multivariate_data, A, Y, W, shift = shift,
+sub <- lmtp_sub(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1)
 
-lmtp_ipw(multivariate_data, A, Y, W, shift = shift,
+ipw <- lmtp_ipw(multivariate_data, A, Y, W, shift = shift,
          outcome_type = "continuous", folds = 1,
          mtp = TRUE)
+
+test_that("Multivariate intervention fidelity", {
+  expect_equal(-0.5966864, tml$theta, tolerance = 0.25)
+  expect_equal(-0.5966864, sdr$theta, tolerance = 0.25)
+  expect_equal(-0.5966864, sub$theta, tolerance = 0.25)
+  expect_equal(-0.5966864, ipw$theta, tolerance = 0.3)
+})

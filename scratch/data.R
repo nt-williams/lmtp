@@ -1,6 +1,6 @@
 library(mvGPS)
 
-n = 1e5
+n <- 1e5
 
 sim_dt <- gen_D(
   method = "u",
@@ -25,12 +25,12 @@ sd_Y <- 1
 X <- cbind(C, D)
 Y <- X %*% alpha + rnorm(n, sd = sd_Y)
 
-data = cbind(X, Y = Y)
-data = as.data.frame(data)
-names(data) = c(colnames(X), "Y")
-multivariate_data = data
+data <- cbind(X, Y = Y)
+data <- as.data.frame(data)
+names(data) <- c(colnames(X), "Y")
+multivariate_data <- data
 
-Dshift = D
+Dshift <- D
 Dshift[, 1] <- D[, 1] - 0.1
 Dshift[, 2] <- D[, 2] - 0.5
 Xshift <- cbind(C, Dshift)
