@@ -300,7 +300,7 @@ by some amount, use \code{mtp = TRUE}}.
   # Intervening on multiple exposures simultaneously. Interested in the effect of
   # a modified treatment policy where variable D1 is decreased by 0.1 units and
   # variable D2 is decreased by 0.5 units simultaneously.
-  A <- list("D1", "D2")
+  A <- list(c("D1", "D2"))
   W <- paste0("C", 1:3)
   Y <- "Y"
 

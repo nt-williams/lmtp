@@ -26,8 +26,8 @@ ipw <- lmtp_ipw(multivariate_data, A, Y, W, shift = shift,
          mtp = TRUE)
 
 test_that("Multivariate intervention fidelity", {
-  expect_equal(-0.5966864, tml$theta, tolerance = 0.25)
-  expect_equal(-0.5966864, sdr$theta, tolerance = 0.25)
-  expect_equal(-0.5966864, sub$theta, tolerance = 0.25)
-  expect_equal(-0.5966864, ipw$theta, tolerance = 0.3)
+  expect_equal(-0.5966864, tml$theta, tolerance = 0.15)
+  expect_equal(-0.5966864, sdr$theta, tolerance = 0.15)
+  expect_equal(-0.5966864, sub$theta, tolerance = 0.15)
+  expect_equal(-0.5966864, ipw$theta, tolerance = 0.15)
 })
