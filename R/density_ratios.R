@@ -40,7 +40,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     frv <- followed_rule(natural$valid[, trt_t], shifted$valid[, trt_t], mtp)
 
     vars <- c(node_list[[t]], cens[[t]])
-    stacked <- stack_data(natural$train, shifted$train, trt_t, cens, t)
+    stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
 
     fit <- run_ensemble(
       stacked[jrt & drt, ][["tmp_lmtp_stack_indicator"]],
@@ -73,7 +73,7 @@ stack_data <- function(natural, shifted, trt, cens, tau) {
   shifted_half <- natural
 
   if (length(trt) > 1 || tau == 1) {
-    shifted_half[, trt] <- shifted[, trt]
+    shifted_half[, trt[[tau]]] <- shifted[, trt[[tau]]]
   }
 
   if (!is.null(cens)) {

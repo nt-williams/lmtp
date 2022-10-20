@@ -1,15 +1,23 @@
 dynamic_vec <- function(data, trt) {
-  # the function should either be vectorized or iterate over the rows
-  if (trt == "A1") { # if the first time point set to 1
-    return(rep(1, nrow(data)))
-  } else { # a vectorized version
-    (data[["L"]] > 0)*1 + (data[["L"]] <= 0)*0 # else return 1 or 0 based on L
+  .f <- function(data, trt) {
+    # the function should either be vectorized or iterate over the rows
+    if (trt == "A1") { # if the first time point set to 1
+      return(rep(1, nrow(data)))
+    } else { # a vectorized version
+      (data[["L"]] > 0)*1 + (data[["L"]] <= 0)*0 # else return 1 or 0 based on L
+    }
   }
+  out <- lapply(trt, function(x) .f(data, x))
+  setNames(out, trt)
 }
 
 time_vary_on <- function(data, trt) {
-  if (trt == "A1") return(rep(1, nrow(data)))
-  else return(rep(0, nrow(data)))
+  .f <- function(data, trt) {
+    if (trt == "A1") return(rep(1, nrow(data)))
+    else return(rep(0, nrow(data)))
+  }
+  out <- lapply(trt, function(x) .f(data, x))
+  setNames(out, trt)
 }
 
 # test adapted from the ltmle package vignette for a dynamic intervention example with censoring
@@ -26,7 +34,7 @@ C2[uncensored] <- 1
 C2[!uncensored] <- 0
 Y[uncensored] <- rexpit(W[uncensored] - 0.6 * A1[uncensored] + L[uncensored] - 0.8 * A2[uncensored])
 sim <- data.frame(W, A1, C1, L, A2, C2, Y)
-a <- c("A1", "A2")
+a <- list("A1", "A2")
 baseline <- "W"
 cens <- c("C1", "C2")
 nodes <- list(c(NULL), c("L"))
