@@ -28,7 +28,7 @@ or a reference LMTP fit.
 }
 \examples{
 \donttest{
-  a <- c("A1", "A2")
+  a <- list("A1", "A2")
   nodes <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
   y <- "Y"
@@ -37,12 +37,20 @@ or a reference LMTP fit.
   psi_null <- lmtp_tmle(sim_cens, a, y, time_vary = nodes, cens = cens, shift = NULL, folds = 1)
 
   # treatment rule, everyone is increased by 0.5
-  d <- function(data, x) data[[x]] + 0.5
+  d <- function(data, x) {
+    .f <- function(data, x) data[[x]] + 0.5
+    out <- lapply(x, function(x) .f(data, x))
+    setNames(out, x)
+  }
   psi_rule1 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes, cens = cens,
                          shift = d, folds = 1, mtp = TRUE)
 
   # treatment rule, everyone is decreased by 0.5
-  d <- function(data, x) data[[x]] - 0.5
+  d <- function(data, x) {
+    .f <- function(data, x) data[[x]] - 0.5
+    out <- lapply(x, function(x) .f(data, x))
+    setNames(out, x)
+  }
   psi_rule2 <- lmtp_tmle(sim_cens, a, y, time_vary = nodes, cens = cens,
                          shift = d, folds = 1, mtp = TRUE)
 

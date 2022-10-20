@@ -10,7 +10,7 @@ generics::tidy
 #'
 #' @examples
 #' \donttest{
-#' a <- c("A1", "A2")
+#' a <- list("A1", "A2")
 #' nodes <- list(c("L1"), c("L2"))
 #' cens <- c("C1", "C2")
 #' y <- "Y"

@@ -18,16 +18,8 @@
     setNames(out, x)
   }
 
-<<<<<<< HEAD
-  A <- list("A")
-  Y <- "Y"
-  W <- "W"
-
-  lmtp_sdr(ex1_dat, A, Y, W, shift = policy, outcome_type = "continuous", folds = 1, intervention_type = "mtp")
-=======
-  lmtp_sdr(ex1_dat, "A", "Y", "W", shift = policy,
+  lmtp_sdr(ex1_dat, list("A"), "Y", "W", shift = policy,
            outcome_type = "continuous", folds = 2, mtp = TRUE)
->>>>>>> master
 
   # Example 2.1
   # Longitudinal setting, time-varying continuous exposure bounded by 0,
@@ -50,24 +42,16 @@
   # BONUS: progressr progress bars!
   progressr::handlers(global = TRUE)
 
-<<<<<<< HEAD
-  lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 1, intervention_type = "mtp")
-=======
   lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = policy,
            folds = 2, mtp = TRUE)
->>>>>>> master
 
   # Example 2.2
   # The previous example assumed that the outcome (as well as the treatment variables)
   # were directly affected by all other nodes in the past. In certain situations,
   # domain specific knowledge may suggest otherwise.
   # This can be controlled using the k argument.
-<<<<<<< HEAD
-  lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = policy, k = 0, folds = 1, intervention_type = "mtp")
-=======
   lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = policy,
            k = 0, folds = 2, mtp = TRUE)
->>>>>>> master
 
   # Example 2.3
   # Using the same data as examples 2.1 and 2.2.
@@ -98,12 +82,9 @@
     setNames(out, trt)
   }
 
-<<<<<<< HEAD
-  lmtp_sdr(sim_t4, A, "Y", time_vary = L, shift = policy, folds = 1, intervention_type = "mtp")
-=======
+
   lmtp_sdr(sim_t4, A, "Y", time_vary = L, mtp = TRUE,
            k = 0, shift = policy, folds = 2)
->>>>>>> master
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
@@ -130,12 +111,8 @@
     setNames(out, trt)
   }
 
-<<<<<<< HEAD
-  lmtp_sdr(tmp, A, "Y", time_vary = L, shift = policy, folds = 1, intervention_type = "mtp")
-=======
   lmtp_sdr(tmp, A, "Y", time_vary = L, shift = policy,
            k = 0, folds = 2, mtp = TRUE)
->>>>>>> master
 
   # Example 3.1
   # Longitudinal setting, time-varying binary treatment, time-varying covariates
@@ -144,20 +121,15 @@
   if (require("twang")) {
     data("iptwExWide", package = "twang")
 
-    A <- paste0("tx", 1:3)
+    A <- as.list(paste0("tx", 1:3))
     W <- c("gender", "age")
     L <- list(c("use0"), c("use1"), c("use2"))
 
-<<<<<<< HEAD
-    lmtp_tmle(iptwExWide, A, "outcome", baseline = W, time_vary = L,
-              shift = static_binary_on, outcome_type = "continuous", folds = 1)
-=======
     lmtp_sdr(
       iptwExWide, A, "outcome", baseline = W, time_vary = L,
       shift = static_binary_on, outcome_type = "continuous",
       mtp = FALSE, folds = 2
     )
->>>>>>> master
   }
 
   # Example 4.1
@@ -166,7 +138,7 @@
   # the observed exposures in a hypothetical population with no loss-to-follow-up.
   head(sim_cens)
 
-  A <- as.list(c("A1", "A2"))
+  A <- list("A1", "A2")
   L <- list(c("L1"), c("L2"))
   C <- c("C1", "C2")
   Y <- "Y"
@@ -185,10 +157,6 @@
   C <- paste0("C.", 0:5)
   W <- c("W1", "W2")
 
-<<<<<<< HEAD
-  lmtp_sdr(sim_point_surv, A, Y, W, cens = C, folds = 1,
-=======
   lmtp_sdr(sim_point_surv, A, Y, W, cens = C, folds = 2,
->>>>>>> master
            shift = static_binary_on, outcome_type = "survival")
 }

@@ -67,6 +67,7 @@
 #' and two censoring indicators. Data-generating mechanism taken from
 #' Lendle, Schwab, Petersen, and van der Laan (<https://www.jstatsoft.org/article/view/v081i01>).
 #'
+#'
 #' @format A data frame with 500 rows and 11 variables:
 #' \describe{
 #'   \item{L0.a}{Continuous baseline variable.}
@@ -82,3 +83,19 @@
 #'   \item{Y2}{Final outcome node.}
 #' }
 "sim_timevary_surv"
+
+#' Simulated Multivariate Exposure Data
+#'
+#' A dataset with a continuous outcome, three baseline covariates,
+#' and two treatment variables.
+#'
+#' @format A data frame with 2000 rows and 6 variables:
+#' \describe{
+#'   \item{C1}{Continuous baseline variable.}
+#'   \item{C2}{Continuous baseline variable.}
+#'   \item{C3}{Continuous baseline variable.}
+#'   \item{D1}{Treatment variable one at baseline.}
+#'   \item{D2}{Treatment variable two at baseline.}
+#'   \item{Y}{Continuous outcome}
+#' }
+"multivariate_data"

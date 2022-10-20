@@ -30,14 +30,10 @@ lmtp_sub(
 A \code{data.frame} in wide format containing all necessary variables
 for the estimation problem. Must not be a \code{data.table}.}
 
-<<<<<<< HEAD
-\item{trt}{A list of vectors, the same length as the number of time points of observation.
+\item{trt}{[\code{list}]\cr
+A list of vectors, the same length as the number of time points of observation.
 Vectors should contain column names for the treatment variables at each time point. The list
 should be ordered following the time ordering of the model.}
-=======
-\item{trt}{[\code{character}]\cr
-A vector containing the column names of treatment variables ordered by time.}
->>>>>>> master
 
 \item{outcome}{[\code{character}]\cr
 The column name of the outcome variable. In the case of time-to-event

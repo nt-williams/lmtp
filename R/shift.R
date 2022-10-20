@@ -38,7 +38,7 @@ shift_trt <- function(data, trt, .f) {
 #' @examples
 #' \donttest{
 #' data("iptwExWide", package = "twang")
-#' a <- paste0("tx", 1:3)
+#' a <- as.list(paste0("tx", 1:3))
 #' baseline <- c("gender", "age")
 #' tv <- list(c("use0"), c("use1"), c("use2"))
 #' lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
@@ -64,7 +64,7 @@ static_binary_on <- function(data, trt) {
 #' @examples
 #' \donttest{
 #' data("iptwExWide", package = "twang")
-#' a <- paste0("tx", 1:3)
+#' a <- as.list(paste0("tx", 1:3))
 #' baseline <- c("gender", "age")
 #' tv <- list(c("use0"), c("use1"), c("use2"))
 #' lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
