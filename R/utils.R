@@ -28,6 +28,7 @@ fix_censoring_ind <- function(data, cens) {
   }
 
   data <- data.table::copy(data)
+
   for (cen in cens) {
     data.table::set(data, j = cen, value = ifelse(is.na(data[[cen]]), 0, data[[cen]]))
   }
@@ -66,10 +67,10 @@ censored <- function(data, cens, tau) {
   }
 
   # other wise find censored observations
-  i <- data[[cens[tau]]] == 1
+  i <- (ifelse(is.na(data[[cens[tau]]]), 0, data[[cens[tau]]])) == 1
 
   if (tau > 1) {
-    return(list(i = i, j = data[[cens[tau - 1]]] == 1))
+    return(list(i = i, j = (ifelse(is.na(data[[cens[tau - 1]]]), 0, data[[cens[tau - 1]]])) == 1))
   }
 
   list(i = i, j = rep(TRUE, nrow(data)))
