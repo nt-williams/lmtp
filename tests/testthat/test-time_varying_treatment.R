@@ -2,7 +2,7 @@ context("Fidelity of estimators for time-varying treatment")
 
 tmp <- sim_t4
 a <- c("A_1", "A_2", "A_3", "A_4")
-time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+time_varying <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), simplify = F)
 
 for (i in a) {
   tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)

@@ -3,7 +3,8 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
     ci <- censored(x, cens, t)$j
     di <- at_risk(x, risk_indicators(outcome), t, TRUE)
     trt_t <- ifelse(length(trt) == 1, trt, trt[t])
-    data_t <- x[ci & di, c(trt_t, unique(unlist(lapply(baseline, function(x) x[t]))), unique(unlist(lapply(time_vary, function(x) x[t])))), drop = FALSE]
+
+    data_t <- x[ci & di, c(trt_t, unique(unlist(baseline)), unique(unlist(lapply(time_vary, function(x) x[t])))), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
@@ -48,16 +49,16 @@ check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) 
   }
 
   if (!(identical(natural[doesnt_change], x[doesnt_change]))) {
-    return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
+    return("The only columns that can be different between `data` and `shifted` are those indicated in `trt`")
   }
 
   if (is.null(cens)) {
     return(TRUE)
   }
 
-  if (!all(x[cens] == 1)) {
-    return("Censoring variables should be 1 in 'shifted'")
-  }
+  # if (!all(x[cens] == 1)) {
+  #   return("Censoring variables should be 1 in 'shifted'")
+  # }
 
   TRUE
 }

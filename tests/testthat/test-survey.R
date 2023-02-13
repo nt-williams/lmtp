@@ -17,17 +17,18 @@ prob_S <- plogis(W1 * 0.5 + rnorm(n, mean = 0, sd = 1))
 S <- rbinom(n, 1, prob_S)
 tmp <- tmp[S == 1, ]
 wts <- 1 / prob_S[S == 1]
+W <- list(trt = c("W1", "W2"), cens = c("W1", "W2"), outcome = c("W1", "W2"))
 
-sub <- lmtp_sub(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+sub <- lmtp_sub(tmp, "A", "Y", baseline = W, shift = static_binary_on,
                 weights = wts, folds = 2)
 
-ipw <- lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+ipw <- lmtp_ipw(tmp, "A", "Y", baseline = W, shift = static_binary_on,
                 weights = wts, folds = 2)
 
-tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+tmle <- lmtp_tmle(tmp, "A", "Y", baseline = W, shift = static_binary_on,
                   weights = wts, folds = 2)
 
-sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+sdr <- lmtp_sdr(tmp, "A", "Y", baseline = W, shift = static_binary_on,
                 weights = wts, folds = 2)
 
 

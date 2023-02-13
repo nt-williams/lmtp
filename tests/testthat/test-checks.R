@@ -2,7 +2,7 @@ context("Argument checks")
 
 test_that("'data' is a 'data.frame'", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
 
   expect_error(
@@ -19,7 +19,7 @@ test_that("'data' is a 'data.frame'", {
 
 test_that("No uncensored missing data", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
   sim_cens$A2 <- NA_real_
 
@@ -31,7 +31,7 @@ test_that("No uncensored missing data", {
 
 test_that("Reserved variables", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
   sim_cens$tmp_lmtp_stack_indicator <- sim_cens$Y
 
@@ -43,7 +43,7 @@ test_that("Reserved variables", {
 
 test_that("Incorrect folds", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
 
   expect_error(
@@ -54,12 +54,12 @@ test_that("Incorrect folds", {
 
 test_that("Variables dont exist", {
   A <- c("A", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
 
   expect_error(
     lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens),
-    "Assertion on 'c(trt, outcome, baseline, unlist(time_vary), cens, id)' failed: Must be a subset of {'L1','A1','C1','L2','A2','C2','Y'}, but has additional elements {'A'}.",
+    "Assertion on 'c(trt, unique(unlist(baseline)), unique(unlist(time_vary)), cens, id)' failed: Must be a subset of {'L1','A1','C1','L2','A2','C2','Y'}, but has additional elements {'A'}.",
     fixed = TRUE
   )
 })
@@ -95,7 +95,7 @@ test_that("No outcome variation changes learners", {
 
 test_that("Only 0 and 1 in 'outcome' when binary or surival", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
   sim_cens$Y <- sample(c(3, 4), nrow(sim_cens), replace = TRUE)
   expect_error(
@@ -106,7 +106,7 @@ test_that("Only 0 and 1 in 'outcome' when binary or surival", {
 
 test_that("Issues with 'outcome_type' being or not being survival", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
 
   expect_error(
@@ -117,7 +117,7 @@ test_that("Issues with 'outcome_type' being or not being survival", {
   A <- "trt"
   Y <- paste0("Y.", 1:6)
   cens <- paste0("C.", 0:5)
-  W <- c("W1", "W2")
+  W <- sapply(c("trt", "cens", "outcome"), function(x) c("W1", "W2"), simplify = F)
 
   expect_error(
     lmtp_ipw(sim_point_surv, A, Y, W, cens = cens, shift = static_binary_on),
@@ -127,7 +127,7 @@ test_that("Issues with 'outcome_type' being or not being survival", {
 
 test_that("Issues with 'shift' function and providing 'shifted' data", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
   shifted <- shift_data(sim_cens, A, cens, function(data, trt) data[[trt]] + 0.5)
   shifted$L1 <- 1
@@ -139,19 +139,19 @@ test_that("Issues with 'shift' function and providing 'shifted' data", {
 
   expect_error(
     lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens, shifted = shifted),
-    "Assertion on 'shifted' failed: The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`."
+    "Assertion on 'shifted' failed: The only columns that can be different between `data` and `shifted` are those indicated in `trt`."
   )
 
-  shifted <- shift_data(sim_cens, A, NULL, function(data, trt) data[[trt]] + 0.5)
-  expect_error(
-    lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens, shifted = shifted),
-    "Assertion on 'shifted' failed: Censoring variables should be 1 in 'shifted'."
-  )
+  # shifted <- shift_data(sim_cens, A, NULL, function(data, trt) data[[trt]] + 0.5)
+  # expect_error(
+  #   lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens, shifted = shifted),
+  #   "Assertion on 'shifted' failed: Censoring variables should be 1 in 'shifted'."
+  # )
 })
 
 test_that("Contrast assertions", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L1"), c("L2")), simplify = F)
   cens <- c("C1", "C2")
 
   fit <- lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1)
