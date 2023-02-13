@@ -67,18 +67,11 @@ The **sl3** compatible version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
-A version allowing for different covariates sets for the treatment and
-outcome regressions:
+A version allowing for different covariates sets for the treatment,
+censoring, and outcome regressions:
 
 ``` r
-devtools::install_github("nt-williams/lmtp@2covarSets")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions and that uses **sl3**:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+devtools::install_github("nt-williams/lmtp@separate-variable-sets")
 ```
 
 ## What even is a modified treatment policy?
@@ -197,11 +190,11 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+- [`txshift`](https://github.com/nhejazi/txshift)  
+- [`tmle3`](https://github.com/tlverse/tmle3)  
+- [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+- [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+- [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
