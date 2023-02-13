@@ -172,7 +172,8 @@ by some amount, use \code{mtp = TRUE}}.
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  lmtp_sdr(ex1_dat, "A", "Y", "W", shift = policy,
+  W <- list(trt = "W", cens = "W", outcome = "W")
+  lmtp_sdr(ex1_dat, "A", "Y", W, shift = policy,
            outcome_type = "continuous", folds = 2, mtp = TRUE)
 
   # Example 2.1
@@ -184,7 +185,7 @@ by some amount, use \code{mtp = TRUE}}.
   head(sim_t4)
 
   A <- c("A_1", "A_2", "A_3", "A_4")
-  L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), simplify = F)
 
   policy <- function(data, trt) {
     a <- data[[trt]]
@@ -263,8 +264,8 @@ by some amount, use \code{mtp = TRUE}}.
     data("iptwExWide", package = "twang")
 
     A <- paste0("tx", 1:3)
-    W <- c("gender", "age")
-    L <- list(c("use0"), c("use1"), c("use2"))
+    W <- list(trt = c("gender", "age"), cens = c("gender", "age"), outcome = c("gender", "age"))
+    L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("use0"), c("use1"), c("use2")), simplify = F)
 
     lmtp_sdr(
       iptwExWide, A, "outcome", baseline = W, time_vary = L,
@@ -280,7 +281,7 @@ by some amount, use \code{mtp = TRUE}}.
   head(sim_cens)
 
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- list(trt = list(c("L1"), c("L2")), cens = list(c("L1"), c("L2")), outcome = list(c("L1"), c("L2")))
   C <- c("C1", "C2")
   Y <- "Y"
 
@@ -296,7 +297,7 @@ by some amount, use \code{mtp = TRUE}}.
   A <- "trt"
   Y <- paste0("Y.", 1:6)
   C <- paste0("C.", 0:5)
-  W <- c("W1", "W2")
+  W <- list(trt = c("W1", "W2"), cens  = c("W1", "W2"), outcome  = c("W1", "W2"))
 
   lmtp_sdr(sim_point_surv, A, Y, W, cens = C, folds = 2,
            shift = static_binary_on, outcome_type = "survival")
