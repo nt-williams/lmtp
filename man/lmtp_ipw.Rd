@@ -41,14 +41,11 @@ analysis, a vector containing the columns names of intermediate outcome variable
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
-\item{baseline}{[\code{character}]\cr
-An optional vector containing the column names of baseline covariates to be
-included for adjustment at every time point.}
+\item{baseline}{[\code{list}]\cr
+See examples}
 
 \item{time_vary}{[\code{list}]\cr
-A list the same length as the number of time points of observation with
-the column names for new time-varying covariates introduced at each time point. The list
-should be ordered following the time ordering of the model.}
+See examples}
 
 \item{cens}{[\code{character}]\cr
 An optional vector of column names of censoring indicators the same

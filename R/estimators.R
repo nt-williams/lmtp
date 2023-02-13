@@ -14,13 +14,10 @@
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  See examples
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  See examples
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
@@ -208,13 +205,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  See examples
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  See examples
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
@@ -403,13 +397,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  See examples
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  See examples
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
@@ -552,13 +543,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  See examples
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  See examples
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
