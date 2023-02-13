@@ -36,8 +36,9 @@ create_node_list <- function(trt, tau, time_vary = NULL, baseline = NULL, k = In
   }
 
   list(
-    trt = trt_node_list(trt, time_vary, baseline, k, tau),
-    outcome = outcome_node_list(trt, time_vary, baseline, k, tau)
+    trt = trt_node_list(trt, time_vary$trt, baseline$trt, k, tau),
+    cens = outcome_node_list(trt, time_vary$cens, baseline$cens, k, tau),
+    outcome = outcome_node_list(trt, time_vary$outcome, baseline$outcome, k, tau)
   )
 }
 

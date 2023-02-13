@@ -113,13 +113,21 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
+  checkmate::assertList(baseline, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(baseline, function(x) {
+    checkmate::assertCharacter(baseline, null.ok = TRUE)
+  })
 
   tau <- determine_tau(outcome, trt)
 
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
-  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertList(time_vary, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(time_vary), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(time_vary, function(x) {
+    checkmate::assertList(x, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  })
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -304,13 +312,21 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
+  checkmate::assertList(baseline, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(baseline, function(x) {
+    checkmate::assertCharacter(baseline, null.ok = TRUE)
+  })
 
   tau <- determine_tau(outcome, trt)
 
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
-  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertList(time_vary, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(time_vary), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(time_vary, function(x) {
+    checkmate::assertList(x, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  })
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -464,13 +480,21 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
+  checkmate::assertList(baseline, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(baseline, function(x) {
+    checkmate::assertCharacter(baseline, null.ok = TRUE)
+  })
 
   tau <- determine_tau(outcome, trt)
 
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
-  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertList(time_vary, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(time_vary), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(time_vary, function(x) {
+    checkmate::assertList(x, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  })
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
@@ -623,13 +647,21 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
+  checkmate::assertList(baseline, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(baseline, function(x) {
+    checkmate::assertCharacter(baseline, null.ok = TRUE)
+  })
 
   tau <- determine_tau(outcome, trt)
 
   assertTrtCharacter(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
-  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  checkmate::assertList(time_vary, types = "list", len = 3, null.ok = TRUE)
+  checkmate::checkSubset(names(time_vary), c("trt", "cens", "outcome"), empty.ok = FALSE)
+  lapply(time_vary, function(x) {
+    checkmate::assertList(x, types = c("NULL", "character"), len = tau, null.ok = TRUE)
+  })
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)

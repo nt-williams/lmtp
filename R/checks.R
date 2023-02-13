@@ -3,7 +3,7 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
     ci <- censored(x, cens, t)$j
     di <- at_risk(x, risk_indicators(outcome), t, TRUE)
     trt_t <- ifelse(length(trt) == 1, trt, trt[t])
-    data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+    data_t <- x[ci & di, c(trt_t, unique(unlist(lapply(baseline, function(x) x[t]))), unique(unlist(lapply(time_vary, function(x) x[t])))), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
