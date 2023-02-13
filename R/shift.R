@@ -1,8 +1,8 @@
 shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
-    return(shift_cens(data, cens))
+    return(data)
   }
-  shift_trt(shift_cens(data, cens), trt, shift)
+  shift_trt(data, trt, shift)
 }
 
 shift_cens <- function(data, cens) {
