@@ -46,17 +46,32 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
       lrnr_folds
     )
 
+    fit_cens <- run_ensemble(
+      natural$train[censored(natural$train, cens, t)$j & at_risk(natural$train, risk, t), ][[cens[t]]],
+      natural$train[censored(natural$train, cens, t)$j & at_risk(natural$train, risk, t), vars],
+      learners,
+      "binomial",
+      natural$train[censored(natural$train, cens, t)$j & at_risk(natural$train, risk, t), ]$lmtp_id,
+      lrnr_folds
+    )
+
+    fits[[t]] <- list()
     if (full_fits) {
-      fits[[t]] <- fit
+      fits[[t]][["treatment"]] <- fit
+      fits[[t]][["censoring"]] <- fit_cens
     } else {
-      fits[[t]] <- extract_sl_weights(fit)
+      fits[[t]][["treatment"]] <- extract_sl_weights(fit)
+      fits[[t]][["censoring"]] <- extract_sl_weights(fit_cens)
     }
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, vars]), .Machine$double.eps)
 
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
-    densratios[, t] <- ratios
+
+    pred_cens <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
+    pred_cens[jrv & drv, ] <- bound(SL_predict(fit_cens, natural$valid[jrv & drv, vars]), .Machine$double.eps)
+    densratios[, t] <- ratios * (1 / pred_cens)
 
     pb()
   }
