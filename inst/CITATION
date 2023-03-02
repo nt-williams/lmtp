@@ -1,16 +1,15 @@
 
-citHeader("Please cite the following when using 'lmtp' in publications. Citation should include both the R package and the paper establishing the statistical methodolgy.")
+citHeader("Please cite the following when using 'lmtp' in publications. Citation should include both the R package article and the paper establishing the statistical methodolgy.")
 
 note <- sprintf("R package version %s", meta$Version)
 
-bibentry(bibtype = "Manual",
-         title = "lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}",
+bibentry(bibtype = "Article",
+         journal = "Observational Studies",
+         title = "lmtp: An R package for estimating the causal effects of modified treatment policies",
          author = c(person(given = "Nicholas", family = "Williams"),
                     person(given = "Iván", family = "Díaz")),
-         year = "2020",
-         note = note,
-         doi = "10.5281/zenodo.3874931",
-         url = "https://github.com/nt-williams/lmtp")
+         year = "2023",
+         url = "https://muse.jhu.edu/article/883479")
 
 bibentry(bibtype = "Article",
          journal = "Journal of the American Statistical Association",
