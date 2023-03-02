@@ -163,16 +163,15 @@ A variety of other R packages perform similar tasks as **lmtp**. However, **lmtp
 
 ## Citation
 
-Please cite the following when using **lmtp** in publications. Citation should include both the R package and the paper establishing the statistical methodology.
+Please cite the following when using **lmtp** in publications. Citation should include both the R package article and the paper establishing the statistical methodology.
 
 ```
-@Manual{,
-  title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+@article{,
+  title = {lmtp: An R package for estimating the causal effects of modified treatment policies},
   author = {Nicholas T Williams and Iván Díaz},
-  year = {2021},
-  note = {R package version 1.3.1},
-  doi = {10.5281/zenodo.3874931}, 
-  url = {https://github.com/nt-williams/lmtp}
+  journal = {Observational Studies},
+  year = {2023},
+  url = {https://muse.jhu.edu/article/883479}
 }
 
 @article{
