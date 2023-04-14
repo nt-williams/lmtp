@@ -45,7 +45,8 @@ A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying vignette.
+accompanying technical paper in [Observational
+Studies](https://muse.jhu.edu/article/883479).
 
 ## Installation
 
@@ -59,12 +60,6 @@ The stable, development version can be installed from GitHub with:
 
 ``` r
 devtools::install_github("nt-williams/lmtp@devel")
-```
-
-The **sl3** compatible version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@sl3")
 ```
 
 A version allowing for different covariates sets for the treatment,
