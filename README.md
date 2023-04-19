@@ -45,7 +45,8 @@ A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying vignette.
+accompanying technical paper in [Observational
+Studies](https://muse.jhu.edu/article/883479).
 
 ## Installation
 
@@ -61,24 +62,11 @@ The stable, development version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@devel")
 ```
 
-The **sl3** compatible version can be installed from GitHub with:
+A version allowing for different covariates sets for the treatment,
+censoring, and outcome regressions:
 
 ``` r
-devtools::install_github("nt-williams/lmtp@sl3")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions and that uses **sl3**:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+devtools::install_github("nt-williams/lmtp@separate-variable-sets")
 ```
 
 ## What even is a modified treatment policy?
@@ -153,8 +141,10 @@ treatment variables and time-varying covariates.
 ``` r
 # treatment nodes, a character vector of length 4
 A <- c("A_1", "A_2", "A_3", "A_4")
-# time varying nodes, a list of length 4
-L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+# time varying nodes
+L <- list(trt = list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), 
+          cens = list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), 
+          outcome = list(c("L_1"), c("L_2"), c("L_3"), c("L_4")))
 ```
 
 We can now estimate the effect of our treatment policy, `d`. In this
@@ -197,25 +187,24 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+- [`txshift`](https://github.com/nhejazi/txshift)  
+- [`tmle3`](https://github.com/tlverse/tmle3)  
+- [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+- [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+- [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
 Please cite the following when using **lmtp** in publications. Citation
-should include both the R package and the paper establishing the
+should include both the R package article and the paper establishing the
 statistical methodology.
 
-    @Manual{,
-      title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+    @article{,
+      title = {lmtp: An R package for estimating the causal effects of modified treatment policies},
       author = {Nicholas T Williams and Iván Díaz},
-      year = {2021},
-      note = {R package version 1.3.1},
-      doi = {10.5281/zenodo.3874931}, 
-      url = {https://github.com/nt-williams/lmtp}
+      journal = {Observational Studies},
+      year = {2023},
+      url = {https://muse.jhu.edu/article/883479}
     }
 
     @article{
