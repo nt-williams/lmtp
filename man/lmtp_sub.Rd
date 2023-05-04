@@ -131,7 +131,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
     (data[[x]] > 80)*(data[[x]] - 15) + (data[[x]] <= 80)*data[[x]]
   }
 
-  W <- list(trt = "W", cens = "W", outcome = "W")
+  W <- list(trt = "W", cens = NULL, outcome = "W")
   lmtp_sub(ex1_dat, "A", "Y", W, shift = policy,
            outcome_type = "continuous", folds = 2)
 
@@ -144,7 +144,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   head(sim_t4)
 
   A <- c("A_1", "A_2", "A_3", "A_4")
-  L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), simplify = F)
+  L <- sapply(c("trt", "outcome"), function(x) list(c("L_1"), c("L_2"), c("L_3"), c("L_4")), simplify = F)
+  L$cens <- lapply(1:4, function(x) NULL)
 
   policy <- function(data, trt) {
     a <- data[[trt]]
@@ -221,7 +222,8 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 
     A <- paste0("tx", 1:3)
     W <- list(trt = c("gender", "age"), cens = c("gender", "age"), outcome = c("gender", "age"))
-    L <- sapply(c("trt", "cens", "outcome"), function(x) list(c("use0"), c("use1"), c("use2")), simplify = F)
+    L <- sapply(c("trt", "outcome"), function(x) list(c("use0"), c("use1"), c("use2")), simplify = F)
+    L$cens <- lapply(1:3, function(x) NULL)
 
     lmtp_sub(iptwExWide, A, "outcome", baseline = W, time_vary = L,
              shift = static_binary_on, outcome_type = "continuous")

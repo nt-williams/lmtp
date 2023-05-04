@@ -110,7 +110,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertList(baseline, types = "character", len = 3, null.ok = TRUE)
+  checkmate::assertList(baseline, types = c("character", "null"), len = 3, null.ok = TRUE)
   checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
 
   tau <- determine_tau(outcome, trt)
@@ -302,7 +302,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertList(baseline, types = "character", len = 3, null.ok = TRUE)
+  checkmate::assertList(baseline, types = c("character", "null"), len = 3, null.ok = TRUE)
   checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
 
   tau <- determine_tau(outcome, trt)
@@ -463,7 +463,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertList(baseline, types = "character", len = 3, null.ok = TRUE)
+  checkmate::assertList(baseline, types = c("character", "null"), len = 3, null.ok = TRUE)
   checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
 
   tau <- determine_tau(outcome, trt)
@@ -624,7 +624,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertList(baseline, types = "character", len = 3, null.ok = TRUE)
+  checkmate::assertList(baseline, types = c("character", "null"), len = 3, null.ok = TRUE)
   checkmate::checkSubset(names(baseline), c("trt", "cens", "outcome"), empty.ok = FALSE)
 
   tau <- determine_tau(outcome, trt)
