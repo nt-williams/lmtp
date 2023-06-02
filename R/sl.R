@@ -5,20 +5,19 @@ check_variation <- function(outcome, learners) {
   learners
 }
 
-#' @importFrom nnls nnls
-run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
-  family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
-  cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
-  fit <- SuperLearner::SuperLearner(
-    Y, X, family = family[[1]], SL.library = learners,
-    id = id, method = "method.NNLS",
-    env = environment(SuperLearner::SuperLearner),
-    cvControl = cv_control
-  )
+run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
+  fit <- mlr3superlearner(data = data,
+                          target = y,
+                          library = learners,
+                          outcome_type = outcome_type,
+                          folds = folds,
+                          group = id)
 
-  if (!sum(fit$coef != 0)) {
+  if (all(fit$weights$coef == 0)) {
     warning("SuperLearner fit failed. Trying main-effects GLM.", call. = FALSE)
-    fit <- glm(lmtp_tmp_outcome_vector ~ ., data = cbind(lmtp_tmp_outcome_vector = Y, X), family = family[[1]])
+    tmp <- data[, setdiff(names(data), c(y, id))]
+    tmp$lmtp_tmp_outcome_vector <- data[[y]]
+    fit <- glm(lmtp_tmp_outcome_vector ~ ., data = tmp, family = ifelse(outcome_type == "continuous", "gaussian", "binomial"))
   }
   fit
 }
@@ -27,5 +26,5 @@ SL_predict <- function(fit, newdata) {
   if (inherits(fit, "glm")) {
     return(as.vector(predict(fit, newdata, type = "response")))
   }
-  predict(fit, newdata)$pred[, 1]
+  predict(fit, newdata)[, 1]
 }

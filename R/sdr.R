@@ -46,20 +46,12 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     if (t == tau) {
       learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-      fit <- run_ensemble(
-        natural$train[i & rt, ][[outcome]],
-        natural$train[i & rt, vars],
-        learners,
-        outcome_type,
-        id = natural$train[i & rt, ][["lmtp_id"]],
-        lrnr_folds
-      )
-
-      if (full_fits) {
-        fits[[t]] <- fit
-      } else {
-        fits[[t]] <- extract_sl_weights(fit)
-      }
+      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+                          outcome,
+                          learners,
+                          outcome_type,
+                          "lmtp_id",
+                          lrnr_folds)
     }
 
     if (t < tau) {
@@ -68,27 +60,24 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
 
       learners <- check_variation(natural$train[i & rt, ][[pseudo]], learners)
 
-      fit <- run_ensemble(
-        natural$train[i & rt, ][[pseudo]],
-        natural$train[i & rt, vars],
-        learners,
-        "continuous",
-        id = natural$train[i & rt, ][["lmtp_id"]],
-        lrnr_folds
-      )
-
-      if (full_fits) {
-        fits[[t]] <- fit
-      } else {
-        fits[[t]] <- extract_sl_weights(fit)
-      }
+      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, pseudo)],
+                          pseudo,
+                          learners,
+                          "continuous",
+                          "lmtp_id",
+                          lrnr_folds)
     }
 
+    if (full_fits) {
+      fits[[t]] <- fit
+    } else {
+      fits[[t]] <- extract_sl_weights(fit)
+    }
 
-    m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
-    m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
-    m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, vars]), 1e-05)
-    m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, ]), 1e-05)
+    m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, shifted$train[jt & rt, ]), 1e-05)
+    m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, ]), 1e-05)
+    m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, ]), 1e-05)
 
     m_natural_train[!rt, t] <- 0
     m_shifted_train[!rt, t] <- 0

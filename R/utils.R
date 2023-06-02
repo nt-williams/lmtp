@@ -151,6 +151,9 @@ final_outcome <- function(outcomes) {
 }
 
 extract_sl_weights <- function(fit) {
+  if (inherits(fit, "mlr3superlearner")) {
+    return(cbind(Risk = fit$weights$cvRisk, Coef = fit$weights$coef))
+  }
   fit$coef
 }
 

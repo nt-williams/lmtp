@@ -46,14 +46,12 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
 
     learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-    fit <- run_ensemble(
-      natural$train[i & rt, ][[outcome]],
-      natural$train[i & rt, vars],
-      learners,
-      outcome_type,
-      id = natural$train[i & rt, ][["lmtp_id"]],
-      lrnr_folds
-    )
+    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+                        outcome,
+                        learners,
+                        outcome_type,
+                        "lmtp_id",
+                        lrnr_folds)
 
     if (full_fits) {
       fits[[t]] <- fit
@@ -61,8 +59,8 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, ]), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, ]), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
