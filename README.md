@@ -34,7 +34,7 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
+[`mlr3superlearner`](https://github.com/nt-williams/mlr3superlearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
@@ -49,36 +49,8 @@ accompanying vignette.
 
 ## Installation
 
-**lmtp** can be installed from CRAN with:
-
 ``` r
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
-
-The **sl3** compatible version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@sl3")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions and that uses **sl3**:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+remotes::install_github("nt-williams/lmtp@mlr3superlearner")
 ```
 
 ## What even is a modified treatment policy?
@@ -197,11 +169,11 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+- [`txshift`](https://github.com/nhejazi/txshift)  
+- [`tmle3`](https://github.com/tlverse/tmle3)  
+- [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+- [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+- [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 

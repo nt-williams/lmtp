@@ -46,11 +46,8 @@
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners_outcome \[\code{character}\]\cr
+#' @param learners_trt \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -104,8 +101,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
                       # intervention_type = c("static", "dynamic", "mtp"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm",
+                      learners_outcome = "glm",
+                      learners_trt = "glm",
                       folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
                       .learners_outcome_folds = 10, .learners_trt_folds = 10,
                       .return_full_fits = FALSE, ...) {
@@ -236,11 +233,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners_outcome \[\code{character}\]\cr
+#' @param learners_trt \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -295,8 +289,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm",
+                     learners_outcome = "glm",
+                     learners_trt = "glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
                      .learners_outcome_folds = 10, .learners_trt_folds = 10,
                      .return_full_fits = FALSE, ...) {
@@ -424,8 +418,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners \[\code{character}\]\cr
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -457,7 +450,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = "SL.glm",
+                     id = NULL, bounds = NULL, learners = "glm",
                      folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
                      .return_full_fits = FALSE) {
 
@@ -567,9 +560,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
-#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -612,10 +603,9 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     learners = "SL.glm",
+                     learners = "glm",
                      folds = 10, weights = NULL,
                      .bound = 1e-5, .trim = 0.999, .learners_folds = 10,
                      .return_full_fits = FALSE, ...) {
