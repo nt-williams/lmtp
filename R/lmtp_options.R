@@ -1,7 +1,26 @@
+#' Set LMTP Estimation Parameters
+#'
+#' @param .trim \[\code{numeric(1)}\]\cr
+#'  Determines the amount the density ratios should be trimmed.
+#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
+#'  to the 0.999 percentile. A value of 1 indicates no trimming.
+#' @param .learners_trt_metalearner \[\code{character(1)}\]\cr
+#' @param .learners_outcome_metalearner \[\code{character(1)}\]\cr
+#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_outcome}.
+#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_trt}.
+#' @param .return_full_fits \[\code{logical(1)}\]\cr
+#'  Return full \code{mlr3superlearner} fits? Default is \code{FALSE}.
+#'
+#' @return A list of parameters controlling the estimation procedure.
+#' @export
+#'
+#' @examples
+#' lmtp_control(.trim = 0.975)
 lmtp_control <- function(...) {
   change <- list(...)
-  control <- list(.bound = 1e-5,
-                  .trim = 0.999,
+  control <- list(.trim = 0.999,
                   .learners_trt_metalearner = "glm",
                   .learners_outcome_metalearner = "glm",
                   .learners_outcome_folds = 10,

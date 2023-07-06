@@ -20,9 +20,7 @@ lmtp_sub(
   learners = "glm",
   folds = 10,
   weights = NULL,
-  .bound = 1e-05,
-  .learners_folds = 10,
-  .return_full_fits = FALSE
+  control = lmtp_control()
 )
 }
 \arguments{
@@ -85,15 +83,8 @@ The number of folds to be used for cross-fitting.}
 \item{weights}{[\code{numeric(nrow(data))}]\cr
 An optional vector containing sampling weights.}
 
-\item{.bound}{[\code{numeric(1)}]\cr
-Determines that maximum and minimum values (scaled) predictions
-will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
-
-\item{.learners_folds}{[\code{integer(1)}]\cr
-The number of cross-validation folds for \code{learners}.}
-
-\item{.return_full_fits}{[\code{logical(1)}]\cr
-Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+\item{control}{[\code{list()}]\cr
+Output of \code{lmtp_control()}.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:

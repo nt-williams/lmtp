@@ -1,37 +1,38 @@
-cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
+cf_tmle <- function(task, outcome, ratios, learners, control, progress_bar) {
   out <- list()
 
-  ratios <- matrix(
-    t(apply(ratios, 1, cumprod)),
-    nrow = nrow(ratios),
-    ncol = ncol(ratios)
-  )
+  ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                   nrow = nrow(ratios),
+                   ncol = ncol(ratios))
 
-  for (fold in seq_along(Task$folds)) {
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
-      estimate_tmle(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
-        outcome, Task$node_list$outcome, Task$cens, Task$risk,
-        Task$tau, Task$outcome_type,
-        get_folded_data(ratios, Task$folds, fold)$train,
-        Task$weights[Task$folds[[fold]]$training_set],
-        learners, lrnr_folds, pb, full_fits
-      )
+      estimate_tmle(get_folded_data(task$natural, task$folds, fold),
+                    get_folded_data(task$shifted, task$folds, fold),
+                    outcome,
+                    task$node_list$outcome,
+                    task$cens,
+                    task$risk,
+                    task$tau,
+                    task$outcome_type,
+                    get_folded_data(ratios, task$folds, fold)$train,
+                    task$weights[task$folds[[fold]]$training_set],
+                    learners,
+                    control,
+                    progress_bar)
     },
     seed = TRUE)
   }
 
   out <- future::value(out)
 
-  list(
-    natural = recombine_outcome(out, "natural", Task$folds),
-    shifted = cbind(recombine_outcome(out, "shifted", Task$folds), Task$natural[["tmp_lmtp_scaled_outcome"]]),
-    fits = lapply(out, function(x) x[["fits"]])
-  )
+  list(natural = recombine_outcome(out, "natural", task$folds),
+       shifted = cbind(recombine_outcome(out, "shifted", task$folds),
+                       task$natural[["tmp_lmtp_scaled_outcome"]]),
+       fits = lapply(out, function(x) x[["fits"]]))
 }
 
-estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau, outcome_type, ratios, weights, learners, lrnr_folds, pb, full_fits) {
+estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau, outcome_type, ratios, weights, learners, control, progress_bar) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -58,9 +59,10 @@ estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau,
                         learners,
                         outcome_type,
                         "lmtp_id",
-                        lrnr_folds)
+                        control$.learners_outcome_metalearner,
+                        control$.learners_outcome_folds)
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
@@ -94,12 +96,10 @@ estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     m_natural_valid[!rv, t] <- 0
     m_shifted_valid[!rv, t] <- 0
 
-    pb()
+    progress_bar()
   }
 
-  list(
-    natural = m_natural_valid,
-    shifted = m_shifted_valid,
-    fits = fits
-  )
+  list(natural = m_natural_valid,
+       shifted = m_shifted_valid,
+       fits = fits)
 }

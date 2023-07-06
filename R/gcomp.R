@@ -1,16 +1,19 @@
-cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
+cf_sub <- function(Task, outcome, learners, control, progress_bar) {
   out <- list()
 
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
-      estimate_sub(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
-        outcome,
-        Task$node_list$outcome, Task$cens,
-        Task$risk, Task$tau, Task$outcome_type,
-        learners, lrnr_folds, pb, full_fits
-      )
+      estimate_sub(get_folded_data(Task$natural, Task$folds, fold),
+                   get_folded_data(Task$shifted, Task$folds, fold),
+                   outcome,
+                   Task$node_list$outcome,
+                   Task$cens,
+                   Task$risk,
+                   Task$tau,
+                   Task$outcome_type,
+                   learners,
+                   control,
+                   progress_bar)
     },
     seed = TRUE)
   }
@@ -24,7 +27,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
 }
 
 estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
-                         tau, outcome_type, learners, lrnr_folds, pb, full_fits) {
+                         tau, outcome_type, learners, control, progress_bar) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
@@ -51,9 +54,10 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
                         learners,
                         outcome_type,
                         "lmtp_id",
-                        lrnr_folds)
+                        control$.learners_outcome_metalearner,
+                        control$.learners_outcome_folds)
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
@@ -65,7 +69,7 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
 
-    pb()
+    progress_bar()
   }
 
   list(m = m, fits = fits)
