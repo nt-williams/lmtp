@@ -1,3 +1,15 @@
+# lmtp 1.3.2
+
+### New Features
+
+### Bug Fixes
+
+-   Fixed in bug in calculation of EIF where density ratios not being multiplied together over time. 
+
+### General
+
+-   Updating citations
+
 # lmtp 1.3.1
 
 ### New Features
