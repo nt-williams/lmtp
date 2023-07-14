@@ -66,11 +66,10 @@ eif <- function(r, tau, shifted, natural) {
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
-  inflnce <- eif(
-    r = eta$r, tau = eta$tau,
-    shifted = eta$m$shifted,
-    natural = eta$m$natural
-  )
+  inflnce <- eif(r = eta$r,
+                 tau = eta$tau,
+                 shifted = eta$m$shifted,
+                 natural = eta$m$natural)
 
   theta <- {
     if (augmented)
