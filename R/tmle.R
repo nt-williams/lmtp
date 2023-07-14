@@ -77,7 +77,8 @@ estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau,
       if (is.null(weights))
         ratios[i & rt, t]
       else
-        ratios[i & rt, t] * weights[i & rt]
+        compute_weights(ratios[i & rt, ], 1, t) * weights[i & rt]
+        # ratios[i & rt, t] * weights[i & rt]
     }
 
     fit <- sw(

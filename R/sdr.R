@@ -60,7 +60,7 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     }
 
     if (t < tau) {
-      densratio <- transform_sdr(ratio_sdr(ratios, t, tau),
+      densratio <- transform_sdr(compute_weights(ratios, t + 1, tau),
                                  t,
                                  tau,
                                  m_shifted_train,
@@ -101,20 +101,4 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
   list(natural = m_natural_valid,
        shifted = m_shifted_valid,
        fits = fits)
-}
-
-ratio_sdr <- function(ratio, tau, max_tau) {
-  out <- t(
-    apply(
-      ratio[, (tau + 1):max_tau, drop = FALSE],
-      1,
-      cumprod
-    )
-  )
-
-  if (tau != max_tau - 1) {
-    return(out)
-  }
-
-  t(out)
 }
