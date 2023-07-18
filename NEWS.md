@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
--   Fixed in bug in calculation of EIF where density ratios not being multiplied together over time. 
+-   Fixed bug in calculation of EIF where density ratios were not non-cumulative product ratios. Previous variance estimates starting with version 1.0 were incorrect. Point-estimates remain unaffected. 
 
 ### General
 
