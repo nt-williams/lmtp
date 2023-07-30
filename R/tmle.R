@@ -1,11 +1,9 @@
 cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
   out <- list()
 
-  ratios <- matrix(
-    t(apply(ratios, 1, cumprod)),
-    nrow = nrow(ratios),
-    ncol = ncol(ratios)
-  )
+  ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                   nrow = nrow(ratios),
+                   ncol = ncol(ratios))
 
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({

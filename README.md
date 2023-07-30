@@ -45,21 +45,10 @@ A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying vignette.
+accompanying technical paper in [Observational
+Studies](https://muse.jhu.edu/article/883479).
 
 ## Installation
-
-**lmtp** can be installed from CRAN with:
-
-``` r
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
 
 A stable version capable of handling multivariate exposure can be
 installed from GitHub with:
@@ -159,9 +148,9 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, mtp = TRUE, folds = 10)
 #>    Trt. Policy: (policy)
 #> 
 #> Population intervention estimate
-#>       Estimate: 0.2522
-#>     Std. error: 0.0105
-#>         95% CI: (0.2316, 0.2728)
+#>       Estimate: 0.2527
+#>     Std. error: 0.0224
+#>         95% CI: (0.2089, 0.2965)
 ```
 
 ## Data structure
@@ -190,24 +179,24 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+- [`txshift`](https://github.com/nhejazi/txshift)  
+- [`tmle3`](https://github.com/tlverse/tmle3)  
+- [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+- [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+- [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
 Please cite the following when using **lmtp** in publications. Citation
-should include both the R package and the paper establishing the
+should include both the R package article and the paper establishing the
 statistical methodology.
 
-    @Manual{,
-      title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+    @article{,
+      title = {lmtp: An R package for estimating the causal effects of modified treatment policies},
       author = {Nicholas T Williams and Iván Díaz},
-      year = {2021},
-      note = {R package version 2.0.0.9000},
-      url = {https://github.com/nt-williams/lmtp}
+      journal = {Observational Studies},
+      year = {2023},
+      url = {https://muse.jhu.edu/article/883479}
     }
 
     @article{
