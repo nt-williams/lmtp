@@ -51,24 +51,7 @@ Studies](https://muse.jhu.edu/article/883479).
 ## Installation
 
 ``` r
-<<<<<<< HEAD
 remotes::install_github("nt-williams/lmtp@mlr3superlearner")
-=======
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
-
-A version allowing for different covariates sets for the treatment,
-censoring, and outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@separate-variable-sets")
->>>>>>> master
 ```
 
 ## What even is a modified treatment policy?
@@ -114,6 +97,9 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
+#> Loading required package: mlr3superlearner
+#> Loading required package: mlr3learners
+#> Loading required package: mlr3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
