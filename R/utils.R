@@ -211,8 +211,7 @@ risk_indicators <- function(x) {
 }
 
 compute_weights <- function(r, t, tau) {
-  out <- apply(r[, t:tau, drop = FALSE], 1, cumprod)
-  if (is.null(ncol(out))) return(out)
+  out <- t(apply(r[, t:tau, drop = FALSE], 1, cumprod))
   if (ncol(out) > ncol(r)) return(t(out))
   out
 }

@@ -1,3 +1,15 @@
+# lmtp 1.3.2
+
+### New Features
+
+### Bug Fixes
+
+-   Fixed bug in calculation of EIF where density ratios were not non-cumulative product ratios. Previous variance estimates starting with version 1.0 were incorrect. Point-estimates remain unaffected. 
+
+### General
+
+-   Updating citations
+
 # lmtp 1.3.1
 
 ### New Features
