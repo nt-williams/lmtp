@@ -7,6 +7,7 @@ cf_sdr <- function(task, outcome, ratios, learners, control, progress_bar) {
                    outcome, task$node_list$outcome,
                    task$cens,
                    task$risk,
+                   task$id,
                    task$tau,
                    task$outcome_type,
                    get_folded_data(ratios, task$folds, fold)$train,
@@ -24,7 +25,7 @@ cf_sdr <- function(task, outcome, ratios, learners, control, progress_bar) {
        fits = lapply(out, function(x) x[["fits"]]))
 }
 
-estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
+estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, id, tau,
                          outcome_type, ratios, learners, control, progress_bar) {
 
   m_natural_train <- m_shifted_train <- cbind(matrix(nrow = nrow(natural$train),
@@ -50,12 +51,11 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     if (t == tau) {
       learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+      fit <- run_ensemble(natural$train[i & rt, c(id, vars, outcome)],
                           outcome,
                           learners,
                           outcome_type,
-                          "lmtp_id",
-                          control$.learners_outcome_metalearner,
+                          id,
                           control$.learners_outcome_folds)
     }
 
@@ -70,12 +70,11 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
 
       learners <- check_variation(natural$train[i & rt, ][[pseudo]], learners)
 
-      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, pseudo)],
+      fit <- run_ensemble(natural$train[i & rt, c(id, vars, pseudo)],
                           pseudo,
                           learners,
                           "continuous",
-                          "lmtp_id",
-                          control$.learners_outcome_metalearner,
+                          id,
                           control$.learners_outcome_folds)
     }
 

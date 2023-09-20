@@ -154,13 +154,13 @@ test_that("Contrast assertions", {
   L <- list(c("L1"), c("L2"))
   cens <- c("C1", "C2")
 
-  fit <- lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1)
+  fit <- suppressWarnings(lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1))
   expect_error(
     lmtp_contrast(fit, ref = 0.1),
     "Assertion on 'fits' failed: Contrasts not implemented for substitution/IPW estimators."
   )
 
-  fit <- lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1)
+  fit <- suppressWarnings(lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1))
   expect_error(
     lmtp_contrast(fit, ref = c(0.1, 0.2)),
     "Assertion on 'ref' failed: Must either be a single numeric value or another lmtp object."
@@ -171,7 +171,7 @@ test_that("Contrast assertions", {
     "Assertion on 'fits' failed: Objects must be of type 'lmtp'."
   )
 
-  fit <- lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1, outcome_type = "continuous")
+  fit <- suppressWarnings(lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = cens, folds = 1, outcome_type = "continuous"))
   expect_error(
     lmtp_contrast(fit, ref = 0.1, type = "rr"),
     "Assertion on 'type' failed: 'rr' specified but one or more outcome types are not 'binomial' or 'survival'."

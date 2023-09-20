@@ -17,7 +17,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners = "glm",
+  learners = c("mean", "glm"),
   folds = 10,
   weights = NULL,
   control = lmtp_control()

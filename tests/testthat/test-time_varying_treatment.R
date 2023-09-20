@@ -5,7 +5,7 @@ a <- c("A_1", "A_2", "A_3", "A_4")
 time_varying <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 
 for (i in a) {
-  tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+  tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
 }
 
 d <- function(data, trt) {
@@ -18,7 +18,7 @@ d <- function(data, trt) {
       out[[i]] <- as.numeric(as.character(a[i])) - 1
     }
   }
-  factor(unlist(out), levels = 0:5, ordered = TRUE)
+  factor(unlist(out), levels = 0:5, ordered = FALSE)
 }
 
 truth <- 0.305

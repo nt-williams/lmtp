@@ -4,8 +4,6 @@
 #'  Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_trt_metalearner \[\code{character(1)}\]\cr
-#' @param .learners_outcome_metalearner \[\code{character(1)}\]\cr
 #' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
@@ -21,17 +19,11 @@
 lmtp_control <- function(...) {
   change <- list(...)
   control <- list(.trim = 0.999,
-                  .learners_trt_metalearner = "glm",
-                  .learners_outcome_metalearner = "glm",
-                  .learners_outcome_folds = 10,
-                  .learners_trt_folds = 10,
+                  .learners_outcome_folds = NULL,
+                  .learners_trt_folds = NULL,
                   .return_full_fits = FALSE)
-
   if (length(change) == 0) return(control)
-
-  for (arg in names(change)) {
-    control[[arg]] <- change[[arg]]
-  }
-
+  change <- change[names(change) %in% names(control)]
+  control[names(change)] <- change
   control
 }

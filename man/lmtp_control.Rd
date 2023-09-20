@@ -12,10 +12,6 @@ Determines the amount the density ratios should be trimmed.
 The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 to the 0.999 percentile. A value of 1 indicates no trimming.}
 
-\item{.learners_trt_metalearner}{[\code{character(1)}]\cr}
-
-\item{.learners_outcome_metalearner}{[\code{character(1)}]\cr}
-
 \item{.learners_outcome_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_outcome}.}
 

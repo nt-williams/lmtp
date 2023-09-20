@@ -13,6 +13,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, progress_bar) {
                     task$node_list$outcome,
                     task$cens,
                     task$risk,
+                    task$id,
                     task$tau,
                     task$outcome_type,
                     get_folded_data(ratios, task$folds, fold)$train,
@@ -32,7 +33,8 @@ cf_tmle <- function(task, outcome, ratios, learners, control, progress_bar) {
        fits = lapply(out, function(x) x[["fits"]]))
 }
 
-estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau, outcome_type, ratios, weights, learners, control, progress_bar) {
+estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, id,
+                          tau, outcome_type, ratios, weights, learners, control, progress_bar) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -54,12 +56,11 @@ estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau,
 
     learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+    fit <- run_ensemble(natural$train[i & rt, c(id, vars, outcome)],
                         outcome,
                         learners,
                         outcome_type,
-                        "lmtp_id",
-                        control$.learners_outcome_metalearner,
+                        id,
                         control$.learners_outcome_folds)
 
     if (control$.return_full_fits) {
@@ -77,8 +78,7 @@ estimate_tmle <- function(natural, shifted, outcome, node_list, cens, risk, tau,
       if (is.null(weights))
         ratios[i & rt, t]
       else
-        compute_weights(ratios[i & rt, ], 1, t) * weights[i & rt]
-        # ratios[i & rt, t] * weights[i & rt]
+        ratios[i & rt, t] * weights[i & rt]
     }
 
     fit <- sw(

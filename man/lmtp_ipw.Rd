@@ -17,7 +17,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
-  learners = "glm",
+  learners = c("mean", "glm"),
   folds = 10,
   weights = NULL,
   control = lmtp_control(),

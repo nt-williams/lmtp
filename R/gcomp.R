@@ -9,6 +9,7 @@ cf_sub <- function(Task, outcome, learners, control, progress_bar) {
                    Task$node_list$outcome,
                    Task$cens,
                    Task$risk,
+                   Task$id,
                    Task$tau,
                    Task$outcome_type,
                    learners,
@@ -26,7 +27,7 @@ cf_sub <- function(Task, outcome, learners, control, progress_bar) {
   )
 }
 
-estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
+estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
                          tau, outcome_type, learners, control, progress_bar) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
@@ -49,12 +50,11 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
 
     learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+    fit <- run_ensemble(natural$train[i & rt, c(id, vars, outcome)],
                         outcome,
                         learners,
                         outcome_type,
-                        "lmtp_id",
-                        control$.learners_outcome_metalearner,
+                        id,
                         control$.learners_outcome_folds)
 
     if (control$.return_full_fits) {
