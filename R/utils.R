@@ -6,8 +6,15 @@ determine_tau <- function(outcome, trt) {
   length(outcome)
 }
 
-setup_cv <- function(data, id, V = 10) {
-  out <- origami::make_folds(data, cluster_ids = id, V = V)
+setup_cv <- function(data, V = 10, id, strata, outcome_type) {
+  if (length(unique(id)) == nrow(data) & outcome_type == "binomial") {
+    strata <- data[[strata]]
+    strata[is.na(strata)] <- 2
+    out <- origami::make_folds(data, V = V, strata_ids = strata)
+  } else {
+    out <- origami::make_folds(data, cluster_ids = id, V = V)
+  }
+
   if (V > 1) {
     return(out)
   }
