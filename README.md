@@ -34,7 +34,7 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
+[`mlr3superlearner`](https://github.com/nt-williams/mlr3superlearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
@@ -101,6 +101,9 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
+#> Loading required package: mlr3superlearner
+#> Loading required package: mlr3learners
+#> Loading required package: mlr3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)

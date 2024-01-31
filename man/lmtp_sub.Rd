@@ -17,12 +17,10 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners = "SL.glm",
+  learners = c("mean", "glm"),
   folds = 10,
   weights = NULL,
-  .bound = 1e-05,
-  .learners_folds = 10,
-  .return_full_fits = FALSE
+  control = lmtp_control()
 )
 }
 \arguments{
@@ -79,8 +77,7 @@ An optional, ordered vector of the bounds for a continuous outcomes. If \code{NU
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{learners}{[\code{character}]\cr}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
@@ -88,15 +85,8 @@ The number of folds to be used for cross-fitting.}
 \item{weights}{[\code{numeric(nrow(data))}]\cr
 An optional vector containing sampling weights.}
 
-\item{.bound}{[\code{numeric(1)}]\cr
-Determines that maximum and minimum values (scaled) predictions
-will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
-
-\item{.learners_folds}{[\code{integer(1)}]\cr
-The number of cross-validation folds for \code{learners}.}
-
-\item{.return_full_fits}{[\code{logical(1)}]\cr
-Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+\item{control}{[\code{list()}]\cr
+Output of \code{lmtp_control()}.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -208,12 +198,12 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
-  # as an ordered categorical variable. To account for the exposure being a
+  # as a categorical variable. To account for the exposure being a
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5)
   }
 
   policy <- function(data, trt) {
@@ -226,8 +216,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
         new_a[i] <- as.numeric(as.character(a[i])) - 1
       }
     }
-
-    out <- list(factor(new_a, levels = 0:5, ordered = TRUE))
+    out <- list(factor(new_a, levels = 0:5))
     setNames(out, trt)
   }
 

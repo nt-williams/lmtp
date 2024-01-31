@@ -88,12 +88,12 @@
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
-  # as an ordered categorical variable. To account for the exposure being a
+  # as a categorical variable. To account for the exposure being a
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5)
   }
 
   policy <- function(data, trt) {
@@ -106,8 +106,7 @@
         new_a[i] <- as.numeric(as.character(a[i])) - 1
       }
     }
-
-    out <- list(factor(new_a, levels = 0:5, ordered = TRUE))
+    out <- list(factor(new_a, levels = 0:5))
     setNames(out, trt)
   }
 

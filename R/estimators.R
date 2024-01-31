@@ -48,28 +48,14 @@
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners_outcome \[\code{character}\]\cr
+#' @param learners_trt \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_outcome}.
-#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_trt}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
@@ -104,13 +90,11 @@
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
-                      # intervention_type = c("static", "dynamic", "mtp"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm",
-                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                      .learners_outcome_folds = 10, .learners_trt_folds = 10,
-                      .return_full_fits = FALSE, ...) {
+                      learners_outcome = c("mean", "glm"),
+                      learners_trt = c("mean", "glm"),
+                      folds = 10, weights = NULL,
+                      control = lmtp_control(), ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -133,11 +117,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
-  checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
 
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
@@ -146,28 +129,26 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
             call. = FALSE)
   }
 
-  Task <- lmtp_Task$new(
-    data = data,
-    trt = trt,
-    outcome = outcome,
-    time_vary = time_vary,
-    baseline = baseline,
-    cens = cens,
-    k = k,
-    shift = shift,
-    shifted = shifted,
-    id = id,
-    outcome_type = match.arg(outcome_type),
-    V = folds,
-    weights = weights,
-    bounds = bounds,
-    bound = .bound
-  )
+  Task <- lmtp_Task$new(data = data,
+                        trt = trt,
+                        outcome = outcome,
+                        time_vary = time_vary,
+                        baseline = baseline,
+                        cens = cens,
+                        k = k,
+                        shift = shift,
+                        shifted = shifted,
+                        id = id,
+                        outcome_type = match.arg(outcome_type),
+                        V = folds,
+                        weights = weights,
+                        bounds = bounds)
 
-  pb <- progressr::progressor(Task$tau*folds*2)
+  progress_bar <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, control, progress_bar)
+  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios,
+                    learners_outcome, control, progress_bar)
 
   theta_dr(
     list(
@@ -176,7 +157,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       r = ratios$ratios,
       tau = Task$tau,
       folds = Task$folds,
-      id = Task$id,
+      id = Task$natural$lmtp_id,
       outcome_type = Task$outcome_type,
       bounds = Task$bounds,
       weights = Task$weights,
@@ -239,28 +220,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners_outcome \[\code{character}\]\cr
+#' @param learners_trt \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_outcome}.
-#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_trt}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
@@ -295,14 +262,12 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                      mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                     .learners_outcome_folds = 10, .learners_trt_folds = 10,
-                     .return_full_fits = FALSE, ...) {
+                     learners_outcome = c("mean", "glm"),
+                     learners_trt = c("mean", "glm"),
+                     folds = 10, weights = NULL,
+                     control = lmtp_control(), ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -325,29 +290,25 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
-  checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
-    data = data,
-    trt = trt,
-    outcome = outcome,
-    time_vary = time_vary,
-    baseline = baseline,
-    cens = cens,
-    k = k,
-    shift = shift,
-    shifted = shifted,
-    id = id,
-    outcome_type = match.arg(outcome_type),
-    V = folds,
-    weights = weights,
-    bounds = bounds,
-    bound = .bound
-  )
+  Task <- lmtp_Task$new(data = data,
+                        trt = trt,
+                        outcome = outcome,
+                        time_vary = time_vary,
+                        baseline = baseline,
+                        cens = cens,
+                        k = k,
+                        shift = shift,
+                        shifted = shifted,
+                        id = id,
+                        outcome_type = match.arg(outcome_type),
+                        V = folds,
+                        weights = weights,
+                        bounds = bounds)
 
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
@@ -356,10 +317,11 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
             call. = FALSE)
   }
 
-  pb <- progressr::progressor(Task$tau*folds*2)
+  progress_bar <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, control, progress_bar)
+  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios,
+                   learners_outcome, control, progress_bar)
 
   theta_dr(
     list(
@@ -368,7 +330,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       r = ratios$ratios,
       tau = Task$tau,
       folds = Task$folds,
-      id = Task$id,
+      id = Task$natural$lmtp_id,
       outcome_type = Task$outcome_type,
       bounds = Task$bounds,
       weights = Task$weights,
@@ -428,19 +390,13 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners \[\code{character}\]\cr
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .learners_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -461,9 +417,9 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
-                     .return_full_fits = FALSE) {
+                     id = NULL, bounds = NULL, learners = c("mean", "glm"),
+                     folds = 10, weights = NULL,
+                     control = lmtp_control()) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -486,31 +442,27 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
-  checkmate::assertNumber(.bound)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
-    data = data,
-    trt = trt,
-    outcome = outcome,
-    time_vary = time_vary,
-    baseline = baseline,
-    cens = cens,
-    k = k,
-    shift = shift,
-    shifted = shifted,
-    id = id,
-    outcome_type = match.arg(outcome_type),
-    V = folds,
-    weights = weights,
-    bounds = bounds,
-    bound = .bound
-  )
+  Task <- lmtp_Task$new(data = data,
+                        trt = trt,
+                        outcome = outcome,
+                        time_vary = time_vary,
+                        baseline = baseline,
+                        cens = cens,
+                        k = k,
+                        shift = shift,
+                        shifted = shifted,
+                        id = id,
+                        outcome_type = match.arg(outcome_type),
+                        V = folds,
+                        weights = weights,
+                        bounds = bounds)
 
-  pb <- progressr::progressor(Task$tau*folds)
+  progress_bar <- progressr::progressor(Task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, .return_full_fits, pb)
+  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, control, progress_bar)
 
   theta_sub(
     eta = list(
@@ -572,24 +524,13 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
-#' @param learners \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
-#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
@@ -617,13 +558,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     learners = "SL.glm",
+                     learners = c("mean", "glm"),
                      folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10,
-                     .return_full_fits = FALSE, ...) {
+                     control = lmtp_control(), ...) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -645,30 +584,26 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
-    data = data,
-    trt = trt,
-    outcome = outcome,
-    time_vary = time_vary,
-    baseline = baseline,
-    cens = cens,
-    k = k,
-    shift = shift,
-    shifted = shifted,
-    id = id,
-    outcome_type = match.arg(outcome_type),
-    V = folds,
-    weights = weights,
-    bounds = NULL,
-    bound = .bound
-  )
+  Task <- lmtp_Task$new(data = data,
+                        trt = trt,
+                        outcome = outcome,
+                        time_vary = time_vary,
+                        baseline = baseline,
+                        cens = cens,
+                        k = k,
+                        shift = shift,
+                        shifted = shifted,
+                        id = id,
+                        outcome_type = match.arg(outcome_type),
+                        V = folds,
+                        weights = weights,
+                        bounds = NULL)
 
-  pb <- progressr::progressor(Task$tau*folds)
+  progress_bar <- progressr::progressor(Task$tau*folds)
 
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
@@ -677,7 +612,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
             call. = FALSE)
   }
 
-  ratios <- cf_r(Task, learners, mtp, .learners_folds, .trim, .return_full_fits, pb)
+  ratios <- cf_r(Task, learners, mtp, control, progress_bar)
 
   theta_ipw(
     eta = list(

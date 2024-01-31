@@ -1,25 +1,26 @@
-cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
-  fopts <- options("lmtp.bound", "lmtp.trt.length")
+cf_r <- function(task, learners, mtp, control, progress_bar) {
   out <- list()
-
-  for (fold in seq_along(Task$folds)) {
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
-      options(fopts)
-
-      estimate_r(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
-        Task$trt, Task$cens, Task$risk, Task$tau, Task$node_list$trt,
-        learners, pb, mtp, lrnr_folds, full_fits
-      )
+      estimate_r(get_folded_data(task$natural, task$folds, fold),
+                 get_folded_data(task$shifted, task$folds, fold),
+                 task$trt,
+                 task$cens,
+                 task$risk,
+                 task$tau,
+                 task$node_list$trt,
+                 learners,
+                 mtp,
+                 control,
+                 progress_bar)
     },
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(out), Task$folds), trim)
+  trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, lrnr_folds, full_fits) {
+estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, mtp, control, progress_bar) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
 
@@ -42,28 +43,26 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     vars <- c(node_list[[t]], cens[[t]])
     stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
 
-    fit <- run_ensemble(
-      stacked[jrt & drt, ][["tmp_lmtp_stack_indicator"]],
-      stacked[jrt & drt, vars],
-      learners,
-      "binomial",
-      stacked[jrt & drt, ]$lmtp_id,
-      lrnr_folds
-    )
+    fit <- run_ensemble(stacked[jrt & drt, c("lmtp_id", vars, "tmp_lmtp_stack_indicator")],
+                        "tmp_lmtp_stack_indicator",
+                        learners,
+                        "binomial",
+                        "lmtp_id",
+                        control$.learners_trt_folds)
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, vars]), .Machine$double.eps)
+    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, ]), .Machine$double.eps)
 
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
     densratios[, t] <- ratios
 
-    pb()
+    progress_bar()
   }
 
   list(ratios = densratios, fits = fits)

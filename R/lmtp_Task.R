@@ -16,7 +16,8 @@ lmtp_Task <- R6::R6Class(
     bounds = NULL,
     folds = NULL,
     weights = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k, shift, shifted, id, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL, bound = NULL) {
+    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
+                          shift, shifted, id, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL) {
       self$tau <- determine_tau(outcome, trt)
       self$n <- nrow(data)
       self$trt <- trt
@@ -27,8 +28,8 @@ lmtp_Task <- R6::R6Class(
       self$survival <- outcome_type == "survival"
       self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
       data$lmtp_id <- create_ids(data, id)
-      self$id <- data$lmtp_id
-      self$folds <- setup_cv(data, data$lmtp_id, V)
+      self$id <- id
+      self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
 
       shifted <- {
         if (is.null(shifted) && !is.null(shift))

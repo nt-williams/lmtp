@@ -1,16 +1,20 @@
-cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
+cf_sub <- function(Task, outcome, learners, control, progress_bar) {
   out <- list()
 
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
-      estimate_sub(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
-        outcome,
-        Task$node_list$outcome, Task$cens,
-        Task$risk, Task$tau, Task$outcome_type,
-        learners, lrnr_folds, pb, full_fits
-      )
+      estimate_sub(get_folded_data(Task$natural, Task$folds, fold),
+                   get_folded_data(Task$shifted, Task$folds, fold),
+                   outcome,
+                   Task$node_list$outcome,
+                   Task$cens,
+                   Task$risk,
+                   Task$id,
+                   Task$tau,
+                   Task$outcome_type,
+                   learners,
+                   control,
+                   progress_bar)
     },
     seed = TRUE)
   }
@@ -23,8 +27,8 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
   )
 }
 
-estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
-                         tau, outcome_type, learners, lrnr_folds, pb, full_fits) {
+estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
+                         tau, outcome_type, learners, control, progress_bar) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
@@ -46,28 +50,26 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
 
     learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
 
-    fit <- run_ensemble(
-      natural$train[i & rt, ][[outcome]],
-      natural$train[i & rt, vars],
-      learners,
-      outcome_type,
-      id = natural$train[i & rt, ][["lmtp_id"]],
-      lrnr_folds
-    )
+    fit <- run_ensemble(natural$train[i & rt, c(id, vars, outcome)],
+                        outcome,
+                        learners,
+                        outcome_type,
+                        id,
+                        control$.learners_outcome_folds)
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, ]), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, ]), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
 
-    pb()
+    progress_bar()
   }
 
   list(m = m, fits = fits)
