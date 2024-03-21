@@ -5,7 +5,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
     out[[fold]] <- future::future({
       estimate_sub(
         get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
+        get_folded_data(Task$shifted[, Task$trt, drop = F], Task$folds, fold),
         outcome,
         Task$node_list$outcome, Task$cens,
         Task$risk, Task$tau, Task$outcome_type,
@@ -61,8 +61,15 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    trt_var <- names(shifted$train)[t]
+    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
+
+    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
+
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
