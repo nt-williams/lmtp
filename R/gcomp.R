@@ -1,17 +1,17 @@
-cf_sub <- function(Task, outcome, learners, control, progress_bar) {
+cf_sub <- function(task, outcome, learners, control, progress_bar) {
   out <- list()
 
-  for (fold in seq_along(Task$folds)) {
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
-      estimate_sub(get_folded_data(Task$natural, Task$folds, fold),
-                   get_folded_data(Task$shifted, Task$folds, fold),
+      estimate_sub(get_folded_data(task$natural, task$folds, fold),
+                   get_folded_data(task$shifted[, task$trt, drop = F], task$folds, fold),
                    outcome,
-                   Task$node_list$outcome,
-                   Task$cens,
-                   Task$risk,
-                   Task$id,
-                   Task$tau,
-                   Task$outcome_type,
+                   task$node_list$outcome,
+                   task$cens,
+                   task$risk,
+                   task$id,
+                   task$tau,
+                   task$outcome_type,
                    learners,
                    control,
                    progress_bar)
@@ -22,7 +22,7 @@ cf_sub <- function(Task, outcome, learners, control, progress_bar) {
   out <- future::value(out)
 
   list(
-    m = recombine_outcome(out, "m", Task$folds),
+    m = recombine_outcome(out, "m", task$folds),
     fits = lapply(out, function(x) x[["fits"]])
   )
 }
@@ -63,8 +63,15 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, ]), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, ]), 1e-05)
+    trt_var <- names(shifted$train)[t]
+    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
+
+    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
+
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
