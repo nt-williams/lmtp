@@ -4,7 +4,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
     out[[fold]] <- future::future({
       estimate_sdr(
         get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
+        get_folded_data(Task$shifted[, Task$trt, drop = F], Task$folds, fold),
         outcome, Task$node_list$outcome,
         Task$cens, Task$risk, Task$tau, Task$outcome_type,
         get_folded_data(ratios, Task$folds, fold)$train,
@@ -82,10 +82,17 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
       }
     }
 
+    trt_var <- names(shifted$train)[t]
+    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
+
+    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
+
     m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
-    m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
+    m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, under_shift_train), 1e-05)
     m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, vars]), 1e-05)
-    m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
     m_natural_train[!rt, t] <- 0
     m_shifted_train[!rt, t] <- 0

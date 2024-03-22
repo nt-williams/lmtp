@@ -1,3 +1,13 @@
+# lmtp 1.3.3
+
+### New Features
+
+### Bug Fixes
+
+-   Fixed a bug where estimators return incorrect parameter estimates for a specific DGP (see issue \#130)
+
+### General
+
 # lmtp 1.3.2
 
 ### New Features
