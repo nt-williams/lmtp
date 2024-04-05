@@ -78,15 +78,12 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, id, t
                           control$.learners_outcome_folds)
     }
 
-<<<<<<< HEAD
     if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-=======
->>>>>>> 3d968bb (Fix for issue #130)
     trt_var <- names(shifted$train)[t]
     under_shift_train <- natural$train[jt & rt, vars]
     under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
