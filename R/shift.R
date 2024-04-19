@@ -69,3 +69,45 @@ static_binary_on <- function(data, trt) {
 static_binary_off <- function(data, trt) {
   rep(0, length(data[[trt]]))
 }
+
+#' IPSI Function Factory
+#'
+#' A function factory that returns a shift function for increasing or decreasing
+#' the probability of exposure when exposure is binary.
+#'
+#' @param delta \[\code{numeric(1)}\]\cr
+#'  A risk ratio between 0 and Inf.
+#'
+#' @seealso [ipsi_down()], [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @return A shift function.
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' data("iptwExWide", package = "twang")
+#' a <- paste0("tx", 1:3)
+#' baseline <- c("gender", "age")
+#' tv <- list(c("use0"), c("use1"), c("use2"))
+#' lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
+#'          shift = ipsi(0.5), outcome_type = "continuous", folds = 2)
+#' }
+ipsi <- function(delta) {
+  if (delta > 1) {
+    return(ipsi_up(1 / delta))
+  }
+  ipsi_down(delta)
+}
+
+ipsi_up <- function(delta) {
+  function(data, trt) {
+    eps <- runif(nrow(data), 0, 1)
+    ifelse(eps < delta, data[[trt]], 1)
+  }
+}
+
+ipsi_down <- function(delta) {
+  function(data, trt) {
+    eps <- runif(nrow(data), 0, 1)
+    ifelse(eps < delta, data[[trt]], 0)
+  }
+}
