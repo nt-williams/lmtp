@@ -48,6 +48,8 @@
 #'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome \[\code{character}\]\cr
 #' @param learners_trt \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
+#' @param trt_method \[\code{character}\]\cr
+#'  Method for estimating treatment assignment mechanism (default or riesz)
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -91,6 +93,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
+                      trt_method = "default",
                       folds = 10, weights = NULL,
                       control = lmtp_control(), ...) {
 
@@ -145,8 +148,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   progress_bar <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, control, progress_bar)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios,
+  if(trt_method == "default") {
+    ratios <- cf_r(Task, learners_trt, mtp, control, progress_bar)
+  }
+  else {
+    ratios <- cf_rr(Task, learners_trt, mtp, control, progress_bar)
+  }
+
+  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", trt_method == "riesz", ratios$ratios,
                     learners_outcome, control, progress_bar)
 
   theta_dr(
@@ -154,6 +163,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      cumulated = trt_method == "riesz",
       tau = Task$tau,
       folds = Task$folds,
       id = Task$natural$lmtp_id,
@@ -520,6 +530,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners \[\code{character}\]\cr \bold{Only include candidate learners capable of binary classification}.
+#' @param trt_method \[\code{character}\]\cr
+#'  Method for estimating treatment assignment mechanism (default or riesz)
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -556,6 +568,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
+                     trt_method = "default",
                      folds = 10, weights = NULL,
                      control = lmtp_control(), ...) {
 
@@ -608,15 +621,21 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
             call. = FALSE)
   }
 
-  ratios <- cf_r(Task, learners, mtp, control, progress_bar)
-
-  theta_ipw(
-    eta = list(
-      r = matrix(
+  if(trt_method == "default") {
+    ratios <- cf_r(Task, learners, mtp, control, progress_bar)
+    ratios$ratios <- matrix(
         t(apply(ratios$ratios, 1, cumprod)),
         nrow = nrow(ratios$ratios),
         ncol = ncol(ratios$ratios)
-      ),
+      )
+  }
+  else {
+    ratios <- cf_rr(Task, learners, mtp, control, progress_bar)
+  }
+
+  theta_ipw(
+    eta = list(
+      r = ratios$ratios,
       y = if (Task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {

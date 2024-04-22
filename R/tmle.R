@@ -1,9 +1,11 @@
-cf_tmle <- function(task, outcome, ratios, learners, control, progress_bar) {
+cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, progress_bar) {
   out <- list()
 
-  ratios <- matrix(t(apply(ratios, 1, cumprod)),
-                   nrow = nrow(ratios),
-                   ncol = ncol(ratios))
+  if(cumulated == FALSE) {
+    ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                     nrow = nrow(ratios),
+                     ncol = ncol(ratios))
+  }
 
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
