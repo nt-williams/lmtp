@@ -120,10 +120,10 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
-#> Population intervention effect
+#> Population intervention estimate
 #>       Estimate: 0.2526
-#>     Std. error: 0.0105
-#>         95% CI: (0.2321, 0.2732)
+#>     Std. error: 0.0223
+#>         95% CI: (0.2089, 0.2962)
 ```
 
 ## Data structure
