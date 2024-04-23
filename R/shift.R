@@ -2,6 +2,12 @@ shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
     return(shift_cens(data, cens))
   }
+
+  is_multivariate <- is.list(trt)
+  if (isTRUE(is_multivariate)) {
+    return(shift_trt_list(shift_cens(data, cens), trt, shift))
+  }
+
   shift_trt(shift_cens(data, cens), trt, shift)
 }
 
@@ -13,9 +19,19 @@ shift_cens <- function(data, cens) {
   as.data.frame(out, check.names = FALSE)
 }
 
-shift_trt <- function(data, trt, .f) {
+shift_trt_character <- function(data, trt, .f) {
   for (a in trt) {
     data[[a]] <- .f(data, a)
+  }
+  data
+}
+
+shift_trt_list <- function(data, trt, .f) {
+  for (a in trt) {
+    new <- .f(data, a)
+    for (col in a) {
+      data[[col]] <- new[[col]]
+    }
   }
   data
 }
