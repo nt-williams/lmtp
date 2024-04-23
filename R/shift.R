@@ -8,7 +8,7 @@ shift_data <- function(data, trt, cens, shift) {
     return(shift_trt_list(shift_cens(data, cens), trt, shift))
   }
 
-  shift_trt(shift_cens(data, cens), trt, shift)
+  shift_trt_character(shift_cens(data, cens), trt, shift)
 }
 
 shift_cens <- function(data, cens) {

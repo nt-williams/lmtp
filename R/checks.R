@@ -2,7 +2,11 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   for (t in 1:determine_tau(outcome, trt)) {
     ci <- censored(x, cens, t)$j
     di <- at_risk(x, risk_indicators(outcome), t, TRUE)
-    trt_t <- ifelse(length(trt) == 1, trt, trt[t])
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
     data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
