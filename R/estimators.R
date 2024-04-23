@@ -7,8 +7,11 @@
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -196,8 +199,11 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -386,8 +392,11 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -529,8 +538,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
