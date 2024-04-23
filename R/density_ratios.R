@@ -30,7 +30,11 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     jrv <- censored(natural$valid, cens, t)$j
     drv <- at_risk(natural$valid, risk, t)
 
-    trt_t <- ifelse(length(trt) > 1, trt[t], trt)
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
 
     frv <- followed_rule(natural$valid[[trt_t]], shifted$valid[[trt_t]], mtp)
 
@@ -68,7 +72,7 @@ stack_data <- function(natural, shifted, trt, cens, tau) {
   shifted_half <- natural
 
   if (length(trt) > 1 || tau == 1) {
-    shifted_half[[trt[tau]]] <- shifted[[trt[tau]]]
+    shifted_half[, trt[[tau]]] <- shifted[, trt[[tau]]]
   }
 
   if (!is.null(cens)) {
