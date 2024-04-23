@@ -36,7 +36,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
       trt_t <- trt[[1]]
     }
 
-    frv <- followed_rule(natural$valid[[trt_t]], shifted$valid[[trt_t]], mtp)
+    frv <- followed_rule(natural$valid[, trt_t], shifted$valid[, trt_t], mtp)
 
     vars <- c(node_list[[t]], cens[[t]])
     stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
