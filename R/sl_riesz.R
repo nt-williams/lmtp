@@ -12,6 +12,7 @@ riesz_superlearner_weights <- function(learners, task_valid) {
 run_riesz_ensemble <- function(learners, natural_train, shifted_train, conditional_train,
                                natural_valid, shifted_valid, conditional_valid, folds) {
 
+  if(is.null(folds)) folds <- 5
   sl <- SuperRiesz::super_riesz(
     natural_train,
     list(shifted = shifted_train, weight = data.frame(weight = conditional_train / mean(conditional_train))),

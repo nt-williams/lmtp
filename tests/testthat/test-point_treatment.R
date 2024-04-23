@@ -17,6 +17,7 @@ suppressWarnings({
   sub <- lmtp_sub(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
   ipw <- lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
   tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
+  tmle_riesz <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1, trt_method = "riesz", learners_trt = c("glm"))
   sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
 })
 
@@ -25,5 +26,6 @@ test_that("point treatment fidelity", {
   expect_equal(truth, sub$theta, tolerance = 0.025)
   expect_equal(truth, ipw$theta, tolerance = 0.025)
   expect_equal(truth, tmle$theta, tolerance = 0.025)
+  expect_equal(truth, tmle_riesz$theta, tolerance = 0.025)
   expect_equal(truth, sdr$theta, tolerance = 0.025)
 })
