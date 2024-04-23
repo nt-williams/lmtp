@@ -3,6 +3,7 @@
 ### New Features
 
 -   Can now estimate the effects of simultaneous interventions on multiple variables. 
+-   New pre-packaged shift function, `ipsi()` for estimating IPSI effects using the risk ratio.
 
 ### Buf Fixes
 
