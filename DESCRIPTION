@@ -36,7 +36,8 @@ Imports:
     future (>= 1.17.0),
     progressr,
     data.table (>= 1.13.0),
-    checkmate (>= 2.1.0)
+    checkmate (>= 2.1.0),
+    SuperRiesz
 URL: https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
