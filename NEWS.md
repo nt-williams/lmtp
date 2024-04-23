@@ -1,3 +1,13 @@
+# lmtp 1.4.0
+
+### New Features
+
+-   Can now estimate the effects of simultaneous interventions on multiple variables. 
+
+### Buf Fixes
+
+### General
+
 # lmtp 1.3.3
 
 ### New Features
