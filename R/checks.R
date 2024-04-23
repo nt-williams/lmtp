@@ -15,6 +15,14 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
 
 assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
 
+assert_trt <- function(trt, tau) {
+  is_list <- is.list(trt)
+  if (!isTRUE(is_list)) {
+    return(assertTrtCharacter(trt, tau))
+  }
+  assertTrtList(trt, tau)
+}
+
 check_trt_character <- function(trt, tau) {
   is_character <- checkmate::check_character(trt)
   if (!isTRUE(is_character)) {
@@ -29,6 +37,21 @@ check_trt_character <- function(trt, tau) {
 }
 
 assertTrtCharacter <- checkmate::makeAssertionFunction(check_trt_character)
+
+check_trt_list <- function(trt, tau) {
+  is_list <- checkmate::check_list(trt)
+  if (!isTRUE(is_list)) {
+    return(is_list)
+  }
+
+  if (length(trt) != 1 && length(trt) != tau) {
+    return(paste0("'trt' should be of length 1 or ", tau))
+  }
+
+  TRUE
+}
+
+assertTrtList <- checkmate::makeAssertionFunction(check_trt_list)
 
 check_reserved_names <- function(x) {
   bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)

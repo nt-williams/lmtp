@@ -117,7 +117,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
@@ -308,7 +308,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
@@ -468,7 +468,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
@@ -627,7 +627,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
