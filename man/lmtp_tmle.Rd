@@ -119,8 +119,6 @@ The number of cross-validation folds for \code{learners_trt}.}
 
 \item{.return_full_fits}{[\code{logical(1)}]\cr
 Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
-
-\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:

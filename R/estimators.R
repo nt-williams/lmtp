@@ -71,7 +71,6 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -139,13 +138,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(.bound)
   checkmate::assertNumber(.trim, upper = 1)
   checkmate::assertLogical(.return_full_fits, len = 1)
-
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_tmle()` is deprecated as of lmtp 1.3.1",
-            call. = FALSE)
-  }
 
   Task <- lmtp_Task$new(
     data = data,
@@ -263,7 +255,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -350,13 +341,6 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bounds = bounds,
     bound = .bound
   )
-
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_sdr()` is deprecated as of lmtp 1.3.1",
-            call. = FALSE)
-  }
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
@@ -594,7 +578,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  The number of cross-validation folds for \code{learners}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -673,13 +656,6 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   )
 
   pb <- progressr::progressor(Task$tau*folds)
-
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_ipw()` is deprecated as of lmtp 1.3.1",
-            call. = FALSE)
-  }
 
   ratios <- cf_r(Task, learners, mtp, .learners_folds, .trim, .return_full_fits, pb)
 
