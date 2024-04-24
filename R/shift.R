@@ -94,7 +94,7 @@ static_binary_off <- function(data, trt) {
 #' @param delta \[\code{numeric(1)}\]\cr
 #'  A risk ratio between 0 and Inf.
 #'
-#' @seealso [ipsi_down()], [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
 #' @return A shift function.
 #' @export
 #'

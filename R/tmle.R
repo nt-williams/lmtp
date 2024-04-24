@@ -1,6 +1,5 @@
 cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
-  out <- list()
-
+  out <- vector("list", length = length(Task$folds))
   ratios <- matrix(t(apply(ratios, 1, cumprod)),
                    nrow = nrow(ratios),
                    ncol = ncol(ratios))
@@ -33,7 +32,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
-  fits <- list()
+  fits <- vector("list", length = tau)
   for (t in tau:1) {
     i  <- censored(natural$train, cens, t)$i
     jt <- censored(natural$train, cens, t)$j
@@ -66,12 +65,17 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    trt_var <- trt[[t]]
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
+
     under_shift_train <- natural$train[jt & rt, vars]
-    under_shift_train[, trt_var] <- shifted$train[jt & rt, trt_var]
+    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
 
     under_shift_valid <- natural$valid[jv & rv, vars]
-    under_shift_valid[, trt_var] <- shifted$valid[jv & rv, trt_var]
+    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
 
     m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
     m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, under_shift_train), 1e-05)

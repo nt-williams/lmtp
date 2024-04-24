@@ -1,7 +1,7 @@
 cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
-  out <- list()
 
+  out <- vector("list", length = length(Task$folds))
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
       options(fopts)
@@ -21,7 +21,7 @@ cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
 
 estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, lrnr_folds, full_fits) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
-  fits <- list()
+  fits <- vector("list", length = tau)
 
   for (t in 1:tau) {
     jrt <- rep(censored(natural$train, cens, t)$j, 2)
