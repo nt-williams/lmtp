@@ -31,7 +31,7 @@ lmtp_Task <- R6::R6Class(
       self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
       data$lmtp_id <- create_ids(data, id)
       self$id <- data$lmtp_id
-      self$folds <- setup_cv(data, data$lmtp_id, V)
+      self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
       self$multivariate <- is.list(trt)
 
       shifted <- {
