@@ -1,18 +1,25 @@
-cf_r <- function(Task, learners, mtp, control, pb) {
-  out <- vector("list", length = length(Task$folds))
-  for (fold in seq_along(Task$folds)) {
+cf_r <- function(task, learners, mtp, control, pb) {
+  out <- vector("list", length = length(task$folds))
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_r(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
-        Task$trt, Task$cens, Task$risk, Task$tau, Task$node_list$trt,
-        learners, pb, mtp, control
+        get_folded_data(task$natural, task$folds, fold),
+        get_folded_data(task$shifted, task$folds, fold),
+        task$trt,
+        task$cens,
+        task$risk,
+        task$tau,
+        task$node_list$trt,
+        learners,
+        pb,
+        mtp,
+        control
       )
     },
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(out), Task$folds), control$.trim)
+  trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
 }
 
 estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {

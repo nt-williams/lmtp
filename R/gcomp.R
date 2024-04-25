@@ -1,14 +1,20 @@
-cf_sub <- function(Task, outcome, learners, control, pb) {
-  out <- vector("list", length = length(Task$folds))
-  for (fold in seq_along(Task$folds)) {
+cf_sub <- function(task, outcome, learners, control, pb) {
+  out <- vector("list", length = length(task$folds))
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_sub(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted[, unlist(Task$trt), drop = F], Task$folds, fold),
-        Task$trt, outcome,
-        Task$node_list$outcome, Task$cens,
-        Task$risk, Task$tau, Task$outcome_type,
-        learners, control, pb
+        get_folded_data(task$natural, task$folds, fold),
+        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
+        task$trt,
+        outcome,
+        task$node_list$outcome,
+        task$cens,
+        task$risk,
+        task$tau,
+        task$outcome_type,
+        learners,
+        control,
+        pb
       )
     },
     seed = TRUE)
@@ -17,7 +23,7 @@ cf_sub <- function(Task, outcome, learners, control, pb) {
   out <- future::value(out)
 
   list(
-    m = recombine_outcome(out, "m", Task$folds),
+    m = recombine_outcome(out, "m", task$folds),
     fits = lapply(out, function(x) x[["fits"]])
   )
 }

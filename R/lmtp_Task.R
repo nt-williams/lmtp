@@ -1,6 +1,6 @@
 #' @importFrom R6 R6Class
-lmtp_Task <- R6::R6Class(
-  "lmtp_Task",
+lmtp_task <- R6::R6Class(
+  "lmtp_task",
   public = list(
     natural = NULL,
     shifted = NULL,
