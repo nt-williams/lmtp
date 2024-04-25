@@ -77,7 +77,6 @@ theta_dr <- function(eta, augmented = FALSE) {
                  tau = eta$tau,
                  shifted = eta$m$shifted,
                  natural = eta$m$natural)
-
   theta <- {
     if (augmented)
       if (is.null(eta$weights))

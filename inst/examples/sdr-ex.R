@@ -79,7 +79,7 @@
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -92,7 +92,7 @@
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_sdr(tmp, A, "Y", time_vary = L, shift = policy,
@@ -143,4 +143,23 @@
 
   lmtp_sdr(sim_point_surv, A, Y, W, cens = C, folds = 2,
            shift = static_binary_on, outcome_type = "survival")
+
+  # Example 6.1
+  # Intervening on multiple exposures simultaneously. Interested in the effect of
+  # a modified treatment policy where variable D1 is decreased by 0.1 units and
+  # variable D2 is decreased by 0.5 units simultaneously.
+  A <- list(c("D1", "D2"))
+  W <- paste0("C", 1:3)
+  Y <- "Y"
+
+  d <- function(data, a) {
+    out = list(
+      data[[a[1]]] - 0.1,
+      data[[a[2]]] - 0.5
+    )
+    setNames(out, a)
+  }
+
+  lmtp_sdr(multivariate_data, A, Y, W, shift = d,
+           outcome_type = "continuous", folds = 1, mtp = TRUE)
 }

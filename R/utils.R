@@ -100,6 +100,9 @@ at_risk <- function(data, risk, tau, check = FALSE) {
 
 followed_rule <- function(obs_trt, shifted_trt, mtp) {
   if (mtp) {
+    if (inherits(obs_trt, "data.frame")) {
+      return(rep(TRUE, nrow(obs_trt)))
+    }
     return(rep(TRUE, length(obs_trt)))
   }
 

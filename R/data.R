@@ -82,3 +82,19 @@
 #'   \item{Y2}{Final outcome node.}
 #' }
 "sim_timevary_surv"
+
+#' Simulated Multivariate Exposure Data
+#'
+#' A dataset with a continuous outcome, three baseline covariates,
+#' and two treatment variables.
+#'
+#' @format A data frame with 2000 rows and 6 variables:
+#' \describe{
+#'   \item{C1}{Continuous baseline variable.}
+#'   \item{C2}{Continuous baseline variable.}
+#'   \item{C3}{Continuous baseline variable.}
+#'   \item{D1}{Treatment variable one at baseline.}
+#'   \item{D2}{Treatment variable two at baseline.}
+#'   \item{Y}{Continuous outcome}
+#' }
+"multivariate_data"
