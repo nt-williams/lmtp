@@ -1,4 +1,4 @@
-cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
+cf_sub <- function(Task, outcome, learners, control, pb) {
   out <- vector("list", length = length(Task$folds))
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
@@ -8,7 +8,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
         Task$trt, outcome,
         Task$node_list$outcome, Task$cens,
         Task$risk, Task$tau, Task$outcome_type,
-        learners, lrnr_folds, pb, full_fits
+        learners, control, pb
       )
     },
     seed = TRUE)
@@ -23,7 +23,7 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
 }
 
 estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
-                         tau, outcome_type, learners, lrnr_folds, pb, full_fits) {
+                         tau, outcome_type, learners, control, pb) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- vector("list", length = tau)
@@ -51,10 +51,10 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
       learners,
       outcome_type,
       id = natural$train[i & rt, ][["lmtp_id"]],
-      lrnr_folds
+      control$.learners_outcome_folds
     )
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)

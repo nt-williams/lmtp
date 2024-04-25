@@ -146,8 +146,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, control$.learners_trt_folds, control$.trim, control$.return_full_fits, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, control$.learners_outcome_folds, control$.return_full_fits, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, control, pb)
+  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome",
+                    ratios$ratios, learners_outcome, control, pb)
 
   theta_dr(
     list(
@@ -319,10 +320,9 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp,
-                 control$.learners_trt_folds, control$.trim, control$.return_full_fits, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome,
-                   control$.learners_outcome_folds, control$.return_full_fits, pb)
+  ratios <- cf_r(Task, learners_trt, mtp, control, pb)
+  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios,
+                   learners_outcome, control, pb)
 
   theta_dr(
     list(
@@ -469,8 +469,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners,
-                   control$.learners_outcome_folds, control$.return_full_fits, pb)
+  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome",
+                   learners, control, pb)
 
   theta_sub(
     eta = list(
@@ -620,8 +620,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(Task$tau*folds)
 
-  ratios <- cf_r(Task, learners, mtp, control$.learners_trt_folds,
-                 control$.trim, control$.return_full_fits, pb)
+  ratios <- cf_r(Task, learners, mtp, control, pb)
 
   theta_ipw(
     eta = list(

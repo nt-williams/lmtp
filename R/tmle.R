@@ -1,4 +1,4 @@
-cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
+cf_tmle <- function(Task, outcome, ratios, learners, control, pb) {
   out <- vector("list", length = length(Task$folds))
   ratios <- matrix(t(apply(ratios, 1, cumprod)),
                    nrow = nrow(ratios),
@@ -12,7 +12,7 @@ cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) 
         Task$trt, outcome, Task$node_list$outcome, Task$cens, Task$risk,
         Task$tau, Task$outcome_type,
         get_folded_data(ratios, Task$folds, fold)$train,
-        learners, lrnr_folds, pb, full_fits
+        learners, control, pb
       )
     },
     seed = TRUE)
@@ -28,7 +28,7 @@ cf_tmle <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) 
 }
 
 estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
-                          risk, tau, outcome_type, ratios, learners, lrnr_folds, pb, full_fits) {
+                          risk, tau, outcome_type, ratios, learners, control, pb) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -56,10 +56,10 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
       learners,
       outcome_type,
       id = natural$train[i & rt,][["lmtp_id"]],
-      lrnr_folds
+      control$.learners_outcome_folds
     )
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)

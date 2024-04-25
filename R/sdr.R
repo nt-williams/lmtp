@@ -1,4 +1,4 @@
-cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
+cf_sdr <- function(Task, outcome, ratios, learners, control, pb) {
   out <- vector("list", length = length(Task$folds))
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
@@ -8,7 +8,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
         Task$trt, outcome, Task$node_list$outcome,
         Task$cens, Task$risk, Task$tau, Task$outcome_type,
         get_folded_data(ratios, Task$folds, fold)$train,
-        learners, lrnr_folds, pb, full_fits
+        learners, control, pb
       )
     },
     seed = TRUE)
@@ -22,7 +22,7 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
 }
 
 estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, tau,
-                         outcome_type, ratios, learners, lrnr_folds, pb, full_fits) {
+                         outcome_type, ratios, learners, control, pb) {
 
   m_natural_train <- m_shifted_train <-
     cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
@@ -49,9 +49,9 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
                           learners,
                           outcome_type,
                           id = natural$train[i & rt, ][["lmtp_id"]],
-                          lrnr_folds)
+                          control$.learners_outcome_folds)
 
-      if (full_fits) {
+      if (control$.return_full_fits) {
         fits[[t]] <- fit
       } else {
         fits[[t]] <- extract_sl_weights(fit)
@@ -73,9 +73,9 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
                           learners,
                           "continuous",
                           id = natural$train[i & rt, ][["lmtp_id"]],
-                          lrnr_folds)
+                          control$.learners_outcome_folds)
 
-      if (full_fits) {
+      if (control$.return_full_fits) {
         fits[[t]] <- fit
       } else {
         fits[[t]] <- extract_sl_weights(fit)

@@ -1,25 +1,21 @@
-cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
-  fopts <- options("lmtp.bound", "lmtp.trt.length")
-
+cf_r <- function(Task, learners, mtp, control, pb) {
   out <- vector("list", length = length(Task$folds))
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
-      options(fopts)
-
       estimate_r(
         get_folded_data(Task$natural, Task$folds, fold),
         get_folded_data(Task$shifted, Task$folds, fold),
         Task$trt, Task$cens, Task$risk, Task$tau, Task$node_list$trt,
-        learners, pb, mtp, lrnr_folds, full_fits
+        learners, pb, mtp, control
       )
     },
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(out), Task$folds), trim)
+  trim_ratios(recombine_ratios(future::value(out), Task$folds), control$.trim)
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, lrnr_folds, full_fits) {
+estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- vector("list", length = tau)
 
@@ -47,10 +43,10 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
       learners,
       "binomial",
       stacked[jrt & drt, ]$lmtp_id,
-      lrnr_folds
+      control$.learners_trt_folds
     )
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
