@@ -17,7 +17,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
-  learners = "SL.glm",
+  learners = c("mean", "glm"),
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -77,8 +77,8 @@ An optional column name containing cluster level identifiers.}
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
 
-\item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+\item{learners}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{c("mean", "glm")}.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
@@ -201,7 +201,7 @@ by some amount, use \code{mtp = TRUE}}.
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -214,7 +214,7 @@ by some amount, use \code{mtp = TRUE}}.
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_ipw(tmp, A, "Y", time_vary = L, shift = policy,

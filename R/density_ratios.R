@@ -37,14 +37,12 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     vars <- c(node_list[[t]], cens[[t]])
     stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
 
-    fit <- run_ensemble(
-      stacked[jrt & drt, ][["tmp_lmtp_stack_indicator"]],
-      stacked[jrt & drt, vars],
-      learners,
-      "binomial",
-      stacked[jrt & drt, ]$lmtp_id,
-      control$.learners_trt_folds
-    )
+    fit <- run_ensemble(stacked[jrt & drt, c("lmtp_id", vars, "tmp_lmtp_stack_indicator")],
+                        "tmp_lmtp_stack_indicator",
+                        learners,
+                        "binomial",
+                        "lmtp_id",
+                        control$.learners_trt_folds)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit
@@ -53,7 +51,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     }
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, vars]), .Machine$double.eps)
+    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, c("lmtp_id", vars)]), .Machine$double.eps)
 
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
     densratios[, t] <- ratios

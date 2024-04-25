@@ -78,7 +78,7 @@
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -91,7 +91,7 @@
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_tmle(tmp, A, "Y", time_vary = L, shift = policy,

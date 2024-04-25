@@ -17,7 +17,7 @@ lmtp_sub(
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners = "SL.glm",
+  learners = c("mean", "glm"),
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -78,8 +78,8 @@ An optional, ordered vector of the bounds for a continuous outcomes. If \code{NU
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
+\item{learners}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{c("mean", "glm")}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
@@ -190,7 +190,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -203,7 +203,7 @@ continuous, or time-to-event outcomes. Supports binary, categorical, and continu
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_sub(tmp, A, "Y", time_vary = L, shift = policy, k = 0, folds = 2)
