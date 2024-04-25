@@ -126,7 +126,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -144,27 +144,31 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds*2)
+  pb <- progressr::progressor(task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, control, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome",
-                    ratios$ratios, learners_outcome, control, pb)
+  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  estims <- cf_tmle(task,
+                    "tmp_lmtp_scaled_outcome",
+                    ratios$ratios,
+                    learners_outcome,
+                    control,
+                    pb)
 
   theta_dr(
     list(
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
-      tau = Task$tau,
-      folds = Task$folds,
-      id = Task$id,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      weights = Task$weights,
+      tau = task$tau,
+      folds = task$folds,
+      id = task$id,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     ),
     FALSE
   )
@@ -265,7 +269,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                      mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = c("mean", "glm"),
@@ -300,7 +303,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -318,27 +321,31 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bound = control$control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds*2)
+  pb <- progressr::progressor(task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, control, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios,
-                   learners_outcome, control, pb)
+  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  estims <- cf_sdr(task,
+                   "tmp_lmtp_scaled_outcome",
+                   ratios$ratios,
+                   learners_outcome,
+                   control,
+                   pb)
 
   theta_dr(
     list(
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
-      tau = Task$tau,
-      folds = Task$folds,
-      id = Task$id,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      weights = Task$weights,
+      tau = task$tau,
+      folds = task$folds,
+      id = task$id,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     ),
     TRUE
   )
@@ -449,7 +456,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.bound)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -467,21 +474,24 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds)
+  pb <- progressr::progressor(task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome",
-                   learners, control, pb)
+  estims <- cf_sub(task,
+                   "tmp_lmtp_scaled_outcome",
+                   learners,
+                   control,
+                   pb)
 
   theta_sub(
     eta = list(
       m = estims$m,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      folds = Task$folds,
-      weights = Task$weights,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      folds = task$folds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     )
   )
 }
@@ -568,7 +578,6 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
@@ -600,7 +609,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -618,9 +627,9 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds)
+  pb <- progressr::progressor(task$tau*folds)
 
-  ratios <- cf_r(Task, learners, mtp, control, pb)
+  ratios <- cf_r(task, learners, mtp, control, pb)
 
   theta_ipw(
     eta = list(
@@ -629,14 +638,14 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
         nrow = nrow(ratios$ratios),
         ncol = ncol(ratios$ratios)
       ),
-      y = if (Task$survival) {
+      y = if (task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
         data[[final_outcome(outcome)]]
       },
-      folds = Task$folds,
-      weights = Task$weights,
-      tau = Task$tau,
+      folds = task$folds,
+      weights = task$weights,
+      tau = task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_r = ratios$fits
     )
