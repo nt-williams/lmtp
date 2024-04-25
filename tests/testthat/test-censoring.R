@@ -8,6 +8,7 @@ truth <- 0.8
 sub <- sw(lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
 ipw <- sw(lmtp_ipw(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
 tmle <- sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
+tmle_riesz <- sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1, trt_method = "riesz", learners_trt = c("glm")))
 sdr <- sw(lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
 
 # tests
@@ -15,5 +16,6 @@ test_that("estimator fidelity with censoring", {
   expect_equal(truth, sub$theta, tolerance = 0.15)
   expect_equal(truth, ipw$theta, tolerance = 0.15)
   expect_equal(truth, tmle$theta, tolerance = 0.15)
+  expect_equal(truth, tmle_riesz$theta, tolerance = 0.15)
   expect_equal(truth, sdr$theta, tolerance = 0.15)
 })

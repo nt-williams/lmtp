@@ -12,7 +12,7 @@ cf_r <- function(Task, learners, mtp, control, pb) {
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(out), Task$folds), control$.trim)
+  trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
 }
 
 estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
@@ -56,7 +56,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
     densratios[, t] <- ratios
 
-    pb()
+    progress_bar()
   }
 
   list(ratios = densratios, fits = fits)

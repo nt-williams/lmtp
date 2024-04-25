@@ -35,22 +35,8 @@ For an in-depth look at the package's functionality, please consult the accompan
 
 ## Installation
 
-**lmtp** can be installed from CRAN with:
-
-``` r
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
-
-A version allowing for different covariates sets for the treatment, censoring, and outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@separate-variable-sets")
+```r
+remotes::install_github("nt-williams/lmtp@riesz")
 ```
 
 ## What even is a modified treatment policy?

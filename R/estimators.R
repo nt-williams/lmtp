@@ -54,6 +54,8 @@
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{c("mean", "glm")}.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#' @param trt_method \[\code{character}\]\cr
+#'  Method for estimating treatment assignment mechanism (default or riesz)
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -96,6 +98,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
+                      trt_method = "default",
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
 
@@ -146,7 +149,13 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(Task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, control, pb)
+  if (trt_method == "default") {
+    ratios <- cf_r(Task, learners_trt, mtp, control, pb)
+  }
+  else {
+    ratios <- cf_rr(Task, learners_trt, mtp, control, pb)
+  }
+                             
   estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome",
                     ratios$ratios, learners_outcome, control, pb)
 
@@ -155,9 +164,10 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      cumulated = trt_method == "riesz",
       tau = Task$tau,
       folds = Task$folds,
-      id = Task$id,
+      id = Task$natural$lmtp_id,
       outcome_type = Task$outcome_type,
       bounds = Task$bounds,
       weights = Task$weights,
@@ -265,7 +275,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                      mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = c("mean", "glm"),
@@ -329,9 +338,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      cumulated = FALSE,
       tau = Task$tau,
       folds = Task$folds,
-      id = Task$id,
+      id = Task$natural$lmtp_id,
       outcome_type = Task$outcome_type,
       bounds = Task$bounds,
       weights = Task$weights,
@@ -536,6 +546,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param learners \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{c("mean", "glm")}.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#' @param trt_method \[\code{character}\]\cr
+#'  Method for estimating treatment assignment mechanism (default or riesz)
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -568,10 +580,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
+                     trt_method = "default",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
@@ -619,16 +631,21 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   )
 
   pb <- progressr::progressor(Task$tau*folds)
-
-  ratios <- cf_r(Task, learners, mtp, control, pb)
-
-  theta_ipw(
-    eta = list(
-      r = matrix(
+                             
+  if (trt_method == "default") {
+    ratios <- cf_r(Task, learners, mtp, control, pb)
+    ratios$ratios <- matrix(
         t(apply(ratios$ratios, 1, cumprod)),
         nrow = nrow(ratios$ratios),
         ncol = ncol(ratios$ratios)
-      ),
+      )
+  } else {
+    ratios <- cf_rr(Task, learners, mtp, control, pb)
+  }
+
+  theta_ipw(
+    eta = list(
+      r = ratios$ratios,
       y = if (Task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {

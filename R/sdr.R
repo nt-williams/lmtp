@@ -16,18 +16,21 @@ cf_sdr <- function(Task, outcome, ratios, learners, control, pb) {
 
   out <- future::value(out)
 
-  list(natural = recombine_outcome(out, "natural", Task$folds),
-       shifted = recombine_outcome(out, "shifted", Task$folds),
+  list(natural = recombine_outcome(out, "natural", task$folds),
+       shifted = recombine_outcome(out, "shifted", task$folds),
        fits = lapply(out, function(x) x[["fits"]]))
 }
 
 estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, tau,
                          outcome_type, ratios, learners, control, pb) {
 
-  m_natural_train <- m_shifted_train <-
-    cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
-  m_natural_valid <- m_shifted_valid <-
-    cbind(matrix(nrow = nrow(natural$valid), ncol = tau), natural$valid[[outcome]])
+  m_natural_train <- m_shifted_train <- cbind(matrix(nrow = nrow(natural$train),
+                                                     ncol = tau),
+                                              natural$train[[outcome]])
+
+  m_natural_valid <- m_shifted_valid <- cbind(matrix(nrow = nrow(natural$valid),
+                                                     ncol = tau),
+                                              natural$valid[[outcome]])
 
   fits <- vector("list", length = tau)
 
@@ -57,12 +60,13 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
     }
 
     if (t < tau) {
-      tmp <- transform_sdr(compute_weights(ratios, t + 1, tau),
-                           t, tau,
-                           m_shifted_train,
-                           m_natural_train)
+      densratio <- transform_sdr(compute_weights(ratios, t + 1, tau),
+                                 t,
+                                 tau,
+                                 m_shifted_train,
+                                 m_natural_train)
 
-      natural$train[, pseudo] <- shifted$train[, pseudo] <- tmp
+      natural$train[, pseudo] <- shifted$train[, pseudo] <- densratio
 
       fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, pseudo)],
                           pseudo,
@@ -100,7 +104,7 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
     m_natural_valid[!rv, t] <- 0
     m_shifted_valid[!rv, t] <- 0
 
-    pb()
+    progress_bar()
   }
 
   list(natural = m_natural_valid,
