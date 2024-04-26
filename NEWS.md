@@ -6,11 +6,12 @@
 -   New pre-packaged shift function, `ipsi()` for estimating IPSI effects using the risk ratio.
 -   `lmtp_control()` now replaces extra estimator arguments.
 
-### Buf Fixes
+### Bug Fixes
 
 ### General
 
 -   The `intervention_type` argument has been fully deprecated.
+-   Now attempting to detect intervention type errors (see issue \#98).
 
 # lmtp 1.3.3
 
