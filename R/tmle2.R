@@ -14,19 +14,24 @@ cf_tmle2 <- function(task, ratios, m_init, control) {
                      sample(1:nrow(task$natural), nrow(task$natural), replace = TRUE),
                      simplify = FALSE)
 
-  Qnb <- sapply(boots, function(i) {
-    psis <- estimate_tmle2(task$natural[i, , drop = FALSE],
-                           task$cens,
-                           task$risk,
-                           task$tau,
-                           m_init$mn[i, , drop = FALSE],
-                           m_init$ms[i, , drop = FALSE],
-                           ratios[i, , drop = FALSE],
-                           task$weights[i])
-    weighted.mean(psis[,1], task$weights[i])
-  })
+  Qnb <- vector("list", control$.B)
+  for (i in seq_along(boots)) {
+    ib <- boots[[i]]
+    Qnb[[i]] <- future::future({
+      psis <- estimate_tmle2(task$natural[ib, , drop = FALSE],
+                             task$cens,
+                             task$risk,
+                             task$tau,
+                             m_init$mn[ib, , drop = FALSE],
+                             m_init$ms[ib, , drop = FALSE],
+                             ratios[ib, , drop = FALSE],
+                             task$weights[ib])
+      weighted.mean(psis[, 1], task$weights[ib])
+    },
+    seed = TRUE)
+  }
 
-  list(psi = psi, booted = Qnb)
+  list(psi = psi, booted = unlist(future::value(Qnb)))
 }
 
 estimate_tmle2 <- function(data, cens, risk, tau, mn, ms, ratios, weights) {
