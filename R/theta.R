@@ -112,6 +112,7 @@ theta_dr <- function(eta, augmented = FALSE) {
   out
 }
 
+# TODO: NEED TO SAVE THE SEED FOR THE REPLICATES AND THE BOOTED ESTIMATES FOR ESTIMATNG CONTRASTS
 theta_boot <- function(eta) {
   theta <- weighted.mean(eta$m[, 1], eta$weights)
 
@@ -119,7 +120,7 @@ theta_boot <- function(eta) {
     theta <- rescale_y_continuous(theta, eta$bounds)
   }
 
-  # NEED TO FIGURE OUT HOW THIS WOULD WORK WITH CLUSTERING
+  # TODO: NEED TO FIGURE OUT HOW THIS WOULD WORK WITH CLUSTERING
   se <- sqrt(var(eta$boots))
   ci_low  <- theta - (qnorm(0.975) * se)
   ci_high <- theta + (qnorm(0.975) * se)
