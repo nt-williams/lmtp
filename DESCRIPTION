@@ -36,7 +36,13 @@ Imports:
     future (>= 1.17.0),
     progressr,
     data.table (>= 1.13.0),
+<<<<<<< HEAD
     checkmate (>= 2.1.0)
+=======
+    checkmate (>= 2.1.0),
+    SuperLearner,
+    schoolmath
+>>>>>>> devel
 URL: https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 

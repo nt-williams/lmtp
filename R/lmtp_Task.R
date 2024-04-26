@@ -66,7 +66,10 @@ lmtp_task <- R6::R6Class(
       self$shifted <- shifted
 
       if (!is.null(weights)) {
-        self$weights <- weights
+        # Normalize weights
+        self$weights <- weights / mean(weights)
+      } else {
+        self$weights <- rep(1, self$n)
       }
     }
   )

@@ -17,6 +17,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
         task$tau,
         task$outcome_type,
         get_folded_data(ratios, task$folds, fold)$train,
+        task$weights[task$folds[[fold]]$training_set],
         learners,
         control,
         pb
@@ -35,7 +36,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
 }
 
 estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
-                          risk, tau, outcome_type, ratios, learners, control, pb) {
+                          risk, tau, outcome_type, ratios, weights, learners, control, pb) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -85,10 +86,12 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
     m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
+    wts <- ratios[i & rt, t] * weights[i & rt]
+
     fit <- sw(
       glm(
         natural$train[i & rt, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt, t])),
-        weights = ratios[i & rt, t],
+        weights = wts,
         family = "binomial"
       )
     )
