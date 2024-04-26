@@ -20,7 +20,7 @@ ipw <-
 tmle <-
   sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
                cens, k = 0, shifted = sc,
-               outcome_type = "binomial", folds = 2, mtp = TRUE))
+               outcome_type = "binomial", folds = 2, mtp = TRUE, boot = F))
 
 sdr <-
   sw(lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
