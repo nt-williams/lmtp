@@ -125,6 +125,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
   task <- lmtp_task$new(
     data = data,
@@ -302,6 +303,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
   task <- lmtp_task$new(
     data = data,
@@ -608,6 +610,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
   task <- lmtp_task$new(
     data = data,
