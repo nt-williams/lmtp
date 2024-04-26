@@ -111,3 +111,38 @@ theta_dr <- function(eta, augmented = FALSE) {
   class(out) <- "lmtp"
   out
 }
+
+theta_boot <- function(eta) {
+  theta <- weighted.mean(eta$m[, 1], eta$weights)
+
+  if (eta$outcome_type == "continuous") {
+    theta <- rescale_y_continuous(theta, eta$bounds)
+  }
+
+  # NEED TO FIGURE OUT HOW THIS WOULD WORK WITH CLUSTERING
+  se <- sqrt(var(eta$boots))
+  ci_low  <- theta - (qnorm(0.975) * se)
+  ci_high <- theta + (qnorm(0.975) * se)
+
+  out <- list(
+    estimator = eta$estimator,
+    theta = theta,
+    standard_error = se,
+    low = ci_low,
+    high = ci_high,
+    id = eta$id,
+    shift = eta$shift,
+    outcome_reg = switch(
+      eta$outcome_type,
+      continuous = rescale_y_continuous(eta$m, eta$bounds),
+      binomial = eta$m
+    ),
+    density_ratios = eta$r,
+    fits_m = eta$fits_m,
+    fits_r = eta$fits_r,
+    outcome_type = eta$outcome_type
+  )
+
+  class(out) <- "lmtp"
+  out
+}
