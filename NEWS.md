@@ -5,6 +5,7 @@
 -   Can now estimate the effects of simultaneous interventions on multiple variables. 
 -   New pre-packaged shift function, `ipsi()` for estimating IPSI effects using the risk ratio.
 -   `lmtp_control()` now replaces extra estimator arguments.
+-   Bootstrap for TMLE with the `boot` argument using a modified TMLE algorithm (https://arxiv.org/abs/1810.03030).
 
 ### Buf Fixes
 
