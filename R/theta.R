@@ -131,6 +131,7 @@ theta_boot <- function(eta) {
     standard_error = se,
     low = ci_low,
     high = ci_high,
+    boots = eta$boots,
     id = eta$id,
     shift = eta$shift,
     outcome_reg = switch(
@@ -141,7 +142,8 @@ theta_boot <- function(eta) {
     density_ratios = eta$r,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,
-    outcome_type = eta$outcome_type
+    outcome_type = eta$outcome_type,
+    seed = eta$seed
   )
 
   class(out) <- "lmtp"

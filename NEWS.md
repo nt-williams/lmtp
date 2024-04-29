@@ -7,11 +7,12 @@
 -   `lmtp_control()` now replaces extra estimator arguments.
 -   Bootstrap for TMLE with the `boot` argument using a modified TMLE algorithm (https://arxiv.org/abs/1810.03030).
 
-### Buf Fixes
+### Bug Fixes
 
 ### General
 
 -   The `intervention_type` argument has been fully deprecated.
+-   Now attempting to detect intervention type errors (see issue \#98).
 
 # lmtp 1.3.3
 

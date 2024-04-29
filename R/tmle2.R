@@ -8,8 +8,13 @@ cf_tmle2 <- function(task, ratios, m_init, control) {
                         ratios,
                         task$weights)
 
-  if (!is.null(control$.boot_seed)) set.seed(control$.boot_seed)
+  if (!is.null(control$.boot_seed)) {
+    seed <- control$.boot_seed
+  } else {
+    seed <- .Random.seed[1]
+  }
 
+  set.seed(seed)
   boots <- replicate(control$.B,
                      sample(1:nrow(task$natural), nrow(task$natural), replace = TRUE),
                      simplify = FALSE)
@@ -31,7 +36,7 @@ cf_tmle2 <- function(task, ratios, m_init, control) {
     seed = TRUE)
   }
 
-  list(psi = psi, booted = unlist(future::value(Qnb)))
+  list(psi = psi, booted = unlist(future::value(Qnb)), seed = seed)
 }
 
 estimate_tmle2 <- function(data, cens, risk, tau, mn, ms, ratios, weights) {
