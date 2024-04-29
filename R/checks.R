@@ -162,8 +162,8 @@ assertDr <- checkmate::makeAssertionFunction(check_dr)
 
 check_ref_class <- function(x) {
   if (!is.lmtp(x)) {
-    is_num <- checkmate::check_number(x)
-    if (!isTRUE(is_num)) {
+    is_num <- checkmate::test_number(x)
+    if (isFALSE(is_num)) {
       return("Must either be a single numeric value or another lmtp object")
     }
   }
@@ -183,4 +183,21 @@ check_trt_type <- function(data, trt, mtp) {
       cli::cli_warn("Detected decimalish `trt` values and {.code mtp = FALSE}. Consider setting {.code mtp = TRUE} if getting errors.")
   }
 }
+
+check_same_weights <- function(weights) {
+  if (length(weights) == 1) {
+    check <- TRUE
+  } else if (length(weights) == 2) {
+    check <- identical(weights[[1]], weights[[2]])
+  } else {
+    check <- all(sapply(1:(length(weights) - 1), function(i) identical(weights[[i]], weights[[i + 1]])))
+  }
+
+  if (isFALSE(check)) {
+    return("Weights must all be the same.")
+  }
+  TRUE
+}
+
+assertSameWeights <- checkmate::makeAssertionFunction(check_same_weights)
 

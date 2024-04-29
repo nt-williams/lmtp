@@ -9,6 +9,8 @@
 
 ### Bug Fixes
 
+-   Standard errors now incorporate survey weights (see issue \#134).
+
 ### General
 
 -   The `intervention_type` argument has been fully deprecated.
