@@ -185,7 +185,8 @@ check_trt_type <- function(data, trt, mtp) {
 }
 
 check_same_weights <- function(weights) {
-  if (isFALSE(Reduce(identical, weights))) {
+  check <- all(sapply(1:(length(weights) - 1), function(i) identical(weights[[i]], weights[[i + 1]])))
+  if (isFALSE(check)) {
     return("Weights must all be the same.")
   }
   TRUE
