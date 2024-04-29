@@ -103,6 +103,7 @@ theta_dr <- function(eta, augmented = FALSE) {
       binomial = eta$m$shifted
     ),
     density_ratios = eta$r,
+    weights = eta$weights,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,
     outcome_type = eta$outcome_type

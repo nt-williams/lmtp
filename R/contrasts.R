@@ -25,6 +25,12 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   assertRefClass(ref)
   assertContrastType(match.arg(type), fits, .var.name = "type")
 
+  weights <- lapply(fits, function(x) x$weights)
+  if (isFALSE(is.numeric(ref))) {
+    weights <- c(weights, ref$weights)
+  }
+  assertSameWeights(weights)
+
   if (is.numeric(ref)) {
     type <- "additive"
     message("Non-estimated reference value, defaulting type = 'additive'")
