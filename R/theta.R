@@ -68,7 +68,7 @@ eif <- function(r, cumulated, tau, shifted, natural) {
   else {
     weights <- compute_weights(r, 1, tau)
   }
-  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  rowSums(weights * m, na.rm = TRUE) + shifted[, 1]
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
