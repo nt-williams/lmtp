@@ -15,7 +15,7 @@ run_riesz_ensemble <- function(learners, natural_train, shifted_train, condition
   if(is.null(folds)) folds <- 5
   sl <- SuperRiesz::super_riesz(
     natural_train,
-    list(shifted = shifted_train, weight = data.frame(weight = conditional_train / mean(conditional_train))),
+    list(shifted = shifted_train, weight = data.frame(weight = conditional_train)),
     library = learners,
     folds = folds,
     m = \(alpha, data) alpha(data("shifted")) * data("weight")[,1]

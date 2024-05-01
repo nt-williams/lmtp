@@ -1,27 +1,30 @@
 cf_rr <- function(task, learners, mtp, control, progress_bar) {
   out <- list()
   for (fold in seq_along(task$folds)) {
-    out[[fold]] <- future::future({
+    out[[fold]] <- #future::future({
       estimate_rr(get_folded_data(task$natural, task$folds, fold),
                  get_folded_data(task$shifted, task$folds, fold),
                  task$trt,
                  task$cens,
                  task$risk,
                  task$tau,
+                 list(train = task$conditional[task$folds[[fold]]$training_set, , drop = FALSE],
+                      valid = task$conditional[task$folds[[fold]]$validation_set, , drop = FALSE]),
                  task$node_list$trt,
                  learners,
                  mtp,
                  control,
                  progress_bar)
-    },
-    seed = TRUE)
+    #},
+    #seed = TRUE)
   }
 
-  recombine_ratios(future::value(out), task$folds)
+  out <- future::value(out)
+  recombine_ratios(out, task$folds)
 }
 
 
-estimate_rr <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, mtp, control, progress_bar) {
+estimate_rr <- function(natural, shifted, trt, cens, risk, tau, conditional, node_list, learners, mtp, control, progress_bar) {
   representers <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
 
@@ -38,16 +41,14 @@ estimate_rr <- function(natural, shifted, trt, cens, risk, tau, node_list, learn
 
     vars <- c(node_list[[t]], cens[[t]])
 
-    conditional_indicator_train <- matrix(1, ncol = 1, nrow = nrow(natural$train))
-    conditional_indicator_valid <- matrix(1, ncol = 1, nrow = nrow(natural$valid))
     fit <- run_riesz_ensemble(
       learners,
       natural$train[jrt & drt, vars, drop = FALSE],
       shifted$train[jrt & drt, vars, drop = FALSE],
-      conditional_indicator_train[jrt & drt,,drop = FALSE],
+      conditional$train[jrt & drt, t, drop = FALSE],
       natural$valid[jrv & drv, vars, drop = FALSE],
       shifted$valid[jrv & drv, vars, drop = FALSE],
-      conditional_indicator_valid[jrv & drv, ,drop = FALSE],
+      conditional$valid[jrv & drv, t, drop = FALSE],
       folds = control$.learners_trt_folds
     )
 

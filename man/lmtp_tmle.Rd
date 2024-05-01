@@ -11,6 +11,7 @@ lmtp_tmle(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  conditional = NULL,
   shift = NULL,
   shifted = NULL,
   k = Inf,
@@ -20,6 +21,7 @@ lmtp_tmle(
   bounds = NULL,
   learners_outcome = c("mean", "glm"),
   learners_trt = c("mean", "glm"),
+  trt_method = "default",
   folds = 10,
   weights = NULL,
   control = lmtp_control(),
@@ -54,6 +56,11 @@ An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
+\item{conditional}{[\code{matrix}]\cr
+An optional matrix indicating which observations are within the treatment
+conditioning set at each time point. The matrix should have one column for each
+time point and one row for each observation.}
+
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
@@ -85,6 +92,9 @@ Should be left as \code{NULL} if the outcome type is binary.}
 \item{learners_outcome}{[\code{character}]\cr}
 
 \item{learners_trt}{[\code{character}]\cr \bold{Only include candidate learners capable of binary classification}.}
+
+\item{trt_method}{[\code{character}]\cr
+Method for estimating treatment assignment mechanism (default or riesz)}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}

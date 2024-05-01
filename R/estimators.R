@@ -25,6 +25,10 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -88,7 +92,7 @@
 #' @example inst/examples/tmle-ex.R
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                      cens = NULL, conditional = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
@@ -123,6 +127,11 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assertMatrix(conditional, mode = c("logical"), null.ok = TRUE)
+
+  if(!is.null(conditional) && trt_method == "default") {
+    stop("For conditional estimation, trt_method must be set to `riesz`.")
+  }
 
   extras <- list(...)
   if ("intervention_type" %in% names(extras)) {
@@ -137,6 +146,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                         time_vary = time_vary,
                         baseline = baseline,
                         cens = cens,
+                        conditional = conditional,
                         k = k,
                         shift = shift,
                         shifted = shifted,
@@ -173,7 +183,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = Task$outcome_type,
+      conditional = Task$conditional
     ),
     FALSE
   )
@@ -346,7 +357,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = Task$outcome_type,
+      conditional = Task$conditional
     ),
     TRUE
   )
@@ -379,6 +391,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -422,7 +438,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL, k = Inf,
+                     conditional = NULL, shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = c("mean", "glm"),
                      folds = 10, weights = NULL,
@@ -452,6 +468,12 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
   checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assertMatrix(conditional, null.ok = TRUE)
+
+  if(!is.null(conditional) && trt_method == "default") {
+    stop("For conditional estimation, trt_method must be set to `riesz`.")
+  }
+
 
   Task <- lmtp_Task$new(data = data,
                         trt = trt,
@@ -463,6 +485,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                         shift = shift,
                         shifted = shifted,
                         id = id,
+                        conditional = conditional,
                         outcome_type = match.arg(outcome_type),
                         V = folds,
                         weights = weights,
@@ -481,7 +504,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = Task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = Task$outcome_type,
+      conditional = Task$conditional
     )
   )
 }
@@ -513,6 +537,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -565,7 +593,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL, mtp = FALSE,
+                     conditional = NULL, shift = NULL, shifted = NULL, mtp = FALSE,
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
@@ -597,6 +625,12 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assertMatrix(conditional, null.ok = TRUE)
+
+  if(!is.null(conditional) && trt_method == "default") {
+    stop("For conditional estimation, trt_method must be set to `riesz`.")
+  }
+
 
   Task <- lmtp_Task$new(data = data,
                         trt = trt,
@@ -608,6 +642,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                         shift = shift,
                         shifted = shifted,
                         id = id,
+                        conditional = conditional,
                         outcome_type = match.arg(outcome_type),
                         V = folds,
                         weights = weights,
@@ -646,7 +681,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = Task$weights,
       tau = Task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      fits_r = ratios$fits
+      fits_r = ratios$fits,
+      conditional = Task$conditional
     )
   )
 }

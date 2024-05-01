@@ -11,6 +11,7 @@ cf_sub <- function(task, outcome, learners, control, progress_bar) {
                    task$risk,
                    task$id,
                    task$tau,
+                   task$conditional[task$folds[[fold]]$training_set, , drop = FALSE],
                    task$outcome_type,
                    learners,
                    control,
@@ -28,7 +29,7 @@ cf_sub <- function(task, outcome, learners, control, progress_bar) {
 }
 
 estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
-                         tau, outcome_type, learners, control, progress_bar) {
+                         tau, conditional, outcome_type, learners, control, progress_bar) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
@@ -40,6 +41,8 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
     rt <- at_risk(natural$train, risk, t)
     rv <- at_risk(natural$valid, risk, t)
 
+    in_conditioning_set <- apply(conditional[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
+
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]
 
@@ -48,9 +51,9 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
       outcome_type <- "continuous"
     }
 
-    learners <- check_variation(natural$train[i & rt, ][[outcome]], learners)
+    learners <- check_variation(natural$train[i & rt & in_conditioning_set, ][[outcome]], learners)
 
-    fit <- run_ensemble(natural$train[i & rt, c(id, vars, outcome)],
+    fit <- run_ensemble(natural$train[i & rt & in_conditioning_set, c(id, vars, outcome)],
                         outcome,
                         learners,
                         outcome_type,
