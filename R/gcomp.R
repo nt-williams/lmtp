@@ -1,21 +1,22 @@
-cf_sub <- function(task, outcome, learners, control, progress_bar) {
-  out <- list()
-
+cf_sub <- function(task, outcome, learners, control, pb) {
+  out <- vector("list", length = length(task$folds))
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
-      estimate_sub(get_folded_data(task$natural, task$folds, fold),
-                   get_folded_data(task$shifted[, task$trt, drop = F], task$folds, fold),
-                   outcome,
-                   task$node_list$outcome,
-                   task$cens,
-                   task$risk,
-                   task$id,
-                   task$tau,
-                   task$conditional[task$folds[[fold]]$training_set, , drop = FALSE],
-                   task$outcome_type,
-                   learners,
-                   control,
-                   progress_bar)
+      estimate_sub(
+        get_folded_data(task$natural, task$folds, fold),
+        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
+        task$trt,
+        outcome,
+        task$node_list$outcome,
+        task$cens,
+        task$risk,
+        task$tau,
+        task$conditional[task$folds[[fold]]$training_set, , drop = FALSE],
+        task$outcome_type,
+        learners,
+        control,
+        pb
+      )
     },
     seed = TRUE)
   }
@@ -28,11 +29,11 @@ cf_sub <- function(task, outcome, learners, control, progress_bar) {
   )
 }
 
-estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
-                         tau, conditional, outcome_type, learners, control, progress_bar) {
+estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
+                         tau, conditional, outcome_type, learners, control, pb) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
-  fits <- list()
+  fits <- vector("list", length = tau)
 
   for (t in tau:1) {
     i  <- censored(natural$train, cens, t)$i
@@ -51,13 +52,11 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
       outcome_type <- "continuous"
     }
 
-    learners <- check_variation(natural$train[i & rt & in_conditioning_set, ][[outcome]], learners)
-
-    fit <- run_ensemble(natural$train[i & rt & in_conditioning_set, c(id, vars, outcome)],
+    fit <- run_ensemble(natural$train[i & rt & in_conditioning_set, c("lmtp_id", vars, outcome)],
                         outcome,
                         learners,
                         outcome_type,
-                        id,
+                        "lmtp_id",
                         control$.learners_outcome_folds)
 
     if (control$.return_full_fits) {
@@ -66,12 +65,17 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, id,
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    trt_var <- names(shifted$train)[t]
-    under_shift_train <- natural$train[jt & rt, vars]
-    under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
 
-    under_shift_valid <- natural$valid[jv & rv, vars]
-    under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
+    under_shift_train <- natural$train[jt & rt, c("lmtp_id", vars)]
+    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
+
+    under_shift_valid <- natural$valid[jv & rv, c("lmtp_id", vars)]
+    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
 
     natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
     m[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)

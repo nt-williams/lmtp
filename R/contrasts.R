@@ -25,6 +25,12 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   assertRefClass(ref)
   assertContrastType(match.arg(type), fits, .var.name = "type")
 
+  weights <- lapply(fits, function(x) x$weights)
+  if (isFALSE(is.numeric(ref))) {
+    weights <- append(weights, list(ref$weights))
+  }
+  assertSameWeights(weights)
+
   if (is.numeric(ref)) {
     type <- "additive"
     message("Non-estimated reference value, defaulting type = 'additive'")
@@ -68,7 +74,7 @@ contrast_additive_single <- function(fit, ref) {
     fit$id <- 1:length(eif)
   }
 
-  clusters <- split(eif, fit$id)
+  clusters <- split(eif*fit$weights, fit$id)
   j <- length(clusters)
   std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
   conf.low <- theta - qnorm(0.975) * std.error
@@ -107,7 +113,8 @@ contrast_rr <- function(fits, ref) {
 
 contrast_rr_single <- function(fit, ref) {
   theta <- fit$theta / ref$theta
-  log_eif <- (fit$eif / fit$theta) - (ref$eif / ref$theta)
+  log_eif <- (fit$eif*fit$weights / fit$theta) -
+    (ref$eif*ref$weights / ref$theta)
 
   if (is.null(fit$id)) {
     fit$id <- 1:length(eif)
@@ -151,7 +158,8 @@ contrast_or <- function(fits, ref) {
 
 contrast_or_single <- function(fit, ref) {
   theta <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
-  log_eif <- (fit$eif / (fit$theta * (1 - fit$theta))) - (ref$eif / (ref$theta * (1 - ref$theta)))
+  log_eif <- (fit$eif*fit$weights / (fit$theta * (1 - fit$theta))) -
+    (ref$eif*ref$weights / (ref$theta * (1 - ref$theta)))
 
   if (is.null(fit$id)) {
     fit$id <- 1:length(eif)

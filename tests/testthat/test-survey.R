@@ -6,7 +6,7 @@ n <- 1e4
 W1 <- rbinom(n, size = 1, prob = 0.5)
 W2 <- rbinom(n, size = 1, prob = 0.65)
 A <- rbinom(n, size = 1, prob = plogis(-0.4 + 0.2 * W2 + 0.15 * W1))
-Y.1 <-rbinom(n, size = 1, prob = plogis(-1 + 1 - 0.1 * W1 + 0.3 * W2))
+Y.1 <- rbinom(n, size = 1, prob = plogis(-1 + 1 - 0.1 * W1 + 0.3 * W2))
 Y.0 <- rbinom(n, size = 1, prob = plogis(-1 + 0 - 0.1 * W1 + 0.3 * W2))
 
 Y <- Y.1 * A + Y.0 * (1 - A)
@@ -28,7 +28,7 @@ tmle <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_bin
                   weights = wts, folds = 2))
 
 tmle_riesz <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                  trt_method = "riesz", learners_trt = c("glm"),
+                  riesz = TRUE, learners_trt = c("glm"),
                   weights = wts, folds = 2))
 
 sdr <- sw(lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,

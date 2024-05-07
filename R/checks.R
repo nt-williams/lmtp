@@ -2,7 +2,11 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   for (t in 1:determine_tau(outcome, trt)) {
     ci <- censored(x, cens, t)$j
     di <- at_risk(x, risk_indicators(outcome), t, TRUE)
-    trt_t <- ifelse(length(trt) == 1, trt, trt[t])
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
     data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
@@ -14,6 +18,14 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
 }
 
 assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+
+assert_trt <- function(trt, tau) {
+  is_list <- is.list(trt)
+  if (!isTRUE(is_list)) {
+    return(assertTrtCharacter(trt, tau))
+  }
+  assertTrtList(trt, tau)
+}
 
 check_trt_character <- function(trt, tau) {
   is_character <- checkmate::check_character(trt)
@@ -29,6 +41,21 @@ check_trt_character <- function(trt, tau) {
 }
 
 assertTrtCharacter <- checkmate::makeAssertionFunction(check_trt_character)
+
+check_trt_list <- function(trt, tau) {
+  is_list <- checkmate::check_list(trt)
+  if (!isTRUE(is_list)) {
+    return(is_list)
+  }
+
+  if (length(trt) != 1 && length(trt) != tau) {
+    return(paste0("'trt' should be of length 1 or ", tau))
+  }
+
+  TRUE
+}
+
+assertTrtList <- checkmate::makeAssertionFunction(check_trt_list)
 
 check_reserved_names <- function(x) {
   bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)
@@ -135,8 +162,8 @@ assertDr <- checkmate::makeAssertionFunction(check_dr)
 
 check_ref_class <- function(x) {
   if (!is.lmtp(x)) {
-    is_num <- checkmate::check_number(x)
-    if (!isTRUE(is_num)) {
+    is_num <- checkmate::test_number(x)
+    if (isFALSE(is_num)) {
       return("Must either be a single numeric value or another lmtp object")
     }
   }
@@ -144,3 +171,33 @@ check_ref_class <- function(x) {
 }
 
 assertRefClass <- checkmate::makeAssertionFunction(check_ref_class)
+
+check_trt_type <- function(data, trt, mtp) {
+  is_decimal <- vector("logical", length(trt))
+  for (i in seq_along(trt)) {
+    a <- data[[trt[i]]]
+    if (is.character(a) | is.factor(a)) next
+    is_decimal[i] <- any(schoolmath::is.decimal(a[!is.na(a)]))
+  }
+  if (any(is_decimal) & isFALSE(mtp)) {
+      cli::cli_warn("Detected decimalish `trt` values and {.code mtp = FALSE}. Consider setting {.code mtp = TRUE} if getting errors.")
+  }
+}
+
+check_same_weights <- function(weights) {
+  if (length(weights) == 1) {
+    check <- TRUE
+  } else if (length(weights) == 2) {
+    check <- identical(weights[[1]], weights[[2]])
+  } else {
+    check <- all(sapply(1:(length(weights) - 1), function(i) identical(weights[[i]], weights[[i + 1]])))
+  }
+
+  if (isFALSE(check)) {
+    return("Weights must all be the same.")
+  }
+  TRUE
+}
+
+assertSameWeights <- checkmate::makeAssertionFunction(check_same_weights)
+

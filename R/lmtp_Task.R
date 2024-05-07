@@ -1,6 +1,6 @@
 #' @importFrom R6 R6Class
-lmtp_Task <- R6::R6Class(
-  "lmtp_Task",
+lmtp_task <- R6::R6Class(
+  "lmtp_task",
   public = list(
     natural = NULL,
     shifted = NULL,
@@ -17,8 +17,10 @@ lmtp_Task <- R6::R6Class(
     folds = NULL,
     weights = NULL,
     conditional = NULL,
+    multivariate = NULL,
     initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, shifted, id, conditional = NULL, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL) {
+                          shift, shifted, id, conditional = NULL, outcome_type = NULL, V = 10,
+                          weights = NULL, bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt)
       self$n <- nrow(data)
       self$trt <- trt
@@ -29,13 +31,13 @@ lmtp_Task <- R6::R6Class(
       self$survival <- outcome_type == "survival"
       self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
       data$lmtp_id <- create_ids(data, id)
-      self$id <- id
+      self$id <- data$lmtp_id
       self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
+      self$multivariate <- is.list(trt)
 
-      if(is.null(conditional)) {
+      if (is.null(conditional)) {
         self$conditional <- matrix(TRUE, nrow = nrow(data), ncol = length(trt) + 1)
-      }
-      else {
+      } else {
         self$conditional <- matrix(TRUE, ncol = length(self$trt) + 1, nrow = nrow(data))
         self$conditional[, length(self$trt) + 1] <- TRUE
         self$conditional[, 1:length(self$trt)] <- conditional
@@ -73,7 +75,10 @@ lmtp_Task <- R6::R6Class(
       self$shifted <- shifted
 
       if (!is.null(weights)) {
-        self$weights <- weights
+        # Normalize weights
+        self$weights <- weights / mean(weights)
+      } else {
+        self$weights <- rep(1, self$n)
       }
     }
   )

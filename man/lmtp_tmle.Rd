@@ -21,11 +21,10 @@ lmtp_tmle(
   bounds = NULL,
   learners_outcome = c("mean", "glm"),
   learners_trt = c("mean", "glm"),
-  trt_method = "default",
+  riesz = FALSE,
   folds = 10,
   weights = NULL,
-  control = lmtp_control(),
-  ...
+  control = lmtp_control()
 )
 }
 \arguments{
@@ -33,8 +32,11 @@ lmtp_tmle(
 A \code{data.frame} in wide format containing all necessary variables
 for the estimation problem. Must not be a \code{data.table}.}
 
-\item{trt}{[\code{character}]\cr
-A vector containing the column names of treatment variables ordered by time.}
+\item{trt}{[\code{character}] or [\code{list}]\cr
+A vector containing the column names of treatment variables ordered by time.
+Or, a list of vectors, the same length as the number of time points of observation.
+Vectors should contain column names for the treatment variables at each time point. The list
+should be ordered following the time ordering of the model.}
 
 \item{outcome}{[\code{character}]\cr
 The column name of the outcome variable. In the case of time-to-event
@@ -89,13 +91,12 @@ An optional, ordered vector of the bounds for a continuous outcomes. If \code{NU
 the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
-\item{learners_outcome}{[\code{character}]\cr}
+\item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{c("mean", "glm")}.}
 
-\item{learners_trt}{[\code{character}]\cr \bold{Only include candidate learners capable of binary classification}.}
-
-\item{trt_method}{[\code{character}]\cr
-Method for estimating treatment assignment mechanism (default or riesz)}
-
+\item{learners_trt}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{c("mean", "glm")}.
+\bold{Only include candidate learners capable of binary classification}.}
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
 
@@ -104,8 +105,6 @@ An optional vector containing sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}
-
-\item{...}{Extra arguments. Exists for backwards compatibility.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -223,7 +222,7 @@ by some amount, use \code{mtp = TRUE}}.
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -236,7 +235,7 @@ by some amount, use \code{mtp = TRUE}}.
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_tmle(tmp, A, "Y", time_vary = L, shift = policy,
@@ -285,5 +284,24 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_tmle(sim_point_surv, A, Y, W, cens = C, folds = 2,
             shift = static_binary_on, outcome_type = "survival")
+
+  # Example 6.1
+  # Intervening on multiple exposures simultaneously. Interested in the effect of
+  # a modified treatment policy where variable D1 is decreased by 0.1 units and
+  # variable D2 is decreased by 0.5 units simultaneously.
+  A <- list(c("D1", "D2"))
+  W <- paste0("C", 1:3)
+  Y <- "Y"
+
+  d <- function(data, a) {
+    out = list(
+      data[[a[1]]] - 0.1,
+      data[[a[2]]] - 0.5
+    )
+    setNames(out, a)
+  }
+
+  lmtp_tmle(multivariate_data, A, Y, W, shift = d,
+            outcome_type = "continuous", folds = 1, mtp = TRUE)
 }
 }

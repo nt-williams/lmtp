@@ -1,10 +1,3 @@
-check_variation <- function(outcome, learners) {
-  if (sd(outcome) < .Machine$double.eps) {
-    return("SL.mean")
-  }
-  learners
-}
-
 run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
   fit <- mlr3superlearner(data = data,
                           target = y,

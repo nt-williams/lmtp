@@ -68,10 +68,10 @@ eif <- function(r, cumulated, tau, shifted, natural, conditional) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  if(cumulated == TRUE) {
+  
+  if (cumulated == TRUE) {
     weights <- r
-  }
-  else {
+  } else {
     weights <- compute_weights(r, 1, tau)
   }
   theta <- mean(shifted[cumulative_indicator, 1])
@@ -90,15 +90,9 @@ theta_dr <- function(eta, augmented = FALSE) {
 
   theta <- {
     if (augmented)
-      if (is.null(eta$weights))
-        mean(eta$m$shifted[cumulative_indicator, 1])
-      else
-        weighted.mean(eta$m$shifted[cumulative_indicator, 1], eta$weights[cumulative_indicator])
+      weighted.mean(eta$m$shifted[cumulative_indicator, 1], eta$weights[cumulative_indicator]) # why isn't this using 'inflnce'?
     else
-      if (is.null(eta$weights))
-        mean(eta$m$shifted[cumulative_indicator, 1])
-      else
-        weighted.mean(eta$m$shifted[cumulative_indicator, 1], eta$weights[cumulative_indicator])
+      weighted.mean(eta$m$shifted[cumulative_indicator, 1], eta$weights[cumulative_indicator])
   }
 
   if (eta$outcome_type == "continuous") {
@@ -106,7 +100,7 @@ theta_dr <- function(eta, augmented = FALSE) {
     theta <- rescale_y_continuous(theta, eta$bounds)
   }
 
-  clusters <- split(inflnce, eta$id)
+  clusters <- split(inflnce*eta$weights, eta$id)
   j <- length(clusters)
   se <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
   ci_low  <- theta - (qnorm(0.975) * se)
@@ -127,6 +121,7 @@ theta_dr <- function(eta, augmented = FALSE) {
       binomial = eta$m$shifted
     ),
     density_ratios = eta$r,
+    weights = eta$weights,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,
     outcome_type = eta$outcome_type
