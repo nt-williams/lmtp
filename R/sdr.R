@@ -110,7 +110,7 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
     m_natural_valid[!rv, t] <- 0
     m_shifted_valid[!rv, t] <- 0
 
-    progress_bar()
+    pb()
   }
 
   list(natural = m_natural_valid,

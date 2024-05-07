@@ -97,7 +97,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     fit <- sw(
       glm(
         natural$train[i & rt & in_conditioning_set, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt & in_conditioning_set, t])),
-        weights = wts[in_conditioning_set],
+        weights = wts[as.logical(in_conditioning_set)],
         family = "binomial"
       )
     )
@@ -110,7 +110,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     m_natural_valid[!rv, t] <- 0
     m_shifted_valid[!rv, t] <- 0
 
-    progress_bar()
+    pb()
   }
 
   list(natural = m_natural_valid,

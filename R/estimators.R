@@ -349,7 +349,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                    "tmp_lmtp_scaled_outcome",
                    ratios$ratios,
                    learners_outcome,
-                   control)
+                   control,
+                   pb)
 
   theta_dr(
     list(
