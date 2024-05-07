@@ -28,6 +28,10 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -54,6 +58,8 @@
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{c("mean", "glm")}.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#' @param riesz \[\code{logical(1)}\]\cr
+#'  Estimate treatment mechanism using riesz representer? Default is \code{FALSE}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -91,12 +97,12 @@
 #' @example inst/examples/tmle-ex.R
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
+                      cens = NULL, conditional = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
-                      folds = 10, weights = NULL,
+                      riesz = FALSE, folds = 10, weights = NULL,
                       control = lmtp_control()) {
 
   assertNotDataTable(data)
@@ -126,6 +132,11 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
   check_trt_type(data, unlist(trt), mtp)
+  checkmate::assertMatrix(conditional, mode = c("logical"), null.ok = TRUE)
+
+  if (!is.null(conditional) && isFALSE(riesz) {
+    stop("For conditional estimation, set `riesz = TRUE`.")
+  }
 
   task <- lmtp_task$new(
     data = data,
@@ -146,10 +157,16 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   pb <- progressr::progressor(task$tau*folds*2)
+      
+  if (isFALSE(riesz) {
+    ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  } else {
+    ratios <- cf_rr(task, learners_trt, mtp, control, pb)
+  }
 
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
   estims <- cf_tmle(task,
                     "tmp_lmtp_scaled_outcome",
+                    riesz,
                     ratios$ratios,
                     learners_outcome,
                     control,
@@ -160,6 +177,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      cumulated = riesz,
       tau = task$tau,
       folds = task$folds,
       id = task$id,
@@ -169,7 +187,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = task$outcome_type
+      outcome_type = task$outcome_type, 
+      conditional = task$conditional
     ),
     FALSE
   )
@@ -331,13 +350,13 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                    ratios$ratios,
                    learners_outcome,
                    control,
-                   pb)
 
   theta_dr(
     list(
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      cumulated = FALSE,
       tau = task$tau,
       folds = task$folds,
       id = task$id,
@@ -347,7 +366,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = task$outcome_type
+      outcome_type = task$outcome_type, 
+      conditional = task$conditional
     ),
     TRUE
   )
@@ -383,6 +403,10 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -427,7 +451,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'
 #' @example inst/examples/sub-ex.R
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL, k = Inf,
+                     conditional = NULL, shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = c("mean", "glm"),
                      folds = 10, weights = NULL,
@@ -457,6 +481,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
   checkmate::assertNumber(control$.bound)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assertMatrix(conditional, null.ok = TRUE)
 
   task <- lmtp_task$new(
     data = data,
@@ -469,6 +494,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     shift = shift,
     shifted = shifted,
     id = id,
+    conditional = conditional,
     outcome_type = match.arg(outcome_type),
     V = folds,
     weights = weights,
@@ -493,7 +519,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
-      outcome_type = task$outcome_type
+      outcome_type = task$outcome_type,
+      conditional = task$conditional
     )
   )
 }
@@ -528,6 +555,10 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param conditional \[\code{matrix}\]\cr
+#' An optional matrix indicating which observations are within the treatment
+#' conditioning set at each time point. The matrix should have one column for each
+#' time point and one row for each observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -548,6 +579,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param learners \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{c("mean", "glm")}.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#' @param riesz \[\code{logical(1)}\]\cr
+#'  Estimate treatment mechanism using riesz representer? Default is \code{FALSE}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -579,11 +612,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'
 #' @example inst/examples/ipw-ex.R
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
-                     shift = NULL, shifted = NULL, mtp = FALSE,
+                     conditional = NULL, shift = NULL, shifted = NULL, mtp = FALSE,
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
-                     folds = 10, weights = NULL,
+                     riesz = FALSE, folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
   assertNotDataTable(data)
@@ -611,6 +644,11 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
   check_trt_type(data, unlist(trt), mtp)
+  checkmate::assertMatrix(conditional, null.ok = TRUE)
+
+  if (!is.null(conditional) && isFALSE(riesz) {
+    stop("For conditional estimation, set `riesz = TRUE`.")
+  }
 
   task <- lmtp_task$new(
     data = data,
@@ -623,6 +661,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     shift = shift,
     shifted = shifted,
     id = id,
+    conditional = conditional,
     outcome_type = match.arg(outcome_type),
     V = folds,
     weights = weights,
@@ -631,16 +670,21 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   )
 
   pb <- progressr::progressor(task$tau*folds)
-
-  ratios <- cf_r(task, learners, mtp, control, pb)
-
-  theta_ipw(
-    eta = list(
-      r = matrix(
+      
+  if (isFALSE(riesz) {
+    ratios <- cf_r(task, learners, mtp, control, pb)
+    ratios$ratios <- matrix(
         t(apply(ratios$ratios, 1, cumprod)),
         nrow = nrow(ratios$ratios),
         ncol = ncol(ratios$ratios)
-      ),
+      )
+  } else {
+    ratios <- cf_rr(task, learners, mtp, control, pb)
+  }
+
+  theta_ipw(
+    eta = list(
+      r = ratios$ratios,
       y = if (task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
@@ -650,7 +694,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       weights = task$weights,
       tau = task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      fits_r = ratios$fits
+      fits_r = ratios$fits,
+      conditional = Task$conditional
     )
   )
 }

@@ -27,6 +27,10 @@ ipw <- sw(lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binar
 tmle <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
                   weights = wts, folds = 2))
 
+tmle_riesz <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+                  riesz = TRUE, learners_trt = c("glm"),
+                  weights = wts, folds = 2))
+
 sdr <- sw(lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
                 weights = wts, folds = 2))
 
@@ -36,5 +40,6 @@ test_that("survey weight fidelity", {
   expect_equal(truth, sub$theta, tolerance = 0.025)
   expect_equal(truth, ipw$theta, tolerance = 0.025)
   expect_equal(truth, tmle$theta, tolerance = 0.025)
+  expect_equal(truth, tmle_riesz$theta, tolerance = 0.025)
   expect_equal(truth, sdr$theta, tolerance = 0.025)
 })

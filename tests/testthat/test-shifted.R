@@ -22,6 +22,12 @@ tmle <-
                cens, k = 0, shifted = sc,
                outcome_type = "binomial", folds = 2, mtp = TRUE))
 
+tmle_riesz <-
+  sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
+               cens, k = 0, shifted = sc, trt_method = "riesz",
+               learners_trt = c("constant"),
+               outcome_type = "binomial", folds = 2, intervention_type = "mtp"))
+
 sdr <-
   sw(lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shifted = sc,
@@ -32,5 +38,6 @@ test_that("estimator fidelity with shifted data supplied", {
   expect_equal(truth, sub$theta, tolerance = 0.05)
   expect_equal(truth, ipw$theta, tolerance = 0.025)
   expect_equal(truth, tmle$theta, tolerance = 0.025)
+  expect_equal(truth, tmle_riesz$theta, tolerance = 0.025)
   expect_equal(truth, sdr$theta, tolerance = 0.025)
 })

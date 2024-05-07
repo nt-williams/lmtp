@@ -1,8 +1,11 @@
-cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
+cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
   out <- vector("list", length = length(task$folds))
-  ratios <- matrix(t(apply(ratios, 1, cumprod)),
-                   nrow = nrow(ratios),
-                   ncol = ncol(ratios))
+  
+  if (isFALSE(cumulated) {
+    ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                     nrow = nrow(ratios),
+                     ncol = ncol(ratios))
+  }
 
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
@@ -15,6 +18,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
         task$cens,
         task$risk,
         task$tau,
+        task$conditional[task$folds[[fold]]$training_set, , drop = FALSE],
         task$outcome_type,
         get_folded_data(ratios, task$folds, fold)$train,
         task$weights[task$folds[[fold]]$training_set],
@@ -27,7 +31,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
   }
 
   out <- future::value(out)
-
+      
   list(
     natural = recombine_outcome(out, "natural", task$folds),
     shifted = cbind(recombine_outcome(out, "shifted", task$folds), task$natural[["tmp_lmtp_scaled_outcome"]]),
@@ -36,7 +40,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
 }
 
 estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
-                          risk, tau, outcome_type, ratios, weights, learners, control, pb) {
+                          risk, tau, conditional, outcome_type, ratios, weights, learners, control, pb) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -48,6 +52,8 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     rt <- at_risk(natural$train, risk, t)
     rv <- at_risk(natural$valid, risk, t)
 
+    in_conditioning_set <- apply(conditional[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
+
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]
 
@@ -56,7 +62,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
       outcome_type <- "continuous"
     }
 
-    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+    fit <- run_ensemble(natural$train[i & rt & in_conditioning_set, c("lmtp_id", vars, outcome)],
                         outcome,
                         learners,
                         outcome_type,
@@ -90,8 +96,8 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
 
     fit <- sw(
       glm(
-        natural$train[i & rt, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt, t])),
-        weights = wts,
+        natural$train[i & rt & in_conditioning_set, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt & in_conditioning_set, t])),
+        weights = wts[in_conditioning_set],
         family = "binomial"
       )
     )
@@ -104,12 +110,10 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     m_natural_valid[!rv, t] <- 0
     m_shifted_valid[!rv, t] <- 0
 
-    pb()
+    progress_bar()
   }
 
-  list(
-    natural = m_natural_valid,
-    shifted = m_shifted_valid,
-    fits = fits
-  )
+  list(natural = m_natural_valid,
+       shifted = m_shifted_valid,
+       fits = fits)
 }

@@ -19,8 +19,8 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
 Depends: 
-    mlr3superlearner (>= 0.1.1),
-    R (>= 2.10)
+    R (>= 2.10), 
+    mlr3superlearner
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
@@ -36,13 +36,10 @@ Imports:
     future (>= 1.17.0),
     progressr,
     data.table (>= 1.13.0),
-<<<<<<< HEAD
-    checkmate (>= 2.1.0)
-=======
     checkmate (>= 2.1.0),
+    SuperRiesz
     SuperLearner,
     schoolmath
->>>>>>> devel
 URL: https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 

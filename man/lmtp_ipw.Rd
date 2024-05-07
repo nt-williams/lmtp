@@ -11,6 +11,7 @@ lmtp_ipw(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  conditional = NULL,
   shift = NULL,
   shifted = NULL,
   mtp = FALSE,
@@ -18,6 +19,7 @@ lmtp_ipw(
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
   learners = c("mean", "glm"),
+  riesz = FALSE
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -53,6 +55,11 @@ should be ordered following the time ordering of the model.}
 An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
+
+\item{conditional}{[\code{matrix}]\cr
+An optional matrix indicating which observations are within the treatment
+conditioning set at each time point. The matrix should have one column for each
+time point and one row for each observation.}
 
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
@@ -196,7 +203,7 @@ by some amount, use \code{mtp = TRUE}}.
 
   # Example 2.4
   # Using the same data as examples 2.1, 2.2, and 2.3, but now treating the exposure
-  # as an ordered categorical variable. To account for the exposure being a
+  # as a categorical variable. To account for the exposure being a
   # factor we just need to modify the shift function (and the original data)
   # so as to respect this.
   tmp <- sim_t4

@@ -35,7 +35,7 @@ treatment weighting estimator are provided for the sake of being
 thorough but their use is recommended against in favor of the TML and
 SDR estimators). Both binary and continuous outcomes (both with
 censoring) are allowed. **lmtp** is built atop the
-[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
+[`mlr3superlearner`](https://github.com/nt-williams/mlr3superlearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
@@ -51,23 +51,8 @@ Studies](https://muse.jhu.edu/article/883479).
 
 ## Installation
 
-**lmtp** can be installed from CRAN with:
-
 ``` r
-install.packages("lmtp")
-```
-
-The stable, development version can be installed from GitHub with:
-
-``` r
-devtools::install_github("nt-williams/lmtp@devel")
-```
-
-A version allowing for different covariates sets for the treatment,
-censoring, and outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@separate-variable-sets")
+remotes::install_github("nt-williams/lmtp@mlr3superlearner")
 ```
 
 ## What even is a modified treatment policy?
@@ -117,9 +102,7 @@ regimes for binary, continuous, and survival outcomes.
 library(lmtp)
 #> Loading required package: mlr3superlearner
 #> Loading required package: mlr3learners
-#> Warning: package 'mlr3learners' was built under R version 4.2.3
 #> Loading required package: mlr3
-#> Warning: package 'mlr3' was built under R version 4.2.3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)

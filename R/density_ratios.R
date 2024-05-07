@@ -63,7 +63,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
     densratios[, t] <- ratios
 
-    pb()
+    progress_bar()
   }
 
   list(ratios = densratios, fits = fits)
