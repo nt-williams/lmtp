@@ -134,7 +134,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   check_trt_type(data, unlist(trt), mtp)
   checkmate::assertMatrix(conditional, mode = c("logical"), null.ok = TRUE)
 
-  if (!is.null(conditional) && isFALSE(riesz) {
+  if (!is.null(conditional) && isFALSE(riesz)) {
     stop("For conditional estimation, set `riesz = TRUE`.")
   }
 
@@ -157,8 +157,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   pb <- progressr::progressor(task$tau*folds*2)
-      
-  if (isFALSE(riesz) {
+
+  if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
   } else {
     ratios <- cf_rr(task, learners_trt, mtp, control, pb)
@@ -187,7 +187,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = task$outcome_type, 
+      outcome_type = task$outcome_type,
       conditional = task$conditional
     ),
     FALSE
@@ -349,7 +349,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                    "tmp_lmtp_scaled_outcome",
                    ratios$ratios,
                    learners_outcome,
-                   control,
+                   control)
 
   theta_dr(
     list(
@@ -366,7 +366,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = task$outcome_type, 
+      outcome_type = task$outcome_type,
       conditional = task$conditional
     ),
     TRUE
@@ -646,7 +646,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   check_trt_type(data, unlist(trt), mtp)
   checkmate::assertMatrix(conditional, null.ok = TRUE)
 
-  if (!is.null(conditional) && isFALSE(riesz) {
+  if (!is.null(conditional) && isFALSE(riesz)) {
     stop("For conditional estimation, set `riesz = TRUE`.")
   }
 
@@ -670,8 +670,8 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   )
 
   pb <- progressr::progressor(task$tau*folds)
-      
-  if (isFALSE(riesz) {
+
+  if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners, mtp, control, pb)
     ratios$ratios <- matrix(
         t(apply(ratios$ratios, 1, cumprod)),

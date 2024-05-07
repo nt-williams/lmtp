@@ -1,7 +1,7 @@
 cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
   out <- vector("list", length = length(task$folds))
-  
-  if (isFALSE(cumulated) {
+
+  if (isFALSE(cumulated)) {
     ratios <- matrix(t(apply(ratios, 1, cumprod)),
                      nrow = nrow(ratios),
                      ncol = ncol(ratios))
@@ -31,7 +31,7 @@ cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
   }
 
   out <- future::value(out)
-      
+
   list(
     natural = recombine_outcome(out, "natural", task$folds),
     shifted = cbind(recombine_outcome(out, "shifted", task$folds), task$natural[["tmp_lmtp_scaled_outcome"]]),
