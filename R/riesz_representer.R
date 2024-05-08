@@ -35,9 +35,13 @@ estimate_rr <- function(natural, shifted, trt, cens, risk, tau, conditional, nod
     jrv <- censored(natural$valid, cens, t)$j
     drv <- at_risk(natural$valid, risk, t)
 
-    trt_t <- ifelse(length(trt) > 1, trt[t], trt)
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
 
-    frv <- followed_rule(natural$valid[[trt_t]], shifted$valid[[trt_t]], mtp)
+    frv <- followed_rule(natural$valid[, trt_t], shifted$valid[, trt_t], mtp)
 
     vars <- c(node_list[[t]], cens[[t]])
 

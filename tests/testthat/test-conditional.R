@@ -21,7 +21,7 @@ shift <- function(data, trt) {
 
 tml0 <- sw(lmtp_tmle(sim, trt = a, outcome = "Y", time_vary = time_vary,
                      conditional = make_conditional(0), outcome_type = "continuous",
-                     shift = shift, folds = 5, trt_method = "riesz",
+                     shift = shift, folds = 5, riesz = TRUE,
                      learners_trt = list(list("nn", epochs = 100)),
                      control = lmtp_control(.learners_trt_folds = 1)))
 
@@ -31,13 +31,13 @@ sub0 <- sw(lmtp_sub(sim, trt = a, outcome = "Y", time_vary = time_vary,
 
 ipw0 <- sw(lmtp_ipw(sim, trt = a, outcome = "Y", time_vary = time_vary,
                     conditional = make_conditional(0), outcome_type = "continuous",
-                    shift = shift, folds = 1, trt_method = "riesz",
+                    shift = shift, folds = 1, riesz = TRUE,
                     learners = list(list("nn")),
                     control = lmtp_control(.learners_trt_folds = 1)))
 
 tml1 <- sw(lmtp_tmle(sim, trt = a, outcome = "Y", time_vary = time_vary,
                      conditional = make_conditional(1), outcome_type = "continuous",
-                     shift = shift, folds = 1, trt_method = "riesz",
+                     shift = shift, folds = 1, riesz = TRUE,
                      learners_trt = list(list("nn", epochs = 100)),
                      control = lmtp_control(.learners_trt_folds = 1)))
 
@@ -47,14 +47,14 @@ sub1 <- sw(lmtp_sub(sim, trt = a, outcome = "Y", time_vary = time_vary,
 
 ipw1 <- sw(lmtp_ipw(sim, trt = a, outcome = "Y", time_vary = time_vary,
                     conditional = make_conditional(1), outcome_type = "continuous",
-                    shift = shift, folds = 1, trt_method = "riesz",
+                    shift = shift, folds = 1, riesz = TRUE,
                     learners = list(list("nn", epochs = 100)),
                     control = lmtp_control(.learners_trt_folds = 1)))
 
 
 tml2 <- sw(lmtp_tmle(sim, trt = a, outcome = "Y", time_vary = time_vary,
                      conditional = make_conditional(2), outcome_type = "continuous",
-                     shift = shift, folds = 1, trt_method = "riesz",
+                     shift = shift, folds = 1, riesz = TRUE,
                      learners_trt = list(list("nn", epochs = 100)),
                      control = lmtp_control(.learners_trt_folds = 1)))
 
@@ -64,7 +64,7 @@ sub2 <- sw(lmtp_sub(sim, trt = a, outcome = "Y", time_vary = time_vary,
 
 ipw2 <- sw(lmtp_ipw(sim, trt = a, outcome = "Y", time_vary = time_vary,
                     conditional = make_conditional(2), outcome_type = "continuous",
-                    shift = shift, folds = 1, trt_method = "riesz",
+                    shift = shift, folds = 1, riesz = TRUE,
                     learners = list(list("nn", epochs = 100)),
                     control = lmtp_control(.learners_trt_folds = 1)))
 
@@ -87,6 +87,6 @@ test_that("For conditional estimation, trt_method must be riesz", {
   expect_error(
     lmtp_tmle(sim, trt = a, outcome = "Y", time_vary = time_vary,
               conditional = make_conditional(2), outcome_type = "continuous",
-              shift = shift, folds = 1, trt_method = "default")
+              shift = shift, folds = 1, riesz = FALSE)
   )
 })
