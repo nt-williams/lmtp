@@ -52,7 +52,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     rt <- at_risk(natural$train, risk, t)
     rv <- at_risk(natural$valid, risk, t)
 
-    in_conditioning_set <- apply(conditional[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
+    in_conditioning_set <- as.logical(apply(conditional[, (t + 1):(tau + 1), drop = FALSE], 1, prod))
 
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]
@@ -92,12 +92,12 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
     m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
-    wts <- ratios[i & rt, t] * weights[i & rt]
+    wts <- (ratios[, t] * weights)[i & rt & in_conditioning_set]
 
     fit <- sw(
       glm(
         natural$train[i & rt & in_conditioning_set, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt & in_conditioning_set, t])),
-        weights = wts[as.logical(in_conditioning_set)],
+        weights = wts,
         family = "binomial"
       )
     )

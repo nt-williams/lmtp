@@ -696,7 +696,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
       tau = task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_r = ratios$fits,
-      conditional = Task$conditional
+      conditional = task$conditional
     )
   )
 }

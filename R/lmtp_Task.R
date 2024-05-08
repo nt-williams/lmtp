@@ -34,13 +34,10 @@ lmtp_task <- R6::R6Class(
       self$id <- data$lmtp_id
       self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
       self$multivariate <- is.list(trt)
+      self$conditional <- matrix(TRUE, nrow = nrow(data), ncol = self$tau + 1)
 
-      if (is.null(conditional)) {
-        self$conditional <- matrix(TRUE, nrow = nrow(data), ncol = length(trt) + 1)
-      } else {
-        self$conditional <- matrix(TRUE, ncol = length(self$trt) + 1, nrow = nrow(data))
-        self$conditional[, length(self$trt) + 1] <- TRUE
-        self$conditional[, 1:length(self$trt)] <- conditional
+      if (!is.null(conditional)) {
+        self$conditional[, 1:self$tau] <- conditional
       }
 
       shifted <- {
