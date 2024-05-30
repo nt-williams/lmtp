@@ -21,7 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Iván Díaz \email{ild2005@med.cornell.edu} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID}) [copyright holder]
+  \item Iván Díaz \email{Ivan.Diaz@nyulangone.org} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID}) [copyright holder]
 }
 
 }
