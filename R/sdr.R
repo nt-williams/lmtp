@@ -83,10 +83,10 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
     }
 
     trt_var <- names(shifted$train)[t]
-    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train <- as.data.frame(natural$train[jt & rt, vars])
     under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
 
-    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid <- as.data.frame(natural$valid[jv & rv, vars])
     under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
 
     m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
