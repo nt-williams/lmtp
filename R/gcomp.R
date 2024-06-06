@@ -62,10 +62,10 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk,
     }
 
     trt_var <- names(shifted$train)[t]
-    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train <- as.data.frame(natural$train[jt & rt, vars])
     under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
 
-    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid <- as.data.frame(natural$valid[jv & rv, vars])
     under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
 
     natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
