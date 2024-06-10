@@ -225,3 +225,8 @@ compute_weights <- function(r, t, tau) {
   if (ncol(out) > ncol(r)) return(t(out))
   out
 }
+
+is_normalized <- function(x, tolerance = .Machine$double.eps^0.5) {
+  # Check if the mean is approximately 1 within the given tolerance
+  abs(mean(x) - 1) < tolerance
+}
