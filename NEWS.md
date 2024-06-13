@@ -9,6 +9,7 @@
 ### Bug Fixes
 
 -   Standard errors now incorporate survey weights (see issue \#134).
+-   Bug fix when shift is NULL and data is a tibble (see issue \#137)
 
 ### General
 
