@@ -65,10 +65,10 @@ theta_ipw <- function(eta) {
 eif <- function(r, cumulated, tau, shifted, natural, conditional) {
   cumulative_indicator <- as.logical(apply(conditional, 1, prod))
 
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
+  natural[is.na(natural)] <- 0
+  shifted[is.na(shifted)] <- 0
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  
+
   if (cumulated == TRUE) {
     weights <- r
   } else {
