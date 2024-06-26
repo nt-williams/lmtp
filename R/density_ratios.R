@@ -1,5 +1,11 @@
 cf_r <- function(task, learners, mtp, control, pb) {
   out <- vector("list", length = length(task$folds))
+  
+  if (length(learners) == 1 && learners == "SL.mean") {
+    warning("Using 'SL.mean' as the only learner of the density ratios will always result in a misspecified model! If your exposure is randomized, consider using `c('SL.glm', 'SL.glmnet')`.",
+            call. = FALSE)
+  }
+  
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_r(
