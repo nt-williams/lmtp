@@ -3,7 +3,7 @@ cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
   out <- list()
 
   if (length(learners) == 1 && learners == "SL.mean") {
-    warning("Using 'SL.mean' as the only learner of the density ratios will always result in a misspecified model!",
+    warning("Using 'SL.mean' as the only learner of the density ratios will always result in a misspecified model! If your exposure is randomized, consider using `c('SL.glm', 'SL.glmnet')`.",
             call. = FALSE)
   }
 
