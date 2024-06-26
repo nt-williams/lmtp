@@ -2,6 +2,11 @@ cf_r <- function(Task, learners, mtp, lrnr_folds, trim, full_fits, pb) {
   fopts <- options("lmtp.bound", "lmtp.trt.length")
   out <- list()
 
+  if (length(learners) == 1 && learners == "SL.mean") {
+    warning("Using 'SL.mean' as the only learner of the density ratios will always result in a misspecified model!",
+            call. = FALSE)
+  }
+
   for (fold in seq_along(Task$folds)) {
     out[[fold]] <- future::future({
       options(fopts)

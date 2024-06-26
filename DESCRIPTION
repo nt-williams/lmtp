@@ -9,7 +9,7 @@ Authors@R:
              comment = c(ORCID = "0000-0002-1378-4831")),
       person(given = "Iván", 
              family = "Díaz", 
-             email = "ild2005@med.cornell.edu",
+             email = "Ivan.Diaz@nyulangone.org",
              role = c("aut", "cph"),
              comment = c(ORCID = "0000-0001-9056-2047")))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
@@ -37,7 +37,7 @@ Imports:
     data.table (>= 1.13.0),
     checkmate (>= 2.1.0),
     SuperLearner
-URL: https://github.com/nt-williams/lmtp
+URL: http://beyondtheate.com, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),
