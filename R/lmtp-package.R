@@ -1,4 +1,4 @@
-#' @importFrom stats as.formula coef glm plogis predict qlogis qnorm pnorm sd quantile var binomial gaussian na.omit weighted.mean
+#' @importFrom stats runif as.formula coef glm plogis predict qlogis qnorm pnorm sd quantile var binomial gaussian na.omit weighted.mean
 #' @keywords internal
 "_PACKAGE"
 

@@ -22,12 +22,7 @@ lmtp_tmle(
   learners_trt = "SL.glm",
   folds = 10,
   weights = NULL,
-  .bound = 1e-05,
-  .trim = 0.999,
-  .learners_outcome_folds = 10,
-  .learners_trt_folds = 10,
-  .return_full_fits = FALSE,
-  ...
+  control = lmtp_control()
 )
 }
 \arguments{
@@ -35,8 +30,11 @@ lmtp_tmle(
 A \code{data.frame} in wide format containing all necessary variables
 for the estimation problem. Must not be a \code{data.table}.}
 
-\item{trt}{[\code{character}]\cr
-A vector containing the column names of treatment variables ordered by time.}
+\item{trt}{[\code{character}] or [\code{list}]\cr
+A vector containing the column names of treatment variables ordered by time.
+Or, a list of vectors, the same length as the number of time points of observation.
+Vectors should contain column names for the treatment variables at each time point. The list
+should be ordered following the time ordering of the model.}
 
 \item{outcome}{[\code{character}]\cr
 The column name of the outcome variable. In the case of time-to-event
@@ -99,25 +97,8 @@ The number of folds to be used for cross-fitting.}
 \item{weights}{[\code{numeric(nrow(data))}]\cr
 An optional vector containing sampling weights.}
 
-\item{.bound}{[\code{numeric(1)}]\cr
-Determines that maximum and minimum values (scaled) predictions
-will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.}
-
-\item{.trim}{[\code{numeric(1)}]\cr
-Determines the amount the density ratios should be trimmed.
-The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-to the 0.999 percentile. A value of 1 indicates no trimming.}
-
-\item{.learners_outcome_folds}{[\code{integer(1)}]\cr
-The number of cross-validation folds for \code{learners_outcome}.}
-
-\item{.learners_trt_folds}{[\code{integer(1)}]\cr
-The number of cross-validation folds for \code{learners_trt}.}
-
-\item{.return_full_fits}{[\code{logical(1)}]\cr
-Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
-
-\item{...}{Extra arguments. Exists for backwards compatibility.}
+\item{control}{[\code{list()}]\cr
+Output of \code{lmtp_control()}.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
@@ -297,5 +278,24 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_tmle(sim_point_surv, A, Y, W, cens = C, folds = 2,
             shift = static_binary_on, outcome_type = "survival")
+
+  # Example 6.1
+  # Intervening on multiple exposures simultaneously. Interested in the effect of
+  # a modified treatment policy where variable D1 is decreased by 0.1 units and
+  # variable D2 is decreased by 0.5 units simultaneously.
+  A <- list(c("D1", "D2"))
+  W <- paste0("C", 1:3)
+  Y <- "Y"
+
+  d <- function(data, a) {
+    out = list(
+      data[[a[1]]] - 0.1,
+      data[[a[2]]] - 0.5
+    )
+    setNames(out, a)
+  }
+
+  lmtp_tmle(multivariate_data, A, Y, W, shift = d,
+            outcome_type = "continuous", folds = 1, mtp = TRUE)
 }
 }

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
+# lmtp <img src="man/figures/lmtp.png" align="right" height="139"/></a>
 
 <!-- badges: start -->
 
@@ -15,6 +15,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
@@ -87,31 +88,38 @@ regimes for binary, continuous, and survival outcomes.
 
 ### Features
 
-| Feature                         | Status |
-|---------------------------------|:------:|
-| Point treatment                 |   ✓    |
-| Longitudinal treatment          |   ✓    |
-| Modified treatment intervention |   ✓    |
-| Static intervention             |   ✓    |
-| Dynamic intervention            |   ✓    |
-| Continuous treatment            |   ✓    |
-| Binary treatment                |   ✓    |
-| Categorical treatment           |   ✓    |
-| Missingness in treatment        |        |
-| Continuous outcome              |   ✓    |
-| Binary outcome                  |   ✓    |
-| Censored outcome                |   ✓    |
-| Mediation                       |        |
-| Survey weights                  |   ✓    |
-| Super learner                   |   ✓    |
-| Clustered data                  |   ✓    |
-| Parallel processing             |   ✓    |
-| Progress bars                   |   ✓    |
+| Feature                                                          | Status |
+|------------------------------------------------------------------|:------:|
+| Point treatment                                                  |   ✓    |
+| Longitudinal treatment                                           |   ✓    |
+| Modified treatment intervention                                  |   ✓    |
+| Incremental Propensity Score Intervention (Using the risk ratio) |   ✓    |
+| Static intervention                                              |   ✓    |
+| Dynamic intervention                                             |   ✓    |
+| Continuous treatment                                             |   ✓    |
+| Binary treatment                                                 |   ✓    |
+| Categorical treatment                                            |   ✓    |
+| Multivariate treatment                                           |   ✓    |
+| Missingness in treatment                                         |        |
+| Continuous outcome                                               |   ✓    |
+| Binary outcome                                                   |   ✓    |
+| Censored outcome                                                 |   ✓    |
+| Mediation                                                        |        |
+| Survey weights                                                   |   ✓    |
+| Super learner                                                    |   ✓    |
+| Clustered data                                                   |   ✓    |
+| Parallel processing                                              |   ✓    |
+| Progress bars                                                    |   ✓    |
 
 ## Example
 
 ``` r
 library(lmtp)
+#> Loading required package: mlr3superlearner
+#> Loading required package: mlr3learners
+#> Warning: package 'mlr3learners' was built under R version 4.2.3
+#> Loading required package: mlr3
+#> Warning: package 'mlr3' was built under R version 4.2.3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -163,19 +171,19 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 
 #### Single time point
 
-<img src='man/figures/pointtrt.png' height="300" />
+<img src="man/figures/pointtrt.png" height="300"/>
 
 #### Time-varying exposure and confounders, not survival outcome
 
-<img src='man/figures/timevary.png' height="300" />
+<img src="man/figures/timevary.png" height="300"/>
 
 #### Single exposure, survival outcome
 
-<img src='man/figures/survival.png' height="300" />
+<img src="man/figures/survival.png" height="300"/>
 
 #### Time-varying exposure and confounders, survival outcome
 
-<img src='man/figures/timevarysurvival.png' height="300" />
+<img src="man/figures/timevarysurvival.png" height="300"/>
 
 ## Similar Implementations
 

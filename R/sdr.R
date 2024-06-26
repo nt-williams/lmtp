@@ -1,14 +1,21 @@
-cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
-  out <- list()
-  for (fold in seq_along(Task$folds)) {
+cf_sdr <- function(task, outcome, ratios, learners, control, pb) {
+  out <- vector("list", length = length(task$folds))
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_sdr(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted[, Task$trt, drop = F], Task$folds, fold),
-        outcome, Task$node_list$outcome,
-        Task$cens, Task$risk, Task$tau, Task$outcome_type,
-        get_folded_data(ratios, Task$folds, fold)$train,
-        learners, lrnr_folds, pb, full_fits
+        get_folded_data(task$natural, task$folds, fold),
+        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
+        task$trt,
+        outcome,
+        task$node_list$outcome,
+        task$cens,
+        task$risk,
+        task$tau,
+        task$outcome_type,
+        get_folded_data(ratios, task$folds, fold)$train,
+        learners,
+        control,
+        pb
       )
     },
     seed = TRUE)
@@ -16,20 +23,20 @@ cf_sdr <- function(Task, outcome, ratios, learners, lrnr_folds, full_fits, pb) {
 
   out <- future::value(out)
 
-  list(natural = recombine_outcome(out, "natural", Task$folds),
-       shifted = recombine_outcome(out, "shifted", Task$folds),
+  list(natural = recombine_outcome(out, "natural", task$folds),
+       shifted = recombine_outcome(out, "shifted", task$folds),
        fits = lapply(out, function(x) x[["fits"]]))
 }
 
-estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
-                         outcome_type, ratios, learners, lrnr_folds, pb, full_fits) {
+estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, tau,
+                         outcome_type, ratios, learners, control, pb) {
 
   m_natural_train <- m_shifted_train <-
     cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
   m_natural_valid <- m_shifted_valid <-
     cbind(matrix(nrow = nrow(natural$valid), ncol = tau), natural$valid[[outcome]])
 
-  fits <- list()
+  fits <- vector("list", length = tau)
 
   for (t in tau:1) {
     i  <- censored(natural$train, cens, t)$i
@@ -49,9 +56,9 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
                           learners,
                           outcome_type,
                           id = natural$train[i & rt, ][["lmtp_id"]],
-                          lrnr_folds)
+                          control$.learners_outcome_folds)
 
-      if (full_fits) {
+      if (control$.return_full_fits) {
         fits[[t]] <- fit
       } else {
         fits[[t]] <- extract_sl_weights(fit)
@@ -73,21 +80,26 @@ estimate_sdr <- function(natural, shifted, outcome, node_list, cens, risk, tau,
                           learners,
                           "continuous",
                           id = natural$train[i & rt, ][["lmtp_id"]],
-                          lrnr_folds)
+                          control$.learners_outcome_folds)
 
-      if (full_fits) {
+      if (control$.return_full_fits) {
         fits[[t]] <- fit
       } else {
         fits[[t]] <- extract_sl_weights(fit)
       }
     }
 
-    trt_var <- names(shifted$train)[t]
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
+
     under_shift_train <- natural$train[jt & rt, vars]
-    under_shift_train[[trt_var]] <- shifted$train[jt & rt, trt_var]
+    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
 
     under_shift_valid <- natural$valid[jv & rv, vars]
-    under_shift_valid[[trt_var]] <- shifted$valid[jv & rv, trt_var]
+    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
 
     m_natural_train[jt & rt, t] <- bound(SL_predict(fit, natural$train[jt & rt, vars]), 1e-05)
     m_shifted_train[jt & rt, t] <- bound(SL_predict(fit, under_shift_train), 1e-05)

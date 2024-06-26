@@ -1,3 +1,21 @@
+# lmtp 1.4.0
+
+### New Features
+
+-   Can now estimate the effects of simultaneous interventions on multiple variables. 
+-   New pre-packaged shift function, `ipsi()` for estimating IPSI effects using the risk ratio.
+-   `lmtp_control()` now replaces extra estimator arguments.
+
+### Bug Fixes
+
+-   Standard errors now incorporate survey weights (see issue \#134).
+-   Bug fix when shift is NULL and data is a tibble (see issue \#137)
+
+### General
+
+-   The `intervention_type` argument has been fully deprecated.
+-   Now attempting to detect intervention type errors (see issue \#98).
+
 # lmtp 1.3.3
 
 ### New Features

@@ -6,8 +6,15 @@ determine_tau <- function(outcome, trt) {
   length(outcome)
 }
 
-setup_cv <- function(data, id, V = 10) {
-  out <- origami::make_folds(data, cluster_ids = id, V = V)
+setup_cv <- function(data, V = 10, id, strata, outcome_type) {
+  if (length(unique(id)) == nrow(data) & outcome_type == "binomial") {
+    strata <- data[[strata]]
+    strata[is.na(strata)] <- 2
+    out <- origami::make_folds(data, V = V, strata_ids = strata)
+  } else {
+    out <- origami::make_folds(data, cluster_ids = id, V = V)
+  }
+
   if (V > 1) {
     return(out)
   }
@@ -93,6 +100,9 @@ at_risk <- function(data, risk, tau, check = FALSE) {
 
 followed_rule <- function(obs_trt, shifted_trt, mtp) {
   if (mtp) {
+    if (inherits(obs_trt, "data.frame")) {
+      return(rep(TRUE, nrow(obs_trt)))
+    }
     return(rep(TRUE, length(obs_trt)))
   }
 
@@ -211,4 +221,9 @@ compute_weights <- function(r, t, tau) {
   out <- t(apply(r[, t:tau, drop = FALSE], 1, cumprod))
   if (ncol(out) > ncol(r)) return(t(out))
   out
+}
+
+is_normalized <- function(x, tolerance = .Machine$double.eps^0.5) {
+  # Check if the mean is approximately 1 within the given tolerance
+  abs(mean(x) - 1) < tolerance
 }

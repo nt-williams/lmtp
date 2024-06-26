@@ -1,6 +1,6 @@
 #' @importFrom R6 R6Class
-lmtp_Task <- R6::R6Class(
-  "lmtp_Task",
+lmtp_task <- R6::R6Class(
+  "lmtp_task",
   public = list(
     natural = NULL,
     shifted = NULL,
@@ -16,7 +16,10 @@ lmtp_Task <- R6::R6Class(
     bounds = NULL,
     folds = NULL,
     weights = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k, shift, shifted, id, outcome_type = NULL, V = 10, weights = NULL, bounds = NULL, bound = NULL) {
+    multivariate = NULL,
+    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
+                          shift, shifted, id, outcome_type = NULL, V = 10,
+                          weights = NULL, bounds = NULL, bound = NULL) {
       self$tau <- determine_tau(outcome, trt)
       self$n <- nrow(data)
       self$trt <- trt
@@ -28,7 +31,8 @@ lmtp_Task <- R6::R6Class(
       self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
       data$lmtp_id <- create_ids(data, id)
       self$id <- data$lmtp_id
-      self$folds <- setup_cv(data, data$lmtp_id, V)
+      self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
+      self$multivariate <- is.list(trt)
 
       shifted <- {
         if (is.null(shifted) && !is.null(shift))
@@ -42,8 +46,8 @@ lmtp_Task <- R6::R6Class(
         }
       }
 
-      data <- data.table::copy(data)
-      shifted <- data.table::copy(shifted)
+      data <- data.table::copy(as.data.frame(data))
+      shifted <- data.table::copy(as.data.frame(shifted))
 
       data <- fix_censoring_ind(data, cens)
       shifted <- fix_censoring_ind(shifted, cens)
@@ -62,7 +66,14 @@ lmtp_Task <- R6::R6Class(
       self$shifted <- shifted
 
       if (!is.null(weights)) {
-        self$weights <- weights
+        if (is_normalized(weights)) {
+          self$weights <- weights
+        } else {
+          # Normalize weights
+          self$weights <- weights / mean(weights)
+        }
+      } else {
+        self$weights <- rep(1, self$n)
       }
     }
   )
