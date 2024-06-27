@@ -21,3 +21,10 @@ print.lmtp_contrast <- function(x, ...) {
   x$vals$p.value <- format.pval(x$vals$p.value, digits = 3, eps = 0.001)
   print(format(x$vals, digits = 3))
 }
+
+#' @export
+print.lmtp_survival <- function(x, ...) {
+  out <- do.call("rbind", lapply(x, tidy))
+  out$t <- 1:length(x)
+  out[, c(ncol(out), 1:ncol(out) - 1)]
+}
