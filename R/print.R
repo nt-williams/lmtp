@@ -26,5 +26,5 @@ print.lmtp_contrast <- function(x, ...) {
 print.lmtp_survival <- function(x, ...) {
   out <- do.call("rbind", lapply(x, tidy))
   out$t <- 1:length(x)
-  out[, c(ncol(out), 1:ncol(out) - 1)]
+  as.data.frame(out[, c(ncol(out), 1:ncol(out) - 1)])
 }

@@ -42,14 +42,21 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   }
 
   estimates <- future::value(estimates)
-
-  estimates[[1]]$theta <- 1 - estimates[[1]]$theta
-  high <- estimates[[1]]$high
-  low <- estimates[[1]]$low
-  estimates[[1]]$high <- 1 - low
-  estimates[[1]]$low <- 1 - high
-  estimates[[1]]$eif <- 1 - estimates[[1]]$eif
+  estimates <- fix_surv_time1(estimates)
+  estimates <- isotonic_projection(estimates)
 
   class(estimates) <- "lmtp_survival"
   estimates
+}
+
+isotonic_projection <- function(x, alpha = 0.05) {
+  cv <- abs(qnorm(p = alpha / 2))
+  estim <- do.call("rbind", lapply(x, tidy))
+  iso_fit <- isotone::gpava(1:length(x), estim$estimate)
+  for (i in seq_along(x)) {
+    x[[i]]$theta <- iso_fit$y[i]
+    x[[i]]$low  <- x[[i]]$theta - (qnorm(0.975) * x[[i]]$standard_error)
+    x[[i]]$high <- x[[i]]$theta + (qnorm(0.975) * x[[i]]$standard_error)
+  }
+  x
 }
