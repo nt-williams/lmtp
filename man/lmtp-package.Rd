@@ -11,7 +11,7 @@ Non-parametric estimators for casual effects based on longitudinal modified trea
 \seealso{
 Useful links:
 \itemize{
-  \item \url{http://beyondtheate.com}
+  \item \url{https://beyondtheate.com/}
   \item \url{https://github.com/nt-williams/lmtp}
   \item Report bugs at \url{https://github.com/nt-williams/lmtp/issues}
 }
