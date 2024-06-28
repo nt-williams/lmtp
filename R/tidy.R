@@ -28,3 +28,17 @@ tidy.lmtp <- function(x, ...) {
   class(out) <- c("tbl_df", "tbl", "data.frame")
   out
 }
+
+#' Tidy a(n) lmtp_survival object
+#'
+#' @param x A `lmtp_survival` object produced by a call to [lmtp::lmtp_survival()].
+#' @param ... Unused, included for generic consistency only.
+#'
+#' @example inst/examples/lmtp_survival-ex.R
+#'
+#' @export
+tidy.lmtp_survival <- function(x, ...) {
+  out <- do.call("rbind", lapply(x, tidy))
+  out$t <- 1:length(x)
+  out[, c(ncol(out), 1:ncol(out) - 1)]
+}
