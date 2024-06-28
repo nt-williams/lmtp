@@ -2,6 +2,7 @@
 #'
 #' Wrapper around \code{lmtp_tmle} and \code{lmtp_sdr} for survival outcomes to estimate the entire survival curve.
 #' Estimates are reconstructed using isotonic regression to enforce monotonicity of the survival curve.
+#' \bold{Confidence intervals correspond to marginal confidence intervals for the survival curve, not simultaneous intervals.}
 #'
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
@@ -75,6 +76,8 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   tau <- length(outcomes)
   estimates <- vector("list", tau)
 
+  t <- 1
+  cli::cli_progress_step("Working on time {t}/{tau}...")
   for (t in 1:tau) {
     args <- list(
       data = data,
@@ -101,8 +104,10 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
       else do.call(lmtp_sdr, args)
     },
     seed = TRUE)
+    cli::cli_progress_update()
   }
 
+  cli::cli_progress_done()
   estimates <- future::value(estimates)
   estimates <- fix_surv_time1(estimates)
   estimates <- isotonic_projection(estimates)

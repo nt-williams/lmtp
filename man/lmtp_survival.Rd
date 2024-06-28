@@ -98,6 +98,7 @@ A list of class \code{lmtp_survival} containing \code{lmtp} objects for each tim
 \description{
 Wrapper around \code{lmtp_tmle} and \code{lmtp_sdr} for survival outcomes to estimate the entire survival curve.
 Estimates are reconstructed using isotonic regression to enforce monotonicity of the survival curve.
+\bold{Confidence intervals correspond to marginal confidence intervals for the survival curve, not simultaneous intervals.}
 }
 \examples{
 \donttest{
