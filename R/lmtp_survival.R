@@ -41,6 +41,10 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#' @param boot \[\code{logical(1)}\]\cr
+#'  Compute standard errors using the bootstrap? Default is \code{TRUE}. If \code{FALSE}, standard
+#'  errors will be calculated using the empirical variance of the efficient influence function.
+#'  Ignored if \code{estimator = "lmtp_sdr"}.
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
@@ -64,6 +68,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
                           k = Inf,
                           mtp = FALSE,
+                          boot = TRUE,
                           id = NULL,
                           learners_outcome = "SL.glm",
                           learners_trt = "SL.glm",
@@ -94,8 +99,10 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     control = control
   )
 
-  if (estimator == "lmtp_tmle") expr <- expression(do.call(lmtp_tmle, args))
-  else expr <- expression(do.call(lmtp_sdr, args))
+  if (estimator == "lmtp_tmle") {
+    args$boot <- boot
+    expr <- expression(do.call(lmtp_tmle, args))
+  } else expr <- expression(do.call(lmtp_sdr, args))
 
   t <- 1
   cli::cli_progress_step("Working on time {t}/{tau}...")
