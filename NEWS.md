@@ -1,3 +1,13 @@
+# lmtp 1.4.1
+
+### New Features
+
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140.
+
+### Bug Fixes
+
+### General
+
 # lmtp 1.4.0
 
 ### New Features
@@ -10,6 +20,7 @@
 ### Bug Fixes
 
 -   Standard errors now incorporate survey weights (see issue \#134).
+-   Bug fix when shift is NULL and data is a tibble (see issue \#137)
 
 ### General
 

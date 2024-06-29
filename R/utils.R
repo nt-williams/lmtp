@@ -222,3 +222,18 @@ compute_weights <- function(r, t, tau) {
   if (ncol(out) > ncol(r)) return(t(out))
   out
 }
+
+is_normalized <- function(x, tolerance = .Machine$double.eps^0.5) {
+  # Check if the mean is approximately 1 within the given tolerance
+  abs(mean(x) - 1) < tolerance
+}
+
+fix_surv_time1 <- function(x) {
+  x[[1]]$theta <- 1 - x[[1]]$theta
+  high <- x[[1]]$high
+  low <- x[[1]]$low
+  x[[1]]$high <- 1 - low
+  x[[1]]$low <- 1 - high
+  x[[1]]$eif <- 1 - x[[1]]$eif
+  x
+}

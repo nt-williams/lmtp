@@ -46,8 +46,8 @@ lmtp_task <- R6::R6Class(
         }
       }
 
-      data <- data.table::copy(data)
-      shifted <- data.table::copy(shifted)
+      data <- data.table::copy(as.data.frame(data))
+      shifted <- data.table::copy(as.data.frame(shifted))
 
       data <- fix_censoring_ind(data, cens)
       shifted <- fix_censoring_ind(shifted, cens)
@@ -66,8 +66,12 @@ lmtp_task <- R6::R6Class(
       self$shifted <- shifted
 
       if (!is.null(weights)) {
-        # Normalize weights
-        self$weights <- weights / mean(weights)
+        if (is_normalized(weights)) {
+          self$weights <- weights
+        } else {
+          # Normalize weights
+          self$weights <- weights / mean(weights)
+        }
       } else {
         self$weights <- rep(1, self$n)
       }

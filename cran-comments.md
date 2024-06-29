@@ -1,12 +1,14 @@
-## Version 1.3.3 submission
+## Version 1.4.0 submission
 
 ## Test environments
 
--   local R installation (Mac OS), R release
--   local R installation (Mac OS), R old release
+-   Mac OS (on GitHub actions), R release
+-   Mac OS (on GitHub actions), R old release
 -   Windows-latest (on GitHub actions), R release
+-   Windows-latest (on GitHub actions), R old release
 -   Windows (Win-builder), R devel
--   Windows (Win-builder), R old release
+-   Ubuntu (on GitHub actions), R release
+-   Ubuntu (on GitHub actions), R devel
 
 ## R CMD check results
 
