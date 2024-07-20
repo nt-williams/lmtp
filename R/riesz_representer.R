@@ -1,7 +1,7 @@
 cf_rr <- function(task, learners, mtp, control, progress_bar) {
   out <- list()
   for (fold in seq_along(task$folds)) {
-    out[[fold]] <- #future::future({
+    out[[fold]] <- future::future({
       estimate_rr(get_folded_data(task$natural, task$folds, fold),
                  get_folded_data(task$shifted, task$folds, fold),
                  task$trt,
@@ -15,8 +15,8 @@ cf_rr <- function(task, learners, mtp, control, progress_bar) {
                  mtp,
                  control,
                  progress_bar)
-    #},
-    #seed = TRUE)
+    },
+    seed = TRUE)
   }
 
   out <- future::value(out)
@@ -45,14 +45,18 @@ estimate_rr <- function(natural, shifted, trt, cens, risk, tau, conditional, nod
 
     vars <- c(node_list[[t]], cens[[t]])
 
+    cumulative_indicator_train <- matrix(as.logical(apply(conditional$train[, 1:t, drop = FALSE], 1, prod)), ncol = 1)
+    cumulative_indicator_valid <- matrix(as.logical(apply(conditional$valid[, 1:t, drop = FALSE], 1, prod)), ncol = 1)
+
     fit <- run_riesz_ensemble(
       learners,
       natural$train[jrt & drt, vars, drop = FALSE],
       shifted$train[jrt & drt, vars, drop = FALSE],
+      cumulative_indicator_train[jrt & drt, drop = FALSE],
       conditional$train[jrt & drt, t, drop = FALSE],
       natural$valid[jrv & drv, vars, drop = FALSE],
       shifted$valid[jrv & drv, vars, drop = FALSE],
-      conditional$valid[jrv & drv, t, drop = FALSE],
+      cumulative_indicator_valid[jrv & drv, drop = FALSE],
       folds = control$.learners_trt_folds
     )
 
