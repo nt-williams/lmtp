@@ -62,8 +62,9 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(r, cumulated, tau, shifted, natural, conditional) {
+eif <- function(r, cumulated, tau, shifted, natural, conditional, G) {
   cumulative_indicator <- as.logical(apply(conditional, 1, prod))
+  future_indicator <- t(apply(conditional[, ncol(conditional):1], 1, cumprod))[,ncol(conditional):1]
 
   natural[is.na(natural)] <- 0
   shifted[is.na(shifted)] <- 0
@@ -75,7 +76,8 @@ eif <- function(r, cumulated, tau, shifted, natural, conditional) {
     weights <- compute_weights(r, 1, tau)
   }
   theta <- mean(shifted[cumulative_indicator, 1])
-  1 / mean(cumulative_indicator) * (rowSums(weights * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta))
+  #1 / mean(cumulative_indicator) * (rowSums(weights * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta))
+  theta + rowSums(weights * future_indicator[,2:(tau + 1)] / G * m, na.rm = TRUE) / mean(cumulative_indicator)
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
@@ -86,7 +88,8 @@ theta_dr <- function(eta, augmented = FALSE) {
                  tau = eta$tau,
                  shifted = eta$m$shifted,
                  natural = eta$m$natural,
-                 conditional = eta$conditional)
+                 conditional = eta$conditional,
+                 G = eta$G)
 
   theta <- {
     if (augmented)

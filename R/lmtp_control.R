@@ -23,10 +23,12 @@ lmtp_control <- function(.bound = 1e5,
                          .trim = 0.999,
                          .learners_outcome_folds = 10,
                          .learners_trt_folds = 10,
+                         .learners_conditional_folds = 10,
                          .return_full_fits = FALSE) {
   list(.bound = .bound,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
+       .learners_conditional_folds = .learners_conditional_folds,
        .return_full_fits = .return_full_fits)
 }

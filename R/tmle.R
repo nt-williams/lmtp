@@ -1,4 +1,4 @@
-cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
+cf_tmle <- function(task, outcome, cumulated, ratios, conditional_prob, learners, control, pb) {
   out <- vector("list", length = length(task$folds))
 
   if (isFALSE(cumulated)) {
@@ -12,6 +12,7 @@ cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
       estimate_tmle(
         get_folded_data(task$natural, task$folds, fold),
         get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
+        get_folded_data(conditional_prob, task$folds, fold),
         task$trt,
         outcome,
         task$node_list$outcome,
@@ -39,7 +40,7 @@ cf_tmle <- function(task, outcome, cumulated, ratios, learners, control, pb) {
   )
 }
 
-estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
+estimate_tmle <- function(natural, shifted, conditional_prob, trt, outcome, node_list, cens,
                           risk, tau, conditional, outcome_type, ratios, weights, learners, control, pb) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
@@ -92,7 +93,7 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
     m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
-    wts <- (ratios[, t] * weights)[i & rt & in_conditioning_set]
+    wts <- (ratios[, t] * weights / conditional_prob$train[, t])[i & rt & in_conditioning_set]
 
     fit <- sw(
       glm(

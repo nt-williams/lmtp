@@ -102,6 +102,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
+                      learners_conditional = c("mean", "glm"),
                       riesz = FALSE, folds = 10, weights = NULL,
                       control = lmtp_control()) {
 
@@ -159,16 +160,24 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(task$tau*folds*2)
 
+  if(is.null(conditional)) {
+    conditional_probs <- list(1, G = matrix(nrow = nrow(data), ncol = task$tau))
+  }
+  else {
+    conditional_probs <- cf_conditional(task, learners_conditional, mtp, control, pb)
+  }
+
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
   } else {
-    ratios <- cf_rr(task, learners_trt, mtp, control, pb)
+    ratios <- cf_rr(task, conditional_probs$G, learners_trt, mtp, control, pb)
   }
 
   estims <- cf_tmle(task,
                     "tmp_lmtp_scaled_outcome",
                     riesz,
                     ratios$ratios,
+                    conditional_probs$G,
                     learners_outcome,
                     control,
                     pb)
@@ -178,6 +187,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      G = conditional_probs$G,
       cumulated = riesz,
       tau = task$tau,
       folds = task$folds,
@@ -346,6 +356,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   pb <- progressr::progressor(task$tau*folds*2)
 
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
+
   estims <- cf_sdr(task,
                    "tmp_lmtp_scaled_outcome",
                    ratios$ratios,

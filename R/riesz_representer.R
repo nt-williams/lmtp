@@ -1,9 +1,10 @@
-cf_rr <- function(task, learners, mtp, control, progress_bar) {
+cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
   out <- list()
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_rr(get_folded_data(task$natural, task$folds, fold),
                  get_folded_data(task$shifted, task$folds, fold),
+                 get_folded_data(G, task$folds, fold),
                  task$trt,
                  task$cens,
                  task$risk,
@@ -24,7 +25,7 @@ cf_rr <- function(task, learners, mtp, control, progress_bar) {
 }
 
 
-estimate_rr <- function(natural, shifted, trt, cens, risk, tau, conditional, node_list, learners, mtp, control, progress_bar) {
+estimate_rr <- function(natural, shifted, G, trt, cens, risk, tau, conditional, node_list, learners, mtp, control, progress_bar) {
   representers <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
 
@@ -45,18 +46,30 @@ estimate_rr <- function(natural, shifted, trt, cens, risk, tau, conditional, nod
 
     vars <- c(node_list[[t]], cens[[t]])
 
-    cumulative_indicator_train <- matrix(as.logical(apply(conditional$train[, 1:t, drop = FALSE], 1, prod)), ncol = 1)
-    cumulative_indicator_valid <- matrix(as.logical(apply(conditional$valid[, 1:t, drop = FALSE], 1, prod)), ncol = 1)
+    if(t == 1) {
+      prev_riesz <- matrix(1, ncol = 1, nrow = nrow(natural$train))
+    }
+    else {
+      prev_riesz <- representers[, t - 1, drop = FALSE]
+    }
+
+    cumulative_indicator_train <- matrix(as.logical(apply(conditional$train[, (t):(tau + 1), drop = FALSE], 1, prod)), ncol = 1)
+    cumulative_indicator_valid <- matrix(as.logical(apply(conditional$valid[, (t):(tau + 1), drop = FALSE], 1, prod)), ncol = 1)
+
+    new_shifted <- natural$train
+    new_shifted[[trt_t]] <- shifted$train[[trt_t]]
 
     fit <- run_riesz_ensemble(
       learners,
       natural$train[jrt & drt, vars, drop = FALSE],
-      shifted$train[jrt & drt, vars, drop = FALSE],
+      new_shifted[jrt & drt, vars, drop = FALSE],
       cumulative_indicator_train[jrt & drt, drop = FALSE],
-      conditional$train[jrt & drt, t, drop = FALSE],
+      G$train[jrt & drt, t, drop = FALSE],
       natural$valid[jrv & drv, vars, drop = FALSE],
       shifted$valid[jrv & drv, vars, drop = FALSE],
       cumulative_indicator_valid[jrv & drv, drop = FALSE],
+      G$valid[jrv & drv, t, drop = FALSE],
+      prev_riesz,
       folds = control$.learners_trt_folds
     )
 
