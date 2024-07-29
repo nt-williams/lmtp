@@ -24,6 +24,7 @@ run_riesz_ensemble <- function(learners, natural_train, shifted_train, condition
 
   list(
     predictions = predictions,
+    predictions_train = predict(sl, natural_train),
     fits = sl,
     coef = sl$weights,
     risk = sl$risk

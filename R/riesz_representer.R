@@ -1,7 +1,7 @@
 cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
   out <- list()
   for (fold in seq_along(task$folds)) {
-    out[[fold]] <- future::future({
+    out[[fold]] <- #future::future({
       estimate_rr(get_folded_data(task$natural, task$folds, fold),
                  get_folded_data(task$shifted, task$folds, fold),
                  get_folded_data(G, task$folds, fold),
@@ -16,11 +16,11 @@ cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
                  mtp,
                  control,
                  progress_bar)
-    },
-    seed = TRUE)
+    #},
+    #seed = TRUE)
   }
 
-  out <- future::value(out)
+  #out <- future::value(out)
   recombine_ratios(out, task$folds)
 }
 
@@ -28,6 +28,8 @@ cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
 estimate_rr <- function(natural, shifted, G, trt, cens, risk, tau, conditional, node_list, learners, mtp, control, progress_bar) {
   representers <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- list()
+
+  prev_riesz <- matrix(1, ncol = 1, nrow = nrow(natural$train))
 
   for (t in 1:tau) {
     jrt <- censored(natural$train, cens, t)$j
@@ -46,18 +48,14 @@ estimate_rr <- function(natural, shifted, G, trt, cens, risk, tau, conditional, 
 
     vars <- c(node_list[[t]], cens[[t]])
 
-    if(t == 1) {
-      prev_riesz <- matrix(1, ncol = 1, nrow = nrow(natural$train))
-    }
-    else {
-      prev_riesz <- representers[, t - 1, drop = FALSE]
-    }
-
     cumulative_indicator_train <- matrix(as.logical(apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)), ncol = 1)
     cumulative_indicator_valid <- matrix(as.logical(apply(conditional$valid[, (t + 1):(tau + 1), drop = FALSE], 1, prod)), ncol = 1)
 
     new_shifted <- natural$train
     new_shifted[[trt_t]] <- shifted$train[[trt_t]]
+
+    new_shifted_valid <- natural$valid
+    new_shifted_valid[[trt_t]] <- shifted$valid[[trt_t]]
 
     fit <- run_riesz_ensemble(
       learners,
@@ -66,7 +64,7 @@ estimate_rr <- function(natural, shifted, G, trt, cens, risk, tau, conditional, 
       cumulative_indicator_train[jrt & drt, drop = FALSE],
       G$train[jrt & drt, t + 1, drop = FALSE],
       natural$valid[jrv & drv, vars, drop = FALSE],
-      shifted$valid[jrv & drv, vars, drop = FALSE],
+      new_shifted_valid[jrv & drv, vars, drop = FALSE],
       cumulative_indicator_valid[jrv & drv, drop = FALSE],
       G$valid[jrv & drv, t + 1, drop = FALSE],
       prev_riesz,
@@ -81,6 +79,7 @@ estimate_rr <- function(natural, shifted, G, trt, cens, risk, tau, conditional, 
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[jrv & drv, ] <- fit$predictions
+    prev_riesz <- matrix(fit$predictions_train, ncol = 1)
 
     representers[, t] <- pred
 
