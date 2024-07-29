@@ -77,7 +77,7 @@ eif <- function(r, cumulated, tau, shifted, natural, conditional, G) {
   }
   theta <- mean(shifted[cumulative_indicator, 1])
   #1 / mean(cumulative_indicator) * (rowSums(weights * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta))
-  theta + rowSums(weights * future_indicator[,2:(tau + 1)] / G * m, na.rm = TRUE) / mean(cumulative_indicator)
+  rowSums(weights * future_indicator[,2:(tau + 1)] / G[,2:(tau + 1)] * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta) / G[, 1]
 }
 
 theta_dr <- function(eta, augmented = FALSE) {

@@ -29,18 +29,17 @@ cf_conditional <- function(task, learners, mtp, control, pb) {
 }
 
 estimate_conditional <- function(natural, shifted, conditional, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
-  G <- matrix(nrow = nrow(natural$valid), ncol = tau)
-  G[, tau] <- 1
+  G <- matrix(nrow = nrow(natural$valid), ncol = tau + 1)
   fits <- vector("list", length = tau)
 
-  if(tau > 1) {
-    for (t in 1:(tau - 1)) {
-      if (length(trt) > 1) {
-        trt_t <- trt[[t]]
-      } else {
-        trt_t <- trt[[1]]
-      }
+  G[, tau + 1] <- 1
 
+  for (t in 0:(tau - 1)) {
+    if(t == 0) {
+      cumulative_indicator <- apply(conditional$train[, 1:(tau + 1), drop = FALSE], 1, prod)
+      G[, t + 1] <- mean(cumulative_indicator)
+    }
+    else {
       vars <- c(node_list[[t]], cens[[t]])
       data_train <- natural$train[c("lmtp_id", vars)]
       data_train$tmp_lmtp_conditional <- apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
@@ -70,11 +69,11 @@ estimate_conditional <- function(natural, shifted, conditional, trt, cens, risk,
         pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
         pred <- bound(SL_predict(fit, data_valid[, c("lmtp_id", vars)]), .Machine$double.eps)
 
-        G[, t] <- pred
+        G[, t + 1] <- pred
       }
-
-      pb()
     }
+
+    pb()
   }
 
   list(G = G, fits = fits)

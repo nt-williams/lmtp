@@ -93,7 +93,7 @@ estimate_tmle <- function(natural, shifted, conditional_prob, trt, outcome, node
     m_natural_valid[jv & rv, t] <- bound(SL_predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
     m_shifted_valid[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
-    wts <- (ratios[, t] * weights / conditional_prob$train[, t])[i & rt & in_conditioning_set]
+    wts <- (ratios[, t] * weights / conditional_prob$train[, t + 1])[i & rt & in_conditioning_set]
 
     fit <- sw(
       glm(
