@@ -1,7 +1,7 @@
 cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
   out <- list()
   for (fold in seq_along(task$folds)) {
-    out[[fold]] <- #future::future({
+    out[[fold]] <- future::future({
       estimate_rr(get_folded_data(task$natural, task$folds, fold),
                  get_folded_data(task$shifted, task$folds, fold),
                  get_folded_data(G, task$folds, fold),
@@ -16,11 +16,11 @@ cf_rr <- function(task, G, learners, mtp, control, progress_bar) {
                  mtp,
                  control,
                  progress_bar)
-    #},
-    #seed = TRUE)
+    },
+    seed = TRUE)
   }
 
-  #out <- future::value(out)
+  out <- future::value(out)
   recombine_ratios(out, task$folds)
 }
 
