@@ -7,6 +7,7 @@ theta_sub <- function(eta) {
 
   if (!is.null(eta$weights)) {
     theta <- weighted.mean(eta$m[cumulative_indicator, 1], eta$weights[cumulative_indicator])
+    #theta <- weighted.mean(eta$m[, 1], eta$weights)
   }
 
   if (eta$outcome_type == "continuous") {
@@ -76,8 +77,7 @@ eif <- function(r, cumulated, tau, shifted, natural, conditional, G) {
     weights <- compute_weights(r, 1, tau)
   }
   theta <- mean(shifted[cumulative_indicator, 1])
-  #1 / mean(cumulative_indicator) * (rowSums(weights * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta))
-  rowSums(weights * future_indicator[,2:(tau + 1)] / G[,2:(tau + 1)] * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta) / G[, 1]
+  rowSums(weights * future_indicator[,2:(tau + 1), drop = FALSE] / G[,2:(tau + 1), drop = FALSE] * m, na.rm = TRUE) + cumulative_indicator * (shifted[, 1] - theta) / G[, 1]
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
@@ -125,6 +125,7 @@ theta_dr <- function(eta, augmented = FALSE) {
     ),
     density_ratios = eta$r,
     weights = eta$weights,
+    conditional_probs = eta$G,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,
     outcome_type = eta$outcome_type
