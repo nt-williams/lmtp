@@ -81,10 +81,10 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   for (t in 1:tau) {
     args <- list(
       data = data,
-      trt = trt,
+      trt = trt[1:t],
       outcome = outcomes[1:t],
       baseline = baseline,
-      time_vary = time_vary,
+      time_vary = time_vary[1:t],
       cens = cens[1:t],
       shift = shift,
       shifted = shifted,
