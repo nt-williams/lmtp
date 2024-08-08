@@ -83,7 +83,7 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0
 
-    progress_bar()
+    pb()
   }
 
   list(m = m, fits = fits)

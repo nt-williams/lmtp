@@ -138,9 +138,16 @@ recombine_ratios <- function(x, folds) {
   returns
 }
 
+
+
 trim_ratios <- function(x, trim) {
   x[["ratios"]] <- pmin(x[["ratios"]], quantile(x[["ratios"]], trim))
   x
+}
+
+recombine_conditional <- function(x, part, folds) {
+  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
+  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), , drop = FALSE]
 }
 
 recombine_outcome <- function(x, part, folds) {
