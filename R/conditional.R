@@ -45,10 +45,10 @@ estimate_conditional <- function(natural, shifted, conditional, trt, cens, risk,
       data_train$tmp_lmtp_conditional <- apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
 
       if(all(data_train$tmp_lmtp_conditional == 1)) {
-        G[, t] <- 1
+        G[, t + 1] <- 1
       }
       else if(all(data_train$tmp_lmtp_conditional == 0)) {
-        G[, t] <- 0
+        G[, t + 1] <- 0
       }
       else {
         data_valid <- natural$valid[c("lmtp_id", vars)]
