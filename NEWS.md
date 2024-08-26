@@ -1,19 +1,61 @@
-# lmtp 1.4.0
+
+# lmtp 1.4.1
 
 ### New Features
 
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
 -   Implements competing risks with the `competing_risk` argument. Courtesy of Kat Hoffman. 
 
 ### Bug Fixes
 
 ### General
 
+# lmtp 1.4.0
+
+### New Features
+
+-   Can now estimate the effects of simultaneous interventions on multiple variables. 
+-   New pre-packaged shift function, `ipsi()` for estimating IPSI effects using the risk ratio.
+-   `lmtp_control()` now replaces extra estimator arguments.
+
+### Bug Fixes
+
+-   Standard errors now incorporate survey weights (see issue \#134).
+-   Bug fix when shift is NULL and data is a tibble (see issue \#137)
+
+### General
+
+-   The `intervention_type` argument has been fully deprecated.
+-   Now attempting to detect intervention type errors (see issue \#98).
+
+# lmtp 1.3.3
+
+### New Features
+
+### Bug Fixes
+
+-   Fixed a bug where estimators return incorrect parameter estimates for a specific DGP (see issue \#130)
+
+### General
+
+# lmtp 1.3.2
+
+### New Features
+
+### Bug Fixes
+
+-   Fixed bug in calculation of EIF where density ratios were not non-cumulative product ratios. Previous variance estimates starting with version 1.0 were incorrect. Point-estimates remain unaffected. 
+
+### General
+
+-   Updating citations
+
 # lmtp 1.3.1
 
 ### New Features
 
 -   Added parameter `.return_full_fits`. Allows the user to decide if full SuperLearner fit should be returned (issue \#119).
--   `intervention_type()` argument replaced with `mtp()`. 
+-   `intervention_type` argument replaced with `mtp`. 
 
 ### Bug Fixes
 

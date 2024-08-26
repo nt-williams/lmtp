@@ -62,27 +62,19 @@ eif <- function(r, tau, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  rowSums(r * m, na.rm = TRUE) + shifted[, 1]
+  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
-  inflnce <- eif(
-    r = eta$r, tau = eta$tau,
-    shifted = eta$m$shifted,
-    natural = eta$m$natural
-  )
-
+  inflnce <- eif(r = eta$r,
+                 tau = eta$tau,
+                 shifted = eta$m$shifted,
+                 natural = eta$m$natural)
   theta <- {
     if (augmented)
-      if (is.null(eta$weights))
-        mean(inflnce)
-      else
-        weighted.mean(inflnce, eta$weights)
+      weighted.mean(inflnce, eta$weights)
     else
-      if (is.null(eta$weights))
-        mean(eta$m$shifted[, 1])
-      else
-        weighted.mean(eta$m$shifted[, 1], eta$weights)
+      weighted.mean(eta$m$shifted[, 1], eta$weights)
   }
 
   if (eta$outcome_type == "continuous") {
@@ -90,7 +82,7 @@ theta_dr <- function(eta, augmented = FALSE) {
     theta <- rescale_y_continuous(theta, eta$bounds)
   }
 
-  clusters <- split(inflnce, eta$id)
+  clusters <- split(inflnce*eta$weights, eta$id)
   j <- length(clusters)
   se <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
   ci_low  <- theta - (qnorm(0.975) * se)
@@ -111,6 +103,7 @@ theta_dr <- function(eta, augmented = FALSE) {
       binomial = eta$m$shifted
     ),
     density_ratios = eta$r,
+    weights = eta$weights,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,
     outcome_type = eta$outcome_type

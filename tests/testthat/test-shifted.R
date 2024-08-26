@@ -15,17 +15,17 @@ sub <-
 
 ipw <-
   sw(lmtp_ipw(sim_cens, a, "Y", NULL, nodes,
-              cens, k = 0, shifted = sc, folds = 2, intervention_type = "mtp"))
+              cens, k = 0, shifted = sc, folds = 2, mtp = TRUE))
 
 tmle <-
   sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
                cens, k = 0, shifted = sc,
-               outcome_type = "binomial", folds = 2, intervention_type = "mtp"))
+               outcome_type = "binomial", folds = 2, mtp = TRUE))
 
 sdr <-
   sw(lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,
               cens, k = 0, shifted = sc,
-              outcome_type = "binomial", folds = 2, intervention_type = "mtp"))
+              outcome_type = "binomial", folds = 2, mtp = TRUE))
 
 # tests
 test_that("estimator fidelity with shifted data supplied", {

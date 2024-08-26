@@ -7,8 +7,11 @@
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -57,20 +60,8 @@
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_outcome}.
-#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_trt}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -104,13 +95,11 @@
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, competing_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
-                      # intervention_type = c("static", "dynamic", "mtp"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "SL.glm",
                       learners_trt = "SL.glm",
-                      folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                      .learners_outcome_folds = 10, .learners_trt_folds = 10,
-                      .return_full_fits = FALSE, ...) {
+                      folds = 10, weights = NULL,
+                      control = lmtp_control()) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -119,13 +108,13 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  checkmate::assertSubset(c(unlist(trt), outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, competing_risk, baseline, time_vary, cens, id)
   assertOutcomeTypes(data, outcome, match.arg(outcome_type))
   assertReservedNames(data)
   checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
@@ -134,21 +123,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
-  checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.bound)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_tmle()` is deprecated as of lmtp 1.4.0.",
-            call. = FALSE)
-  }
-
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -164,29 +146,34 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = .bound
+    bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds*2)
+  pb <- progressr::progressor(task$tau*folds*2)
 
-  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
-  estims <- cf_tmle(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
+  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  estims <- cf_tmle(task,
+                    "tmp_lmtp_scaled_outcome",
+                    ratios$ratios,
+                    learners_outcome,
+                    control,
+                    pb)
 
   theta_dr(
     list(
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
-      tau = Task$tau,
-      folds = Task$folds,
-      id = Task$id,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      weights = Task$weights,
+      tau = task$tau,
+      folds = task$folds,
+      id = task$id,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     ),
     FALSE
   )
@@ -201,8 +188,11 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -251,20 +241,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_outcome}.
-#' @param .learners_trt_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners_trt}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -298,14 +276,12 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, competing_risk = NULL,
                      shift = NULL, shifted = NULL, k = Inf, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = "SL.glm",
                      learners_trt = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .trim = 0.999,
-                     .learners_outcome_folds = 10, .learners_trt_folds = 10,
-                     .return_full_fits = FALSE, ...) {
+                     folds = 10, weights = NULL,
+                     control = lmtp_control()) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -314,13 +290,13 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  checkmate::assertSubset(c(unlist(trt), outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, competing_risk, baseline, time_vary, cens, id)
   assertOutcomeTypes(data, outcome, match.arg(outcome_type))
   assertReservedNames(data)
   checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
@@ -329,14 +305,14 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_outcome_folds, null.ok = TRUE)
-  checkmate::assertNumber(.learners_trt_folds, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.bound)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -352,36 +328,34 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = .bound
+    bound = control$control$.bound
   )
 
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_sdr()` is deprecated as of lmtp 1.4.0.",
-            call. = FALSE)
-  }
+  pb <- progressr::progressor(task$tau*folds*2)
 
-  pb <- progressr::progressor(Task$tau*folds*2)
-
-  ratios <- cf_r(Task, learners_trt, mtp, .learners_trt_folds, .trim, .return_full_fits, pb)
-  estims <- cf_sdr(Task, "tmp_lmtp_scaled_outcome", ratios$ratios, learners_outcome, .learners_outcome_folds, .return_full_fits, pb)
+  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  estims <- cf_sdr(task,
+                   "tmp_lmtp_scaled_outcome",
+                   ratios$ratios,
+                   learners_outcome,
+                   control,
+                   pb)
 
   theta_dr(
     list(
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
-      tau = Task$tau,
-      folds = Task$folds,
-      id = Task$id,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      weights = Task$weights,
+      tau = task$tau,
+      folds = task$folds,
+      id = task$id,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
       fits_r = ratios$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     ),
     TRUE
   )
@@ -396,8 +370,11 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -440,13 +417,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .learners_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
@@ -468,8 +440,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      competing_risk = NULL, shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL, learners = "SL.glm",
-                     folds = 10, weights = NULL, .bound = 1e-5, .learners_folds = 10,
-                     .return_full_fits = FALSE) {
+                     folds = 10, weights = NULL,
+                     control = lmtp_control()) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -478,13 +450,13 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  checkmate::assertSubset(c(unlist(trt), outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, competing_risk, baseline, time_vary, cens, id)
   assertOutcomeTypes(data, outcome, match.arg(outcome_type))
   assertReservedNames(data)
   checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
@@ -493,12 +465,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  checkmate::assertNumber(.bound)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.bound)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -514,23 +485,27 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = .bound
+    bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds)
+  pb <- progressr::progressor(task$tau*folds)
 
-  estims <- cf_sub(Task, "tmp_lmtp_scaled_outcome", learners, .learners_folds, .return_full_fits, pb)
+  estims <- cf_sub(task,
+                   "tmp_lmtp_scaled_outcome",
+                   learners,
+                   control,
+                   pb)
 
   theta_sub(
     eta = list(
       m = estims$m,
-      outcome_type = Task$outcome_type,
-      bounds = Task$bounds,
-      folds = Task$folds,
-      weights = Task$weights,
+      outcome_type = task$outcome_type,
+      bounds = task$bounds,
+      folds = task$folds,
+      weights = task$weights,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_m = estims$fits,
-      outcome_type = Task$outcome_type
+      outcome_type = task$outcome_type
     )
   )
 }
@@ -544,8 +519,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param data \[\code{data.frame}\]\cr
 #'  A \code{data.frame} in wide format containing all necessary variables
 #'  for the estimation problem. Must not be a \code{data.table}.
-#' @param trt \[\code{character}\]\cr
+#' @param trt \[\code{character}\] or \[\code{list}\]\cr
 #'  A vector containing the column names of treatment variables ordered by time.
+#'  Or, a list of vectors, the same length as the number of time points of observation.
+#'  Vectors should contain column names for the treatment variables at each time point. The list
+#'  should be ordered following the time ordering of the model.
 #' @param outcome \[\code{character}\]\cr
 #'  The column name of the outcome variable. In the case of time-to-event
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
@@ -588,18 +566,8 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
 #'  An optional vector containing sampling weights.
-#' @param .bound \[\code{numeric(1)}\]\cr
-#'  Determines that maximum and minimum values (scaled) predictions
-#'  will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999.
-#' @param .trim \[\code{numeric(1)}\]\cr
-#'  Determines the amount the density ratios should be trimmed.
-#'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
-#'  to the 0.999 percentile. A value of 1 indicates no trimming.
-#' @param .learners_folds \[\code{integer(1)}\]\cr
-#'  The number of cross-validation folds for \code{learners}.
-#' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
-#' @param ... Extra arguments. Exists for backwards compatibility.
+#' @param control \[\code{list()}\]\cr
+#'  Output of \code{lmtp_control()}.
 #'
 #' @details
 #' ## Should \code{mtp = TRUE}?
@@ -627,13 +595,11 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, competing_risk = NULL,
                      shift = NULL, shifted = NULL, mtp = FALSE,
-                     # intervention_type = c("static", "dynamic", "mtp"),
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = "SL.glm",
                      folds = 10, weights = NULL,
-                     .bound = 1e-5, .trim = 0.999, .learners_folds = 10,
-                     .return_full_fits = FALSE, ...) {
+                     control = lmtp_control()) {
 
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
@@ -642,13 +608,13 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   tau <- determine_tau(outcome, trt)
 
-  assertTrtCharacter(trt, tau)
+  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(competing_risk, len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
+  checkmate::assertSubset(c(unlist(trt), outcome, baseline, unlist(time_vary), cens, id), names(data))
+  assertLmtpData(data, trt, outcome, competing_risk, baseline, time_vary, cens, id)
   assertOutcomeTypes(data, outcome, match.arg(outcome_type))
   assertReservedNames(data)
   checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
@@ -656,13 +622,13 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   checkmate::assertNumber(k, lower = 0, upper = Inf)
   checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(.learners_folds, null.ok = TRUE)
-  checkmate::assertSubset(c(trt, outcome, baseline, unlist(time_vary), cens, id), names(data))
-  checkmate::assertNumber(.bound)
-  checkmate::assertNumber(.trim, upper = 1)
-  checkmate::assertLogical(.return_full_fits, len = 1)
+  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
+  checkmate::assertNumber(control$.bound)
+  checkmate::assertNumber(control$.trim, upper = 1)
+  checkmate::assertLogical(control$.return_full_fits, len = 1)
+  check_trt_type(data, unlist(trt), mtp)
 
-  Task <- lmtp_Task$new(
+  task <- lmtp_task$new(
     data = data,
     trt = trt,
     outcome = outcome,
@@ -678,19 +644,12 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = NULL,
-    bound = .bound
+    bound = control$.bound
   )
 
-  pb <- progressr::progressor(Task$tau*folds)
+  pb <- progressr::progressor(task$tau*folds)
 
-  extras <- list(...)
-  if ("intervention_type" %in% names(extras)) {
-    mtp <- extras$intervention_type == "mtp"
-    warning("The `intervention_type` argument of `lmtp_ipw()` is deprecated as of lmtp 1.4.0.",
-            call. = FALSE)
-  }
-
-  ratios <- cf_r(Task, learners, mtp, .learners_folds, .trim, .return_full_fits, pb)
+  ratios <- cf_r(task, learners, mtp, control, pb)
 
   theta_ipw(
     eta = list(
@@ -699,14 +658,14 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
         nrow = nrow(ratios$ratios),
         ncol = ncol(ratios$ratios)
       ),
-      y = if (Task$survival) {
+      y = if (task$survival) {
         convert_to_surv(data[[final_outcome(outcome)]])
       } else {
         data[[final_outcome(outcome)]]
       },
-      folds = Task$folds,
-      weights = Task$weights,
-      tau = Task$tau,
+      folds = task$folds,
+      weights = task$weights,
+      tau = task$tau,
       shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
       fits_r = ratios$fits
     )

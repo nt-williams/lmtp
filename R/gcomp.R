@@ -1,15 +1,21 @@
-cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
-  out <- list()
-
-  for (fold in seq_along(Task$folds)) {
+cf_sub <- function(task, outcome, learners, control, pb) {
+  out <- vector("list", length = length(task$folds))
+  for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
       estimate_sub(
-        get_folded_data(Task$natural, Task$folds, fold),
-        get_folded_data(Task$shifted, Task$folds, fold),
+        get_folded_data(task$natural, task$folds, fold),
+        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
+        task$trt,
         outcome,
-        Task$node_list$outcome, Task$cens,
-        Task$risk, Task$competing_risk, Task$tau, Task$outcome_type,
-        learners, lrnr_folds, pb, full_fits
+        task$node_list$outcome,
+        task$cens,
+        task$risk,
+        task$competing_risk,
+        task$tau,
+        task$outcome_type,
+        learners,
+        control,
+        pb
       )
     },
     seed = TRUE)
@@ -18,16 +24,16 @@ cf_sub <- function(Task, outcome, learners, lrnr_folds, full_fits, pb) {
   out <- future::value(out)
 
   list(
-    m = recombine_outcome(out, "m", Task$folds),
+    m = recombine_outcome(out, "m", task$folds),
     fits = lapply(out, function(x) x[["fits"]])
   )
 }
 
-estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, competing_risk,
-                         tau, outcome_type, learners, lrnr_folds, pb, full_fits) {
+estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk, competing_risk,
+                         tau, outcome_type, learners, control, pb) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
-  fits <- list()
+  fits <- vector("list", length = tau)
 
   for (t in tau:1) {
     i  <- censored(natural$train, cens, t)$i
@@ -52,17 +58,29 @@ estimate_sub <- function(natural, shifted, outcome, node_list, cens, risk, compe
       learners,
       outcome_type,
       id = natural$train[i & rt, ][["lmtp_id"]],
-      lrnr_folds
+      control$.learners_outcome_folds
     )
 
-    if (full_fits) {
+    if (control$.return_full_fits) {
       fits[[t]] <- fit
     } else {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, shifted$train[jt & rt, vars]), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, shifted$valid[jv & rv, vars]), 1e-05)
+    if (length(trt) > 1) {
+      trt_t <- trt[[t]]
+    } else {
+      trt_t <- trt[[1]]
+    }
+
+    under_shift_train <- natural$train[jt & rt, vars]
+    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
+
+    under_shift_valid <- natural$valid[jv & rv, vars]
+    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
+
+    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
+    m[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0

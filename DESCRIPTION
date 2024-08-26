@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 1.4.0.9000
+Version: 1.4.1
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -9,16 +9,16 @@ Authors@R:
              comment = c(ORCID = "0000-0002-1378-4831")),
       person(given = "Iván", 
              family = "Díaz", 
-             email = "ild2005@med.cornell.edu",
+             email = "Ivan.Diaz@nyulangone.org",
              role = c("aut", "cph"),
              comment = c(ORCID = "0000-0001-9056-2047")), 
       person(given = "Katherine", 
              family = "Hoffman", 
-             email = "kah2797@med.cornell.edu",
+             email = "kh3233@cumc.columbia.edu",
              role = c("ctb")))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
   policies as described in Diaz, Williams, Hoffman, and Schenck <doi:10.1080/01621459.2021.1955691>, traditional point treatment, 
-  and traditional longitudinal effects. Continuous, binary, and categorical treatments are allowed as well are 
+  and traditional longitudinal effects. Continuous, binary, categorical treatments, and multivariate treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
@@ -28,7 +28,7 @@ License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.1
 Imports: 
     stats,
     nnls,
@@ -40,8 +40,10 @@ Imports:
     progressr,
     data.table (>= 1.13.0),
     checkmate (>= 2.1.0),
-    SuperLearner
-URL: https://github.com/nt-williams/lmtp
+    SuperLearner,
+    schoolmath,
+    isotone
+URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),

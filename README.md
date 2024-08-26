@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# lmtp <img src='man/figures/lmtp.png' align="right" height="139" /></a>
+# lmtp <img src="man/figures/lmtp.png" align="right" height="139"/></a>
 
 <!-- badges: start -->
 
@@ -15,6 +15,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
 <!-- badges: end -->
 
 > Non-parametric Causal Effects of Feasible Interventions Based on
@@ -45,7 +46,8 @@ A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
 
 For an in-depth look at the package’s functionality, please consult the
-accompanying vignette.
+accompanying technical paper in [Observational
+Studies](https://muse.jhu.edu/article/883479).
 
 ## Installation
 
@@ -61,24 +63,11 @@ The stable, development version can be installed from GitHub with:
 devtools::install_github("nt-williams/lmtp@devel")
 ```
 
-The **sl3** compatible version can be installed from GitHub with:
+A version allowing for different covariates sets for the treatment,
+censoring, and outcome regressions:
 
 ``` r
-devtools::install_github("nt-williams/lmtp@sl3")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets")
-```
-
-A version allowing for different covariates sets for the treatment and
-outcome regressions and that uses **sl3**:
-
-``` r
-devtools::install_github("nt-williams/lmtp@2covarSets-sl3")
+devtools::install_github("nt-williams/lmtp@separate-variable-sets")
 ```
 
 ## What even is a modified treatment policy?
@@ -99,32 +88,37 @@ regimes for binary, continuous, and survival outcomes.
 
 ### Features
 
-| Feature                         | Status |
-|---------------------------------|:------:|
-| Point treatment                 |   ✓    |
-| Longitudinal treatment          |   ✓    |
-| Modified treatment intervention |   ✓    |
-| Static intervention             |   ✓    |
-| Dynamic intervention            |   ✓    |
-| Continuous treatment            |   ✓    |
-| Binary treatment                |   ✓    |
-| Categorical treatment           |   ✓    |
-| Missingness in treatment        |        |
-| Continuous outcome              |   ✓    |
-| Binary outcome                  |   ✓    |
-| Censored outcome                |   ✓    |
-| Competing risks                 |   ✓    |
-| Mediation                       |        |
-| Survey weights                  |   ✓    |
-| Super learner                   |   ✓    |
-| Clustered data                  |   ✓    |
-| Parallel processing             |   ✓    |
-| Progress bars                   |   ✓    |
+| Feature                                                          | Status |
+|------------------------------------------------------------------|:------:|
+| Point treatment                                                  |   ✓    |
+| Longitudinal treatment                                           |   ✓    |
+| Modified treatment intervention                                  |   ✓    |
+| Incremental Propensity Score Intervention (Using the risk ratio) |   ✓    |
+| Static intervention                                              |   ✓    |
+| Dynamic intervention                                             |   ✓    |
+| Continuous treatment                                             |   ✓    |
+| Binary treatment                                                 |   ✓    |
+| Categorical treatment                                            |   ✓    |
+| Multivariate treatment                                           |   ✓    |
+| Missingness in treatment                                         |        |
+| Continuous outcome                                               |   ✓    |
+| Binary outcome                                                   |   ✓    |
+| Censored outcome                                                 |   ✓    |
+| Survival outcome (w/competing risks)                             |   ✓    |
+| Mediation                                                        |        |
+| Survey weights                                                   |   ✓    |
+| Super learner                                                    |   ✓    |
+| Clustered data                                                   |   ✓    |
+| Parallel processing                                              |   ✓    |
+| Progress bars                                                    |   ✓    |
 
 ## Example
 
 ``` r
 library(lmtp)
+#> Loading required package: mlr3superlearner
+#> Loading required package: mlr3learners
+#> Loading required package: mlr3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -166,29 +160,29 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mt
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
-#> Population intervention effect
+#> Population intervention estimate
 #>       Estimate: 0.2526
-#>     Std. error: 0.0105
-#>         95% CI: (0.2321, 0.2732)
+#>     Std. error: 0.0223
+#>         95% CI: (0.2089, 0.2962)
 ```
 
 ## Data structure
 
 #### Single time point
 
-<img src='man/figures/pointtrt.png' height="300" />
+<img src="man/figures/pointtrt.png" height="300"/>
 
 #### Time-varying exposure and confounders, not survival outcome
 
-<img src='man/figures/timevary.png' height="300" />
+<img src="man/figures/timevary.png" height="300"/>
 
 #### Single exposure, survival outcome
 
-<img src='man/figures/survival.png' height="300" />
+<img src="man/figures/survival.png" height="300"/>
 
 #### Time-varying exposure and confounders, survival outcome
 
-<img src='man/figures/timevarysurvival.png' height="300" />
+<img src="man/figures/timevarysurvival.png" height="300"/>
 
 ## Similar Implementations
 
@@ -198,25 +192,24 @@ causal effects for binary, categorical, and continuous exposures in both
 the point treatment and longitudinal setting using traditional causal
 effects or modified treatment policies.
 
--   [`txshift`](https://github.com/nhejazi/txshift)  
--   [`tmle3`](https://github.com/tlverse/tmle3)  
--   [`tmle3shift`](https://github.com/tlverse/tmle3shift)
--   [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
--   [`tmle`](https://CRAN.R-project.org/package=tmle)
+- [`txshift`](https://github.com/nhejazi/txshift)  
+- [`tmle3`](https://github.com/tlverse/tmle3)  
+- [`tmle3shift`](https://github.com/tlverse/tmle3shift)
+- [`ltmle`](https://CRAN.R-project.org/package=ltmle)  
+- [`tmle`](https://CRAN.R-project.org/package=tmle)
 
 ## Citation
 
 Please cite the following when using **lmtp** in publications. Citation
-should include both the R package and the paper establishing the
+should include both the R package article and the paper establishing the
 statistical methodology.
 
-    @Manual{,
-      title = {lmtp: {Non}-parametric {Causal} {Effects} of {Feasible} {Interventions} {Based} on {Modified} {Treatment} {Policies}},
+    @article{,
+      title = {lmtp: An R package for estimating the causal effects of modified treatment policies},
       author = {Nicholas T Williams and Iván Díaz},
-      year = {2021},
-      note = {R package version 1.3.1},
-      doi = {10.5281/zenodo.3874931}, 
-      url = {https://github.com/nt-williams/lmtp}
+      journal = {Observational Studies},
+      year = {2023},
+      url = {https://muse.jhu.edu/article/883479}
     }
 
     @article{
