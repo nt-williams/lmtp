@@ -9,21 +9,27 @@ riesz_superlearner_weights <- function(learners, task_valid) {
 }
 
 #' @importFrom SuperRiesz super_riesz
-run_riesz_ensemble <- function(learners, natural_train, shifted_train, conditional_train,
-                               natural_valid, shifted_valid, conditional_valid, folds) {
+run_riesz_ensemble <- function(learners, natural_train, shifted_train, conditional_train, conditional_probs_train,
+                               natural_valid, shifted_valid, conditional_valid, conditional_probs_valid, conditional_t_valid, prev_riesz, prev_riesz_valid, folds) {
 
   if(is.null(folds)) folds <- 5
+
   sl <- SuperRiesz::super_riesz(
     natural_train,
-    list(shifted = shifted_train, weight = data.frame(weight = conditional_train)),
+    list(shifted = shifted_train),
+    list(weight = data.frame(weight = prev_riesz[, 1] * conditional_train / conditional_probs_train)),
     library = learners,
     folds = folds,
-    m = \(alpha, data) alpha(data("shifted")) * data("weight")[,1]
+    m = \(alpha, data) {
+      alpha(data("shifted")) * data("weight")[,1] * data("weight")
+    }
   )
-  predictions = predict(sl, shifted_valid) * mean(conditional_valid[, 1])
+  predictions_valid = predict(sl, natural_valid)
+  predictions_train = predict(sl, natural_train)
 
   list(
-    predictions = predictions,
+    predictions = predictions_valid,
+    predictions_train = predictions_train,
     fits = sl,
     coef = sl$weights,
     risk = sl$risk
