@@ -38,14 +38,14 @@ theta_ipw <- function(eta) {
   cumulative_indicator <- as.logical(apply(eta$conditional, 1, prod))
 
   if (is.null(eta$weights)) {
-    theta <- mean(eta$r[, eta$tau]*missing_outcome(eta$y)) / mean(cumulative_indicator)
+    theta <- mean(eta$r[, eta$tau]*missing_outcome(eta$y)) #/ mean(cumulative_indicator)
   }
 
   if (!is.null(eta$weights)) {
     theta <- weighted.mean(
       eta$r[, eta$tau]*missing_outcome(eta$y),
       eta$weights
-    ) / weighted.mean(cumulative_indicator, eta$weights)
+    )# / weighted.mean(cumulative_indicator, eta$weights)
   }
 
   out <- list(
