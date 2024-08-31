@@ -21,7 +21,7 @@ run_riesz_ensemble <- function(learners, natural_train, shifted_train, condition
     library = learners,
     folds = folds,
     m = \(alpha, data) {
-      alpha(data("shifted")) * data("weight")[,1] * data("weight")
+      alpha(data("shifted")) * data("weight")[,1]
     }
   )
   predictions_valid = predict(sl, natural_valid)
