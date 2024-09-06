@@ -60,7 +60,7 @@
 #' @example inst/examples/lmtp_survival-ex.R
 #' @export
 lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL,
-                          cens = NULL, shift = NULL, shifted = NULL,
+                          cens = NULL, competing_risk = NULL, shift = NULL, shifted = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
                           k = Inf,
                           mtp = FALSE,
@@ -105,6 +105,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     if (length(args$time_vary) > 1) args$time_vary <- time_vary[1:t]
     args$outcome <- outcomes[1:t]
     args$cens <- cens[1:t]
+    args$competing_risk <- competing_risk[1:t]
     args$outcome_type <- ifelse(t == 1, "binomial", "survival")
 
     estimates[[t]] <- future::future(eval(expr), seed = TRUE)

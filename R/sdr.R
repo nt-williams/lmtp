@@ -10,6 +10,7 @@ cf_sdr <- function(task, outcome, ratios, learners, control, pb) {
         task$node_list$outcome,
         task$cens,
         task$risk,
+        task$competing_risk,
         task$tau,
         task$outcome_type,
         get_folded_data(ratios, task$folds, fold)$train,
@@ -28,9 +29,8 @@ cf_sdr <- function(task, outcome, ratios, learners, control, pb) {
        fits = lapply(out, function(x) x[["fits"]]))
 }
 
-estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, tau,
-                         outcome_type, ratios, learners, control, pb) {
-
+estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, competing_risk,
+                         tau, outcome_type, ratios, learners, control, pb) {
   m_natural_train <- m_shifted_train <-
     cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
   m_natural_valid <- m_shifted_valid <-
@@ -42,8 +42,8 @@ estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, 
     i  <- censored(natural$train, cens, t)$i
     jt <- censored(natural$train, cens, t)$j
     jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+    rt <- at_risk(natural$train, risk, competing_risk, t)
+    rv <- at_risk(natural$valid, risk, competing_risk, t)
 
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]

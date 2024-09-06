@@ -10,6 +10,7 @@ cf_sub <- function(task, outcome, learners, control, pb) {
         task$node_list$outcome,
         task$cens,
         task$risk,
+        task$competing_risk,
         task$tau,
         task$outcome_type,
         learners,
@@ -28,7 +29,7 @@ cf_sub <- function(task, outcome, learners, control, pb) {
   )
 }
 
-estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
+estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk, competing_risk,
                          tau, outcome_type, learners, control, pb) {
 
   m <- matrix(nrow = nrow(natural$valid), ncol = tau)
@@ -38,8 +39,8 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
     i  <- censored(natural$train, cens, t)$i
     jt <- censored(natural$train, cens, t)$j
     jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+    rt <- at_risk(natural$train, risk, competing_risk, t)
+    rv <- at_risk(natural$valid, risk, competing_risk, t)
 
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]

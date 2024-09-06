@@ -1,8 +1,10 @@
+
 # lmtp 1.4.1
 
 ### New Features
 
--   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140.
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
+-   Implements competing risks with the `competing_risk` argument. Courtesy of Kat Hoffman. 
 
 ### Bug Fixes
 

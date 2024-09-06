@@ -14,6 +14,7 @@ cf_r <- function(task, learners, mtp, control, pb) {
         task$trt,
         task$cens,
         task$risk,
+        task$competing_risk,
         task$tau,
         task$node_list$trt,
         learners,
@@ -28,16 +29,16 @@ cf_r <- function(task, learners, mtp, control, pb) {
   trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
+estimate_r <- function(natural, shifted, trt, cens, risk, competing_risk, tau, node_list, learners, pb, mtp, control) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- vector("list", length = tau)
 
   for (t in 1:tau) {
     jrt <- rep(censored(natural$train, cens, t)$j, 2)
-    drt <- rep(at_risk(natural$train, risk, t), 2)
+    drt <- rep(at_risk(natural$train, risk, competing_risk, t), 2)
     irv <- censored(natural$valid, cens, t)$i
     jrv <- censored(natural$valid, cens, t)$j
-    drv <- at_risk(natural$valid, risk, t)
+    drv <- at_risk(natural$valid, risk, competing_risk, t)
 
     if (length(trt) > 1) {
       trt_t <- trt[[t]]

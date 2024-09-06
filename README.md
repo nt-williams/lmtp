@@ -104,6 +104,7 @@ regimes for binary, continuous, and survival outcomes.
 | Continuous outcome                                               |   ✓    |
 | Binary outcome                                                   |   ✓    |
 | Censored outcome                                                 |   ✓    |
+| Survival outcome (w/competing risks)                             |   ✓    |
 | Mediation                                                        |        |
 | Survey weights                                                   |   ✓    |
 | Super learner                                                    |   ✓    |
@@ -117,9 +118,7 @@ regimes for binary, continuous, and survival outcomes.
 library(lmtp)
 #> Loading required package: mlr3superlearner
 #> Loading required package: mlr3learners
-#> Warning: package 'mlr3learners' was built under R version 4.2.3
 #> Loading required package: mlr3
-#> Warning: package 'mlr3' was built under R version 4.2.3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)

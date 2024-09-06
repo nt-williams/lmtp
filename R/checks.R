@@ -1,7 +1,7 @@
-check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
+check_lmtp_data <- function(x, trt, outcome, competing_risk, baseline, time_vary, cens, id) {
   for (t in 1:determine_tau(outcome, trt)) {
     ci <- censored(x, cens, t)$j
-    di <- at_risk(x, risk_indicators(outcome), t, TRUE)
+    di <- at_risk(x, risk_indicators(outcome), competing_risk, t, TRUE)
     if (length(trt) > 1) {
       trt_t <- trt[[t]]
     } else {

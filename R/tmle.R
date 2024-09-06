@@ -14,6 +14,7 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
         task$node_list$outcome,
         task$cens,
         task$risk,
+        task$competing_risk,
         task$tau,
         task$outcome_type,
         get_folded_data(ratios, task$folds, fold)$train,
@@ -36,7 +37,8 @@ cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
 }
 
 estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
-                          risk, tau, outcome_type, ratios, weights, learners, control, pb) {
+                          risk, competing_risk, tau, outcome_type, ratios, 
+                          weights, learners, control, pb) {
   m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
   m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
 
@@ -45,8 +47,8 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
     i  <- censored(natural$train, cens, t)$i
     jt <- censored(natural$train, cens, t)$j
     jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+    rt <- at_risk(natural$train, risk, competing_risk, t)
+    rv <- at_risk(natural$valid, risk, competing_risk, t)
 
     pseudo <- paste0("tmp_lmtp_pseudo", t)
     vars <- node_list[[t]]
