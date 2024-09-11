@@ -240,3 +240,8 @@ fix_surv_time1 <- function(x) {
   x[[1]]$eif <- 1 - x[[1]]$eif
   x
 }
+
+is_decimal <- function(x) {
+  test <- floor(x)
+  !(x == test)
+}

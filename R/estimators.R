@@ -98,7 +98,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       learners_trt = c("mean", "glm"),
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
-
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)
