@@ -629,6 +629,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
                      learners = c("mean", "glm"),
+                    learners_conditional = c("mean", "glm"),
                      riesz = FALSE, folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
@@ -682,7 +683,15 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(task$tau*folds)
+
+  if(is.null(conditional)) {
+    pb <- progressr::progressor(task$tau*folds)
+    conditional_probs <- list(1, G = matrix(nrow = nrow(data), ncol = task$tau))
+  }
+  else {
+    pb <- progressr::progressor(task$tau*folds * 2)
+    conditional_probs <- cf_conditional(task, learners_conditional, mtp, control, pb)
+  }
 
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners, mtp, control, pb)
@@ -692,7 +701,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
         ncol = ncol(ratios$ratios)
       )
   } else {
-    ratios <- cf_rr(task, learners, mtp, control, pb)
+    ratios <- cf_rr(task, conditional_probs$G, learners, mtp, control, pb)
   }
 
   theta_ipw(
