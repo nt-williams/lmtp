@@ -245,3 +245,12 @@ is_decimal <- function(x) {
   test <- floor(x)
   !(x == test)
 }
+
+as_torch <- function(data, device) {
+  torch::torch_tensor(as.matrix(data), dtype = torch::torch_float(), device = device)
+}
+
+one_hot_encode <- function(data, vars) {
+  tmp <- data[, vars, drop = FALSE]
+  as.data.frame(model.matrix(~ ., data = tmp))[, -1, drop = FALSE]
+}

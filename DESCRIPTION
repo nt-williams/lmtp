@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 1.4.1.9001
+Version: 1.5.1.9001
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -11,7 +11,11 @@ Authors@R:
              family = "Díaz", 
              email = "Ivan.Diaz@nyulangone.org",
              role = c("aut", "cph"),
-             comment = c(ORCID = "0000-0001-9056-2047")))
+             comment = c(ORCID = "0000-0001-9056-2047")), 
+      person(given = "Herb", 
+             family = "Susmann", 
+             email = "herbert.susmann@nyulangone.org", 
+             role = "ctb"))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
   policies as described in Diaz, Williams, Hoffman, and Schenck <doi:10.1080/01621459.2021.1955691>, traditional point treatment, 
   and traditional longitudinal effects. Continuous, binary, categorical treatments, and multivariate treatments are allowed as well are 
@@ -19,16 +23,14 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
   can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
 Depends: 
-    mlr3superlearner,
     R (>= 2.10)
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     stats,
-    nnls,
     cli,
     R6,
     generics,
@@ -37,8 +39,10 @@ Imports:
     progressr,
     data.table (>= 1.13.0),
     checkmate (>= 2.1.0),
-    isotone, 
-    mlr3superlearner
+    isotone,
+    mlr3superlearner,
+    torch,
+    coro
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 

@@ -172,7 +172,8 @@ check_ref_class <- function(x) {
 
 assertRefClass <- checkmate::makeAssertionFunction(check_ref_class)
 
-check_trt_type <- function(data, trt, mtp) {
+check_trt_type <- function(data, trt, riesz, mtp) {
+  if (riesz) return(invisible())
   is_decimal <- vector("logical", length(trt))
   for (i in seq_along(trt)) {
     a <- data[[trt[i]]]
@@ -200,4 +201,3 @@ check_same_weights <- function(weights) {
 }
 
 assertSameWeights <- checkmate::makeAssertionFunction(check_same_weights)
-

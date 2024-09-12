@@ -20,6 +20,8 @@ lmtp_tmle(
   bounds = NULL,
   learners_outcome = c("mean", "glm"),
   learners_trt = c("mean", "glm"),
+  riesz = FALSE,
+  module = sequential_module(),
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -71,7 +73,8 @@ all time points.}
 
 \item{mtp}{[\code{logical(1)}]\cr
 Is the intervention of interest a modified treatment policy?
-Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+Ignored if \code{riesz = TRUE}.}
 
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
@@ -89,7 +92,14 @@ of the outcome regression. Default is \code{c("mean", "glm")}.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 of the outcome regression. Default is \code{c("mean", "glm")}.
-\bold{Only include candidate learners capable of binary classification}.}
+\bold{Only include candidate learners capable of binary classification}.
+Ignored if \code{riesz = TRUE}.}
+
+\item{riesz}{[\code{logical(1)}]\cr
+Use Riesz representers to learn the density ratios? Default is \code{FALSE}.}
+
+\item{module}{[\code{function}]\cr
+A function that returns a neural network module. Only used if \code{riesz = TRUE}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
@@ -112,7 +122,7 @@ A list of class \code{lmtp} containing the following components:
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
-\item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+\item{density_ratios}{If \code{riesz = FALSE}, an n x Tau matrix of the estimated, non-cumulative, density ratios. If \code{riesz = TRUE}, an n x Tau matrix of the estimated, cumulative, density ratios.}
 \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
 for each fold for the outcome regression.}
 \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point

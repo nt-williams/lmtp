@@ -9,7 +9,11 @@ lmtp_control(
   .trim = 0.999,
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
-  .return_full_fits = FALSE
+  .return_full_fits = FALSE,
+  .epochs = 100L,
+  .learning_rate = 0.01,
+  .batch_size = 64,
+  .device = c("cpu", "cuda", "mps")
 )
 }
 \arguments{
@@ -30,6 +34,18 @@ The number of cross-validation folds for \code{learners_trt}.}
 
 \item{.return_full_fits}{[\code{logical(1)}]\cr
 Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
+
+\item{.epochs}{[\code{integer(1)}]\cr
+The number of epochs to train the neural network.}
+
+\item{.learning_rate}{[\code{numeric(1)}]\cr
+The learning rate for the neural network.}
+
+\item{.batch_size}{[\code{integer(1)}]\cr
+The batch size for the neural network.}
+
+\item{.device}{[\code{character(1)}]\cr
+The device to train the neural network on. Default is \code{"cpu"}.}
 }
 \value{
 A list of parameters controlling the estimation procedure.

@@ -41,6 +41,7 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Ignored if \code{riesz = TRUE}.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -54,6 +55,11 @@
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{c("mean", "glm")}.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#'  Ignored if \code{riesz = TRUE}.
+#' @param riesz \[\code{logical(1)}\]\cr
+#'  Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
+#' @param module \[\code{function}\]\cr
+#'  A function that returns a neural network module. Only used if \code{riesz = TRUE}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -81,7 +87,7 @@
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
-#' \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+#' \item{density_ratios}{If \code{riesz = FALSE}, an n x Tau matrix of the estimated, non-cumulative, density ratios. If \code{riesz = TRUE}, an n x Tau matrix of the estimated, cumulative, density ratios.}
 #' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
 #'  for each fold for the outcome regression.}
 #' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
@@ -96,6 +102,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       id = NULL, bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
+                      riesz = FALSE,
+                      module = sequential_module(),
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assertNotDataTable(data)
@@ -124,7 +132,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
-  check_trt_type(data, unlist(trt), mtp)
+  check_trt_type(data, unlist(trt), riesz, mtp)
 
   task <- lmtp_task$new(
     data = data,
@@ -146,10 +154,16 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   pb <- progressr::progressor(task$tau*folds*2)
 
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  if (isFALSE(riesz)) {
+    ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  } else {
+    ratios <- cf_riesz(task, module, mtp, control, pb)
+  }
+
   estims <- cf_tmle(task,
                     "tmp_lmtp_scaled_outcome",
                     ratios$ratios,
+                    riesz,
                     learners_outcome,
                     control,
                     pb)
@@ -302,7 +316,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
-  check_trt_type(data, unlist(trt), mtp)
+  check_trt_type(data, unlist(trt), FALSE, mtp)
 
   task <- lmtp_task$new(
     data = data,
@@ -609,7 +623,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
-  check_trt_type(data, unlist(trt), mtp)
+  check_trt_type(data, unlist(trt), FALSE, mtp)
 
   task <- lmtp_task$new(
     data = data,

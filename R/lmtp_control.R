@@ -13,6 +13,14 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param .epochs \[\code{integer(1)}\]\cr
+#' The number of epochs to train the neural network.
+#' @param .learning_rate \[\code{numeric(1)}\]\cr
+#'  The learning rate for the neural network.
+#' @param .batch_size \[\code{integer(1)}\]\cr
+#'  The batch size for the neural network.
+#' @param .device \[\code{character(1)}\]\cr
+#'  The device to train the neural network on. Default is \code{"cpu"}.
 #'
 #' @return A list of parameters controlling the estimation procedure.
 #' @export
@@ -21,12 +29,20 @@
 #' lmtp_control(.trim = 0.975)
 lmtp_control <- function(.bound = 1e5,
                          .trim = 0.999,
-                         .learners_outcome_folds = 10,
-                         .learners_trt_folds = 10,
-                         .return_full_fits = FALSE) {
+                         .learners_outcome_folds = NULL,
+                         .learners_trt_folds = NULL,
+                         .return_full_fits = FALSE,
+                         .epochs = 100L,
+                         .learning_rate = 0.01,
+                         .batch_size = 64,
+                         .device = c("cpu", "cuda", "mps")) {
   list(.bound = .bound,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
-       .return_full_fits = .return_full_fits)
+       .return_full_fits = .return_full_fits,
+       .epochs = .epochs,
+       .learning_rate = .learning_rate,
+       .batch_size = .batch_size,
+       .device = match.arg(.device))
 }
