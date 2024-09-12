@@ -34,8 +34,8 @@
 #' @param shifted \[\code{data.frame}\]\cr
 #'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
-#' @param conditional \[\code{matrix(logical|numeric)}\]\cr
-#'  For estimating 'Generalized ATT's'; an optional, n x Tau, logical or numeric matrix specifying
+#' @param conditional \[\code{matrix(logical)}\]\cr
+#'  For estimating 'Generalized ATT's'; an optional, n x Tau, logical matrix specifying
 #'  the observations that are within the treatment conditioning set at a given time point.
 #'  If \code{NULL}, all observations are included.
 #' @param k \[\code{integer(1)}\]\cr
@@ -150,6 +150,7 @@ lmtp_tmle <- function(data,
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
   check_trt_type(data, unlist(trt), riesz, mtp)
+  checkmate::assertMatrix(conditional, mode = "logical", nrow = nrow(data), ncol = tau, null.ok = TRUE, any.missing = FALSE)
 
   task <- lmtp_task$new(
     data = data,
