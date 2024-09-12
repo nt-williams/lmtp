@@ -9,6 +9,7 @@ lmtp_control(
   .trim = 0.999,
   .learners_outcome_folds = NULL,
   .learners_trt_folds = NULL,
+  .learners_conditional_folds = NULL,
   .return_full_fits = FALSE,
   .epochs = 100L,
   .learning_rate = 0.01,
@@ -31,6 +32,9 @@ The number of cross-validation folds for \code{learners_outcome}.}
 
 \item{.learners_trt_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_trt}.}
+
+\item{.learners_conditional_folds}{[\code{integer(1)}]\cr
+The number of cross-validation folds for \code{learners_conditional}.}
 
 \item{.return_full_fits}{[\code{logical(1)}]\cr
 Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.}
