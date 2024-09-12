@@ -17,9 +17,22 @@ lmtp_task <- R6::R6Class(
     folds = NULL,
     weights = NULL,
     multivariate = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, shifted, id, outcome_type = NULL, V = 10,
-                          weights = NULL, bounds = NULL, bound = NULL) {
+    initialize = function(data,
+                          trt,
+                          outcome,
+                          time_vary,
+                          baseline,
+                          cens,
+                          k,
+                          shift,
+                          shifted,
+                          conditional,
+                          id,
+                          outcome_type = NULL,
+                          V = 10,
+                          weights = NULL,
+                          bounds = NULL,
+                          bound = NULL) {
       self$tau <- determine_tau(outcome, trt)
       self$n <- nrow(data)
       self$trt <- trt
@@ -33,6 +46,11 @@ lmtp_task <- R6::R6Class(
       self$id <- data$lmtp_id
       self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
       self$multivariate <- is.list(trt)
+      self$conditional <- matrix(TRUE, nrow = nrow(data), ncol = self$tau + 1)
+
+      if (!is.null(conditional)) {
+        self$conditional[, 1:self$tau] <- conditional
+      }
 
       shifted <- {
         if (is.null(shifted) && !is.null(shift))
