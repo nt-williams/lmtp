@@ -11,6 +11,8 @@
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
+#' @param .learners_conditional_folds \[\code{integer(1)}\]\cr
+#'  The number of cross-validation folds for \code{learners_conditional}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
 #' @param .epochs \[\code{integer(1)}\]\cr
@@ -31,6 +33,7 @@ lmtp_control <- function(.bound = 1e5,
                          .trim = 0.999,
                          .learners_outcome_folds = NULL,
                          .learners_trt_folds = NULL,
+                         .learners_conditional_folds = NULL,
                          .return_full_fits = FALSE,
                          .epochs = 100L,
                          .learning_rate = 0.01,
@@ -40,6 +43,7 @@ lmtp_control <- function(.bound = 1e5,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
+       .learners_conditional_folds = .learners_conditional_folds,
        .return_full_fits = .return_full_fits,
        .epochs = .epochs,
        .learning_rate = .learning_rate,
