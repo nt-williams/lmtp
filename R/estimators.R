@@ -171,7 +171,7 @@ lmtp_tmle <- function(data,
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(task$tau*folds*2)
+  pb <- progressr::progressor(task$tau*folds*(2 + as.numeric(!is.null(conditional))))
 
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
