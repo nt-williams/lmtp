@@ -7,8 +7,8 @@
 lmtp_control(
   .bound = 1e+05,
   .trim = 0.999,
-  .learners_outcome_folds = 10,
-  .learners_trt_folds = 10,
+  .learners_outcome_folds = NULL,
+  .learners_trt_folds = NULL,
   .return_full_fits = FALSE,
   .epochs = 100L,
   .learning_rate = 0.01,

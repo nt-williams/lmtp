@@ -34,6 +34,10 @@
 #' @param shifted \[\code{data.frame}\]\cr
 #'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
+#' @param conditional \[\code{matrix(logical|numeric)}\]\cr
+#'  For estimating 'Generalized ATT's'; an optional, n x Tau, logical or numeric matrix specifying
+#'  the observations that are within the treatment conditioning set at a given time point.
+#'  If \code{NULL}, all observations are included.
 #' @param k \[\code{integer(1)}\]\cr
 #'  An integer specifying how previous time points should be
 #'  used for estimation at the given time point. Default is \code{Inf},
@@ -58,8 +62,9 @@
 #'  Ignored if \code{riesz = TRUE}.
 #' @param riesz \[\code{logical(1)}\]\cr
 #'  Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
+#'  Must be \code{TRUE} if \code{conditional} is not \code{NULL}.
 #' @param module \[\code{function}\]\cr
-#'  A function that returns a neural network module. Only used if \code{riesz = TRUE}.
+#'  A function that returns a neural network module. Ignored if \code{riesz = FALSE}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -96,16 +101,28 @@
 #'
 #' @example inst/examples/tmle-ex.R
 #' @export
-lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                      mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
-                      id = NULL, bounds = NULL,
+lmtp_tmle <- function(data,
+                      trt,
+                      outcome,
+                      baseline = NULL,
+                      time_vary = NULL,
+                      cens = NULL,
+                      shift = NULL,
+                      shifted = NULL,
+                      conditional = NULL,
+                      k = Inf,
+                      mtp = FALSE,
+                      outcome_type = c("binomial", "continuous", "survival"),
+                      id = NULL,
+                      bounds = NULL,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
                       riesz = FALSE,
                       module = sequential_module(),
-                      folds = 10, weights = NULL,
+                      folds = 10,
+                      weights = NULL,
                       control = lmtp_control()) {
+
   assertNotDataTable(data)
   checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
                              min.len = if (match.arg(outcome_type) == "survival") 2)

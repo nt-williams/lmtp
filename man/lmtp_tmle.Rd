@@ -13,6 +13,7 @@ lmtp_tmle(
   cens = NULL,
   shift = NULL,
   shifted = NULL,
+  conditional = NULL,
   k = Inf,
   mtp = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
@@ -66,6 +67,11 @@ See examples for how to specify shift functions for continuous, binary, and cate
 An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
+\item{conditional}{[\code{matrix(logical|numeric)}]\cr
+For estimating 'Generalized ATT's'; an optional, n x Tau, logical or numeric matrix specifying
+the observations that are within the treatment conditioning set at a given time point.
+If \code{NULL}, all observations are included.}
+
 \item{k}{[\code{integer(1)}]\cr
 An integer specifying how previous time points should be
 used for estimation at the given time point. Default is \code{Inf},
@@ -96,10 +102,11 @@ of the outcome regression. Default is \code{c("mean", "glm")}.
 Ignored if \code{riesz = TRUE}.}
 
 \item{riesz}{[\code{logical(1)}]\cr
-Use Riesz representers to learn the density ratios? Default is \code{FALSE}.}
+Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
+Must be \code{TRUE} if \code{conditional} is not \code{NULL}.}
 
 \item{module}{[\code{function}]\cr
-A function that returns a neural network module. Only used if \code{riesz = TRUE}.}
+A function that returns a neural network module. Ignored if \code{riesz = FALSE}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
