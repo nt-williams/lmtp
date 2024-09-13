@@ -67,8 +67,8 @@ See examples for how to specify shift functions for continuous, binary, and cate
 An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
-\item{conditional}{[\code{matrix(logical|numeric)}]\cr
-For estimating 'Generalized ATT's'; an optional, n x Tau, logical or numeric matrix specifying
+\item{conditional}{[\code{matrix(logical)}]\cr
+For estimating 'Generalized ATT's'; an optional, n x Tau, logical matrix specifying
 the observations that are within the treatment conditioning set at a given time point.
 If \code{NULL}, all observations are included.}
 

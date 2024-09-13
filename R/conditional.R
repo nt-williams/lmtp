@@ -28,6 +28,76 @@ cf_G <- function(task, learners, mtp, control, pb) {
   )
 }
 
-estimate_G <- function() {
+# NEED TO THINK ABOUT HOW TO HANDLE CENSORING/AT RISK
+estimate_G <- function(natural,
+                       shifted,
+                       conditional,
+                       trt,
+                       cens,
+                       risk,
+                       tau,
+                       node_list,
+                       learners,
+                       pb,
+                       mtp,
+                       control) {
+  G <- matrix(nrow = nrow(natural$valid), ncol = tau + 1)
+  G[, tau + 1] <- 1
+  fits <- vector("list", length = tau)
 
+  for (t in 0:(tau - 1)) {
+    if (t == 0) {
+      cumulative_indicator <- apply(conditional$train[, 1:(tau + 1), drop = FALSE], 1, prod)
+      G[, t + 1] <- mean(cumulative_indicator)
+      next
+    }
+
+    jrt <- censored(natural$train, cens, t)$j
+    jrv <- censored(natural$valid, cens, t)$j
+    irv <- censored(natural$valid, cens, t)$i
+    drt <- at_risk(natural$train, risk, t)
+    drv <- at_risk(natural$valid, risk, t)
+
+    vars <- c(node_list[[t]], cens[[t]])
+
+    train <- natural$train[c("lmtp_id", vars)]
+    train$tmp_lmtp_pseudo <- apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
+
+    valid <- natural$valid[c("lmtp_id", vars)]
+
+    if (all(train$tmp_lmtp_pseudo == 1)) {
+      G[, t + 1] <- 1
+      next
+    }
+
+    if (all(data_train$tmp_lmtp_pseudo == 0)) {
+      G[, t + 1] <- 0
+      next
+    }
+
+    fit <- run_ensemble(
+      train[jrt & drt, ],
+      "tmp_lmtp_pseudo",
+      learners,
+      "binomial",
+      "lmtp_id",
+      control$.learners_conditional_folds
+    )
+
+    if (control$.return_full_fits) {
+      fits[[t]] <- fit
+    } else {
+      fits[[t]] <- extract_sl_weights(fit)
+    }
+
+    pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
+    pred <- bound(SL_predict(fit, data_valid[, c("lmtp_id", vars)]), .Machine$double.eps)
+
+    G[, t + 1] <- pred
+    }
+
+    pb()
+  }
+
+  list(G = G, fits = fits)
 }
