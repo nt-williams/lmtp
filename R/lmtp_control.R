@@ -13,6 +13,10 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param .discrete \[\code{logical(1)}\]\cr
+#'  Use discrete or ensemble super learner?
+#' @param .info \[\code{logical(1)}\]\cr
+#'  Print super learner fitting info to the console?
 #' @param .epochs \[\code{integer(1)}\]\cr
 #' The number of epochs to train the neural network.
 #' @param .learning_rate \[\code{numeric(1)}\]\cr
@@ -32,6 +36,8 @@ lmtp_control <- function(.bound = 1e5,
                          .learners_outcome_folds = NULL,
                          .learners_trt_folds = NULL,
                          .return_full_fits = FALSE,
+                         .discrete = TRUE,
+                         .info = FALSE,
                          .epochs = 100L,
                          .learning_rate = 0.01,
                          .batch_size = 64,
@@ -41,6 +47,8 @@ lmtp_control <- function(.bound = 1e5,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
        .return_full_fits = .return_full_fits,
+       .discrete = .discrete,
+       .info = .info,
        .epochs = .epochs,
        .learning_rate = .learning_rate,
        .batch_size = .batch_size,

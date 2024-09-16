@@ -1,5 +1,5 @@
-run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
-  fit <- mlr3superlearner::mlr3superlearner(
+run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, info) {
+  mlr3superlearner::mlr3superlearner(
     data = data,
     target = y,
     library = learners,
@@ -10,9 +10,10 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
         NULL
       else
         id
-    }
+    },
+    discrete = discrete,
+    info = info
   )
-  fit
 }
 
 SL_predict <- function(fit, newdata) {
