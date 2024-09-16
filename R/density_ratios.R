@@ -55,7 +55,9 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
                         learners,
                         "binomial",
                         "lmtp_id",
-                        control$.learners_trt_folds)
+                        control$.learners_trt_folds,
+                        control$.discrete,
+                        control$.info)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit

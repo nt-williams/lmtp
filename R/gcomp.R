@@ -54,7 +54,9 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
                         learners,
                         outcome_type,
                         "lmtp_id",
-                        control$.learners_outcome_folds)
+                        control$.learners_outcome_folds,
+                        control$.discrete,
+                        control$.info)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit
