@@ -32,18 +32,18 @@ cens <- c("C1", "C2")
 nodes <- list(c(NULL), c("L"))
 
 # truth = 0.308
-tml.stc <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = static_binary_on, folds = 1))
+tml.stc <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = static_binary_on, folds = 1, boot = F))
 
 # truth = 0.528
 sdr.stc <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = static_binary_off, folds = 1))
 
 # truth = 0.433
-tml.tv <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, folds = 1))
+tml.tv <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, folds = 1, boot = F))
 sdr.tv <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = time_vary_on, folds = 1))
 
 # time varying and covariate dynamic
 # truth = 0.345
-tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
+tml.dyn <- sw(lmtp_tmle(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1, boot = F))
 sdr.dyn <- sw(lmtp_sdr(sim, a, "Y", baseline, nodes, cens, shift = dynamic_vec, folds = 1))
 
 test_that("Dynamic intervention fidelity", {

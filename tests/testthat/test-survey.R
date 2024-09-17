@@ -25,7 +25,7 @@ ipw <- lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_o
                 weights = wts, folds = 2)
 
 tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                  weights = wts, folds = 2)
+                  weights = wts, folds = 2, boot = F)
 
 sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
                 weights = wts, folds = 2)

@@ -8,7 +8,8 @@
 
 ### New Features
 
--   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140.
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
+-   Bootstrap for TMLE with the `boot` argument using a modified TMLE algorithm (https://arxiv.org/abs/1810.03030).
 
 ### Bug Fixes
 

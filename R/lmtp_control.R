@@ -13,6 +13,8 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full SuperLearner fits? Default is \code{FALSE}, return only SuperLearner weights.
+#' @param .B description
+#' @param .boot_seed description
 #'
 #' @return A list of parameters controlling the estimation procedure.
 #' @export
@@ -23,10 +25,14 @@ lmtp_control <- function(.bound = 1e5,
                          .trim = 0.999,
                          .learners_outcome_folds = 10,
                          .learners_trt_folds = 10,
-                         .return_full_fits = FALSE) {
+                         .return_full_fits = FALSE,
+                         .B = 1000,
+                         .boot_seed = NULL) {
   list(.bound = .bound,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
-       .return_full_fits = .return_full_fits)
+       .return_full_fits = .return_full_fits,
+       .B = .B,
+       .boot_seed = .boot_seed)
 }

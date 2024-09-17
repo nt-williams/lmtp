@@ -7,7 +7,7 @@ truth <- 0.8
 
 sub <- sw(lmtp_sub(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
 ipw <- sw(lmtp_ipw(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
-tmle <- sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
+tmle <- sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, boot = F, folds = 1))
 sdr <- sw(lmtp_sdr(sim_cens, A, "Y", time_vary = L, cens = C, k = 0, shift = NULL, folds = 1))
 
 # tests
