@@ -171,21 +171,32 @@ lmtp_tmle <- function(data,
     bound = control$.bound
   )
 
-  pb <- progressr::progressor(task$tau*folds*(2 + as.numeric(!is.null(conditional))))
+  pb <- progressr::progressor(task$tau * folds * (2 + as.numeric(!is.null(conditional))))
 
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
   } else {
-    ratios <- cf_riesz(task, module, mtp, control, pb)
+    if (!is.null(conditional)) {
+      gprobs <- cf_G(task, learners_trt, control, pb)
+    } else {
+      gprobs <- list(
+        fits = NULL,
+        G = matrix(1, nrow = nrow(data), ncol = tau + 1)
+      )
+    }
+
+    ratios <- cf_riesz(task, gprobs$G, module, mtp, control, pb)
   }
 
-  estims <- cf_tmle(task,
-                    "tmp_lmtp_scaled_outcome",
-                    ratios$ratios,
-                    riesz,
-                    learners_outcome,
-                    control,
-                    pb)
+  estims <- cf_tmle(
+    task,
+    "tmp_lmtp_scaled_outcome",
+    ratios$ratios,
+    riesz,
+    learners_outcome,
+    control,
+    pb
+  )
 
   theta_dr(
     list(

@@ -1,4 +1,4 @@
-cf_G <- function(task, learners, mtp, control, pb) {
+cf_G <- function(task, learners, control, pb) {
   out <- vector("list", length = length(task$folds))
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
