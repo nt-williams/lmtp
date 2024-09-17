@@ -16,7 +16,7 @@ lmtp_survival(
   estimator = c("lmtp_tmle", "lmtp_sdr"),
   k = Inf,
   mtp = FALSE,
-  boot = TRUE,
+  boot = FALSE,
   id = NULL,
   learners_outcome = "SL.glm",
   learners_trt = "SL.glm",
@@ -75,7 +75,7 @@ Is the intervention of interest a modified treatment policy?
 Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
 \item{boot}{[\code{logical(1)}]\cr
-Compute standard errors using the bootstrap? Default is \code{TRUE}. If \code{FALSE}, standard
+Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
 errors will be calculated using the empirical variance of the efficient influence function.
 Ignored if \code{estimator = "lmtp_sdr"}.}
 

@@ -42,7 +42,7 @@
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
 #' @param boot \[\code{logical(1)}\]\cr
-#'  Compute standard errors using the bootstrap? Default is \code{TRUE}. If \code{FALSE}, standard
+#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
 #'  errors will be calculated using the empirical variance of the efficient influence function.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
@@ -96,7 +96,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                      mtp = FALSE, boot = TRUE,
+                      mtp = FALSE, boot = FALSE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "SL.glm",
