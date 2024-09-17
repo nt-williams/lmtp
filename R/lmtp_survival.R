@@ -84,9 +84,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
 
   args <- list(
     data = data,
-    trt = trt,
     baseline = baseline,
-    time_vary = time_vary,
     shift = shift,
     shifted = shifted,
     k = k,
@@ -99,14 +97,17 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     control = control
   )
 
-  if (estimator == "lmtp_tmle") {
-    args$boot <- boot
-    expr <- expression(do.call(lmtp_tmle, args))
-  } else expr <- expression(do.call(lmtp_sdr, args))
+  if (length(trt) == 1) args$trt <- trt
+  if (length(time_vary) == 1) args$time_vary <- time_vary
+
+  if (estimator == "lmtp_tmle") expr <- expression(do.call(lmtp_tmle, args))
+  else expr <- expression(do.call(lmtp_sdr, args))
 
   t <- 1
   cli::cli_progress_step("Working on time {t}/{tau}...")
   for (t in 1:tau) {
+    if (length(trt) > 1) args$trt <- trt[1:t]
+    if (length(args$time_vary) > 1) args$time_vary <- time_vary[1:t]
     args$outcome <- outcomes[1:t]
     args$cens <- cens[1:t]
     args$outcome_type <- ifelse(t == 1, "binomial", "survival")
