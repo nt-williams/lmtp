@@ -28,7 +28,6 @@ cf_G <- function(task, learners, mtp, control, pb) {
   )
 }
 
-# NEED TO THINK ABOUT HOW TO HANDLE CENSORING/AT RISK
 estimate_G <- function(natural,
                        shifted,
                        conditional,
@@ -54,16 +53,15 @@ estimate_G <- function(natural,
 
     jrt <- censored(natural$train, cens, t)$j
     jrv <- censored(natural$valid, cens, t)$j
-    irv <- censored(natural$valid, cens, t)$i
     drt <- at_risk(natural$train, risk, t)
     drv <- at_risk(natural$valid, risk, t)
 
     vars <- c(node_list[[t]], cens[[t]])
 
-    train <- natural$train[c("lmtp_id", vars)]
+    train <- natural$train[jrt & drt, c("lmtp_id", vars)]
     train$tmp_lmtp_pseudo <- apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
 
-    valid <- natural$valid[c("lmtp_id", vars)]
+    valid <- natural$valid[jrv & drv, c("lmtp_id", vars)]
 
     if (all(train$tmp_lmtp_pseudo == 1)) {
       G[, t + 1] <- 1
@@ -76,7 +74,7 @@ estimate_G <- function(natural,
     }
 
     fit <- run_ensemble(
-      train[jrt & drt, ],
+      train,
       "tmp_lmtp_pseudo",
       learners,
       "binomial",
@@ -94,7 +92,6 @@ estimate_G <- function(natural,
     pred <- bound(SL_predict(fit, data_valid[, c("lmtp_id", vars)]), .Machine$double.eps)
 
     G[, t + 1] <- pred
-    }
 
     pb()
   }
