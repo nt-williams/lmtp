@@ -1,8 +1,11 @@
-cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
+cf_tmle <- function(task, outcome, ratios, riesz, learners, control, pb) {
   out <- vector("list", length = length(task$folds))
-  ratios <- matrix(t(apply(ratios, 1, cumprod)),
-                   nrow = nrow(ratios),
-                   ncol = ncol(ratios))
+
+  if (isFALSE(riesz)) {
+    ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                     nrow = nrow(ratios),
+                     ncol = ncol(ratios))
+  }
 
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
