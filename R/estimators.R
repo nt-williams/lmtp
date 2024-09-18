@@ -157,7 +157,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
   } else {
-    ratios <- cf_riesz(task, module, mtp, control, pb)
+    ratios <- cf_riesz(task, module, control, pb)
   }
 
   estims <- cf_tmle(task,
@@ -174,6 +174,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
       tau = task$tau,
+      riesz = riesz,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,
@@ -352,6 +353,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
       tau = task$tau,
+      riesz = FALSE,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,
