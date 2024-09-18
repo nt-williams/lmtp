@@ -58,16 +58,22 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(r, tau, shifted, natural) {
+eif <- function(r, tau, cumprod, shifted, natural) {
   natural[is.na(natural)] <- 0
   shifted[is.na(shifted)] <- 0
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  if (cumprod) {
+    out <- rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  } else {
+    out <- rowSums(r * m, na.rm = TRUE) + shifted[, 1]
+  }
+  out
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
   inflnce <- eif(r = eta$r,
                  tau = eta$tau,
+                 cumprod = !eta$riesz,
                  shifted = eta$m$shifted,
                  natural = eta$m$natural)
   theta <- {

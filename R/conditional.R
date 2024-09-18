@@ -68,7 +68,7 @@ estimate_G <- function(natural,
       next
     }
 
-    if (all(data_train$tmp_lmtp_pseudo == 0)) {
+    if (all(train$tmp_lmtp_pseudo == 0)) {
       G[, t + 1] <- 0
       next
     }
@@ -89,9 +89,9 @@ estimate_G <- function(natural,
     }
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred <- bound(SL_predict(fit, data_valid[, c("lmtp_id", vars)]), .Machine$double.eps)
+    pred <- bound(SL_predict(fit, valid), .Machine$double.eps)
 
-    G[, t + 1] <- pred
+    G[jrv & drv, t + 1] <- pred
 
     pb()
   }

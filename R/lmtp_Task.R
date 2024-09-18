@@ -17,6 +17,7 @@ lmtp_task <- R6::R6Class(
     folds = NULL,
     weights = NULL,
     multivariate = NULL,
+    conditional = NULL,
     initialize = function(data,
                           trt,
                           outcome,

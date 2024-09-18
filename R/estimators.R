@@ -185,7 +185,7 @@ lmtp_tmle <- function(data,
       )
     }
 
-    ratios <- cf_riesz(task, gprobs$G, module, mtp, control, pb)
+    ratios <- cf_riesz(task, gprobs$G, module, control, pb)
   }
 
   estims <- cf_tmle(
@@ -204,6 +204,7 @@ lmtp_tmle <- function(data,
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
       tau = task$tau,
+      riesz = riesz,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,
@@ -382,6 +383,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
       tau = task$tau,
+      riesz = FALSE,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,
