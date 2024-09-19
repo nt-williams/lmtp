@@ -23,15 +23,15 @@ cf_sub <- function(task, outcome, learners, control, pb) {
   out <- future::value(out)
 
   list(
-    m = recombine_outcome(out, "m", task$folds),
+    ms = recombine_outcome(out, "ms", task$folds),
+    mn = recombine_outcome(out, "mn", task$folds),
     fits = lapply(out, function(x) x[["fits"]])
   )
 }
 
 estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
                          tau, outcome_type, learners, control, pb) {
-
-  m <- matrix(nrow = nrow(natural$valid), ncol = tau)
+  ms <- mn <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- vector("list", length = tau)
 
   for (t in tau:1) {
@@ -77,13 +77,15 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
     under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
 
     natural$train[jt & rt, pseudo] <- bound(predict(fit, under_shift_train), 1e-05)
-    m[jv & rv, t] <- bound(predict(fit, under_shift_valid), 1e-05)
+    ms[jv & rv, t] <- bound(predict(fit, under_shift_valid), 1e-05)
+    mn[jv & rv, t] <- bound(predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
-    m[!rv, t] <- 0
+    ms[!rv, t] <- 0
+    mn[!rv, t] <- 0
 
     pb()
   }
 
-  list(m = m, fits = fits)
+  list(ms = ms, mn = mn, fits = fits)
 }

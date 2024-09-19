@@ -41,6 +41,9 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#' @param boot \[\code{logical(1)}\]\cr
+#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
+#'  errors will be calculated using the empirical variance of the efficient influence function.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -77,7 +80,8 @@
 #' \item{standard_error}{The estimated standard error of the LMTP effect.}
 #' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
 #' \item{high}{Upper bound of the 95% confidence interval of the LMTP effect.}
-#' \item{eif}{The estimated, un-centered, influence function of the estimate.}
+#' \item{eif}{The estimated, un-centered, influence function of the estimate,
+#'  \code{NULL} if \code{boot = TRUE}.}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
@@ -92,7 +96,8 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                      mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
+                      mtp = FALSE, boot = FALSE,
+                      outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "glm",
                       learners_trt = "glm",
@@ -124,6 +129,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   checkmate::assertNumber(control$.bound)
   checkmate::assertNumber(control$.trim, upper = 1)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assertLogical(boot, len = 1)
   check_trt_type(data, unlist(trt), mtp)
 
   task <- lmtp_task$new(
@@ -145,6 +151,33 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   pb <- progressr::progressor(task$tau*folds*2)
+
+  if (isTRUE(boot)) {
+    ratios <- cf_r(task, learners_trt, mtp, control, pb)
+    Qn <- cf_sub(task, "tmp_lmtp_scaled_outcome", learners_outcome, control, pb)
+    Qnb_eps <- cf_tmle2(task, ratios$ratios, Qn, control)
+
+    ans <- theta_boot(
+      list(
+        estimator = "TMLE",
+        m = Qnb_eps$psi,
+        r = ratios$ratios,
+        boots = Qnb_eps$booted,
+        tau = task$tau,
+        folds = task$folds,
+        id = task$id,
+        outcome_type = task$outcome_type,
+        bounds = task$bounds,
+        weights = task$weights,
+        shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
+        fits_m = Qn$fits,
+        fits_r = ratios$fits,
+        outcome_type = task$outcome_type,
+        seed = Qnb_eps$seed
+      )
+    )
+    return(ans)
+  }
 
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
   estims <- cf_tmle(task,
@@ -485,7 +518,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   theta_sub(
     eta = list(
-      m = estims$m,
+      m = estims$ms,
       outcome_type = task$outcome_type,
       bounds = task$bounds,
       folds = task$folds,
