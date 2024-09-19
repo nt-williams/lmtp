@@ -58,29 +58,35 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(r, tau, cumprod, shifted, natural) {
+eif <- function(r, G, tau, cumprod, shifted, natural, conditional) {
   natural[is.na(natural)] <- 0
   shifted[is.na(shifted)] <- 0
   m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
   if (cumprod) {
     out <- rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
   } else {
-    out <- rowSums(r * m, na.rm = TRUE) + shifted[, 1]
+    ci <- as.logical(apply(conditional, 1, prod))
+    fi <- t(apply(conditional[, ncol(conditional):1], 1, cumprod))[, ncol(conditional):1]
+    weights <- r * (fi[, 2:(tau + 1), drop = FALSE] / G[, 2:(tau + 1), drop = FALSE])
+    out <- rowSums(r * m, na.rm = TRUE) + shifted[ci, 1]
   }
   out
 }
 
 theta_dr <- function(eta, augmented = FALSE) {
   inflnce <- eif(r = eta$r,
+                 G = eta$G,
                  tau = eta$tau,
                  cumprod = !eta$riesz,
                  shifted = eta$m$shifted,
-                 natural = eta$m$natural)
+                 natural = eta$m$natural,
+                 conditional = eta$conditional)
   theta <- {
     if (augmented)
       weighted.mean(inflnce, eta$weights)
     else
-      weighted.mean(eta$m$shifted[, 1], eta$weights)
+      ci <- as.logical(apply(eta$conditional, 1, prod))
+      weighted.mean(eta$m$shifted[ci, 1], eta$weights[ci])
   }
 
   if (eta$outcome_type == "continuous") {

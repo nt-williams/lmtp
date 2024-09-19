@@ -59,7 +59,7 @@ estimate_G <- function(natural,
     vars <- c(node_list[[t]], cens[[t]])
 
     train <- natural$train[jrt & drt, c("lmtp_id", vars)]
-    train$tmp_lmtp_pseudo <- apply(conditional$train[, (t + 1):(tau + 1), drop = FALSE], 1, prod)
+    train$tmp_lmtp_pseudo <- apply(conditional$train[jrt & drt, (t + 1):(tau + 1), drop = FALSE], 1, prod)
 
     valid <- natural$valid[jrv & drv, c("lmtp_id", vars)]
 

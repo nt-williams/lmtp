@@ -175,6 +175,11 @@ lmtp_tmle <- function(data,
 
   if (isFALSE(riesz)) {
     ratios <- cf_r(task, learners_trt, mtp, control, pb)
+
+    gprobs <- list(
+      fits = NULL,
+      G = matrix(1, nrow = nrow(data), ncol = tau + 1)
+    )
   } else {
     if (!is.null(conditional)) {
       gprobs <- cf_G(task, learners_trt, control, pb)
@@ -203,8 +208,10 @@ lmtp_tmle <- function(data,
       estimator = "TMLE",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      G = gprobs$G,
       tau = task$tau,
       riesz = riesz,
+      conditional = task$conditional,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,
