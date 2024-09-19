@@ -32,6 +32,10 @@
 #' @param shifted \[\code{data.frame}\]\cr
 #'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
+#' @param conditional \[\code{matrix(logical)}\]\cr
+#'  For estimating 'Generalized ATT's'; an optional, n x Tau, logical matrix specifying
+#'  the observations that are within the treatment conditioning set at a given time point.
+#'  If \code{NULL}, all observations are included. Ignored if \code{estimator = "lmtp_sdr"}.
 #' @param estimator \[\code{character(1)}\]\cr
 #'  The estimator to use. Either \code{"lmtp_tmle"} or \code{"lmtp_sdr"}.
 #' @param k \[\code{integer(1)}\]\cr
@@ -48,6 +52,10 @@
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
 #'  of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 #'  \bold{Only include candidate learners capable of binary classification}.
+#' @param riesz \[\code{logical(1)}\]\cr
+#'  Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
+#'  Must be \code{TRUE} if \code{conditional} is not \code{NULL}.
+#'  Ignored if \code{estimator = "lmtp_sdr"}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -59,15 +67,23 @@
 #'
 #' @example inst/examples/lmtp_survival-ex.R
 #' @export
-lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL,
-                          cens = NULL, shift = NULL, shifted = NULL,
+lmtp_survival <- function(data,
+                          trt,
+                          outcomes,
+                          baseline = NULL,
+                          time_vary = NULL,
+                          cens = NULL,
+                          shift = NULL,
+                          shifted = NULL,
+                          conditional = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
                           k = Inf,
                           mtp = FALSE,
                           id = NULL,
                           learners_outcome = "glm",
                           learners_trt = "glm",
-                          folds = 10, 
+                          riesz = FALSE,
+                          folds = 10,
                           weights = NULL,
                           control = lmtp_control()) {
 
@@ -95,8 +111,13 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   if (length(trt) == 1) args$trt <- trt
   if (length(time_vary) == 1) args$time_vary <- time_vary
 
-  if (estimator == "lmtp_tmle") expr <- expression(do.call(lmtp_tmle, args))
-  else expr <- expression(do.call(lmtp_sdr, args))
+  if (estimator == "lmtp_tmle") {
+    args$riesz <- riesz
+    args$conditional <- conditional
+    expr <- expression(do.call(lmtp_tmle, args))
+  } else if (estimator == "lmtp_sdr") {
+    expr <- expression(do.call(lmtp_sdr, args))
+  }
 
   t <- 1
   cli::cli_progress_step("Working on time {t}/{tau}...")

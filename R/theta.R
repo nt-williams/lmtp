@@ -81,12 +81,11 @@ theta_dr <- function(eta, augmented = FALSE) {
                  shifted = eta$m$shifted,
                  natural = eta$m$natural,
                  conditional = eta$conditional)
-  theta <- {
-    if (augmented)
-      weighted.mean(inflnce, eta$weights)
-    else
-      ci <- as.logical(apply(eta$conditional, 1, prod))
-      weighted.mean(eta$m$shifted[ci, 1], eta$weights[ci])
+  if (augmented) {
+    theta <- weighted.mean(inflnce, eta$weights)
+  } else {
+    ci <- as.logical(apply(eta$conditional, 1, prod))
+    theta <- weighted.mean(eta$m$shifted[ci, 1], eta$weights[ci])
   }
 
   if (eta$outcome_type == "continuous") {

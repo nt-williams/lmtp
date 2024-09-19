@@ -371,7 +371,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     V = folds,
     weights = weights,
     bounds = bounds,
-    bound = control$control$.bound
+    bound = control$control$.bound,
+    conditional = NULL
   )
 
   pb <- progressr::progressor(task$tau*folds*2)
@@ -389,8 +390,13 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       estimator = "SDR",
       m = list(natural = estims$natural, shifted = estims$shifted),
       r = ratios$ratios,
+      G = list(
+        fits = NULL,
+        G = matrix(1, nrow = nrow(data), ncol = tau + 1)
+      ),
       tau = task$tau,
       riesz = FALSE,
+      conditional = task$conditional,
       folds = task$folds,
       id = task$id,
       outcome_type = task$outcome_type,

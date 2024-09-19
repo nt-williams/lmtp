@@ -13,12 +13,14 @@ lmtp_survival(
   cens = NULL,
   shift = NULL,
   shifted = NULL,
+  conditional = NULL,
   estimator = c("lmtp_tmle", "lmtp_sdr"),
   k = Inf,
   mtp = FALSE,
   id = NULL,
   learners_outcome = "glm",
   learners_trt = "glm",
+  riesz = FALSE,
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -61,6 +63,11 @@ See examples for how to specify shift functions for continuous, binary, and cate
 An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
+\item{conditional}{[\code{matrix(logical)}]\cr
+For estimating 'Generalized ATT's'; an optional, n x Tau, logical matrix specifying
+the observations that are within the treatment conditioning set at a given time point.
+If \code{NULL}, all observations are included. Ignored if \code{estimator = "lmtp_sdr"}.}
+
 \item{estimator}{[\code{character(1)}]\cr
 The estimator to use. Either \code{"lmtp_tmle"} or \code{"lmtp_sdr"}.}
 
@@ -82,6 +89,11 @@ of the outcome regression. Default is \code{"glm"}, a main effects GLM.}
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
 of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 \bold{Only include candidate learners capable of binary classification}.}
+
+\item{riesz}{[\code{logical(1)}]\cr
+Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
+Must be \code{TRUE} if \code{conditional} is not \code{NULL}.
+Ignored if \code{estimator = "lmtp_sdr"}.}
 
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
