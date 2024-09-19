@@ -17,7 +17,7 @@ lmtp_ipw(
   k = Inf,
   id = NULL,
   outcome_type = c("binomial", "continuous", "survival"),
-  learners = c("mean", "glm"),
+  learners = "glm",
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -78,7 +78,7 @@ An optional column name containing cluster level identifiers.}
 Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{learners}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-of the outcome regression. Default is \code{c("mean", "glm")}.
+of the outcome regression. Default is \code{"glm"}.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr

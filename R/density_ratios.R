@@ -66,7 +66,7 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     }
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, c("lmtp_id", vars)]), .Machine$double.eps)
+    pred[jrv & drv, ] <- bound(predict(fit, natural$valid[jrv & drv, c("lmtp_id", vars)]), .Machine$double.eps)
 
     ratios <- density_ratios(pred, irv, drv, frv, mtp)
     densratios[, t] <- ratios

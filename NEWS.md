@@ -1,3 +1,9 @@
+# lmtp 1.4.2
+
+### General
+
+-   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
+
 # lmtp 1.4.1
 
 ### New Features

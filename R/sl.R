@@ -10,10 +10,3 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, i
     info = info
   )
 }
-
-SL_predict <- function(fit, newdata) {
-  if (inherits(fit, "glm")) {
-    return(as.vector(predict(fit, newdata, type = "response")))
-  }
-  predict(fit, newdata)
-}

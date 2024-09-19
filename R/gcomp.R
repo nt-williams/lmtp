@@ -76,8 +76,8 @@ estimate_sub <- function(natural, shifted, trt, outcome, node_list, cens, risk,
     under_shift_valid <- natural$valid[jv & rv, c("lmtp_id", vars)]
     under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
 
-    natural$train[jt & rt, pseudo] <- bound(SL_predict(fit, under_shift_train), 1e-05)
-    m[jv & rv, t] <- bound(SL_predict(fit, under_shift_valid), 1e-05)
+    natural$train[jt & rt, pseudo] <- bound(predict(fit, under_shift_train), 1e-05)
+    m[jv & rv, t] <- bound(predict(fit, under_shift_valid), 1e-05)
 
     natural$train[!rt, pseudo] <- 0
     m[!rv, t] <- 0

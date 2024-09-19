@@ -18,8 +18,8 @@ lmtp_sdr(
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
-  learners_outcome = c("mean", "glm"),
-  learners_trt = c("mean", "glm"),
+  learners_outcome = "glm",
+  learners_trt = "glm",
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -85,10 +85,10 @@ the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-of the outcome regression. Default is \code{c("mean", "glm")}.}
+of the outcome regression. Default is \code{"glm"}.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-of the outcome regression. Default is \code{c("mean", "glm")}.
+of the outcome regression. Default is \code{"glm"}.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr

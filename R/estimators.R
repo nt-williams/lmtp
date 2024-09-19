@@ -50,9 +50,9 @@
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -94,8 +94,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = c("mean", "glm"),
-                      learners_trt = c("mean", "glm"),
+                      learners_outcome = "glm",
+                      learners_trt = "glm",
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assertNotDataTable(data)
@@ -226,9 +226,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -271,8 +271,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      mtp = FALSE,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = c("mean", "glm"),
-                     learners_trt = c("mean", "glm"),
+                     learners_outcome = "glm",
+                     learners_trt = "glm",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
@@ -401,7 +401,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
@@ -428,7 +428,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = c("mean", "glm"),
+                     id = NULL, bounds = NULL, learners = "glm",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
@@ -545,7 +545,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{c("mean", "glm")}.
+#'  of the outcome regression. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -581,7 +581,7 @@ lmtp_ipw <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      shift = NULL, shifted = NULL, mtp = FALSE,
                      k = Inf, id = NULL,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     learners = c("mean", "glm"),
+                     learners = "glm",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
