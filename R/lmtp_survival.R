@@ -132,9 +132,9 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
 isotonic_projection <- function(x, alpha = 0.05) {
   cv <- abs(qnorm(p = alpha / 2))
   estim <- tidy.lmtp_survival(x)
-  iso_fit <- isotone::gpava(1:length(x), estim$estimate)
+  iso_fit <- isotone::gpava(1:length(x), 1 - estim$estimate)
   for (i in seq_along(x)) {
-    x[[i]]$theta <- iso_fit$y[i]
+    x[[i]]$theta <- (1 - iso_fit$x[i])
     x[[i]]$low <- x[[i]]$theta - (qnorm(0.975) * x[[i]]$standard_error)
     x[[i]]$high <- x[[i]]$theta + (qnorm(0.975) * x[[i]]$standard_error)
   }
