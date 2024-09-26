@@ -177,7 +177,7 @@ check_trt_type <- function(data, trt, mtp) {
   for (i in seq_along(trt)) {
     a <- data[[trt[i]]]
     if (is.character(a) | is.factor(a)) next
-    is_decimal[i] <- any(schoolmath::is.decimal(a[!is.na(a)]))
+    is_decimal[i] <- any(is_decimal(a[!is.na(a)]))
   }
   if (any(is_decimal) & isFALSE(mtp)) {
       cli::cli_warn("Detected decimalish `trt` values and {.code mtp = FALSE}. Consider setting {.code mtp = TRUE} if getting errors.")

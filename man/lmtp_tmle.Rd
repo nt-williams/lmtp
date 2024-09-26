@@ -15,6 +15,7 @@ lmtp_tmle(
   shifted = NULL,
   k = Inf,
   mtp = FALSE,
+  boot = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
@@ -73,6 +74,10 @@ all time points.}
 Is the intervention of interest a modified treatment policy?
 Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
+\item{boot}{[\code{logical(1)}]\cr
+Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
+errors will be calculated using the empirical variance of the efficient influence function.}
+
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
 
@@ -108,7 +113,8 @@ A list of class \code{lmtp} containing the following components:
 \item{standard_error}{The estimated standard error of the LMTP effect.}
 \item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
 \item{high}{Upper bound of the 95\% confidence interval of the LMTP effect.}
-\item{eif}{The estimated, un-centered, influence function of the estimate.}
+\item{eif}{The estimated, un-centered, influence function of the estimate,
+\code{NULL} if \code{boot = TRUE}.}
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}

@@ -1,3 +1,18 @@
+# lmtp 1.4.1
+
+### New Features
+
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
+-   Bootstrap for TMLE with the `boot` argument using a modified TMLE algorithm (https://arxiv.org/abs/1810.03030).
+
+### Bug Fixes
+
+-   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
+
+### General
+
+-   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
+
 # lmtp 1.4.0
 
 ### New Features
