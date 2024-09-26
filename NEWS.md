@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
--   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values.
+-   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
 
 # lmtp 1.4.2
 
