@@ -68,7 +68,7 @@ eif <- function(r, G, tau, cumprod, shifted, natural, conditional) {
     ci <- as.logical(apply(conditional, 1, prod))
     fi <- t(apply(conditional[, ncol(conditional):1], 1, cumprod))[, ncol(conditional):1]
     weights <- r * (fi[, 2:(tau + 1), drop = FALSE] / G[, 2:(tau + 1), drop = FALSE])
-    out <- rowSums(r * m, na.rm = TRUE) + shifted[ci, 1]
+    out <- rowSums(weights * m, na.rm = TRUE) + (ci * shifted[, 1])
   }
   out
 }

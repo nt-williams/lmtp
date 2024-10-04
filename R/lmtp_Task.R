@@ -50,14 +50,11 @@ lmtp_task <- R6::R6Class(
       self$conditional <- matrix(TRUE, nrow = nrow(data), ncol = self$tau + 1)
 
       if (!is.null(conditional)) {
-        # TODO: CHECK IF THIS LOGIC IS CORRECT
-        if (length(self$trt) == 1 &
-            self$tau > 1 & ncol(conditional) != 1) {
-          conditional <-
-            lapply(self$tau, \(x) conditional) |>
-            do.call("cbind", args = _)
+        if (length(self$trt) == 1 & self$tau > 1) {
+          self$conditional[, 1] <- conditional
+        } else {
+          self$conditional[, 1:(ncol(self$conditional) - 1)] <- conditional
         }
-        self$conditional[, 1:self$tau] <- conditional
       }
 
       shifted <- {

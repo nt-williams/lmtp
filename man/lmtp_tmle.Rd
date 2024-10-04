@@ -68,8 +68,8 @@ An optional data frame, the same as in \code{data}, but modified according
 to the treatment policy of interest. If specified, \code{shift} is ignored.}
 
 \item{conditional}{[\code{matrix(logical)}]\cr
-For estimating 'Generalized ATT's'; an optional, n x Tau, logical matrix specifying
-the observations that are within the treatment conditioning set at a given time point.
+For estimating 'Generalized ATT's'; an optional, n x Tau (in the case of a point-treatment survival problem n x 1),
+logical matrix specifying the observations that are within the treatment conditioning set at a given time point.
 If \code{NULL}, all observations are included.}
 
 \item{k}{[\code{integer(1)}]\cr

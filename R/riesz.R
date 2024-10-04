@@ -66,6 +66,8 @@ estimate_riesz <- function(natural,
       wts <- weights[jrt & drt, t - 1]
     }
 
+    ci <- conditional$train[jrt & drt, t]
+
     model <- nn_riesz(
       train = list(data = natural$train[jrt & drt, vars, drop = FALSE],
                    data_1 = shifted_train[jrt & drt, vars, drop = FALSE]),
@@ -73,7 +75,7 @@ estimate_riesz <- function(natural,
       module = module,
       .f = \(alpha, dl) alpha(dl[["data_1"]]),
       weights = wts *
-        (conditional$train[jrt & drt, t] / G$train[jrt & drt, t]),
+        (ci / G$train[jrt & drt, t]),
       batch_size = control$.batch_size,
       learning_rate = control$.learning_rate,
       epochs = control$.epochs,
