@@ -16,6 +16,7 @@ cf_r <- function(task, learners, mtp, control, pb) {
         task$risk,
         task$tau,
         task$node_list$trt,
+        task$weights[task$folds[[fold]]$training_set],
         learners,
         pb,
         mtp,
@@ -28,7 +29,7 @@ cf_r <- function(task, learners, mtp, control, pb) {
   trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
+estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, weights, learners, pb, mtp, control) {
   densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
   fits <- vector("list", length = tau)
 
@@ -50,8 +51,16 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
     vars <- c(node_list[[t]], cens[[t]])
     stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
 
-    fit <- run_ensemble(stacked[jrt & drt, c("lmtp_id", vars, "tmp_lmtp_stack_indicator")],
+    if (!(all(weights == 1))) {
+      wv <- "tmp_lmtp_weights"
+      stacked$tmp_lmtp_weights <- rep(weights, 2)
+    } else {
+      wv <- NULL
+    }
+
+    fit <- run_ensemble(stacked[jrt & drt, c("lmtp_id", wv, vars, "tmp_lmtp_stack_indicator")],
                         "tmp_lmtp_stack_indicator",
+                        wv,
                         learners,
                         "binomial",
                         "lmtp_id",

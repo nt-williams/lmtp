@@ -56,8 +56,16 @@ estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
       outcome_type <- "continuous"
     }
 
-    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
+    if (!(all(weights == 1))) {
+      wv <- "tmp_lmtp_weights"
+      natural$train$tmp_lmtp_weights <- weights
+    } else {
+      wv <- NULL
+    }
+
+    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", wv, vars, outcome)],
                         outcome,
+                        wv,
                         learners,
                         outcome_type,
                         "lmtp_id",
