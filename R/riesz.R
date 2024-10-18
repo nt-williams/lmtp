@@ -1,4 +1,4 @@
-cf_riesz <- function(task, G, module, control, pb) {
+cf_riesz <- function(task, G, control, pb) {
   out <- vector("list", length = length(task$folds))
   for (fold in seq_along(task$folds)) {
     out[[fold]] <- future::future({
@@ -11,7 +11,6 @@ cf_riesz <- function(task, G, module, control, pb) {
                      get_folded_data(G, task$folds, fold),
                      task$tau,
                      task$node_list$trt,
-                     module,
                      control,
                      pb)
     },
@@ -31,7 +30,6 @@ estimate_riesz <- function(natural,
                            G,
                            tau,
                            node_list,
-                           module,
                            control,
                            pb) {
   weights <- matrix(0, nrow(natural$train), ncol = tau)
@@ -68,18 +66,32 @@ estimate_riesz <- function(natural,
 
     ci <- conditional$train[jrt & drt, t]
 
-    model <- nn_riesz(
-      train = list(data = natural$train[jrt & drt, vars, drop = FALSE],
-                   data_1 = shifted_train[jrt & drt, vars, drop = FALSE]),
-      vars = vars,
-      module = module,
-      .f = \(alpha, dl) alpha(dl[["data_1"]]),
-      weights = wts *
-        (ci / G$train[jrt & drt, t]),
-      batch_size = control$.batch_size,
-      learning_rate = control$.learning_rate,
+    d_in <- length(vars)
+    hidden <- ceiling(mean(c(d_in, 1)))
+
+    mlp <- torch::nn_sequential(
+      torch::nn_linear(d_in, hidden),
+      torch::nn_relu(),
+      torch::nn_linear(hidden, hidden),
+      torch::nn_relu(),
+      torch::nn_linear(hidden, hidden),
+      torch::nn_relu(),
+      torch::nn_linear(hidden, 1),
+      torch::nn_softplus()
+    )
+
+    model <- riesznet::riesznet(
+      data = natural$train[jrt & drt, vars, drop = FALSE],
+      shifted = list(data_1 = shifted_train[jrt & drt, vars, drop = FALSE]),
+      weights = wts * (ci / G$train[jrt & drt, t]),
+      .f = \(data_1) data_1,
+      net = mlp,
       epochs = control$.epochs,
-      device = control$.device
+      max_lr = control$.learning_rate,
+      batch_size = control$.batch_size,
+      weight_decay = control$.weight_decay,
+      patience = control$.patience,
+      verbose = FALSE
     )
 
     # Return the full model object or return nothing
@@ -89,23 +101,8 @@ estimate_riesz <- function(natural,
       fits[[t]] <- NULL
     }
 
-    weights[jrt & drt, t] <- as.numeric(
-      model(
-        as_torch(
-          one_hot_encode(natural$train[jrt & drt, vars, drop = FALSE]),
-          device = control$.device
-        )
-      )
-    )
-
-    riesz_valid[jrv & drv, t] <- as.numeric(
-      model(
-        as_torch(
-          one_hot_encode(natural$valid[jrv & drv, vars, drop = FALSE]),
-          device = control$.device
-        )
-      )
-    )
+    weights[jrt & drt, t] <- as.numeric(predict(model, natural$train[jrt & drt, vars, drop = FALSE]))
+    riesz_valid[jrv & drv, t] <- as.numeric(predict(model, natural$valid[jrv & drv, vars, drop = FALSE]))
 
     pb()
   }

@@ -11,10 +11,11 @@ lmtp_control(
   .learners_trt_folds = NULL,
   .learners_conditional_folds = NULL,
   .return_full_fits = FALSE,
-  .epochs = 100L,
-  .learning_rate = 0.01,
+  .epochs = 500L,
+  .learning_rate = 0.1,
   .batch_size = 64,
-  .device = c("cpu", "cuda", "mps")
+  .patience = 10,
+  .weight_decay = 1e-04
 )
 }
 \arguments{

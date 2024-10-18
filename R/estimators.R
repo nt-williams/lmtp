@@ -35,7 +35,7 @@
 #'  An optional data frame, the same as in \code{data}, but modified according
 #'  to the treatment policy of interest. If specified, \code{shift} is ignored.
 #' @param conditional \[\code{matrix(logical)}\]\cr
-#'  For estimating 'Generalized ATT's'; an optional, n x Tau (in the case of a point-treatment survival problem n x 1), 
+#'  For estimating 'Generalized ATT's'; an optional, n x Tau (in the case of a point-treatment survival problem n x 1),
 #'  logical matrix specifying the observations that are within the treatment conditioning set at a given time point.
 #'  If \code{NULL}, all observations are included.
 #' @param k \[\code{integer(1)}\]\cr
@@ -118,7 +118,6 @@ lmtp_tmle <- function(data,
                       learners_outcome = c("mean", "glm"),
                       learners_trt = c("mean", "glm"),
                       riesz = FALSE,
-                      module = sequential_module(),
                       folds = 10,
                       weights = NULL,
                       control = lmtp_control()) {
@@ -190,7 +189,7 @@ lmtp_tmle <- function(data,
       )
     }
 
-    ratios <- cf_riesz(task, gprobs$G, module, control, pb)
+    ratios <- cf_riesz(task, gprobs$G, control, pb)
   }
 
   estims <- cf_tmle(

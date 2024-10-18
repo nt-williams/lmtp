@@ -22,7 +22,6 @@ lmtp_tmle(
   learners_outcome = c("mean", "glm"),
   learners_trt = c("mean", "glm"),
   riesz = FALSE,
-  module = sequential_module(),
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -105,9 +104,6 @@ Ignored if \code{riesz = TRUE}.}
 Use Riesz representers to learn the density ratios? Default is \code{FALSE}.
 Must be \code{TRUE} if \code{conditional} is not \code{NULL}.}
 
-\item{module}{[\code{function}]\cr
-A function that returns a neural network module. Ignored if \code{riesz = FALSE}.}
-
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
 
@@ -116,6 +112,9 @@ An optional vector containing sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}
+
+\item{module}{[\code{function}]\cr
+A function that returns a neural network module. Ignored if \code{riesz = FALSE}.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
