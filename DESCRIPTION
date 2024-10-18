@@ -41,7 +41,6 @@ Imports:
     checkmate (>= 2.1.0),
     isotone,
     mlr3superlearner,
-    rieszboost (>= 0.0.0.9000),
     riesznet (>= 0.1.0)
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
@@ -53,5 +52,4 @@ Suggests:
     ranger, 
     twang
 Remotes:  
-    nt-williams,
     nt-williams
