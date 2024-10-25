@@ -22,14 +22,14 @@ LmtpTask <- R6Class("LmtpTask",
     training = function(fold) {
       if (self$task_type == "wide") {
         self$active_rows <- self$folds[[fold]]$training_set
-        LmtpWideTaskSplit$new(self)
+        LmtpWideTaskSplit$new(self, "train")
       }
     },
 
     validation = function(fold) {
       if (self$task_type == "wide") {
         self$active_rows <- self$folds[[fold]]$validation_set
-        LmtpWideTaskSplit$new(self)
+        LmtpWideTaskSplit$new(self, "valid")
       }
     },
 
@@ -54,8 +54,12 @@ LmtpTask <- R6Class("LmtpTask",
 
     select = function(cols) {
       assert_character(cols)
-      # assert_subset(cols, unlist(self$col_roles$all()))
       private$.active_cols <- intersect(private$.active_cols, cols)
+      invisible(self)
+    },
+
+    modify = function(col, x) {
+      self$backend[self$active_rows, col] <- x
       invisible(self)
     },
 

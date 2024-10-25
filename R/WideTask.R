@@ -19,6 +19,9 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
       self$backend <- private$as_lmtp_data(data)
       self$shifted <- private$as_lmtp_data(shifted)
+
+      self$col_roles$id <- "lmtp_id"
+
       self$folds <- private$make_folds(folds)
 
       private$.row_copy <- 1:nrow(self$backend)
@@ -67,6 +70,20 @@ LmtpWideTask <- R6Class("LmtpWideTask",
       y <- self$select(trt_t)$data("shifted", reset = FALSE)
 
       mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
+    },
+
+    shift = function(t) {
+      shifted <- self$data(reset = FALSE)
+      A <- self$col_roles$A
+
+      if (length(A) > 1) {
+        At <- A[[t]]
+      } else {
+        At <- A[[1]]
+      }
+
+      shifted[, At] <- self$data("shifted", reset = FALSE)[, At]
+      shifted
     },
 
     stack = function(t) {
@@ -122,6 +139,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
           data[[self$col_roles$weights]] <- wts / mean(wts)
         }
       }
+
       data
     }
   )
@@ -130,7 +148,9 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 LmtpWideTaskSplit <- R6Class("LmtpWideTaskSplit",
   inherit = LmtpWideTask,
   public = list(
-    initialize = function(x) {
+    type = NULL,
+    initialize = function(x, type) {
+      self$type <- type
       self$backend <- x$data(reset = FALSE)
       self$shifted <- x$data("shifted")
       self$outcome_type <- x$outcome_type

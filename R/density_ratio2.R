@@ -21,7 +21,13 @@ crossfit_density_ratio.LmtpWideTask <- function(task, learners, control, pb) {
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(ans), task$folds), control$.trim)
+  ans <- future::value(ans)
+
+  ans <- list(ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
+              fits = lapply(ans, \(x) x[["fits"]]))
+
+  ans$ratios <- trim(ans$ratios, control$.trim)
+  ans
 }
 
 estimate_density_ratio.LmtpWideTask <- function(train, valid, learners, control, pb) {

@@ -23,23 +23,24 @@ LmtpWideVars <- R6Class("LmtpWideVars",
       self$Y <- Y
       self$id <- id
       self$weights <- weights
+      private$tau <- tau
     },
 
-    #' Get all parent nodes for a variable
     history = function(var = c("L", "A", "Y"), t) {
       switch(
         match.arg(var),
-        L = private$parents_L(t),
-        A = private$parents_A(t),
-        Y = private$parents_Y()
+        L = c(self$id, private$parents_L(t)),
+        A = c(self$id, private$parents_A(t)),
+        Y = c(self$id, private$parents_Y(t))
       )
     },
 
     all = function() {
-      c(self$W, unlist(self$L), unlist(self$A), self$C, self$Y, self$id, self$weights, self$tmp)
+      c(self$W, unlist(self$L), unlist(self$A), self$C, self$Y, self$id, self$weights)
     }
   ),
   private = list(
+    tau = NULL,
     parents_L = function(t) {
       if (t == 1) {
         return(self$W)
@@ -49,8 +50,11 @@ LmtpWideVars <- R6Class("LmtpWideVars",
     parents_A = function(t) {
       c(private$parents_L(t), unlist(self$L[[t]]))
     },
-    parents_Y = function() {
-      c(self$W, unlist(self$L), unlist(self$A))
+    parents_Y = function(t) {
+      if (t == private$tau + 1) {
+        return(c(self$W, unlist(self$L), unlist(self$A)))
+      }
+      private$parents_L(t)
     }
   )
 )
