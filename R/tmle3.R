@@ -7,19 +7,17 @@ crossfit_tmle.LmtpWideTask <- function(task, density_ratios, learners, control, 
   ans <- vector("list", length = task$nfolds())
 
   # Calculate cumulative density ratios
-  ratios <- matrix(t(apply(density_ratios, 1, cumprod)),
-                   nrow = nrow(density_ratios),
-                   ncol = ncol(density_ratios))
+  ratios <- accumulate(density_ratios)
 
   for (fold in seq_along(task$folds)) {
     train <- task$training(fold)
     valid <- task$validation(fold)
-    dr_train <- ratios[task$folds[[fold]]$training_set, ]
+    ratios_train <- ratios[task$folds[[fold]]$training_set, ]
 
-    ans[[fold]] <- future::future({
-      estimate_tmle.LmtpWideTask(train, valid, dr_train, learners, control, pb)
-    },
-    seed = TRUE)
+    ans[[fold]] <- future::future(
+      estimate_tmle.LmtpWideTask(train, valid, ratios_train, learners, control, pb),
+      seed = TRUE
+    )
   }
 
   ans <- future::value(ans)

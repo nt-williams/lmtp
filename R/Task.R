@@ -69,6 +69,10 @@ LmtpTask <- R6Class("LmtpTask",
 
     nfolds = function() {
       length(self$folds)
+    },
+
+    rescale = function(x) {
+      (x*(private$bounds[2] - private$bounds[1])) + private$bounds[1]
     }
   ),
   active = list(

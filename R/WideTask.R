@@ -129,7 +129,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
         }
       }
 
-      Y_tau <- self$col_roles$Y[length(self$col_roles$Y)]
+      Y_tau <- last(self$col_roles$Y)
       private$bounds <- y_bounds(data[[Y_tau]], self$outcome_type)
       data$tmp_lmtp_scaled_outcome <- scale_y(data[[Y_tau]], private$bounds)
 
