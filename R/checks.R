@@ -1,14 +1,6 @@
-check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
-  for (t in 1:determine_tau(outcome, trt)) {
-    ci <- censored(x, cens, t)$j
-    di <- at_risk(x, risk_indicators(outcome), t, TRUE)
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
-    } else {
-      trt_t <- trt[[1]]
-    }
-    data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
-
+check_no_missing <- function(task) {
+  for (t in 1:task$tau) {
+    data_t <- task$obs(t)$at_risk(t)$select(task$history("L", t + 1))$data()
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
     }
@@ -17,7 +9,7 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   TRUE
 }
 
-assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+assert_no_missing <- checkmate::makeAssertionFunction(check_no_missing)
 
 assert_trt <- function(trt, tau) {
   is_list <- is.list(trt)
@@ -65,16 +57,18 @@ check_reserved_names <- function(x) {
   "'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names"
 }
 
-assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
+assert_reserved_names <- checkmate::makeAssertionFunction(check_reserved_names)
 
-check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) {
+check_shifted_data <- function(natural, shifted, trt, cens, null.ok = TRUE) {
   if (is.null(x)) {
     if (null.ok)
       return(TRUE)
     return("Can't be 'NULL'")
   }
 
-  if (!(identical(natural[doesnt_change], x[doesnt_change]))) {
+  is_same <- setdiff(names(natural), c(trt, cens))
+
+  if (!(identical(natural[is_same], shifted[is_same]))) {
     return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
   }
 
@@ -82,14 +76,14 @@ check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) 
     return(TRUE)
   }
 
-  if (!all(x[cens] == 1)) {
+  if (!all(shifted[cens] == 1)) {
     return("Censoring variables should be 1 in 'shifted'")
   }
 
   TRUE
 }
 
-assertShiftedData <- checkmate::makeAssertionFunction(check_shifted_data)
+assert_correctly_shifted <- checkmate::makeAssertionFunction(check_shifted_data)
 
 check_not_data_table <- function(x) {
   is_data_frame <- checkmate::checkDataFrame(x)
@@ -123,7 +117,7 @@ check_outcome_types <- function(x, outcomes, outcome_type) {
   TRUE
 }
 
-assertOutcomeTypes <- checkmate::makeAssertionFunction(check_outcome_types)
+assert_outcome_types <- checkmate::makeAssertionFunction(check_outcome_types)
 
 check_contrast_type <- function(x, fits) {
   if (x == "additive") {

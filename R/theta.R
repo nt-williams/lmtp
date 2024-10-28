@@ -58,60 +58,53 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(r, tau, shifted, natural) {
+eif <- function(task, r, shifted, natural) {
+  y <- task$select(last(task$col_roles$Y))$data()
+  shifted <- cbind(shifted, y)
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
-  m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  m <- shifted[, 2:(task$tau + 1), drop = FALSE] - natural[, 1:task$tau, drop = FALSE]
+  rowSums(compute_weights(r, 1, task$tau) * m, na.rm = TRUE) + shifted[, 1]
 }
 
-theta_dr <- function(eta, augmented = FALSE) {
-  inflnce <- eif(r = eta$r,
-                 tau = eta$tau,
-                 shifted = eta$m$shifted,
-                 natural = eta$m$natural)
-  theta <- {
-    if (augmented)
-      weighted.mean(inflnce, eta$weights)
-    else
-      weighted.mean(eta$m$shifted[, 1], eta$weights)
+theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
+  task$reset()
+
+  ic <- eif(task, r, m$shifted, m$natural)
+
+  if (is.null(task$col_roles$weights)) {
+    weights <- rep(1, task$nrow())
+  } else {
+    weights <- task$select(task$col_roles$weights)
   }
 
-  if (eta$outcome_type == "continuous") {
-    inflnce <- rescale_y_continuous(inflnce, eta$bounds)
-    theta <- rescale_y_continuous(theta, eta$bounds)
+  if (augmented) {
+    theta <- weighted.mean(ic, weights)
+  } else {
+    theta <- weighted.mean(m$shifted[, 1], weights)
   }
 
-  clusters <- split(inflnce*eta$weights, eta$id)
-  j <- length(clusters)
-  se <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
-  ci_low  <- theta - (qnorm(0.975) * se)
-  ci_high <- theta + (qnorm(0.975) * se)
+  ic <- task$rescale(ic)
+  theta <- task$rescale(theta)
+
+  id <- as.character(task$select(task$col_roles$id)$data())
+  ans <- ife::ife(theta, ic, weights, id)
 
   out <- list(
-    estimator = eta$estimator,
-    theta = theta,
-    standard_error = se,
-    low = ci_low,
-    high = ci_high,
-    eif = inflnce,
-    id = eta$id,
-    shift = eta$shift,
-    outcome_reg = switch(
-      eta$outcome_type,
-      continuous = rescale_y_continuous(eta$m$shifted, eta$bounds),
-      binomial = eta$m$shifted
-    ),
-    density_ratios = eta$r,
-    weights = eta$weights,
-    fits_m = eta$fits_m,
-    fits_r = eta$fits_r,
-    outcome_type = eta$outcome_type
+    estimator = ifelse(augmented, "SDR", "TMLE"),
+    estimate = ans,
+    shift = shift,
+    outcome_reg = task$rescale(m$shifted),
+    density_ratios = r,
+    fits_m = fits_m,
+    fits_r = fits_r,
+    outcome_type = task$outcome_type
   )
 
   class(out) <- "lmtp"
   out
 }
+
 
 # TODO: NEED TO SAVE THE SEED FOR THE REPLICATES AND THE BOOTED ESTIMATES FOR ESTIMATNG CONTRASTS
 theta_boot <- function(eta) {

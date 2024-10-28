@@ -7,14 +7,15 @@ LmtpWideVars <- R6Class("LmtpWideVars",
     Y = NULL,
     id = NULL,
     weights = NULL,
-    initialize = function(W, L, A, C, Y, id, weights, survival, tau) {
+    initialize = function(W, L, A, C, Y, id, weights, survival, tau, k = Inf) {
       assert_trt(A, tau)
       assert_character(W, null.ok = TRUE)
       assert_character(C, len = tau, null.ok = TRUE)
-      assert_character(Y, len = if (survival) 1, min.len = if (survival) 2)
+      assert_character(Y, len = if (!survival) 1, min.len = if (survival) 2)
       assert_list(L, types = c("NULL", "character"), len = tau, null.ok = TRUE)
       assert_character(id, len = 1, null.ok = TRUE)
       assert_character(weights, len = 1, null.ok = TRUE)
+      checkmate::assertNumber(k, lower = 0, upper = Inf)
 
       self$W <- W
       self$L <- L
@@ -23,16 +24,22 @@ LmtpWideVars <- R6Class("LmtpWideVars",
       self$Y <- Y
       self$id <- id
       self$weights <- weights
+
       private$tau <- tau
+      private$k <- k
+      # private$l <- tau - (tau - k - 1)
     },
 
-    history = function(var = c("L", "A", "Y"), t) {
-      switch(
-        match.arg(var),
-        L = c(self$id, private$parents_L(t)),
-        A = c(self$id, private$parents_A(t)),
-        Y = c(self$id, private$parents_Y(t))
+    history = function(var = c("L", "A"), t) {
+      private$l <- t - private$k - 1
+      private$.var <- match.arg(var)
+      ans <- switch(private$.var,
+        L = private$parents_L(t),
+        A = private$parents_A(t)
       )
+      private$.var <- NULL
+      private$l <- NULL
+      as.vector(na.omit(c(self$W, ans)))
     },
 
     all = function() {
@@ -41,20 +48,29 @@ LmtpWideVars <- R6Class("LmtpWideVars",
   ),
   private = list(
     tau = NULL,
+    k = NULL,
+    l = NULL,
+    .var = NULL,
     parents_L = function(t) {
       if (t == 1) {
-        return(self$W)
+        return(invisible())
       }
+
+      if (t == private$l) {
+        return(unlist(self$A[t - 1]))
+      }
+
       c(private$parents_A(t - 1), unlist(self$A[t - 1]))
     },
     parents_A = function(t) {
-      c(private$parents_L(t), unlist(self$L[[t]]))
-    },
-    parents_Y = function(t) {
-      if (t == private$tau + 1) {
-        return(c(self$W, unlist(self$L), unlist(self$A)))
+      if (t == private$l) {
+        if (private$.var == "L") {
+          return(unlist(self$L[[t]]))
+        }
+        return(invisible())
       }
-      private$parents_L(t)
+
+      c(private$parents_L(t), unlist(self$L[[t]]))
     }
   )
 )

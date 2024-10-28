@@ -19,6 +19,17 @@ LmtpTask <- R6Class("LmtpTask",
       self$col_roles$history(var, t)
     },
 
+    features = function(model, t) {
+      Ht <- switch(model,
+        "Y" = self$history("L", t + 1),
+        "A" = self$history("A", t)
+      )
+
+      if (model == "Y") return(c(self$col_roles$id, Ht))
+
+      c(self$col_roles$id, Ht, unlist(self$col_roles$A[t]), self$col_roles$C[t])
+    },
+
     training = function(fold) {
       if (self$task_type == "wide") {
         self$active_rows <- self$folds[[fold]]$training_set
@@ -69,6 +80,10 @@ LmtpTask <- R6Class("LmtpTask",
 
     nfolds = function() {
       length(self$folds)
+    },
+
+    scale = function(x) {
+      (x - private$bounds[1]) / (private$bounds[2] - private$bounds[1])
     },
 
     rescale = function(x) {

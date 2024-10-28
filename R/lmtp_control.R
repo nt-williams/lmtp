@@ -34,6 +34,15 @@ lmtp_control <- function(.bound = 1e5,
                          .info = FALSE,
                          .B = 1000,
                          .boot_seed = NULL) {
+
+  assert_number(.learners_outcome_folds, null.ok = TRUE)
+  assert_number(.learners_trt_folds, null.ok = TRUE)
+  assert_number(.bound)
+  assert_number(.trim, upper = 1)
+  assert_logical(.return_full_fits, len = 1)
+  assert_logical(.discrete)
+  assert_logical(.info)
+
   list(.bound = .bound,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,

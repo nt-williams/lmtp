@@ -1,117 +1,151 @@
-cf_tmle <- function(task, outcome, ratios, learners, control, pb) {
-  out <- vector("list", length = length(task$folds))
-  ratios <- matrix(t(apply(ratios, 1, cumprod)),
-                   nrow = nrow(ratios),
-                   ncol = ncol(ratios))
-
-  for (fold in seq_along(task$folds)) {
-    out[[fold]] <- future::future({
-      estimate_tmle(
-        get_folded_data(task$natural, task$folds, fold),
-        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
-        task$trt,
-        outcome,
-        task$node_list$outcome,
-        task$cens,
-        task$risk,
-        task$tau,
-        task$outcome_type,
-        get_folded_data(ratios, task$folds, fold)$train,
-        task$weights[task$folds[[fold]]$training_set],
-        learners,
-        control,
-        pb
-      )
-    },
-    seed = TRUE)
-  }
-
-  out <- future::value(out)
-
-  list(
-    natural = recombine_outcome(out, "natural", task$folds),
-    shifted = cbind(recombine_outcome(out, "shifted", task$folds), task$natural[["tmp_lmtp_scaled_outcome"]]),
-    fits = lapply(out, function(x) x[["fits"]])
-  )
+crossfit_tmle <- function(x, ...) {
+  UseMethod("crossfit_tmle")
 }
 
-estimate_tmle <- function(natural, shifted, trt, outcome, node_list, cens,
-                          risk, tau, outcome_type, ratios, weights, learners, control, pb) {
-  m_natural_train <- m_shifted_train <- matrix(nrow = nrow(natural$train), ncol = tau)
-  m_natural_valid <- m_shifted_valid <- matrix(nrow = nrow(natural$valid), ncol = tau)
+#' @export
+crossfit_tmle.LmtpWideTask <- function(task, density_ratios, learners, control, pb) {
+  ans <- vector("list", length = task$nfolds())
 
-  fits <- vector("list", length = tau)
-  for (t in tau:1) {
-    i  <- censored(natural$train, cens, t)$i
-    jt <- censored(natural$train, cens, t)$j
-    jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+  # Calculate cumulative density ratios
+  ratios <- accumulate(density_ratios)
 
-    pseudo <- paste0("tmp_lmtp_pseudo", t)
-    vars <- node_list[[t]]
+  for (fold in seq_along(task$folds)) {
+    train <- task$training(fold)
+    valid <- task$validation(fold)
+    ratios_train <- ratios[task$folds[[fold]]$training_set, , drop = FALSE]
 
-    if (t != tau) {
-      outcome <- paste0("tmp_lmtp_pseudo", t + 1)
+    ans[[fold]] <- future::future(
+      estimate_tmle.LmtpWideTask(train, valid, ratios_train, learners, control, pb),
+      seed = TRUE
+    )
+  }
+
+  ans <- future::value(ans)
+
+  list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
+       shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
+       fits = lapply(ans, \(x) x[["fits"]]))
+}
+
+estimate_tmle.LmtpWideTask <- function(train, valid, density_ratios, learners, control, pb) {
+  tml <- TmleWide$new(train, valid, density_ratios)
+  fits <- vector("list", length = valid$tau)
+
+  target <- last(train$col_roles$Y)
+
+  for (t in valid$tau:1) {
+    train$reset()
+    valid$reset()
+
+    features <- train$features("Y", t)
+
+    if (t == valid$tau) {
+      outcome_type <- ifelse(train$outcome_type == "survival", "binomial", train$outcome_type)
+    } else {
       outcome_type <- "continuous"
     }
 
-    fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
-                        outcome,
-                        learners,
-                        outcome_type,
-                        "lmtp_id",
-                        control$.learners_outcome_folds,
-                        control$.discrete,
-                        control$.info)
+    # Subset active rows/cols to observed at t and at risk observations
+    train$obs(t)$at_risk(t)$select(c(features, target))
 
-    if (control$.return_full_fits) {
-      fits[[t]] <- fit
-    } else {
-      fits[[t]] <- extract_sl_weights(fit)
-    }
-
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
-    } else {
-      trt_t <- trt[[1]]
-    }
-
-    under_shift_train <- natural$train[jt & rt, c("lmtp_id", vars)]
-    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
-
-    under_shift_valid <- natural$valid[jv & rv, c("lmtp_id", vars)]
-    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
-
-    m_natural_train[jt & rt, t] <- bound(predict(fit, natural$train[jt & rt, c("lmtp_id", vars)]), 1e-05)
-    m_shifted_train[jt & rt, t] <- bound(predict(fit, under_shift_train), 1e-05)
-    m_natural_valid[jv & rv, t] <- bound(predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
-    m_shifted_valid[jv & rv, t] <- bound(predict(fit, under_shift_valid), 1e-05)
-
-    wts <- ratios[i & rt, t] * weights[i & rt]
-
-    fit <- sw(
-      glm(
-        natural$train[i & rt, ][[outcome]] ~ offset(qlogis(m_natural_train[i & rt, t])),
-        weights = wts,
-        family = "binomial"
-      )
+    fit <- run_ensemble(
+      train$data(),
+      target,
+      learners,
+      outcome_type,
+      "lmtp_id",
+      control$.learners_outcome_folds,
+      control$.discrete,
+      control$.info
     )
 
-    natural$train[jt & rt, pseudo] <- bound(plogis(qlogis(m_shifted_train[jt & rt, t]) + coef(fit)))
-    m_natural_valid[jv & rv, t] <- bound(plogis(qlogis(m_natural_valid[jv & rv, t]) + coef(fit)))
-    m_shifted_valid[jv & rv, t] <- bound(plogis(qlogis(m_shifted_valid[jv & rv, t]) + coef(fit)))
+    tml$add_m(fit, train)
+    tml$add_m(fit, valid)
+    pseudo <- tml$fluctuate(train, valid)
 
-    natural$train[!rt, pseudo] <- 0
-    m_natural_valid[!rv, t] <- 0
-    m_shifted_valid[!rv, t] <- 0
-
-    pb()
+    train$modify(target, pseudo[train$active_rows])
   }
 
-  list(
-    natural = m_natural_valid,
-    shifted = m_shifted_valid,
-    fits = fits
-  )
+  list(natural = tml$m_valid$natural,
+       shifted = tml$m_valid$shifted,
+       fits = fits)
 }
+
+TmleWide <- R6Class("TmleWide",
+  public = list(
+    m_train = NULL,
+    m_valid = NULL,
+    density_ratios = NULL,
+    t = NULL,
+    initialize = function(train, valid, density_ratios) {
+      self$t <- train$tau
+
+      self$density_ratios <- density_ratios
+
+      self$m_train <- lapply(1:2, \(x) matrix(0, nrow = train$nrow(), ncol = train$tau))
+      self$m_valid <- lapply(1:2, \(x) matrix(0, nrow = valid$nrow(), ncol = valid$tau))
+
+      names(self$m_train) <- c("natural", "shifted")
+      names(self$m_valid) <- names(self$m_train)
+    },
+    add_m = function(fit, task) {
+      task$obs(self$t - 1)$at_risk(self$t)$select(fit$x)
+
+      predn <- predict(fit, task$data(reset = FALSE), 1e-05)
+      preds <- predict(fit, task$shift(self$t), 1e-05)
+
+      if (task$type == "train") {
+        self$m_train$natural[task$active_rows, self$t] <- predn
+        self$m_train$shifted[task$active_rows, self$t] <- preds
+      } else {
+        self$m_valid$natural[task$active_rows, self$t] <- predn
+        self$m_valid$shifted[task$active_rows, self$t] <- preds
+      }
+
+      task$reset()
+      invisible(self)
+    },
+    fluctuate = function(train, valid) {
+      train$reset()
+      valid$reset()
+
+      target <- last(train$col_roles$Y)
+
+      # Subset active rows/cols to observed at t and at risk observations
+      train$obs(self$t)$at_risk(self$t)
+
+      case_weights <- NULL
+      if (!is.null(train$col_roles$weights)) {
+        case_weights <- train$data(reset = FALSE)[[train$col_roles$weights]]
+      }
+      case_weights <- case_weights %||% rep(1, train$nrow())
+
+      weights <- self$density_ratios[train$active_rows, self$t] * case_weights
+
+      y <- train$data(reset = FALSE)[[target]]
+      intercept <- self$m_train$natural[train$active_rows, self$t]
+
+      fit <- sw(glm(y ~ offset(qlogis(intercept)), weights = weights, family = "binomial"))
+
+      # Subset active rows/cols to observed at t-1 and at risk observations
+      train$reset()
+      train$obs(self$t - 1)$at_risk(self$t)
+      valid$obs(self$t - 1)$at_risk(self$t)
+
+      self$m_valid$natural[valid$active_rows, self$t] <-
+        bound(plogis(qlogis(self$m_valid$natural[valid$active_rows, self$t]) + coef(fit)))
+
+      self$m_valid$shifted[valid$active_rows, self$t] <-
+        bound(plogis(qlogis(self$m_valid$shifted[valid$active_rows, self$t]) + coef(fit)))
+
+      # Return a new pseudo outcome
+      pseudo <- vector("numeric", length = train$nrow())
+      pseudo[train$active_rows] <- bound(plogis(qlogis(self$m_train$shifted[train$active_rows, self$t]) + coef(fit)))
+
+      # iterate back through time
+      self$t <- self$t - 1
+
+      pseudo
+    }
+  )
+)

@@ -46,20 +46,14 @@ bound <- function(x, p = 1e-05) {
 }
 
 scale_y <- function(y, bounds) {
-  if (is.null(bounds)) {
-    return(y)
-  }
   (y - bounds[1]) / (bounds[2] - bounds[1])
 }
 
-y_bounds <- function(y, outcome_type, bounds = NULL) {
+y_bounds <- function(y, outcome_type) {
   if (outcome_type == "binomial" || is.null(outcome_type)) {
-    return(NULL)
+    return(c(0, 1))
   }
-  if (is.null(bounds)) {
-    return(c(min(y, na.rm = T), max(y, na.rm = T)))
-  }
-  c(bounds[1], bounds[2])
+  c(min(y, na.rm = T), max(y, na.rm = T))
 }
 
 rescale_y_continuous <- function(scaled, bounds) {
@@ -138,9 +132,8 @@ recombine_ratios <- function(x, folds) {
   returns
 }
 
-trim_ratios <- function(x, trim) {
-  x[["ratios"]] <- pmin(x[["ratios"]], quantile(x[["ratios"]], trim))
-  x
+trim <- function(x, trim) {
+  pmin(x, quantile(x, trim))
 }
 
 recombine_outcome <- function(x, part, folds) {
@@ -244,4 +237,10 @@ fix_surv_time1 <- function(x) {
 is_decimal <- function(x) {
   test <- floor(x)
   !(x == test)
+}
+
+last <- function(x) x[length(x)]
+
+accumulate <- function(x) {
+  matrix(t(apply(x, 1, cumprod)), nrow = nrow(x), ncol = ncol(x))
 }

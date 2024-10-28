@@ -20,14 +20,17 @@ LmtpWideTask <- R6Class("LmtpWideTask",
       self$backend <- private$as_lmtp_data(data)
       self$shifted <- private$as_lmtp_data(shifted)
 
-      self$col_roles$id <- "lmtp_id"
-
-      self$folds <- private$make_folds(folds)
-
       private$.row_copy <- 1:nrow(self$backend)
       private$.col_copy <- names(self$backend)
       self$active_rows <- private$.row_copy
       self$active_cols <- private$.col_copy
+
+      assert_no_missing(self)
+      check_trt_type(self$backend, unlist(self$col_roles$A), self$mtp)
+
+      self$col_roles$id <- "lmtp_id"
+
+      self$folds <- private$make_folds(folds)
     },
 
     obs = function(t) {
@@ -37,8 +40,8 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
       var <- self$col_roles$C[t]
 
-      obs <- self$backend[[var]][self$active_rows]
-      self$active_rows(intersect(self$active_rows, which(obs == 1)))
+      obs <- self$backend[[var]]
+      self$active_rows <- intersect(self$active_rows, which(obs == 1))
       invisible(self)
     },
 
@@ -48,16 +51,16 @@ LmtpWideTask <- R6Class("LmtpWideTask",
       }
 
       risk <- self$col_roles$Y[1:(length(self$col_roles$Y) - 1)]
-      risk <- self$backend[[risk[t - 1]]][private$.row_roles, ]
+      risk <- self$backend[[risk[t - 1]]]
 
-      self$active_rows(intersect(private$.row_roles, which(risk == 1 & !is.na(risk))))
+      self$active_rows <- intersect(self$active_rows, which(risk == 1 & !is.na(risk)))
 
       invisible(self)
     },
 
     followed_rule = function(t) {
       if (self$mtp) {
-        return(rep(TRUE, self$nrow()))
+        return(invisible(self))
       }
 
       if (length(self$col_roles$A) > 1) {
@@ -66,10 +69,18 @@ LmtpWideTask <- R6Class("LmtpWideTask",
         trt_t <- self$col_roles$A[[1]]
       }
 
+      ac <- self$active_cols
+
       x <- self$select(trt_t)$data(reset = FALSE)
       y <- self$select(trt_t)$data("shifted", reset = FALSE)
 
-      mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
+      self$active_cols <- ac
+
+      check <- mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
+
+      self$active_rows <- intersect(self$active_rows, which(check))
+
+      invisible(self)
     },
 
     shift = function(t) {
@@ -108,16 +119,8 @@ LmtpWideTask <- R6Class("LmtpWideTask",
   private = list(
     as_lmtp_data = function(data) {
       assert_subset(self$col_roles$all(), names(data))
-
-      assert_lmtp_data(
-        data,
-        self$col_roles$A,
-        self$col_roles$Y,
-        self$col_roles$W,
-        self$col_roles$L,
-        self$col_roles$C,
-        self$col_roles$id
-      )
+      assert_reserved_names(data)
+      assert_outcome_types(data, self$col_roles$Y, self$outcome_type)
 
       data <- data.table::copy(as.data.frame(data))
       data$lmtp_id <- create_ids(data, self$col_roles$id)
@@ -131,10 +134,11 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
       Y_tau <- last(self$col_roles$Y)
       private$bounds <- y_bounds(data[[Y_tau]], self$outcome_type)
-      data$tmp_lmtp_scaled_outcome <- scale_y(data[[Y_tau]], private$bounds)
+      data[[Y_tau]] <- self$scale(data[[Y_tau]])
 
       if (!is.null(self$col_roles$weights)) {
         wts <- data[[self$col_roles$weights]]
+        assert_numeric(wts, finite = TRUE, any.missing = FALSE, null.ok = TRUE)
         if (!is_normalized(wts)) {
           data[[self$col_roles$weights]] <- wts / mean(wts)
         }

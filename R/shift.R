@@ -1,4 +1,6 @@
 make_shifted <- function(data, trt, cens, shift, shifted) {
+  assert_function(shift, nargs = 2, null.ok = TRUE)
+
   if (!is.null(shifted)) {
     assert_correctly_shifted(data, shifted, trt, cens)
     return(shifted)

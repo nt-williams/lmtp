@@ -38,8 +38,7 @@ estimate_density_ratio.LmtpWideTask <- function(train, valid, learners, control,
     train$reset()
     valid$reset()
 
-    features <- train$history("A", t)
-    features <- c(features, train$col_roles$A[[t]], train$col_roles$C[[t]])
+    features <- train$features("A", t)
     target <- "tmp_lmtp_stack_indicator"
 
     # Subset active rows/cols to observed at t-1 and at risk observations
@@ -63,14 +62,18 @@ estimate_density_ratio.LmtpWideTask <- function(train, valid, learners, control,
     }
 
     # Subset active rows/cols to observed at t and at risk observations
+    # valid$obs(t)$at_risk(t)$followed_rule(t)$select(features)
     valid$obs(t)$at_risk(t)$select(features)
 
-    pred <- predict(fit, valid$data(reset = FALSE))
-    pred <- ifelse(valid$followed_rule(t), pmax(pred, 0.5), pred)
-    density_ratios[valid$active_rows, t] <- pred / (1 - pmin(pred, 0.999))
+    density_ratios[valid$active_rows, t] <- as_density_ratio(fit, valid$data(reset = FALSE))
 
     pb()
   }
 
   list(ratios = density_ratios, fits = fits)
+}
+
+as_density_ratio <- function(fit, newdata) {
+  pred <- predict(fit, newdata)
+  pred / (1 - pmin(pred, 0.999))
 }
