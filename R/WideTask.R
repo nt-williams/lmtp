@@ -60,7 +60,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
     followed_rule = function(t) {
       if (self$mtp) {
-        return(invisible(self))
+        return(rep(TRUE, length(self$active_rows)))
       }
 
       if (length(self$col_roles$A) > 1) {
@@ -76,11 +76,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
       self$active_cols <- ac
 
-      check <- mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
-
-      self$active_rows <- intersect(self$active_rows, which(check))
-
-      invisible(self)
+      mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
     },
 
     shift = function(t) {
@@ -98,6 +94,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
     },
 
     stack = function(t) {
+      on.exit(self$reset())
       shifted_half <- natural <- self$data(reset = FALSE)
 
       A <- self$col_roles$A

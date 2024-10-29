@@ -244,3 +244,18 @@ last <- function(x) x[length(x)]
 accumulate <- function(x) {
   matrix(t(apply(x, 1, cumprod)), nrow = nrow(x), ncol = ncol(x))
 }
+
+outcome_type <- function(task, t) {
+  if (t != task$tau) {
+    return("continuous")
+  }
+  ifelse(task$outcome_type == "survival", "binomial", task$outcome_type)
+}
+
+return_full_fits <- function(fit, t, control) {
+  if (control$.return_full_fits) {
+    return(fit)
+  }
+  extract_sl_weights(fit)
+}
+

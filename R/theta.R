@@ -59,8 +59,6 @@ theta_ipw <- function(eta) {
 }
 
 eif <- function(task, r, shifted, natural) {
-  y <- task$select(last(task$col_roles$Y))$data()
-  shifted <- cbind(shifted, y)
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
   m <- shifted[, 2:(task$tau + 1), drop = FALSE] - natural[, 1:task$tau, drop = FALSE]

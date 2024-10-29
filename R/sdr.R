@@ -1,120 +1,94 @@
-cf_sdr <- function(task, outcome, ratios, learners, control, pb) {
-  out <- vector("list", length = length(task$folds))
-  for (fold in seq_along(task$folds)) {
-    out[[fold]] <- future::future({
-      estimate_sdr(
-        get_folded_data(task$natural, task$folds, fold),
-        get_folded_data(task$shifted[, unlist(task$trt), drop = F], task$folds, fold),
-        task$trt,
-        outcome,
-        task$node_list$outcome,
-        task$cens,
-        task$risk,
-        task$tau,
-        task$outcome_type,
-        get_folded_data(ratios, task$folds, fold)$train,
-        learners,
-        control,
-        pb
-      )
-    },
-    seed = TRUE)
-  }
-
-  out <- future::value(out)
-
-  list(natural = recombine_outcome(out, "natural", task$folds),
-       shifted = recombine_outcome(out, "shifted", task$folds),
-       fits = lapply(out, function(x) x[["fits"]]))
+crossfit_sdr <- function(x, ...) {
+  UseMethod("crossfit_sdr")
 }
 
-estimate_sdr <- function(natural, shifted, trt, outcome, node_list, cens, risk, tau,
-                         outcome_type, ratios, learners, control, pb) {
+#' @export
+crossfit_sdr.LmtpWideTask <- function(task, density_ratios, learners, control, pb) {
+  ans <- vector("list", length = task$nfolds())
 
-  m_natural_train <- m_shifted_train <-
-    cbind(matrix(nrow = nrow(natural$train), ncol = tau), natural$train[[outcome]])
-  m_natural_valid <- m_shifted_valid <-
-    cbind(matrix(nrow = nrow(natural$valid), ncol = tau), natural$valid[[outcome]])
+  for (fold in seq_along(task$folds)) {
+    train <- task$training(fold)
+    valid <- task$validation(fold)
+    ratios_train <- density_ratios[task$folds[[fold]]$training_set, , drop = FALSE]
 
-  fits <- vector("list", length = tau)
+    ans[[fold]] <- future::future(
+      estimate_sdr.LmtpWideTask(train, valid, ratios_train, learners, control, pb),
+      seed = TRUE
+    )
+  }
 
-  for (t in tau:1) {
-    i  <- censored(natural$train, cens, t)$i
-    jt <- censored(natural$train, cens, t)$j
-    jv <- censored(natural$valid, cens, t)$j
-    rt <- at_risk(natural$train, risk, t)
-    rv <- at_risk(natural$valid, risk, t)
+  ans <- future::value(ans)
 
-    pseudo <- paste0("tmp_lmtp_pseudo", t)
-    vars <- node_list[[t]]
+  list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
+       shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
+       fits = lapply(ans, \(x) x[["fits"]]))
+}
 
-    if (t == tau) {
-      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, outcome)],
-                          outcome,
-                          learners,
-                          outcome_type,
-                          "lmtp_id",
-                          control$.learners_outcome_folds,
-                          control$.discrete,
-                          control$.info)
+estimate_sdr.LmtpWideTask <- function(train, valid, density_ratios, learners, control, pb) {
+  sdr <- SdrWide$new(train, valid, density_ratios)
+  fits <- vector("list", length = valid$tau)
+  target <- last(train$col_roles$Y)
 
-      if (control$.return_full_fits) {
-        fits[[t]] <- fit
-      } else {
-        fits[[t]] <- extract_sl_weights(fit)
-      }
+  for (t in valid$tau:1) {
+    train$reset()
+    valid$reset()
+
+    features <- train$features("Y", t)
+
+    # Subset active rows/cols to observed at t and at risk observations
+    train$obs(t)$at_risk(t)$select(c(features, target))
+
+    if (t != valid$tau) {
+      pseudo <- sdr$transform()
+      train$modify(target, pseudo[train$active_rows])
     }
 
-    if (t < tau) {
-      tmp <- transform_sdr(compute_weights(ratios, t + 1, tau),
-                           t, tau,
-                           m_shifted_train,
-                           m_natural_train)
+    fit <- run_ensemble(
+      train$data(),
+      target,
+      learners,
+      outcome_type(train, t),
+      "lmtp_id",
+      control$.learners_outcome_folds,
+      control$.discrete,
+      control$.info
+    )
 
-      natural$train[, pseudo] <- shifted$train[, pseudo] <- tmp
+    fits[[t]] <- return_full_fits(fit, t, control)
 
-      fit <- run_ensemble(natural$train[i & rt, c("lmtp_id", vars, pseudo)],
-                          pseudo,
-                          learners,
-                          "continuous",
-                          "lmtp_id",
-                          control$.learners_outcome_folds,
-                          control$.discrete,
-                          control$.info)
-
-      if (control$.return_full_fits) {
-        fits[[t]] <- fit
-      } else {
-        fits[[t]] <- extract_sl_weights(fit)
-      }
-    }
-
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
-    } else {
-      trt_t <- trt[[1]]
-    }
-
-    under_shift_train <- natural$train[jt & rt, c("lmtp_id", vars)]
-    under_shift_train[, trt_t] <- shifted$train[jt & rt, trt_t]
-
-    under_shift_valid <- natural$valid[jv & rv, c("lmtp_id", vars)]
-    under_shift_valid[, trt_t] <- shifted$valid[jv & rv, trt_t]
-
-    m_natural_train[jt & rt, t] <- bound(predict(fit, natural$train[jt & rt, c("lmtp_id", vars)]), 1e-05)
-    m_shifted_train[jt & rt, t] <- bound(predict(fit, under_shift_train), 1e-05)
-    m_natural_valid[jv & rv, t] <- bound(predict(fit, natural$valid[jv & rv, c("lmtp_id", vars)]), 1e-05)
-    m_shifted_valid[jv & rv, t] <- bound(predict(fit, under_shift_valid), 1e-05)
-
-    m_natural_train[!rt, t] <- 0
-    m_shifted_train[!rt, t] <- 0
-    m_natural_valid[!rv, t] <- 0
-    m_shifted_valid[!rv, t] <- 0
+    sdr$add_m(fit, train)
+    sdr$add_m(fit, valid)
 
     pb()
   }
 
-  list(natural = m_natural_valid,
-       shifted = m_shifted_valid,
+  list(natural = sdr$m_valid$natural,
+       shifted = sdr$m_valid$shifted,
        fits = fits)
 }
+
+SdrWide <- R6Class("SdrWide",
+  inherit = EstimatorWide,
+  public = list(
+    tau = NULL,
+    initialize = function(train, valid, density_ratios) {
+      super$initialize(train, valid, density_ratios)
+      self$tau <- train$tau
+    },
+    transform = function() {
+      # iterate back through time
+      self$t <- self$t - 1
+
+      natural <- self$m_train$natural
+      shifted <- self$m_train$shifted
+
+      natural[is.na(natural)] <- -999
+      shifted[is.na(shifted)] <- -999
+
+      r <- compute_weights(self$density_ratios, self$t + 1, self$tau)
+      m <- shifted[, (self$t + 2):(self$tau + 1), drop = FALSE] - natural[, (self$t + 1):self$tau, drop = FALSE]
+
+      rowSums(r * m, na.rm = TRUE) + shifted[, self$t + 1]
+    }
+  )
+)

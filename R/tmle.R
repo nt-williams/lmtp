@@ -30,7 +30,6 @@ crossfit_tmle.LmtpWideTask <- function(task, density_ratios, learners, control, 
 estimate_tmle.LmtpWideTask <- function(train, valid, density_ratios, learners, control, pb) {
   tml <- TmleWide$new(train, valid, density_ratios)
   fits <- vector("list", length = valid$tau)
-
   target <- last(train$col_roles$Y)
 
   for (t in valid$tau:1) {
@@ -39,12 +38,6 @@ estimate_tmle.LmtpWideTask <- function(train, valid, density_ratios, learners, c
 
     features <- train$features("Y", t)
 
-    if (t == valid$tau) {
-      outcome_type <- ifelse(train$outcome_type == "survival", "binomial", train$outcome_type)
-    } else {
-      outcome_type <- "continuous"
-    }
-
     # Subset active rows/cols to observed at t and at risk observations
     train$obs(t)$at_risk(t)$select(c(features, target))
 
@@ -52,18 +45,22 @@ estimate_tmle.LmtpWideTask <- function(train, valid, density_ratios, learners, c
       train$data(),
       target,
       learners,
-      outcome_type,
+      outcome_type(train, t),
       "lmtp_id",
       control$.learners_outcome_folds,
       control$.discrete,
       control$.info
     )
 
+    fits[[t]] <- return_full_fits(fit, t, control)
+
     tml$add_m(fit, train)
     tml$add_m(fit, valid)
     pseudo <- tml$fluctuate(train, valid)
 
     train$modify(target, pseudo[train$active_rows])
+
+    pb()
   }
 
   list(natural = tml$m_valid$natural,
@@ -72,38 +69,10 @@ estimate_tmle.LmtpWideTask <- function(train, valid, density_ratios, learners, c
 }
 
 TmleWide <- R6Class("TmleWide",
+  inherit = EstimatorWide,
   public = list(
-    m_train = NULL,
-    m_valid = NULL,
-    density_ratios = NULL,
-    t = NULL,
     initialize = function(train, valid, density_ratios) {
-      self$t <- train$tau
-
-      self$density_ratios <- density_ratios
-
-      self$m_train <- lapply(1:2, \(x) matrix(0, nrow = train$nrow(), ncol = train$tau))
-      self$m_valid <- lapply(1:2, \(x) matrix(0, nrow = valid$nrow(), ncol = valid$tau))
-
-      names(self$m_train) <- c("natural", "shifted")
-      names(self$m_valid) <- names(self$m_train)
-    },
-    add_m = function(fit, task) {
-      task$obs(self$t - 1)$at_risk(self$t)$select(fit$x)
-
-      predn <- predict(fit, task$data(reset = FALSE), 1e-05)
-      preds <- predict(fit, task$shift(self$t), 1e-05)
-
-      if (task$type == "train") {
-        self$m_train$natural[task$active_rows, self$t] <- predn
-        self$m_train$shifted[task$active_rows, self$t] <- preds
-      } else {
-        self$m_valid$natural[task$active_rows, self$t] <- predn
-        self$m_valid$shifted[task$active_rows, self$t] <- preds
-      }
-
-      task$reset()
-      invisible(self)
+      super$initialize(train, valid, density_ratios)
     },
     fluctuate = function(train, valid) {
       train$reset()

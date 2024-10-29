@@ -1,6 +1,6 @@
-#' LMTP Targeted Maximum Likelihood Estimator
+#' LMTP Sequential Doubly Robust Estimator
 #'
-#' Targeted maximum likelihood estimator for the effects of traditional causal effects and
+#' Sequentially doubly robust estimator for the effects of traditional causal effects and
 #' modified treatment policies for both point treatment and longitudinal data with binary,
 #' continuous, or time-to-event outcomes. Supports binary, categorical, and continuous exposures.
 #'
@@ -41,13 +41,14 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
-#' @param boot \[\code{logical(1)}\]\cr
-#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-#'  errors will be calculated using the empirical variance of the efficient influence function.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
+#' @param bounds \[\code{numeric(2)}\]\cr
+#'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
+#'  the bounds will be taken as the minimum and maximum of the observed data.
+#'  Should be left as \code{NULL} if the outcome type is binary.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{"glm"}.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
@@ -71,13 +72,12 @@
 #'
 #' @return A list of class \code{lmtp} containing the following components:
 #'
-#' \item{estimator}{The estimator used, in this case "TMLE".}
+#' \item{estimator}{The estimator used, in this case "SDR".}
 #' \item{theta}{The estimated population LMTP effect.}
 #' \item{standard_error}{The estimated standard error of the LMTP effect.}
 #' \item{low}{Lower bound of the 95% confidence interval of the LMTP effect.}
 #' \item{high}{Upper bound of the 95% confidence interval of the LMTP effect.}
-#' \item{eif}{The estimated, un-centered, influence function of the estimate,
-#'  \code{NULL} if \code{boot = TRUE}.}
+#' \item{eif}{The estimated, un-centered, influence function of the estimate.}
 #' \item{shift}{The shift function specifying the treatment policy of interest.}
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
@@ -88,9 +88,9 @@
 #' for each fold of density ratio estimation.}
 #' \item{outcome_type}{The outcome variable type.}
 #'
-#' @example inst/examples/tmle-ex.R
+#' @example inst/examples/sdr-ex.R
 #' @export
-lmtp_tmle <- function(data,
+lmtp_sdr <- function(data,
                       trt,
                       outcome,
                       baseline = NULL,
@@ -107,8 +107,6 @@ lmtp_tmle <- function(data,
                       folds = 10,
                       weights = NULL, # NEEDS TO BE CHARACTER NOW
                       control = lmtp_control()) {
-
-  # checkmate::assertLogical(boot, len = 1)
 
   task <- LmtpWideTask$new(
     data = data,
@@ -128,14 +126,14 @@ lmtp_tmle <- function(data,
   pb <- progressr::progressor(task$tau*folds*2)
 
   density_ratios <- crossfit_density_ratio(task, learners_trt, control, pb)
-  outcome_regs <- crossfit_tmle(task, density_ratios$ratios, learners_outcome, control, pb)
+  outcome_regs <- crossfit_sdr(task, density_ratios$ratios, learners_outcome, control, pb)
 
   theta_dr(task = task,
            m = list(natural = outcome_regs$natural,
                     shifted = outcome_regs$shifted),
            r = density_ratios$ratios,
            fits_m = outcome_regs$fits,
-           fits_r = ratios$fits,
+           fits_r = density_ratios$fits,
            shift = deparse(substitute((shift))),
-           augmented = TRUE)
+           augmented = FALSE)
 }
