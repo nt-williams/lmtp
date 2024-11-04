@@ -1,4 +1,8 @@
 cf_tmle2 <- function(task, ratios, m_init, control) {
+  ratios <- matrix(t(apply(ratios, 1, cumprod)),
+                   nrow = nrow(ratios),
+                   ncol = ncol(ratios))
+
   psi <- estimate_tmle2(task$natural,
                         task$cens,
                         task$risk,

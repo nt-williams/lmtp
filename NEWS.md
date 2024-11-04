@@ -8,6 +8,7 @@
 ### Bug Fixes
 
 -   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
+-   Bootstrap TMLE uses cumulative density ratios (see issue \#151). 
 
 ### General
 
