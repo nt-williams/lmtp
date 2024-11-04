@@ -15,7 +15,7 @@ LmtpWideVars <- R6Class("LmtpWideVars",
       assert_list(L, types = c("NULL", "character"), len = tau, null.ok = TRUE)
       assert_character(id, len = 1, null.ok = TRUE)
       assert_character(weights, len = 1, null.ok = TRUE)
-      checkmate::assertNumber(k, lower = 0, upper = Inf)
+      assert_number(k, lower = 0, upper = Inf)
 
       self$W <- W
       self$L <- L
@@ -27,7 +27,6 @@ LmtpWideVars <- R6Class("LmtpWideVars",
 
       private$tau <- tau
       private$k <- k
-      # private$l <- tau - (tau - k - 1)
     },
 
     history = function(var = c("L", "A"), t) {
