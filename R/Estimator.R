@@ -37,6 +37,10 @@ EstimatorWide <- R6Class("EstimatorWide",
 
       task$reset()
       invisible(self)
+    },
+    iterate = function() {
+      self$t <- self$t - 1
+      invisible(self)
     }
   )
 )

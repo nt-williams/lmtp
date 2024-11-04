@@ -88,6 +88,13 @@ LmtpTask <- R6Class("LmtpTask",
 
     rescale = function(x) {
       (x*(private$bounds[2] - private$bounds[1])) + private$bounds[1]
+    },
+
+    weights = function() {
+      if (!is.null(self$col_roles$weights)) {
+        return(self$backend[self$active_rows, self$col_roles$weights])
+      }
+      rep(1, self$nrow())
     }
   ),
   active = list(

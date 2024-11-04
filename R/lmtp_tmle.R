@@ -55,8 +55,8 @@
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
-#' @param weights \[\code{numeric(nrow(data))}\]\cr
-#'  An optional vector containing sampling weights.
+#' @param weights \[\code{character(1)}\]\cr
+#'  An optional column name containing sampling weights.
 #' @param control \[\code{list()}\]\cr
 #'  Output of \code{lmtp_control()}.
 #'
@@ -105,10 +105,8 @@ lmtp_tmle <- function(data,
                       learners_outcome = "glm",
                       learners_trt = "glm",
                       folds = 10,
-                      weights = NULL, # NEEDS TO BE CHARACTER NOW
+                      weights = NULL,
                       control = lmtp_control()) {
-
-  # checkmate::assertLogical(boot, len = 1)
 
   task <- LmtpWideTask$new(
     data = data,
@@ -128,14 +126,15 @@ lmtp_tmle <- function(data,
   pb <- progressr::progressor(task$tau*folds*2)
 
   density_ratios <- crossfit_density_ratio(task, learners_trt, control, pb)
-  outcome_regs <- crossfit_tmle(task, density_ratios$ratios, learners_outcome, control, pb)
+  outcome_regs <- crossfit_gcomp(task, learners_outcome, control, pb)
+  outcome_regs_eps <- tmle(task, outcome_regs$pred, density_ratios$ratios, bootstrap = TRUE, control)
 
   theta_dr(task = task,
-           m = list(natural = outcome_regs$natural,
-                    shifted = outcome_regs$shifted),
+           m = list(natural = outcome_regs_eps$natural,
+                    shifted = outcome_regs_eps$shifted),
            r = density_ratios$ratios,
            fits_m = outcome_regs$fits,
-           fits_r = ratios$fits,
+           fits_r = density_ratios$fits,
            shift = deparse(substitute((shift))),
            augmented = TRUE)
 }

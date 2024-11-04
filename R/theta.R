@@ -70,11 +70,7 @@ theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
 
   ic <- eif(task, r, m$shifted, m$natural)
 
-  if (is.null(task$col_roles$weights)) {
-    weights <- rep(1, task$nrow())
-  } else {
-    weights <- task$select(task$col_roles$weights)
-  }
+  weights <- task$weights()
 
   if (augmented) {
     theta <- weighted.mean(ic, weights)

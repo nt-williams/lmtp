@@ -1,3 +1,78 @@
+tmle <- function(x, ...) {
+  UseMethod("tmle")
+}
+
+tmle.LmtpWideTask <- function(task, outcome_reg, density_ratios, bootstrap, control) {
+  outcome_regs <- estimate_tmle2.LmtpWideTask(task, outcome_reg, density_ratios)
+
+  if (!bootstrap) {
+    return(outcome_regs)
+  }
+}
+
+estimate_tmle2.LmtpWideTask <- function(task, outcome_reg, density_ratios) {
+  tml2 <- Tmle2Wide$new(task, outcome_reg, density_ratios)
+  while (tml2$t > 0) {
+    tml2$fluctuate(task)
+  }
+  list(natural = tml2$m_eps$natural,
+       shifted = tml2$m_eps$shifted)
+}
+
+Tmle2Wide <- R6Class("Tmle2Wide",
+  public = list(
+    outcome_reg = NULL,
+    density_ratios = NULL,
+    m_eps = NULL,
+    t = NULL,
+    initialize = function(task, outcome_reg, density_ratios) {
+      self$t <- task$tau
+
+      self$outcome_reg <- outcome_reg
+      self$density_ratios <- accumulate(density_ratios)
+
+      self$m_eps <- lapply(1:2, \(x) matrix(0, nrow = task$nrow(), ncol = task$tau + 1))
+      names(self$m_eps) <- c("natural", "shifted")
+      self$m_eps$shifted[, self$t + 1] <- task$data()[[last(task$col_roles$Y)]]
+    },
+    fluctuate = function(task) {
+      on.exit(task$reset())
+
+      target <- self$m_eps$shifted[, self$t + 1]
+
+      # Subset active rows/cols to observed at t and at risk observations
+      task$obs(self$t)$at_risk(task$t)
+
+      # Make weights
+      case_weights <- task$weights()
+      weights <- self$density_ratios[task$active_rows, self$t] * case_weights
+
+      intercept <- self$outcome_reg$natural[task$active_rows, self$t]
+
+      fit <- sw(glm(target ~ offset(qlogis(intercept)), weights = weights, family = "binomial"))
+
+      # Subset active rows/cols to observed at t-1 and at risk observations
+      task$reset()
+      task$obs(self$t - 1)$at_risk(self$t)
+
+      # Update natural
+      self$m_eps$natural[task$active_rows, self$t] <-
+        bound(plogis(qlogis(self$outcome_reg$natural[task$active_rows, self$t]) + coef(fit)))
+
+      # Update shifted
+      self$m_eps$shifted[task$active_rows, self$t] <-
+        bound(plogis(qlogis(self$outcome_reg$shifted[task$active_rows, self$t]) + coef(fit)))
+
+      # iterate back through time
+      self$iterate()
+    },
+    iterate = function() {
+      self$t <- self$t - 1
+      invisible(self)
+    }
+  )
+)
+
 crossfit_tmle <- function(x, ...) {
   UseMethod("crossfit_tmle")
 }
@@ -112,7 +187,7 @@ TmleWide <- R6Class("TmleWide",
       pseudo[train$active_rows] <- bound(plogis(qlogis(self$m_train$shifted[train$active_rows, self$t]) + coef(fit)))
 
       # iterate back through time
-      self$t <- self$t - 1
+      self$iterate()
 
       pseudo
     }

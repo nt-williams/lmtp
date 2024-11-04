@@ -77,7 +77,7 @@ SdrWide <- R6Class("SdrWide",
     },
     transform = function() {
       # iterate back through time
-      self$t <- self$t - 1
+      self$iterate()
 
       natural <- self$m_train$natural
       shifted <- self$m_train$shifted
