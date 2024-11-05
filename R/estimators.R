@@ -461,7 +461,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens = NULL,
                      shift = NULL, shifted = NULL, k = Inf,
                      outcome_type = c("binomial", "continuous", "survival"),
-                     id = NULL, bounds = NULL, learners = "glm",
+                     id = NULL, bounds = NULL, curve = TRUE, learners = "glm",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 
@@ -489,6 +489,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
   checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
   checkmate::assertNumber(control$.bound)
   checkmate::assertLogical(control$.return_full_fits, len = 1)
+  checkmate::assert_logical(curve, len = 1)
 
   task <- lmtp_task$new(
     data = data,
