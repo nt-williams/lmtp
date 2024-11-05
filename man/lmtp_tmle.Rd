@@ -88,8 +88,8 @@ of the outcome regression. Default is \code{"glm"}.
 \item{folds}{[\code{integer(1)}]\cr
 The number of folds to be used for cross-fitting.}
 
-\item{weights}{[\code{numeric(nrow(data))}]\cr
-An optional vector containing sampling weights.}
+\item{weights}{[\code{character(1)}]\cr
+An optional column name containing sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}

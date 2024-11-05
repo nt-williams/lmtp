@@ -30,20 +30,6 @@ LmtpTask <- R6Class("LmtpTask",
       c(self$col_roles$id, Ht, unlist(self$col_roles$A[t]), self$col_roles$C[t])
     },
 
-    training = function(fold) {
-      if (self$task_type == "wide") {
-        self$active_rows <- self$folds[[fold]]$training_set
-        LmtpWideTaskSplit$new(self, "train")
-      }
-    },
-
-    validation = function(fold) {
-      if (self$task_type == "wide") {
-        self$active_rows <- self$folds[[fold]]$validation_set
-        LmtpWideTaskSplit$new(self, "valid")
-      }
-    },
-
     data = function(x = c("natural", "shifted"), reset = TRUE) {
       i <- private$.active_rows
       j <- private$.active_cols

@@ -33,6 +33,16 @@ LmtpWideTask <- R6Class("LmtpWideTask",
       self$folds <- private$make_folds(folds)
     },
 
+    training = function(fold) {
+      self$active_rows <- self$folds[[fold]]$training_set
+      LmtpWideTaskSplit$new(self, "train")
+    },
+
+    validation = function(fold) {
+      self$active_rows <- self$folds[[fold]]$validation_set
+      LmtpWideTaskSplit$new(self, "valid")
+    },
+
     obs = function(t) {
       if (is.null(self$col_roles$C) | t == 0) {
         return(invisible(self))
@@ -52,9 +62,7 @@ LmtpWideTask <- R6Class("LmtpWideTask",
 
       risk <- self$col_roles$Y[1:(length(self$col_roles$Y) - 1)]
       risk <- self$backend[[risk[t - 1]]]
-
       self$active_rows <- intersect(self$active_rows, which(risk == 1 & !is.na(risk)))
-
       invisible(self)
     },
 

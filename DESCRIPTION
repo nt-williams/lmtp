@@ -37,7 +37,8 @@ Imports:
     checkmate (>= 2.1.0),
     isotone,
     mlr3superlearner,
-    ife (>= 0.1.0)
+    ife (>= 0.1.0),
+    glue
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
@@ -47,5 +48,5 @@ Suggests:
     knitr, 
     ranger, 
     twang
-Remotes:  
+Remotes: 
     nt-williams

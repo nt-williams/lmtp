@@ -43,6 +43,32 @@ LmtpWideVars <- R6Class("LmtpWideVars",
 
     all = function() {
       c(self$W, unlist(self$L), unlist(self$A), self$C, self$Y, self$id, self$weights)
+    },
+
+    rename = function(x) {
+      sapply(x, function(x) {
+        if (x %in% unlist(self$A)) prefix <- "A"
+        else if (x %in% unlist(self$L)) prefix <- "L"
+        else if (x %in% self$C) prefix <- "C"
+        else if (x %in% self$Y) prefix <- "Y"
+        else if (x %in% self$W) return(self$W[which(self$W == x)])
+        else if (x %in% self$id) return(self$id)
+        else if (x %in% self$weights) return(self$weights)
+
+        if (prefix == "L" | (prefix == "A" && is.list(self$A))) {
+          suffix <- which(x == self[[prefix]][[which(sapply(self[[prefix]], \(vars) x %in% vars))]])
+        } else {
+          suffix <- 1
+        }
+
+        paste0(prefix, "_", suffix)
+      })
+    },
+
+    time = function(t) {
+      A <- unlist(self$A[t])
+      if (is.na(A)) A <- self$A[1]
+      c(self$id, self$weights, self$W, unlist(self$L[t]), A, self$C[t], self$Y[t])
     }
   ),
   private = list(

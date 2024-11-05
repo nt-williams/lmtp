@@ -1,6 +1,12 @@
 check_no_missing <- function(task) {
   for (t in 1:task$tau) {
-    data_t <- task$obs(t)$at_risk(t)$select(task$history("L", t + 1))$data()
+    if (class(task)[1] == "LmtpLongTask") {
+      data_t <- task$.__enclos_env__$super$
+        obs(t)$.__enclos_env__$super$at_risk(t)$
+        select(task$history("L", t + 1))$data()
+    } else {
+      data_t <- task$obs(t)$at_risk(t)$select(task$history("L", t + 1))$data()
+    }
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
     }
