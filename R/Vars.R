@@ -5,6 +5,7 @@ LmtpVars <- R6Class("LmtpVars",
     A = NULL,
     C = NULL,
     Y = NULL,
+    N = NULL,
     initialize = function(W, L, A, C, Y, tau, k = Inf) {
       assert_trt(A, tau)
       assert_character(W, null.ok = TRUE)

@@ -511,11 +511,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
 
   pb <- progressr::progressor(task$tau*folds)
 
-  estims <- cf_sub(task,
-                   "tmp_lmtp_scaled_outcome",
-                   learners,
-                   control,
-                   pb)
+  estims <- cf_sub(task, "tmp_lmtp_scaled_outcome", learners, control, pb)
 
   theta_sub(
     eta = list(
