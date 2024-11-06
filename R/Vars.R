@@ -49,6 +49,7 @@ LmtpVars <- R6Class("LmtpVars",
         else if (x %in% self$C) prefix <- "._C"
         else if (x %in% self$Y) prefix <- "._Y"
         else if (x %in% self$W) return(self$W[which(self$W == x)])
+        else return(x)
 
         if (prefix == "._L" | (prefix == "._A" && is.list(self$A))) {
           vars <- self[[gsub("\\._", "", prefix)]]
