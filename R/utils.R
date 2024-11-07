@@ -194,13 +194,6 @@ event_locf <- function(data, outcomes) {
   DT
 }
 
-create_ids <- function(data, id) {
-  if (is.null(id)) {
-    return(1:nrow(data))
-  }
-  data[[id]]
-}
-
 convert_to_surv <- function(x) {
   data.table::fcase(
     x == 0, 1,

@@ -20,6 +20,10 @@ LmtpVars <- R6Class("LmtpVars",
       self$C <- C
       self$Y <- Y
 
+      if (length(self$Y) > 1) {
+        self$N <- self$Y[1:length(self$Y) - 1]
+      }
+
       private$tau <- tau
       private$k <- k
     },

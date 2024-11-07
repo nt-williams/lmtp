@@ -67,14 +67,10 @@ check_reserved_names <- function(x) {
 
 assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
 
-check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) {
-  if (is.null(x)) {
-    if (null.ok)
-      return(TRUE)
-    return("Can't be 'NULL'")
-  }
+check_shifted_data <- function(natural, shifted, trt, cens) {
+  is_same <- setdiff(names(natural), c(trt, cens))
 
-  if (!(identical(natural[doesnt_change], x[doesnt_change]))) {
+  if (!(identical(natural[is_same], shifted[is_same]))) {
     return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
   }
 
@@ -82,14 +78,14 @@ check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) 
     return(TRUE)
   }
 
-  if (!all(x[cens] == 1)) {
+  if (!all(shifted[cens] == 1)) {
     return("Censoring variables should be 1 in 'shifted'")
   }
 
   TRUE
 }
 
-assertShiftedData <- checkmate::makeAssertionFunction(check_shifted_data)
+assert_correctly_shifted <- checkmate::makeAssertionFunction(check_shifted_data)
 
 check_not_data_table <- function(x) {
   is_data_frame <- checkmate::checkDataFrame(x)

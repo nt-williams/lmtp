@@ -1,3 +1,20 @@
+make_shifted <- function(data, trt, cens, shift, shifted) {
+  assert_function(shift, nargs = 2, null.ok = TRUE)
+
+  if (!is.null(shifted)) {
+    assert_correctly_shifted(data, shifted, trt, cens)
+    return(shifted)
+  }
+
+  if (is.null(shifted) && !is.null(shift)) {
+    return(shift_data(data, trt, cens, shift))
+  }
+
+  if (is.null(shifted) && is.null(shift)) {
+    return(shift_data(data, trt, cens, shift))
+  }
+}
+
 shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
     return(shift_cens(data, cens))

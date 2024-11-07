@@ -1,80 +1,124 @@
 #' @importFrom R6 R6Class
-lmtp_task <- R6::R6Class(
-  "lmtp_task",
+LmtpTask <- R6::R6Class(
+  "LmtpTask",
   public = list(
     natural = NULL,
     shifted = NULL,
-    trt = NULL,
-    cens = NULL,
-    risk = NULL,
-    node_list = NULL,
+    vars = NULL,
+    id = NULL,
     n = NULL,
     tau = NULL,
-    id = NULL,
     outcome_type = NULL,
     survival = NULL,
-    bounds = NULL,
     folds = NULL,
     weights = NULL,
-    multivariate = NULL,
-    initialize = function(data, trt, outcome, time_vary, baseline, cens, k,
-                          shift, shifted, id, outcome_type = NULL, V = 10,
-                          weights = NULL, bounds = NULL, bound = NULL) {
-      self$tau <- determine_tau(outcome, trt)
+    initialize = function(data, shifted, A, Y, L, W, C, k,
+                          id, outcome_type, V, weights) {
+      # Identify tau
+      self$tau <- private$tau_is(Y, A)
       self$n <- nrow(data)
-      self$trt <- trt
-      self$risk <- risk_indicators(outcome)
-      self$cens <- cens
-      self$node_list <- create_node_list(trt, self$tau, time_vary, baseline, k)
+
+      # Create Vars object
+      self$vars <- LmtpVars$new(W, L, A, C, Y, self$tau, k)
+
+      # Set outcome types
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
       self$survival <- outcome_type == "survival"
-      self$bounds <- y_bounds(data[[final_outcome(outcome)]], self$outcome_type, bounds)
-      data$lmtp_id <- create_ids(data, id)
-      self$id <- data$lmtp_id
-      self$folds <- setup_cv(data, V, data$lmtp_id, final_outcome(outcome), self$outcome_type)
-      self$multivariate <- is.list(trt)
 
-      shifted <- {
-        if (is.null(shifted) && !is.null(shift))
-          shift_data(data, trt, cens, shift)
-        else if (is.null(shifted) && is.null(shift))
-          shift_data(data, trt, cens, shift)
-        else {
-          tmp <- shifted
-          tmp$lmtp_id <- data$lmtp_id
-          tmp
-        }
+      # Set outcome bounds
+      private$bounds <- private$y_bounds(data[[final_outcome(Y)]])
+
+      # Add cluster IDs
+      self$id <- private$add_ids(data, id)
+
+      # Modify data.frames to work with estimators
+      self$natural <- private$as_lmtp_data(data)
+      self$shifted <- private$as_lmtp_data(shifted)
+
+      # Make folds for cross-fitting
+      self$folds <- private$make_folds(V)
+
+      # Add or normalize weights
+      self$weights <- private$make_weights(weights)
+    },
+
+    scale = function(x) {
+      (x - private$bounds[1]) / (private$bounds[2] - private$bounds[1])
+    },
+
+    rescale = function(x) {
+      (x*(private$bounds[2] - private$bounds[1])) + private$bounds[1]
+    }
+  ),
+  private = list(
+    bounds = NULL,
+    tau_is = function(Y, A) {
+      if (!(length(Y) > 1)) {
+        return(length(A))
+      }
+      length(Y)
+    },
+
+    add_ids = function(data, id) {
+      if (is.null(id)) {
+        return(1:nrow(data))
+      }
+      data[[id]]
+    },
+
+    make_folds = function(V) {
+      id <- self$natural$._lmtp_id
+
+      if (length(unique(id)) == self$n & self$outcome_type == "binomial") {
+        strata <- self$natural[[final_outcome(self$vars$Y)]]
+        strata[is.na(strata)] <- 2
+        folds <- origami::make_folds(self$natural, V = V, strata_ids = strata)
+      } else {
+        folds <- origami::make_folds(self$natural, cluster_ids = id, V = V)
       }
 
-      data <- data.table::copy(as.data.frame(data))
-      shifted <- data.table::copy(as.data.frame(shifted))
+      if (V > 1) {
+        return(folds)
+      }
 
-      data <- fix_censoring_ind(data, cens)
-      shifted <- fix_censoring_ind(shifted, cens)
+      folds[[1]]$training_set <- folds[[1]]$validation_set
+      folds
+    },
+
+    y_bounds = function(x) {
+      if (self$outcome_type == "binomial") {
+        return(c(0, 1))
+      }
+      c(min(x, na.rm = T), max(x, na.rm = T))
+    },
+
+    as_lmtp_data = function(x) {
+      data <- data.table::copy(as.data.frame(x))
+      data$._lmtp_id <- self$id
+      data <- fix_censoring_ind(data, self$vars$C)
 
       if (self$survival) {
-        for (outcomes in outcome) {
-          data.table::set(data, j = outcomes, value = convert_to_surv(data[[outcomes]]))
-          data.table::set(shifted, j = outcomes, value = convert_to_surv(shifted[[outcomes]]))
+        for (y in self$vars$Y) {
+          data.table::set(data, j = y, value = convert_to_surv(data[[y]]))
         }
       }
 
-      data$tmp_lmtp_scaled_outcome <- scale_y(data[[final_outcome(outcome)]], self$bounds)
-      shifted$tmp_lmtp_scaled_outcome <- data$tmp_lmtp_scaled_outcome
+      Y_tau <- final_outcome(self$vars$Y)
+      data[[Y_tau]] <- self$scale(data[[Y_tau]])
+      data
+    },
 
-      self$natural <- data
-      self$shifted <- shifted
-
+    make_weights = function(weights) {
       if (!is.null(weights)) {
         if (is_normalized(weights)) {
-          self$weights <- weights
+          return(weights)
         } else {
           # Normalize weights
-          self$weights <- weights / mean(weights)
+          return(weights / mean(weights))
         }
-      } else {
-        self$weights <- rep(1, self$n)
       }
+
+      rep(1, self$n)
     }
   )
 )
