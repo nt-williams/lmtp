@@ -58,14 +58,14 @@ check_trt_list <- function(trt, tau) {
 assertTrtList <- checkmate::makeAssertionFunction(check_trt_list)
 
 check_reserved_names <- function(x) {
-  bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)
+  bad_names <- c("._lmtp_id", "._lmtp_stack_indicator", "._lmtp_scaled_outcome") %in% x
   if (!any(bad_names)) {
     return(TRUE)
   }
-  "'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names"
+  "'._lmtp_id', '._lmtp_stack_indicator', and '._lmtp_scaled_outcome' are reserved variable names"
 }
 
-assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
+assert_reserved_names <- checkmate::makeAssertionFunction(check_reserved_names)
 
 check_shifted_data <- function(natural, shifted, trt, cens) {
   is_same <- setdiff(names(natural), c(trt, cens))
@@ -100,7 +100,7 @@ check_not_data_table <- function(x) {
   TRUE
 }
 
-assert_not_data_table <- assertNotDataTable <- checkmate::makeAssertionFunction(check_not_data_table)
+assert_not_data_table <- checkmate::makeAssertionFunction(check_not_data_table)
 
 check_outcome_types <- function(x, outcomes, outcome_type) {
   x <- x[, outcomes, drop = FALSE]
@@ -119,7 +119,7 @@ check_outcome_types <- function(x, outcomes, outcome_type) {
   TRUE
 }
 
-assertOutcomeTypes <- checkmate::makeAssertionFunction(check_outcome_types)
+assert_outcome_types <- checkmate::makeAssertionFunction(check_outcome_types)
 
 check_contrast_type <- function(x, fits) {
   if (x == "additive") {

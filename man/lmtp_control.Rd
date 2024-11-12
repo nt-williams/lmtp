@@ -11,9 +11,7 @@ lmtp_control(
   .learners_trt_folds = 10,
   .return_full_fits = FALSE,
   .discrete = TRUE,
-  .info = FALSE,
-  .B = 1000,
-  .boot_seed = NULL
+  .info = FALSE
 )
 }
 \arguments{
@@ -40,10 +38,6 @@ Use discrete or ensemble super learner?}
 
 \item{.info}{[\code{logical(1)}]\cr
 Print super learner fitting info to the console?}
-
-\item{.B}{description}
-
-\item{.boot_seed}{description}
 }
 \value{
 A list of parameters controlling the estimation procedure.

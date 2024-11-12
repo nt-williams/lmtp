@@ -17,8 +17,6 @@
 #'  Use discrete or ensemble super learner?
 #' @param .info \[\code{logical(1)}\]\cr
 #'  Print super learner fitting info to the console?
-#' @param .B description
-#' @param .boot_seed description
 #'
 #' @return A list of parameters controlling the estimation procedure.
 #' @export
@@ -31,16 +29,21 @@ lmtp_control <- function(.bound = 1e5,
                          .learners_trt_folds = 10,
                          .return_full_fits = FALSE,
                          .discrete = TRUE,
-                         .info = FALSE,
-                         .B = 1000,
-                         .boot_seed = NULL) {
+                         .info = FALSE) {
+
+  assert_number(.learners_outcome_folds, null.ok = TRUE)
+  assert_number(.learners_trt_folds, null.ok = TRUE)
+  assert_number(.bound)
+  assert_number(.trim, upper = 1)
+  assert_logical(.return_full_fits, len = 1)
+  assert_logical(.discrete, len = 1)
+  assert_logical(.info, len = 1)
+
   list(.bound = .bound,
        .trim = .trim,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
        .return_full_fits = .return_full_fits,
        .discrete = .discrete,
-       .info = .info,
-       .B = .B,
-       .boot_seed = .boot_seed)
+       .info = .info)
 }

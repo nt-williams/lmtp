@@ -44,7 +44,7 @@ LmtpVars <- R6Class("LmtpVars",
     },
 
     all = function() {
-      c(self$W, unlist(self$L), unlist(self$A), self$C, self$Y, self$id, self$weights)
+      c(self$W, unlist(self$L), unlist(self$A), self$C, self$Y, self$N)
     },
 
     rename = function(x) {

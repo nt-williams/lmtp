@@ -21,6 +21,12 @@ LmtpTask <- R6::R6Class(
       # Create Vars object
       self$vars <- LmtpVars$new(W, L, A, C, Y, self$tau, k)
 
+      # Additional checks
+      assert_subset(c(self$vars$all(), id), names(data))
+      assert_reserved_names(self$vars$all())
+      assert_numeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
+      assert_number(V, lower = 1, upper = nrow(data) - 1)
+
       # Set outcome types
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
       self$survival <- outcome_type == "survival"

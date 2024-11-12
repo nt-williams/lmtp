@@ -41,9 +41,6 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
-#' @param boot \[\code{logical(1)}\]\cr
-#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-#'  errors will be calculated using the empirical variance of the efficient influence function.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -98,88 +95,38 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, shift = NULL, shifted = NULL, k = Inf,
                       mtp = FALSE, boot = FALSE,
                       outcome_type = c("binomial", "continuous", "survival"),
-                      id = NULL, bounds = NULL,
+                      id = NULL,
                       learners_outcome = "glm",
                       learners_trt = "glm",
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
-  assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
-                             min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
+browser()
+  assert_not_data_table(data)
+  assert_outcome_types(data, outcome, match.arg(outcome_type))
 
-  tau <- determine_tau(outcome, trt)
-
-  assert_trt(trt, tau)
-  checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
-  checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
-  checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
-  checkmate::assertSubset(c(unlist(trt), outcome, baseline, unlist(time_vary), cens, id), names(data))
-  assertLmtpData(data, trt, outcome, baseline, time_vary, cens, id)
-  assertOutcomeTypes(data, outcome, match.arg(outcome_type))
-  assertReservedNames(data)
-  checkmate::assertFunction(shift, nargs = 2, null.ok = TRUE)
-  assertShiftedData(shifted, data, c(outcome, baseline, unlist(time_vary), id), cens)
-  checkmate::assertNumeric(bounds, len = 2, finite = TRUE, any.missing = FALSE, sorted = TRUE, null.ok = TRUE)
-  checkmate::assertNumeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
-  checkmate::assertNumber(k, lower = 0, upper = Inf)
-  checkmate::assertNumber(folds, lower = 1, upper = nrow(data) - 1)
-  checkmate::assertNumber(control$.learners_outcome_folds, null.ok = TRUE)
-  checkmate::assertNumber(control$.learners_trt_folds, null.ok = TRUE)
-  checkmate::assertNumber(control$.bound)
-  checkmate::assertNumber(control$.trim, upper = 1)
-  checkmate::assertLogical(control$.return_full_fits, len = 1)
-  checkmate::assertLogical(boot, len = 1)
+  # Check if the treatment is continuous and warn if MTP is false
   check_trt_type(data, unlist(trt), mtp)
 
-  task <- lmtp_task$new(
+  task <- LmtpTask$new(
     data = data,
-    trt = trt,
-    outcome = outcome,
-    time_vary = time_vary,
-    baseline = baseline,
-    cens = cens,
-    k = k,
-    shift = shift,
-    shifted = shifted,
-    id = id,
-    outcome_type = match.arg(outcome_type),
-    V = folds,
-    weights = weights,
-    bounds = bounds,
-    bound = control$.bound
+    shifted = make_shifted(data, trt, cens, shift, shifted),
+    A = trt,
+    Y = outcome,
+    L = time_vary,
+    W = baseline,
+    C = cens,
+    k = k, id = id,
+    outcome_type = outcome_type,
+    V = folds, weights = weights
   )
 
+  # Create progress bar object
   pb <- progressr::progressor(task$tau*folds*2)
 
-  if (isTRUE(boot)) {
-    ratios <- cf_r(task, learners_trt, mtp, control, pb)
-    Qn <- cf_sub(task, "tmp_lmtp_scaled_outcome", learners_outcome, control, pb)
-    Qnb_eps <- cf_tmle2(task, ratios$ratios, Qn, control)
-
-    ans <- theta_boot(
-      list(
-        estimator = "TMLE",
-        m = Qnb_eps$psi,
-        r = ratios$ratios,
-        boots = Qnb_eps$booted,
-        tau = task$tau,
-        folds = task$folds,
-        id = task$id,
-        outcome_type = task$outcome_type,
-        bounds = task$bounds,
-        weights = task$weights,
-        shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-        fits_m = Qn$fits,
-        fits_r = ratios$fits,
-        outcome_type = task$outcome_type,
-        seed = Qnb_eps$seed
-      )
-    )
-    return(ans)
-  }
-
+  # Estimate density ratios
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
+
+  # Estimate TMLE
   estims <- cf_tmle(task,
                     "tmp_lmtp_scaled_outcome",
                     ratios$ratios,

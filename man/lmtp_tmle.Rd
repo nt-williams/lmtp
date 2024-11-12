@@ -18,7 +18,6 @@ lmtp_tmle(
   boot = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
-  bounds = NULL,
   learners_outcome = "glm",
   learners_trt = "glm",
   folds = 10,
@@ -74,20 +73,11 @@ all time points.}
 Is the intervention of interest a modified treatment policy?
 Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
-\item{boot}{[\code{logical(1)}]\cr
-Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-errors will be calculated using the empirical variance of the efficient influence function.}
-
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
 
 \item{id}{[\code{character(1)}]\cr
 An optional column name containing cluster level identifiers.}
-
-\item{bounds}{[\code{numeric(2)}]\cr
-An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
-the bounds will be taken as the minimum and maximum of the observed data.
-Should be left as \code{NULL} if the outcome type is binary.}
 
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 of the outcome regression. Default is \code{"glm"}.}
@@ -104,6 +94,11 @@ An optional vector containing sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}
+
+\item{bounds}{[\code{numeric(2)}]\cr
+An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
+the bounds will be taken as the minimum and maximum of the observed data.
+Should be left as \code{NULL} if the outcome type is binary.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:
