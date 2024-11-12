@@ -54,6 +54,30 @@ LmtpTask <- R6::R6Class(
 
     rescale = function(x) {
       (x*(private$bounds[2] - private$bounds[1])) + private$bounds[1]
+    },
+
+    observed = function(data, t) {
+      if (is.null(self$vars$C)) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      if (t == 0) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      data[[self$vars$C[t]]] == 1
+    },
+
+    at_risk = function(data, t) {
+      if (is.null(self$vars$N)) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      if (t == 1) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]])
     }
   ),
   private = list(
@@ -100,7 +124,7 @@ LmtpTask <- R6::R6Class(
 
     as_lmtp_data = function(x) {
       data <- data.table::copy(as.data.frame(x))
-      data$._lmtp_id <- self$id
+      data$..i..lmtp_id <- self$id
       data <- fix_censoring_ind(data, self$vars$C)
 
       if (self$survival) {

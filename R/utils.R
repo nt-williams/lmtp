@@ -66,47 +66,12 @@ rescale_y_continuous <- function(scaled, bounds) {
   (scaled*(bounds[2] - bounds[1])) + bounds[1]
 }
 
-censored <- function(data, cens, tau) {
-  # when no censoring return TRUE for all obs
-  if (is.null(cens)) {
-    return(list(i = rep(TRUE, nrow(data)), j = rep(TRUE, nrow(data))))
-  }
-
-  # other wise find censored observations
-  i <- data[[cens[tau]]] == 1
-
-  if (tau > 1) {
-    return(list(i = i, j = data[[cens[tau - 1]]] == 1))
-  }
-
-  list(i = i, j = rep(TRUE, nrow(data)))
-}
-
-at_risk <- function(data, risk, tau, check = FALSE) {
-  if (is.null(risk)) {
-    return(rep(TRUE, nrow(data)))
-  }
-
-  if (tau == 1) {
-    return(rep(TRUE, nrow(data)))
-  }
-
-  if (check) {
-    return(data[[risk[tau - 1]]] == 0 & !is.na(data[[risk[tau - 1]]]))
-  }
-
-  data[[risk[tau - 1]]] == 1 & !is.na(data[[risk[tau - 1]]])
-}
-
-followed_rule <- function(obs_trt, shifted_trt, mtp) {
+followed_rule <- function(natural, shifted, A, mtp) {
   if (mtp) {
-    if (inherits(obs_trt, "data.frame")) {
-      return(rep(TRUE, nrow(obs_trt)))
-    }
-    return(rep(TRUE, length(obs_trt)))
+    return(rep(TRUE, nrow(natural)))
   }
 
-  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(obs_trt), as.list(shifted_trt))
+  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(natural[, A]), as.list(shifted[, A]))
 }
 
 transform_sdr <- function(r, tau, max, shifted, natural) {
@@ -138,9 +103,8 @@ recombine_ratios <- function(x, folds) {
   returns
 }
 
-trim_ratios <- function(x, trim) {
-  x[["ratios"]] <- pmin(x[["ratios"]], quantile(x[["ratios"]], trim))
-  x
+trim <- function(x, trim) {
+  pmin(x, quantile(x, trim))
 }
 
 recombine_outcome <- function(x, part, folds) {

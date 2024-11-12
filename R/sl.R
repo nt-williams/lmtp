@@ -1,5 +1,5 @@
 run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, info) {
-  mlr3superlearner::mlr3superlearner(
+  fit <- mlr3superlearner::mlr3superlearner(
     data = data,
     target = y,
     library = learners,
@@ -9,4 +9,12 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, i
     discrete = discrete,
     info = info
   )
+  class(fit) <- append("lmtp_ensemble", class(fit))
+  fit
+}
+
+#' @export
+predict.lmtp_ensemble <- function(object, newdata, tol = .Machine$double.eps) {
+  pred <- NextMethod("predict", newdata = newdata)
+  bound(pred, tol)
 }
