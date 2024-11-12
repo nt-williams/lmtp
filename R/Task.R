@@ -32,7 +32,7 @@ LmtpTask <- R6::R6Class(
       self$survival <- outcome_type == "survival"
 
       # Set outcome bounds
-      private$bounds <- private$y_bounds(data[[final_outcome(Y)]])
+      private$bounds <- private$y_bounds(data[[last(Y)]])
 
       # Add cluster IDs
       self$id <- private$add_ids(data, id)
@@ -133,8 +133,7 @@ LmtpTask <- R6::R6Class(
         }
       }
 
-      Y_tau <- final_outcome(self$vars$Y)
-      data[[Y_tau]] <- self$scale(data[[Y_tau]])
+      data[[self$vars$Y]] <- self$scale(data[[self$vars$Y]])
       data
     },
 

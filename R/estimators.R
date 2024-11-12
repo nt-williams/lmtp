@@ -100,7 +100,6 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       learners_trt = "glm",
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
-browser()
   assert_not_data_table(data)
   assert_outcome_types(data, outcome, match.arg(outcome_type))
 
@@ -127,12 +126,7 @@ browser()
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
 
   # Estimate TMLE
-  estims <- cf_tmle(task,
-                    "tmp_lmtp_scaled_outcome",
-                    ratios$ratios,
-                    learners_outcome,
-                    control,
-                    pb)
+  estims <- cf_tmle(task, ratios$ratios, learners_outcome, control, pb)
 
   theta_dr(
     list(

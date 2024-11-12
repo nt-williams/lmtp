@@ -120,8 +120,8 @@ sw <- function(x) {
   suppressWarnings(x)
 }
 
-final_outcome <- function(outcomes) {
-  outcomes[length(outcomes)]
+last <- function(x) {
+  x[length(x)]
 }
 
 extract_sl_weights <- function(fit) {
