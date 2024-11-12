@@ -466,13 +466,7 @@ lmtp_sub <- function(data, trt, outcome, baseline = NULL, time_vary = NULL, cens
                      control = lmtp_control()) {
 
   assertNotDataTable(data)
-  checkmate::assertCharacter(outcome, len = if (match.arg(outcome_type) != "survival") 1,
-                             min.len = if (match.arg(outcome_type) == "survival") 2)
-  checkmate::assertCharacter(baseline, null.ok = TRUE)
 
-  tau <- determine_tau(outcome, trt)
-
-  assert_trt(trt, tau)
   checkmate::assertCharacter(cens, len = tau, null.ok = !checkmate::anyMissing(data[, outcome, drop = FALSE]))
   checkmate::assertList(time_vary, types = c("NULL", "character"), len = tau, null.ok = TRUE)
   checkmate::assertCharacter(id, len = 1, null.ok = TRUE)
