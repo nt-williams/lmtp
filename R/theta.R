@@ -58,55 +58,34 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(r, tau, shifted, natural) {
+eif <- function(task, r, shifted, natural) {
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
-  m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  m <- shifted[, 2:(task$tau + 1), drop = FALSE] - natural[, 1:task$tau, drop = FALSE]
+  rowSums(compute_weights(r, 1, task$tau) * m, na.rm = TRUE) + shifted[, 1]
 }
 
-theta_dr <- function(eta, augmented = FALSE) {
-  inflnce <- eif(r = eta$r,
-                 tau = eta$tau,
-                 shifted = eta$m$shifted,
-                 natural = eta$m$natural)
-  theta <- {
-    if (augmented)
-      weighted.mean(inflnce, eta$weights)
-    else
-      weighted.mean(eta$m$shifted[, 1], eta$weights)
+theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
+  ic <- eif(task, r, m$shifted, m$natural)
+
+  if (augmented) {
+    theta <- weighted.mean(ic, task$weights)
+  } else {
+    theta <- weighted.mean(m$shifted[, 1], task$weights)
   }
 
-  if (eta$outcome_type == "continuous") {
-    inflnce <- rescale_y_continuous(inflnce, eta$bounds)
-    theta <- rescale_y_continuous(theta, eta$bounds)
-  }
-
-  clusters <- split(inflnce*eta$weights, eta$id)
-  j <- length(clusters)
-  se <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
-  ci_low  <- theta - (qnorm(0.975) * se)
-  ci_high <- theta + (qnorm(0.975) * se)
+  ic <- task$rescale(ic)
+  theta <- task$rescale(theta)
 
   out <- list(
-    estimator = eta$estimator,
-    theta = theta,
-    standard_error = se,
-    low = ci_low,
-    high = ci_high,
-    eif = inflnce,
-    id = eta$id,
-    shift = eta$shift,
-    outcome_reg = switch(
-      eta$outcome_type,
-      continuous = rescale_y_continuous(eta$m$shifted, eta$bounds),
-      binomial = eta$m$shifted
-    ),
-    density_ratios = eta$r,
-    weights = eta$weights,
-    fits_m = eta$fits_m,
-    fits_r = eta$fits_r,
-    outcome_type = eta$outcome_type
+    estimator = ifelse(augmented, "SDR", "TMLE"),
+    estimate = ife::ife(theta, ic, task$weights, as.character(task$id)),
+    shift = shift,
+    outcome_reg = task$rescale(m$shifted),
+    density_ratios = r,
+    fits_m = fits_m,
+    fits_r = fits_r,
+    outcome_type = task$outcome_type
   )
 
   class(out) <- "lmtp"

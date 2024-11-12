@@ -128,24 +128,14 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   # Estimate TMLE
   estims <- cf_tmle(task, ratios$ratios, learners_outcome, control, pb)
 
-  theta_dr(
-    list(
-      estimator = "TMLE",
-      m = list(natural = estims$natural, shifted = estims$shifted),
-      r = ratios$ratios,
-      tau = task$tau,
-      folds = task$folds,
-      id = task$id,
-      outcome_type = task$outcome_type,
-      bounds = task$bounds,
-      weights = task$weights,
-      shift = if (is.null(shifted)) deparse(substitute((shift))) else NULL,
-      fits_m = estims$fits,
-      fits_r = ratios$fits,
-      outcome_type = task$outcome_type
-    ),
-    FALSE
-  )
+  theta_dr(task = task,
+           m = list(natural = estims$natural,
+                    shifted = estims$shifted),
+           r = ratios$ratios,
+           fits_m = estims$fits,
+           fits_r = ratios$fits,
+           shift = deparse(substitute((shift))),
+           augmented = FALSE)
 }
 
 #' LMTP Sequential Doubly Robust Estimator

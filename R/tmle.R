@@ -25,11 +25,13 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
   ratios <- get_folded_data(ratios, task$folds, fold)$train
   weights <- task$weights[task$folds[[fold]]$training_set]
 
-  m_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$tau)
+  m_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$tau + 1)
   m_shifted_train <- m_natural_train
 
-  m_natural_valid <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
+  m_natural_valid <- matrix(nrow = nrow(natural$valid), ncol = task$tau + 1)
   m_shifted_valid <- m_natural_valid
+
+  m_shifted_valid[, task$tau + 1] <- natural$valid[[task$vars$Y]]
 
   fits <- vector("list", length = task$tau)
   for (t in task$tau:1) {
