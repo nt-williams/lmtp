@@ -38,7 +38,7 @@ test_that("task creation with survival outcome", {
                        paste0("C.", 0:5), Inf, "id", "survival", 10, weights)
 
   expect_equal(task$survival, TRUE)
-  expect_equal(task$natural$._lmtp_id, sim_point_surv$id)
+  expect_equal(task$natural$..i..lmtp_id, sim_point_surv$id)
   expect_equal(task$.__enclos_env__$private$bounds, c(0, 1))
   expect_equal(task$vars$N, paste0("Y.", 1:5))
   expect_equal(task$natural$Y.6, convert_to_surv(sim_point_surv$Y.6))
@@ -46,5 +46,5 @@ test_that("task creation with survival outcome", {
   expect_equal(head(task$observed(sim_point_surv, 1)), rep(TRUE, 6))
   expect_equal(head(task$observed(sim_point_surv, 5)), c(F, F, T, F, F, T))
   expect_equal(head(task$at_risk(sim_point_surv, 1)), rep(TRUE, 6))
-  expect_equal(head(task$at_risk(sim_point_surv, 5)), c(F, F, F, T, F, F))
+  expect_equal(head(task$at_risk(sim_point_surv, 5)), c(F, F, T, F, T, T))
 })

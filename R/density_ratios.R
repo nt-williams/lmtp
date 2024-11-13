@@ -57,7 +57,7 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
     i <- task$observed(natural$valid, t - 1) & task$at_risk(natural$valid, t)
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred[i, ] <- predict(fit, natural$valid)
+    pred[i, ] <- predict(fit, natural$valid[i, ])
 
     obs <- task$observed(natural$valid, t)
     at_risk <- task$at_risk(natural$valid, t)

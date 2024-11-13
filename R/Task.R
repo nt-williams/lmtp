@@ -128,7 +128,7 @@ LmtpTask <- R6::R6Class(
       data <- fix_censoring_ind(data, self$vars$C)
 
       if (self$survival) {
-        for (y in self$vars$Y) {
+        for (y in c(self$vars$N, self$vars$Y)) {
           data.table::set(data, j = y, value = convert_to_surv(data[[y]]))
         }
       }

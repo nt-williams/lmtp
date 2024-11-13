@@ -21,7 +21,7 @@ LmtpVars <- R6Class("LmtpVars",
       self$Y <- last(Y)
 
       if (length(Y) > 1) {
-        self$N <- Y[1:length(self$Y) - 1]
+        self$N <- Y[1:length(Y) - 1]
       }
 
       private$tau <- tau
@@ -49,15 +49,15 @@ LmtpVars <- R6Class("LmtpVars",
 
     rename = function(x) {
       sapply(x, function(x) {
-        if (x %in% unlist(self$A)) prefix <- "._A"
-        else if (x %in% unlist(self$L)) prefix <- "._L"
-        else if (x %in% self$C) prefix <- "._C"
-        else if (x %in% self$Y) prefix <- "._Y"
+        if (x %in% unlist(self$A)) prefix <- "..i..A"
+        else if (x %in% unlist(self$L)) prefix <- "..i..L"
+        else if (x %in% self$C) prefix <- "..i..C"
+        else if (x %in% c(self$N, self$Y)) prefix <- "..i..Y"
         else if (x %in% self$W) return(self$W[which(self$W == x)])
         else return(x)
 
-        if (prefix == "._L" | (prefix == "._A" && is.list(self$A))) {
-          vars <- self[[gsub("\\._", "", prefix)]]
+        if (prefix == "..i..L" | (prefix == "..i..A" && is.list(self$A))) {
+          vars <- self[[gsub("\\..i..", "", prefix)]]
           suffix <- which(x == vars[[which(sapply(vars, \(vars) x %in% vars))]])
         } else {
           suffix <- 1
@@ -69,7 +69,7 @@ LmtpVars <- R6Class("LmtpVars",
 
     time = function(t) {
       A <- unlist(self$A[t])
-      Y <- self$Y[t]
+      Y <- c(self$N, self$Y)[t]
       if (is.na(A)) A <- self$A[1]
       if (is.na(Y)) Y <- self$Y[1]
       c(self$W, unlist(self$L[t]), A, self$C[t], Y)
