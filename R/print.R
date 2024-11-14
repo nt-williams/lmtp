@@ -24,3 +24,8 @@ print.lmtp_contrast <- function(x, ...) {
 print.lmtp_survival <- function(x, ...) {
   print(as.data.frame(tidy.lmtp_survival(x)))
 }
+
+#' @export
+print.lmtp_curve <- function(x, ...) {
+  print(as.data.frame(tidy.lmtp_curve(x)))
+}

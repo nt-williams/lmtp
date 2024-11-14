@@ -58,15 +58,8 @@ theta_ipw <- function(eta) {
   out
 }
 
-eif <- function(task, r, shifted, natural) {
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
-  m <- shifted[, 2:(task$tau + 1), drop = FALSE] - natural[, 1:task$tau, drop = FALSE]
-  rowSums(compute_weights(r, 1, task$tau) * m, na.rm = TRUE) + shifted[, 1]
-}
-
 theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
-  ic <- eif(task, r, m$shifted, m$natural)
+  ic <- eif(r, m$shifted, m$natural)
 
   if (augmented) {
     theta <- weighted.mean(ic, task$weights)
@@ -89,6 +82,34 @@ theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
   )
 
   class(out) <- "lmtp"
+  out
+}
+
+theta_curve <- function(task, m, r, fits_m, fits_r, shift) {
+  ics <- lapply(1:task$tau, function(t) {
+    eif(r[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
+  })
+
+  thetas <- lapply(ics, \(x) weighted.mean(x, task$weights))
+
+  ics <- lapply(ics, \(x) task$rescale(x))
+  thetas <- lapply(thetas, \(x) task$rescale(x))
+
+  out <- list(
+    estimator = "SDR curve",
+    estimates = lapply(
+      seq_along(ics),
+      \(x) ife::ife(thetas[[x]], ics[[x]], task$weights, as.character(task$id))
+    ),
+    m = m,
+    r = r,
+    fits_m = fits_m,
+    fits_r = fits_r,
+    shift = shift,
+    outcome_type = task$outcome_type
+  )
+
+  class(out) <- "lmtp_curve"
   out
 }
 

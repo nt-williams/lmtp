@@ -202,3 +202,9 @@ is_decimal <- function(x) {
   test <- floor(x)
   !(x == test)
 }
+
+`%*0%` <- function(x, y) {
+  res <- x * y
+  res[is.na(res)] <- 0
+  res
+}

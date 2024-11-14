@@ -1,6 +1,5 @@
 lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                        cens = NULL, shift = NULL, shifted = NULL,
-                       estimator = c("sdr", "gcomp"),
                        k = Inf,
                        mtp = FALSE,
                        outcome_type = c("binomial", "continuous", "survival"),
@@ -34,22 +33,17 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   pb <- progressr::progressor(task$tau*folds*2)
 
   # Estimate density ratios
-  estimator <- "gcomp"
-  if (estimator == "sdr") {
-    ratios <- cf_r(task, learners_trt, mtp, control, pb)
-  } else {
-    ratios <- NULL
-  }
+  ratios <- cf_r(task, learners_trt, mtp, control, pb)
 
-  curve <- cf_curve(task, ratios, learners_outcome, control, pb)
+  # Estimate outcome regression
+  curve <- cf_curve(task, ratios$ratios, learners_outcome, control, pb)
 
-  theta_dr(
+  theta_curve(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
+    m = list(natural = curve$natural, shifted = curve$shifted),
     r = ratios$ratios,
-    fits_m = estims$fits,
+    fits_m = curve$fits,
     fits_r = ratios$fits,
-    shift = deparse(substitute((shift))),
-    augmented = FALSE
+    shift = deparse(substitute((shift)))
   )
 }

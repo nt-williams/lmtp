@@ -4,7 +4,7 @@
 \alias{tidy.lmtp}
 \title{Tidy a(n) lmtp object}
 \usage{
-\method{tidy}{lmtp}(x, ...)
+tidy.lmtp(x, ...)
 }
 \arguments{
 \item{x}{A \code{lmtp} object produced by a call to \code{\link[=lmtp_tmle]{lmtp_tmle()}}, \code{\link[=lmtp_sdr]{lmtp_sdr()}},
