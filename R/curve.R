@@ -94,10 +94,7 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
 
 predict_long <- function(fit, newdata, t) {
   time <- as.numeric(newdata$time) >= t
-  # NEED TO THINK ABOUT THIS
   at_risk <- newdata$..i..N[time] == 1 & !is.na(newdata$..i..N[time])
-  # at_risk <- newdata$..i..N[time] == 1
-  # at_risk[is.na(at_risk)] <- TRUE
   pred <- predict(fit, newdata[time, ], 1e-05)
   pred[!at_risk] <- 0
   pred

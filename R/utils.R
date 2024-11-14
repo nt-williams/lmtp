@@ -1,27 +1,3 @@
-determine_tau <- function(outcome, trt) {
-  surv <- length(outcome) > 1
-  if (!surv) {
-    return(length(trt))
-  }
-  length(outcome)
-}
-
-setup_cv <- function(data, V = 10, id, strata, outcome_type) {
-  if (length(unique(id)) == nrow(data) & outcome_type == "binomial") {
-    strata <- data[[strata]]
-    strata[is.na(strata)] <- 2
-    out <- origami::make_folds(data, V = V, strata_ids = strata)
-  } else {
-    out <- origami::make_folds(data, cluster_ids = id, V = V)
-  }
-
-  if (V > 1) {
-    return(out)
-  }
-  out[[1]]$training_set <- out[[1]]$validation_set
-  out
-}
-
 get_folded_data <- function(data, folds, index) {
   out <- list()
   out[["train"]] <- data[folds[[index]]$training_set, , drop = FALSE]
@@ -45,27 +21,6 @@ bound <- function(x, p = 1e-05) {
   pmax(pmin(x, 1 - p), p)
 }
 
-scale_y <- function(y, bounds) {
-  if (is.null(bounds)) {
-    return(y)
-  }
-  (y - bounds[1]) / (bounds[2] - bounds[1])
-}
-
-y_bounds <- function(y, outcome_type, bounds = NULL) {
-  if (outcome_type == "binomial" || is.null(outcome_type)) {
-    return(NULL)
-  }
-  if (is.null(bounds)) {
-    return(c(min(y, na.rm = T), max(y, na.rm = T)))
-  }
-  c(bounds[1], bounds[2])
-}
-
-rescale_y_continuous <- function(scaled, bounds) {
-  (scaled*(bounds[2] - bounds[1])) + bounds[1]
-}
-
 followed_rule <- function(natural, shifted, A, mtp) {
   if (mtp) {
     return(rep(TRUE, nrow(natural)))
@@ -74,42 +29,8 @@ followed_rule <- function(natural, shifted, A, mtp) {
   mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(natural[, A]), as.list(shifted[, A]))
 }
 
-transform_sdr <- function(r, tau, max, shifted, natural) {
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
-  m <- shifted[, (tau + 2):(max + 1), drop = FALSE] - natural[, (tau + 1):max, drop = FALSE]
-  rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
-}
-
-recombine_ratios <- function(x, folds) {
-  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
-
-  returns <- list()
-
-  returns$ratios <- Reduce(
-    rbind,
-    lapply(x, function(x) x[["ratios"]])
-  )[order(ind), ]
-
-  if (is.null(dim(returns[["ratios"]]))) {
-    returns[["ratios"]] <- as.matrix(
-      returns[["ratios"]],
-      nrow = length(returns[["ratios"]]),
-      ncol = 1
-    )
-  }
-
-  returns$fits <- lapply(x, function(x) x[["fits"]])
-  returns
-}
-
 trim <- function(x, trim) {
   pmin(x, quantile(x, trim))
-}
-
-recombine_outcome <- function(x, part, folds) {
-  ind <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
-  Reduce(rbind, lapply(x, function(x) x[[part]]))[order(ind), , drop = FALSE]
 }
 
 is.lmtp <- function(x) {
@@ -131,33 +52,6 @@ extract_sl_weights <- function(fit) {
   fit$coef
 }
 
-#' Time To Event Last Outcome Carried Forward
-#'
-#' A helper function to prepare survival data for use with LMTP estimators
-#' by imputing outcome nodes using last outcome carried forward when an observation
-#' experiences the event before the end-of-follow-up.
-#'
-#' @param data The dataset to modify.
-#' @param outcomes A vector of outcome nodes ordered by time.
-#'
-#' @return A modified dataset with future outcome nodes set to 1 if an observation
-#'  experienced an event at any previous time point.
-#'
-#' @importFrom data.table as.data.table `:=` .SD
-#' @export
-#' @examples
-#' event_locf(sim_point_surv, paste0("Y.", 1:6))
-event_locf <- function(data, outcomes) {
-  DT <- as.data.table(data)
-  tau <- length(outcomes)
-  for (j in outcomes[1:(tau - 1)]) {
-    modify <- setdiff(outcomes[match(j, outcomes):tau], j)
-    DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
-  }
-  DT[]
-  DT
-}
-
 convert_to_surv <- function(x) {
   data.table::fcase(
     x == 0, 1,
@@ -167,14 +61,6 @@ convert_to_surv <- function(x) {
 
 missing_outcome <- function(x) {
   ifelse(is.na(x), 0, x)
-}
-
-risk_indicators <- function(x) {
-  if (length(x) == 1) {
-    return(NULL)
-  }
-
-  x[1:(length(x) - 1)]
 }
 
 compute_weights <- function(r, t, tau) {
@@ -189,22 +75,12 @@ is_normalized <- function(x, tolerance = .Machine$double.eps^0.5) {
 }
 
 fix_surv_time1 <- function(x) {
-  x[[1]]$theta <- 1 - x[[1]]$theta
-  high <- x[[1]]$high
-  low <- x[[1]]$low
-  x[[1]]$high <- 1 - low
-  x[[1]]$low <- 1 - high
-  x[[1]]$eif <- 1 - x[[1]]$eif
+  to_fix <- x[[1]]$estimate
+  x[[1]]$estimate <- ife::ife(1 - to_fix@x, 1 - to_fix@eif, to_fix@weights, to_fix@id)
   x
 }
 
 is_decimal <- function(x) {
   test <- floor(x)
   !(x == test)
-}
-
-`%*0%` <- function(x, y) {
-  res <- x * y
-  res[is.na(res)] <- 0
-  res
 }

@@ -95,6 +95,7 @@ theta_curve <- function(task, m, r, fits_m, fits_r, shift) {
   ics <- lapply(ics, \(x) task$rescale(x))
   thetas <- task$rescale(thetas)
 
+  # this should only be applied if the outcome is a survival outcome...
   iso_projection <- isotone::gpava(seq_along(thetas), 1 - thetas)
   thetas <- 1 - iso_projection$x[seq_along(thetas)]
 

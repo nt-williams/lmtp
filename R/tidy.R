@@ -19,15 +19,7 @@ generics::tidy
 #' }
 #'
 #' @export
-tidy.lmtp <- function(x, ...) {
-  out <- data.frame(estimator = x$estimator,
-                    estimate = x$theta,
-                    std.error = x$standard_error,
-                    conf.low = x$low,
-                    conf.high = x$high)
-  class(out) <- c("tbl_df", "tbl", "data.frame")
-  out
-}
+tidy.lmtp <- function(x, ...) ife::tidy(x$estimate)
 
 #' Tidy a(n) lmtp_survival object
 #'
@@ -38,10 +30,14 @@ tidy.lmtp <- function(x, ...) {
 #'
 #' @export
 tidy.lmtp_survival <- function(x, ...) {
-  out <- do.call("rbind", lapply(x$estimates, tidy))
-  out$time <- 1:length(x$estimates)
+  out <- do.call("rbind", lapply(x, tidy))
+  out$time <- seq_along(x)
   out[, c(ncol(out), 1:ncol(out) - 1)]
 }
 
 #' @export
-tidy.lmtp_curve <- tidy.lmtp_survival
+tidy.lmtp_curve <- function(x, ...) {
+  out <- do.call("rbind", lapply(x$estimates, ife::tidy))
+  out$time <- seq_along(x$estimates)
+  out[, c(ncol(out), 1:ncol(out) - 1)]
+}
