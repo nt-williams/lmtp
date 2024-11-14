@@ -1,3 +1,27 @@
+#' Title
+#'
+#' @param data
+#' @param trt
+#' @param outcome
+#' @param baseline
+#' @param time_vary
+#' @param cens
+#' @param shift
+#' @param shifted
+#' @param k
+#' @param mtp
+#' @param outcome_type
+#' @param id
+#' @param learners_outcome
+#' @param learners_trt
+#' @param folds
+#' @param weights
+#' @param control
+#'
+#' @return
+#' @export
+#'
+#' @examples
 lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                        cens = NULL, shift = NULL, shifted = NULL,
                        k = Inf,

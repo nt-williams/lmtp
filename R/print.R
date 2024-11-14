@@ -6,7 +6,6 @@ print.lmtp <- function(x, ...) {
   cat("\n")
   cli::cli_text("{.strong Population intervention estimate}")
   print(x$estimate)
-  if (x$estimator %in% c("substitution", "IPW")) no_stderr_warning(x$estimator)
   cat("\n")
 }
 
@@ -16,8 +15,8 @@ print.lmtp_contrast <- function(x, ...) {
   cli::cli_text(cat("  "), "{.strong LMTP Contrast}: {x$type}")
   cli::cli_text("{.strong Null hypothesis}: theta == {x$null}")
   cat("\n")
-  x$vals$p.value <- format.pval(x$vals$p.value, digits = 3, eps = 0.001)
-  print(format(x$vals, digits = 3))
+  x$estimates$p.value <- format.pval(x$estimates$p.value, digits = 3, eps = 0.001)
+  print(format(as.data.frame(x$estimates), digits = 3))
 }
 
 #' @export

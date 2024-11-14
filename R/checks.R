@@ -134,7 +134,7 @@ check_contrast_type <- function(x, fits) {
   TRUE
 }
 
-assertContrastType <- checkmate::makeAssertionFunction(check_contrast_type)
+assert_contrast_type <- checkmate::makeAssertionFunction(check_contrast_type)
 
 check_lmtp_list <- function(x) {
   all_lmtp <- all(unlist(lapply(x, is.lmtp)))
@@ -144,17 +144,7 @@ check_lmtp_list <- function(x) {
   TRUE
 }
 
-assertLmtpList <- checkmate::makeAssertionFunction(check_lmtp_list)
-
-check_dr <- function(x) {
-  all_dr <- all(lapply(x, function(x) x[["estimator"]]) %in% c("TMLE", "SDR"))
-  if (!all_dr) {
-    return("Contrasts not implemented for substitution/IPW estimators")
-  }
-  TRUE
-}
-
-assertDr <- checkmate::makeAssertionFunction(check_dr)
+assert_lmtp_list <- checkmate::makeAssertionFunction(check_lmtp_list)
 
 check_ref_class <- function(x) {
   if (!is.lmtp(x)) {
@@ -166,7 +156,7 @@ check_ref_class <- function(x) {
   TRUE
 }
 
-assertRefClass <- checkmate::makeAssertionFunction(check_ref_class)
+assert_ref_class <- checkmate::makeAssertionFunction(check_ref_class)
 
 check_trt_type <- function(data, trt, mtp) {
   is_decimal <- vector("logical", length(trt))
