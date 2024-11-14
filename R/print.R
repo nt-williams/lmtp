@@ -3,10 +3,8 @@ print.lmtp <- function(x, ...) {
   cat("\n")
   cli::cli_text("{.strong LMTP Estimator}: {x$estimator}")
   cli::cli_text(cat("   "), "{.strong Trt. Policy}: ", cli::col_blue(cli::style_italic("{x$shift}")))
-  cat("\n")
-  cli::cli_text("{.strong Population intervention estimate}")
+  cli::cli_h2("{.emph Population intervention estimate}")
   print(x$estimate)
-  cat("\n")
 }
 
 #' @export
@@ -21,10 +19,18 @@ print.lmtp_contrast <- function(x, ...) {
 
 #' @export
 print.lmtp_survival <- function(x, ...) {
-  print(as.data.frame(tidy.lmtp_survival(x)))
+  cat("\n")
+  cli::cli_text("{.strong LMTP Estimator}: {x[[1]]$estimator}")
+  cli::cli_text(cat("   "), "{.strong Trt. Policy}: ", cli::col_blue(cli::style_italic("{x[[1]]$shift}")))
+  cli::cli_h2("{.emph Population intervention estimates}")
+  print(format(as.data.frame(tidy.lmtp_survival(x)), digits = 3))
 }
 
 #' @export
 print.lmtp_curve <- function(x, ...) {
-  print(as.data.frame(tidy.lmtp_curve(x)))
+  cat("\n")
+  cli::cli_text("{.strong LMTP Estimator}: SDR")
+  cli::cli_text(cat("   "), "{.strong Trt. Policy}: ", cli::col_blue(cli::style_italic("{x$shift}")))
+  cli::cli_h2("{.emph Population intervention estimates}")
+  print(format(as.data.frame(tidy.lmtp_curve(x)), digits = 3))
 }
