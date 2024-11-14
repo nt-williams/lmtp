@@ -90,10 +90,13 @@ theta_curve <- function(task, m, r, fits_m, fits_r, shift) {
     eif(r[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
   })
 
-  thetas <- lapply(ics, \(x) weighted.mean(x, task$weights))
+  thetas <- unlist(lapply(ics, \(x) weighted.mean(x, task$weights)))
 
   ics <- lapply(ics, \(x) task$rescale(x))
-  thetas <- lapply(thetas, \(x) task$rescale(x))
+  thetas <- task$rescale(thetas)
+
+  iso_projection <- isotone::gpava(seq_along(thetas), 1 - thetas)
+  thetas <- 1 - iso_projection$x[seq_along(thetas)]
 
   out <- list(
     estimator = "SDR curve",
@@ -101,8 +104,8 @@ theta_curve <- function(task, m, r, fits_m, fits_r, shift) {
       seq_along(ics),
       \(x) ife::ife(thetas[[x]], ics[[x]], task$weights, as.character(task$id))
     ),
-    m = m,
-    r = r,
+    outcome_reg = lapply(m$shifted, \(x) task$rescale(x)),
+    density_ratios = r,
     fits_m = fits_m,
     fits_r = fits_r,
     shift = shift,
