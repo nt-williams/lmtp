@@ -12,9 +12,8 @@ eif.matrix <- function(r, shifted, natural, t, tau) {
   rowSums(compute_weights(r, t, tau) * m, na.rm = TRUE) + shifted[, t]
 }
 
-transform_sdr <- function(r, tau, max, shifted, natural) {
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
-  m <- shifted[, (tau + 2):(max + 1), drop = FALSE] - natural[, (tau + 1):max, drop = FALSE]
-  rowSums(r * m, na.rm = TRUE) + shifted[, tau + 1]
+compute_weights <- function(r, t, tau) {
+  out <- t(apply(r[, t:tau, drop = FALSE], 1, cumprod))
+  if (ncol(out) > ncol(r)) return(t(out))
+  out
 }
