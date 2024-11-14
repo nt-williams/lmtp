@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 1.5.0.9001
+Version: 1.6.0
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -37,7 +37,8 @@ Imports:
     checkmate (>= 2.1.0),
     isotone,
     mlr3superlearner,
-    ife
+    ife,
+    lifecycle
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
