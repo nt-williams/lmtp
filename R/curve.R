@@ -78,7 +78,7 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
       unlist(lapply(t:task$tau, function(x) {
         l <- x - t + 1
         tau <- ncol(mnt[[x]])
-        transform_sdr(compute_weights(ratios, l, tau), l - 1, tau, mst[[x]], mnt[[x]])
+        eif(ratios, mst[[x]], mnt[[x]], l, tau)
       }))
 
     pb()

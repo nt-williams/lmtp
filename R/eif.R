@@ -3,12 +3,13 @@ eif <- function(x, ...) {
 }
 
 #' @export
-eif.matrix <- function(r, shifted, natural) {
-  tau <- ncol(r)
+eif.matrix <- function(r, shifted, natural, t, tau) {
+  if (missing(tau)) tau <- ncol(r)
+  if (missing(t)) t <- 1
   natural[is.na(natural)] <- -999
   shifted[is.na(shifted)] <- -999
-  m <- shifted[, 2:(tau + 1), drop = FALSE] - natural[, 1:tau, drop = FALSE]
-  rowSums(compute_weights(r, 1, tau) * m, na.rm = TRUE) + shifted[, 1]
+  m <- shifted[, (t + 1):(tau + 1), drop = FALSE] - natural[, t:tau, drop = FALSE]
+  rowSums(compute_weights(r, t, tau) * m, na.rm = TRUE) + shifted[, t]
 }
 
 transform_sdr <- function(r, tau, max, shifted, natural) {
