@@ -41,6 +41,8 @@ LmtpTask <- R6::R6Class(
       self$natural <- private$as_lmtp_data(data)
       self$shifted <- private$as_lmtp_data(shifted)
 
+      assert_lmtp_data(self)
+
       # Make folds for cross-fitting
       self$folds <- private$make_folds(V)
 

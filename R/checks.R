@@ -1,14 +1,14 @@
-# TODO NEED TO REIMPLMENT THIS
-check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
-  for (t in 1:determine_tau(outcome, trt)) {
-    ci <- censored(x, cens, t)$j
-    di <- at_risk(x, risk_indicators(outcome), t, TRUE)
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
+check_lmtp_data = function(self) {
+  for (t in 1:self$tau) {
+    i <- self$observed(self$natural, t - 1) & self$at_risk(self$natural, t)
+
+    if (length(self$vars$A) > 1) {
+      A_t <- self$vars$A[[t]]
     } else {
-      trt_t <- trt[[1]]
+      A_t <- self$vars$A[[1]]
     }
-    data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+
+    data_t <- self$natural[, c(A_t, self$vars$W, unlist(self$vars$L[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
