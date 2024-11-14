@@ -1,3 +1,4 @@
+# TODO NEED TO REIMPLMENT THIS
 check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   for (t in 1:determine_tau(outcome, trt)) {
     ci <- censored(x, cens, t)$j
@@ -17,14 +18,14 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   TRUE
 }
 
-assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+assert_lmtp_data <- checkmate::makeAssertionFunction(check_lmtp_data)
 
 assert_trt <- function(trt, tau) {
   is_list <- is.list(trt)
   if (!isTRUE(is_list)) {
-    return(assertTrtCharacter(trt, tau))
+    return(assert_trt_character(trt, tau))
   }
-  assertTrtList(trt, tau)
+  assert_trt_list(trt, tau)
 }
 
 check_trt_character <- function(trt, tau) {
@@ -40,7 +41,7 @@ check_trt_character <- function(trt, tau) {
   TRUE
 }
 
-assertTrtCharacter <- checkmate::makeAssertionFunction(check_trt_character)
+assert_trt_character <- checkmate::makeAssertionFunction(check_trt_character)
 
 check_trt_list <- function(trt, tau) {
   is_list <- checkmate::check_list(trt)
@@ -55,7 +56,7 @@ check_trt_list <- function(trt, tau) {
   TRUE
 }
 
-assertTrtList <- checkmate::makeAssertionFunction(check_trt_list)
+assert_trt_list <- checkmate::makeAssertionFunction(check_trt_list)
 
 check_reserved_names <- function(x) {
   bad_names <- c("._lmtp_id", "._lmtp_stack_indicator", "._lmtp_scaled_outcome") %in% x
@@ -169,21 +170,3 @@ check_trt_type <- function(data, trt, mtp) {
       cli::cli_warn("Detected decimalish `trt` values and {.code mtp = FALSE}. Consider setting {.code mtp = TRUE} if getting errors.")
   }
 }
-
-check_same_weights <- function(weights) {
-  if (length(weights) == 1) {
-    check <- TRUE
-  } else if (length(weights) == 2) {
-    check <- identical(weights[[1]], weights[[2]])
-  } else {
-    check <- all(sapply(1:(length(weights) - 1), function(i) identical(weights[[i]], weights[[i + 1]])))
-  }
-
-  if (isFALSE(check)) {
-    return("Weights must all be the same.")
-  }
-  TRUE
-}
-
-assertSameWeights <- checkmate::makeAssertionFunction(check_same_weights)
-
