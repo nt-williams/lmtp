@@ -110,5 +110,5 @@ estimate_riesz <- function(natural,
     pb()
   }
 
-  list(ratios = riesz_valid, fits = fits)
+  list(ratios = riesz_valid, fits = fits, weights = weights)
 }
