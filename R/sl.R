@@ -16,5 +16,8 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, i
 #' @export
 predict.lmtp_ensemble <- function(object, newdata, tol = .Machine$double.eps) {
   pred <- NextMethod("predict", newdata = newdata)
+  if (is.null(tol)) {
+    return(pred)
+  }
   bound(pred, tol)
 }

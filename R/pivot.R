@@ -1,8 +1,8 @@
-pivot <- function(x, Vars, tau) {
-  vars <- lapply(1:tau, \(t) c("..i..lmtp_id", Vars$time(t)))
+pivot <- function(x, Vars) {
+  vars <- lapply(1:Vars$tau, \(t) c("..i..lmtp_id", Vars$time(t)))
   to_bind <- lapply(vars, \(vars) x[, vars])
   to_bind <- lapply(to_bind, \(data) setNames(data, Vars$rename(names(data))))
-  to_bind <- lapply(1:tau, function(t) {
+  to_bind <- lapply(1:Vars$tau, function(t) {
     to_bind[[t]]$..i..wide_id <- 1:nrow(to_bind[[t]])
     to_bind[[t]]$time <- factor(t)
     to_bind[[t]]
@@ -17,6 +17,25 @@ pivot <- function(x, Vars, tau) {
     longer$..i..N <- rep(1, nrow(longer))
   }
 
+  if (Vars$tau > 1) {
+    k <- min(Vars$k, Vars$tau)
+    longer <- as.data.table(longer)
+
+    to_lag <- grep("^(..i..L)|(..i..A)", names(longer), value = TRUE)
+    for (l in 1:(k-1)) {
+      newcols <- paste0(to_lag, "_lag", l)
+      longer[, (newcols) := .lag(.SD, l), by = ..i..wide_id, .SDcols = to_lag]
+    }
+  }
+
+  if (is.null(Vars$C)) {
+    longer$..i..C_1 <- rep(1, nrow(longer))
+  }
+
   row.names(longer) <- NULL
-  longer
+  as.data.frame(longer)
+}
+
+.lag <- function(x, n) {
+  data.table::shift(x, n = n, type = "lag", fill = 1L)
 }

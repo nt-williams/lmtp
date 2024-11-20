@@ -6,6 +6,8 @@ LmtpVars <- R6Class("LmtpVars",
     C = NULL,
     Y = NULL,
     N = NULL,
+    tau = NULL,
+    k = NULL,
     initialize = function(W, L, A, C, Y, tau, k = Inf) {
       assert_trt(A, tau)
       assert_character(W, null.ok = TRUE)
@@ -24,14 +26,14 @@ LmtpVars <- R6Class("LmtpVars",
         self$N <- Y[1:length(Y) - 1]
       }
 
-      private$tau <- tau
-      private$k <- k
+      self$k <- k
+      self$tau <- tau
     },
 
     history = function(var = c("L", "A"), t) {
-      private$l <- t - private$k - 1
+      private$l <- t - self$k - 1
       private$.var <- match.arg(var)
-      if (private$.var == "A" && private$tau > 1 && length(self$A) == 1) {
+      if (private$.var == "A" && self$tau > 1 && length(self$A) == 1) {
         return(as.vector(na.omit(self$W)))
       }
       ans <- switch(private$.var,
@@ -70,14 +72,12 @@ LmtpVars <- R6Class("LmtpVars",
     time = function(t) {
       A <- unlist(self$A[t])
       Y <- c(self$N, self$Y)[t]
-      if (is.na(A)) A <- self$A[1]
+      if (all(is.na(A))) A <- unlist(self$A[1])
       if (is.na(Y)) Y <- self$Y[1]
       c(self$W, unlist(self$L[t]), A, self$C[t], Y)
     }
   ),
   private = list(
-    tau = NULL,
-    k = NULL,
     l = NULL,
     .var = NULL,
     parents_L = function(t) {

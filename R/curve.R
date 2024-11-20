@@ -30,8 +30,16 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
   mnv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau))
 
   # pivot into long format
-  natural <- lapply(natural, \(x) pivot(x, task$vars, task$tau))
-  shifted <- lapply(shifted, \(x) pivot(x, task$vars, task$tau))
+  natural <- lapply(natural, \(x) pivot(x, task$vars))
+  shifted <- lapply(shifted, \(x) pivot(x, task$vars))
+
+  # Keep lagged variables as natural values for predictions
+  ust <- natural$train
+  As <- grep("^..i..A", names(ust), value = TRUE)
+  ust[, As] <- shifted$train[, As]
+
+  usv <- natural$valid
+  usv[, As] <- shifted$valid[, As]
 
   taus <- order(unique(natural$train$time))
   for (t in seq_along(taus)) {
@@ -41,11 +49,11 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
 
   fits <- vector("list", length = task$tau)
   for (t in 1:task$tau) {
-
     at_risk <- natural$train$..i..N == 1
-    at_risk[is.na(at_risk)] <- TRUE
-    observed <- natural$train$..i..C_1 == 1
-    time <- as.numeric(natural$train$time) >= t
+    at_risk[is.na(at_risk)] <- FALSE
+    # observed <- natural$train$..i..C_1 == 1
+    observed <- !is.na(natural$train$..i..Y_1)
+    time <- as.numeric(natural$train$time) <= rev(1:task$tau)[t]
 
     vars <- setdiff(names(natural$train), c("..i..C_1", "..i..wide_id", "..i..N"))
     if (t == task$tau) {
@@ -69,17 +77,19 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    mnt <- update_m(mnt, fit, natural$train, t)
-    mst <- update_m(mst, fit, shifted$train, t)
-    mnv <- update_m(mnv, fit, natural$valid, t)
-    msv <- update_m(msv, fit, shifted$valid, t)
+    mnt <- update_m(mnt, fit, natural$train, t, task$tau)
+    mst <- update_m(mst, fit, ust, t, task$tau)
+    mnv <- update_m(mnv, fit, natural$valid, t, task$tau)
+    msv <- update_m(msv, fit, usv, t, task$tau)
 
-    natural$train[as.numeric(shifted$train$time) >= t, "..i..Y_1"] <-
-      unlist(lapply(t:task$tau, function(x) {
+    if ((t + 1) <= task$tau) {
+      psuedo <- unlist(lapply((t + 1):task$tau, function(x) {
         l <- x - t + 1
         tau <- ncol(mnt[[x]])
         eif(ratios, mst[[x]], mnt[[x]], l, tau)
       }))
+      natural$train[, "..i..Y_1"] <- c(psuedo, rep(NA_real_, nrow(natural$train) - length(psuedo)))
+    }
 
     pb()
   }
@@ -92,22 +102,22 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
   )
 }
 
-predict_long <- function(fit, newdata, t) {
-  time <- as.numeric(newdata$time) >= t
+predict_long <- function(fit, newdata, t, tau) {
+  time <- as.numeric(newdata$time) <= rev(1:tau)[t]
   at_risk <- newdata$..i..N[time] == 1 & !is.na(newdata$..i..N[time])
-  pred <- predict(fit, newdata[time, ], 1e-05)
+  pred <- predict(fit, newdata[time, ], NULL)
   pred[!at_risk] <- 0
   pred
 }
 
-update_m <- function(m, fit, newdata, t) {
-  pred <- predict_long(fit, newdata, t)
+update_m <- function(m, fit, newdata, t, tau) {
+  pred <- predict_long(fit, newdata, t, tau)
   time <- as.numeric(newdata$time) >= t
   tau <- max(as.numeric(newdata$time))
-  pred <- split(pred, newdata$time[time])
 
-  for (x in t:tau) {
-    m[[x]][, x - t + 1] <- pred[[as.character(x)]]
+  for (i in seq_along(t:tau)) {
+    x <- (t:tau)[i]
+    m[[x]][, x - t + 1] <- pred[as.numeric(newdata$time[time]) == x]
   }
   m
 }

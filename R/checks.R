@@ -8,7 +8,7 @@ check_lmtp_data = function(self) {
       A_t <- self$vars$A[[1]]
     }
 
-    data_t <- self$natural[, c(A_t, self$vars$W, unlist(self$vars$L[t])), drop = FALSE]
+    data_t <- self$natural[i, c(A_t, self$vars$W, unlist(self$vars$L[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")

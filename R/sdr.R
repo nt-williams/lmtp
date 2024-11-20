@@ -60,15 +60,15 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
     under_shift_train <- natural$train[i, c("..i..lmtp_id", history)]
     under_shift_train[, A_t] <- shifted$train[i, A_t]
 
-    m_natural_train[i, t] <- predict(fit, natural$train[i, ], 1e-05)
-    m_shifted_train[i, t] <- predict(fit, under_shift_train, 1e-05)
+    m_natural_train[i, t] <- predict(fit, natural$train[i, ], NULL)
+    m_shifted_train[i, t] <- predict(fit, under_shift_train, NULL)
 
     i <- task$observed(natural$valid, t - 1) & task$at_risk(natural$valid, t)
     under_shift_valid <- natural$valid[i, c("..i..lmtp_id", history)]
     under_shift_valid[, A_t] <- shifted$valid[i, A_t]
 
-    m_natural_valid[i, t] <- predict(fit, natural$valid[i, ], 1e-05)
-    m_shifted_valid[i, t] <- predict(fit, under_shift_valid, 1e-05)
+    m_natural_valid[i, t] <- predict(fit, natural$valid[i, ], NULL)
+    m_shifted_valid[i, t] <- predict(fit, under_shift_valid, NULL)
 
     m_natural_valid[!(task$at_risk(natural$valid, t)), t] <- 0
     m_shifted_valid[!(task$at_risk(natural$valid, t)), t] <- 0
