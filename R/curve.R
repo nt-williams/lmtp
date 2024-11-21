@@ -105,9 +105,9 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
 predict_long <- function(fit, newdata, t, tau) {
   time <- as.numeric(newdata$time) <= rev(1:tau)[t]
   ans <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
-  observed <- newdata$..i..C_1_lag[time] == 1
+  observed <- newdata$..i..C_1_lag == 1
   at_risk <- newdata$..i..N[time] == 1 & !is.na(newdata$..i..N[time])
-  ans[observed, 1] <- predict(fit, newdata[time & observed, ], NULL)
+  ans[observed[time], 1] <- predict(fit, newdata[time & observed, ], NULL)
   ans[!at_risk, 1] <- 0
   ans[, 1]
 }
