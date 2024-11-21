@@ -6,8 +6,8 @@ eif <- function(x, ...) {
 eif.matrix <- function(r, shifted, natural, t, tau) {
   if (missing(tau)) tau <- ncol(r)
   if (missing(t)) t <- 1
-  natural[is.na(natural)] <- -999
-  shifted[is.na(shifted)] <- -999
+  # natural[is.na(natural)] <- -999
+  # shifted[is.na(shifted)] <- -999
   m <- shifted[, (t + 1):(tau + 1), drop = FALSE] - natural[, t:tau, drop = FALSE]
   rowSums(compute_weights(r, t, tau) * m, na.rm = TRUE) + shifted[, t]
 }

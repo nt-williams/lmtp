@@ -30,6 +30,9 @@ pivot <- function(x, Vars) {
 
   if (is.null(Vars$C)) {
     longer$..i..C_1 <- rep(1, nrow(longer))
+    longer$..i..C_1_lag <- rep(1, nrow(longer))
+  } else {
+    longer$..i..C_1_lag <- ave(longer$..i..C_1, longer$..i..wide_id, FUN = \(x) c(1, x[-length(x)]))
   }
 
   row.names(longer) <- NULL

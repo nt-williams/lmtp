@@ -104,20 +104,22 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
 
 predict_long <- function(fit, newdata, t, tau) {
   time <- as.numeric(newdata$time) <= rev(1:tau)[t]
+  ans <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
+  observed <- newdata$..i..C_1_lag[time] == 1
   at_risk <- newdata$..i..N[time] == 1 & !is.na(newdata$..i..N[time])
-  pred <- predict(fit, newdata[time, ], NULL)
-  pred[!at_risk] <- 0
-  pred
+  ans[observed, 1] <- predict(fit, newdata[time & observed, ], NULL)
+  ans[!at_risk, 1] <- 0
+  ans[, 1]
 }
 
 update_m <- function(m, fit, newdata, t, tau) {
   pred <- predict_long(fit, newdata, t, tau)
   time <- as.numeric(newdata$time) >= t
-  tau <- max(as.numeric(newdata$time))
 
-  for (i in seq_along(t:tau)) {
-    x <- (t:tau)[i]
-    m[[x]][, x - t + 1] <- pred[as.numeric(newdata$time[time]) == x]
+  for (l in seq_along(t:tau)) {
+    x <- (t:tau)[l]
+    j <- as.numeric(newdata$time[time]) == x
+    m[[x]][, x - t + 1] <- pred[j]
   }
   m
 }
