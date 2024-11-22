@@ -25,10 +25,107 @@ lmtp_curve(
 )
 }
 \arguments{
-\item{control}{}
+\item{data}{[\code{data.frame}]\cr
+A \code{data.frame} in wide format containing all necessary variables
+for the estimation problem. Must not be a \code{data.table}.}
+
+\item{trt}{[\code{character}] or [\code{list}]\cr
+A vector containing the column names of treatment variables ordered by time.
+Or, a list of vectors, the same length as the number of time points of observation.
+Vectors should contain column names for the treatment variables at each time point. The list
+should be ordered following the time ordering of the model.}
+
+\item{outcome}{[\code{character}]\cr
+The column name of the outcome variable. In the case of time-to-event
+analysis, a vector containing the columns names of intermediate outcome variables and the final
+outcome variable ordered by time. Only numeric values are allowed. If the outcome type
+is binary, data should be coded as 0 and 1.}
+
+\item{baseline}{[\code{character}]\cr
+An optional vector containing the column names of baseline covariates to be
+included for adjustment at every time point.}
+
+\item{time_vary}{[\code{list}]\cr
+A list the same length as the number of time points of observation with
+the column names for new time-varying covariates introduced at each time point. The list
+should be ordered following the time ordering of the model.}
+
+\item{cens}{[\code{character}]\cr
+An optional vector of column names of censoring indicators the same
+length as the number of time points of observation. If missingness in the outcome is
+present or if time-to-event outcome, must be provided.}
+
+\item{shift}{[\code{closure}]\cr
+A two argument function that specifies how treatment variables should be shifted.
+See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
+
+\item{shifted}{[\code{data.frame}]\cr
+An optional data frame, the same as in \code{data}, but modified according
+to the treatment policy of interest. If specified, \code{shift} is ignored.}
+
+\item{k}{[\code{integer(1)}]\cr
+An integer specifying how previous time points should be
+used for estimation at the given time point. Default is \code{Inf},
+all time points.}
+
+\item{mtp}{[\code{logical(1)}]\cr
+Is the intervention of interest a modified treatment policy?
+Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
+
+\item{outcome_type}{[\code{character(1)}]\cr
+Outcome variable type (i.e., continuous, binomial, survival).}
+
+\item{id}{[\code{character(1)}]\cr
+An optional column name containing cluster level identifiers.}
+
+\item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{"glm"}.}
+
+\item{learners_trt}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+of the outcome regression. Default is \code{"glm"}.
+\bold{Only include candidate learners capable of binary classification}.}
+
+\item{folds}{[\code{integer(1)}]\cr
+The number of folds to be used for cross-fitting.}
+
+\item{weights}{[\code{numeric(nrow(data))}]\cr
+An optional vector containing sampling weights.}
+
+\item{control}{[\code{list()}]\cr
+Output of \code{lmtp_control()}.}
+
+\item{bounds}{[\code{numeric(2)}]\cr
+An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
+the bounds will be taken as the minimum and maximum of the observed data.
+Should be left as \code{NULL} if the outcome type is binary.}
+}
+\value{
+A list of class \code{lmtp_curve} containing the following components:
+
+\item{estimator}{The estimator used, in this case "SDR".}
+\item{estimates}{The estimated population LMTP effects as \code{ife} objects.}
+\item{shift}{The shift function specifying the treatment policy of interest.}
+\item{outcome_reg}{A list of length Tau, where each index, t, is a n x t + 1 matrix of outcome regression predictions.}
+\item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+\item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+for each fold for the outcome regression.}
+\item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+for each fold of density ratio estimation.}
+\item{outcome_type}{The outcome variable type.}
 }
 \description{
 Title
+}
+\details{
+\subsection{Should \code{mtp = TRUE}?}{
+
+A modified treatment policy (MTP) is an intervention that depends
+on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+This differs from other causal effects,
+such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+\bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+by some amount, use \code{mtp = TRUE}}.
+}
 }
 \examples{
 \donttest{
