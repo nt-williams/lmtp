@@ -55,10 +55,10 @@ test_that("rename variable correctly", {
   foo <- LmtpVars$new(bs, nodes, a, NULL, "y", 2)
 
   expect_equal(as.vector(foo$rename("W")), "W")
-  expect_equal(as.vector(foo$rename("A_1")), "._A_1")
-  expect_equal(as.vector(foo$rename(c("L_1_1", "L_1_2"))), c("._L_1", "._L_2"))
-  expect_equal(as.vector(foo$rename(c("L_2_1", "L_2_2"))), c("._L_1", "._L_2"))
-  expect_equal(as.vector(foo$rename("y")), "._Y_1")
+  expect_equal(as.vector(foo$rename("A_1")), "..i..A_1")
+  expect_equal(as.vector(foo$rename(c("L_1_1", "L_1_2"))), c("..i..L_1", "..i..L_2"))
+  expect_equal(as.vector(foo$rename(c("L_2_1", "L_2_2"))), c("..i..L_1", "..i..L_2"))
+  expect_equal(as.vector(foo$rename("y")), "..i..Y_1")
 })
 
 test_that("pulls proper variables for a given time", {
