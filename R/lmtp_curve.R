@@ -21,7 +21,7 @@
 #' @return
 #' @export
 #'
-#' @examples
+#' @example inst/examples/curve-ex.R
 lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                        cens = NULL, shift = NULL, shifted = NULL,
                        k = Inf,
