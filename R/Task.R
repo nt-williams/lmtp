@@ -13,26 +13,24 @@ LmtpTask <- R6::R6Class(
     folds = NULL,
     weights = NULL,
     initialize = function(data, shifted, A, Y, L, W, C, k,
-                          id, outcome_type, V, weights) {
+                          id, outcome_type, folds, weights) {
       # Identify tau
       self$tau <- private$tau_is(Y, A)
       self$n <- nrow(data)
 
       # Create Vars object
-      self$vars <- LmtpVars$new(W, L, A, C, Y, self$tau, k)
+      self$vars <- LmtpVars$new(W, L, A, C, Y, outcome_type, self$tau, k)
 
       # Additional checks
-      assert_subset(c(self$vars$all(), id), names(data))
-      assert_reserved_names(self$vars$all())
       assert_numeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
-      assert_number(V, lower = 1, upper = nrow(data) - 1)
+      assert_number(folds, lower = 1, upper = nrow(data) - 1)
 
       # Set outcome types
       self$outcome_type <- ifelse(outcome_type %in% c("binomial", "survival"), "binomial", "continuous")
       self$survival <- outcome_type == "survival"
 
       # Set outcome bounds
-      private$bounds <- private$y_bounds(data[[last(Y)]])
+      private$bounds <- private$y_bounds(data[, self$vars$Y])
 
       # Add cluster IDs
       self$id <- private$add_ids(data, id)
@@ -44,7 +42,7 @@ LmtpTask <- R6::R6Class(
       assert_lmtp_data(self)
 
       # Make folds for cross-fitting
-      self$folds <- private$make_folds(V)
+      self$folds <- private$make_folds(folds)
 
       # Add or normalize weights
       self$weights <- private$make_weights(weights)
@@ -135,7 +133,7 @@ LmtpTask <- R6::R6Class(
         }
       }
 
-      data[[self$vars$Y]] <- self$scale(data[[self$vars$Y]])
+      data[, self$vars$Y] <- self$scale(data[, self$vars$Y])
       data
     },
 

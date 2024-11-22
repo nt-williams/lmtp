@@ -5,6 +5,7 @@ test_that("pivot wide to long correctly", {
                         c("A_1", "A_2", "A_3", "A_4"),
                         NULL,
                         "Y",
+                        "binomial",
                         4)
 
     tmp <- sim_t4
@@ -17,7 +18,7 @@ test_that("pivot wide to long correctly", {
                         list(c("L1"), c("L2")),
                         c("A1", "A2"),
                         c("C1", "C2"),
-                        "Y", 2)
+                        "Y", "binomial", 2)
 
     tmp <- sim_cens
     tmp$..i..lmtp_id <- 1:nrow(tmp)

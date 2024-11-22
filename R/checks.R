@@ -58,16 +58,6 @@ check_trt_list <- function(trt, tau) {
 
 assert_trt_list <- checkmate::makeAssertionFunction(check_trt_list)
 
-check_reserved_names <- function(x) {
-  bad_names <- c("._lmtp_id", "._lmtp_stack_indicator", "._lmtp_scaled_outcome") %in% x
-  if (!any(bad_names)) {
-    return(TRUE)
-  }
-  "'._lmtp_id', '._lmtp_stack_indicator', and '._lmtp_scaled_outcome' are reserved variable names"
-}
-
-assert_reserved_names <- checkmate::makeAssertionFunction(check_reserved_names)
-
 check_shifted_data <- function(natural, shifted, trt, cens) {
   is_same <- setdiff(names(natural), c(trt, cens))
 

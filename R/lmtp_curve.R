@@ -50,7 +50,7 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     C = cens,
     k = k, id = id,
     outcome_type = match.arg(outcome_type),
-    V = folds, weights = weights
+    folds = folds, weights = weights
   )
 
   # Create progress bar object

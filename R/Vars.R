@@ -8,11 +8,11 @@ LmtpVars <- R6Class("LmtpVars",
     N = NULL,
     tau = NULL,
     k = NULL,
-    initialize = function(W, L, A, C, Y, tau, k = Inf) {
+    initialize = function(W, L, A, C, Y, outcome_type, tau, k = Inf) {
       assert_trt(A, tau)
       assert_character(W, null.ok = TRUE)
       assert_character(C, len = tau, null.ok = TRUE)
-      assert_character(Y, min.len = 1, max.len = tau)
+      assert_character(Y, min.len = ifelse(outcome_type == "survival", 2, 1))
       assert_list(L, types = c("NULL", "character"), len = tau, null.ok = TRUE)
       assert_number(k, lower = 0, upper = Inf)
 
@@ -20,10 +20,12 @@ LmtpVars <- R6Class("LmtpVars",
       self$L <- L
       self$A <- A
       self$C <- C
-      self$Y <- last(Y)
 
-      if (length(Y) > 1) {
+      if (outcome_type == "survival") {
+        self$Y <- last(Y)
         self$N <- Y[1:length(Y) - 1]
+      } else {
+        self$Y <- Y
       }
 
       self$k <- k
