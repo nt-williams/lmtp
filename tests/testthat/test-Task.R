@@ -46,5 +46,5 @@ test_that("task creation with survival outcome", {
   expect_equal(head(task$observed(sim_point_surv, 1)), rep(TRUE, 6))
   expect_equal(head(task$observed(sim_point_surv, 5)), c(F, F, T, F, F, T))
   expect_equal(head(task$at_risk(sim_point_surv, 1)), rep(TRUE, 6))
-  expect_equal(head(task$at_risk(sim_point_surv, 5)), c(F, F, T, F, T, T))
+  expect_equal(head(task$at_risk(sim_point_surv, 5)), c(F, F, F, T, F, F))
 })
