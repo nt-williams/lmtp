@@ -1,8 +1,8 @@
-pivot <- function(x, Vars) {
-  vars <- lapply(1:Vars$tau, \(t) c("..i..lmtp_id", Vars$time(t)))
-  to_bind <- lapply(vars, \(vars) x[, vars])
-  to_bind <- lapply(to_bind, \(data) setNames(data, Vars$rename(names(data))))
-  to_bind <- lapply(1:Vars$tau, function(t) {
+pivot <- function(data, vars) {
+  x <- lapply(1:vars$tau, \(t) c("..i..lmtp_id", vars$time(t)))
+  to_bind <- lapply(x, \(x) data[, x])
+  to_bind <- lapply(to_bind, \(df) setNames(df, vars$rename(names(df))))
+  to_bind <- lapply(1:vars$tau, function(t) {
     to_bind[[t]]$..i..wide_id <- 1:nrow(to_bind[[t]])
     to_bind[[t]]$time <- factor(t)
     to_bind[[t]]
@@ -11,14 +11,14 @@ pivot <- function(x, Vars) {
   longer <- do.call(rbind, to_bind)
 
   # Create a new column with lagged Y
-  if (!is.null(Vars$N)) {
+  if (!is.null(vars$N)) {
     longer$..i..N <- ave(longer$..i..Y_1, longer$..i..wide_id, FUN = \(x) c(1, x[-length(x)]))
   } else {
     longer$..i..N <- rep(1, nrow(longer))
   }
 
-  if (Vars$tau > 1) {
-    k <- min(Vars$k, Vars$tau)
+  if (vars$tau > 1) {
+    k <- min(vars$k, vars$tau)
     longer <- as.data.table(longer)
 
     to_lag <- grep("^(..i..L)|(..i..A)", names(longer), value = TRUE)
@@ -30,7 +30,7 @@ pivot <- function(x, Vars) {
     }
   }
 
-  if (is.null(Vars$C)) {
+  if (is.null(vars$C)) {
     longer$..i..C_1 <- rep(1, nrow(longer))
     longer$..i..C_1_lag <- rep(1, nrow(longer))
   } else {
