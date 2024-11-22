@@ -23,8 +23,10 @@ pivot <- function(x, Vars) {
 
     to_lag <- grep("^(..i..L)|(..i..A)", names(longer), value = TRUE)
     for (l in 1:(k-1)) {
-      newcols <- paste0(to_lag, "_lag", l)
-      longer[, (newcols) := .lag(.SD, l), by = ..i..wide_id, .SDcols = to_lag]
+      if (k > 0) {
+        newcols <- paste0(to_lag, "_lag", l)
+        longer[, (newcols) := .lag(.SD, l), by = ..i..wide_id, .SDcols = to_lag]
+      }
     }
   }
 
