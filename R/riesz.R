@@ -68,16 +68,34 @@ estimate_riesz <- function(natural,
 
     d_in <- length(vars)
     hidden <- ceiling(mean(c(d_in, 1)))
+    hidden <- 20
 
-    mlp <- torch::nn_sequential(
-      torch::nn_linear(d_in, hidden),
-      torch::nn_relu(),
-      torch::nn_linear(hidden, hidden),
-      torch::nn_relu(),
-      torch::nn_linear(hidden, hidden),
-      torch::nn_relu(),
-      torch::nn_linear(hidden, 1),
-      torch::nn_softplus()
+    net <- riesznet::nn_ensemble(
+      torch::nn_sequential(
+        torch::nn_linear(d_in, 1),
+        torch::nn_softplus()
+      ),
+
+      torch::nn_sequential(
+        torch::nn_linear(d_in, hidden),
+        torch::nn_relu(),
+        torch::nn_dropout(0.4),
+        torch::nn_linear(hidden, hidden),
+        torch::nn_relu(),
+        torch::nn_dropout(0.4),
+        torch::nn_linear(hidden, hidden),
+        torch::nn_relu(),
+        torch::nn_dropout(0.4),
+        torch::nn_linear(hidden, 1),
+        torch::nn_softplus()
+      ),
+      torch::nn_sequential(
+        torch::nn_linear(d_in, hidden),
+        torch::nn_relu(),
+        torch::nn_dropout(0.4),
+        torch::nn_linear(hidden, 1),
+        torch::nn_softplus()
+      )
     )
 
     model <- riesznet::riesznet(
@@ -85,20 +103,21 @@ estimate_riesz <- function(natural,
       shifted = list(data_1 = shifted_train[jrt & drt, vars, drop = FALSE]),
       weights = wts * (ci / G$train[jrt & drt, t]),
       .f = \(data_1) data_1,
-      net = mlp,
+      net = net,
       epochs = control$.epochs,
       max_lr = control$.learning_rate,
       batch_size = control$.batch_size,
       weight_decay = control$.weight_decay,
       patience = control$.patience,
-      verbose = FALSE
+      verbose = TRUE
     )
 
     # Return the full model object or return nothing
     if (control$.return_full_fits) {
       fits[[t]] <- model
     } else {
-      fits[[t]] <- NULL
+      fits[[t]] <- model$fit$model$modules$net.meta$parameters$weight_logits |>
+        torch::nnf_softmax(dim = 2)
     }
 
     weights[jrt & drt, t] <- as.numeric(predict(model, natural$train[jrt & drt, vars, drop = FALSE]))
