@@ -114,6 +114,8 @@ theta_dr <- function(eta, augmented = FALSE) {
       binomial = eta$m$shifted
     ),
     density_ratios = eta$r,
+    conditional = eta$conditional,
+    conditional_weights = eta$G,
     weights = eta$weights,
     fits_m = eta$fits_m,
     fits_r = eta$fits_r,

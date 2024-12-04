@@ -117,7 +117,8 @@ estimate_riesz <- function(natural,
       fits[[t]] <- model
     } else {
       fits[[t]] <- model$fit$model$modules$net.meta$parameters$weight_logits |>
-        torch::nnf_softmax(dim = 2)
+        torch::nnf_softmax(dim = 2) |>
+        as.numeric()
     }
 
     weights[jrt & drt, t] <- as.numeric(predict(model, natural$train[jrt & drt, vars, drop = FALSE]))
