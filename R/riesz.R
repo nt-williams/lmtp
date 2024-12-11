@@ -70,33 +70,36 @@ estimate_riesz <- function(natural,
     hidden <- ceiling(mean(c(d_in, 1)))
     hidden <- 20
 
-    net <- riesznet::nn_ensemble(
-      torch::nn_sequential(
-        torch::nn_linear(d_in, 1),
-        torch::nn_softplus()
-      ),
+    # linear
+    net <- torch::nn_sequential(torch::nn_linear(d_in, 1), torch::nn_softplus())
 
-      torch::nn_sequential(
-        torch::nn_linear(d_in, hidden),
-        torch::nn_relu(),
-        torch::nn_dropout(0.4),
-        torch::nn_linear(hidden, hidden),
-        torch::nn_relu(),
-        torch::nn_dropout(0.4),
-        torch::nn_linear(hidden, hidden),
-        torch::nn_relu(),
-        torch::nn_dropout(0.4),
-        torch::nn_linear(hidden, 1),
-        torch::nn_softplus()
-      ),
-      torch::nn_sequential(
-        torch::nn_linear(d_in, hidden),
-        torch::nn_relu(),
-        torch::nn_dropout(0.4),
-        torch::nn_linear(hidden, 1),
-        torch::nn_softplus()
-      )
-    )
+    # net <- riesznet::nn_ensemble(
+    #   torch::nn_sequential(
+    #     torch::nn_linear(d_in, 1),
+    #     torch::nn_softplus()
+    #   ),
+    #
+    #   torch::nn_sequential(
+    #     torch::nn_linear(d_in, hidden),
+    #     torch::nn_relu(),
+    #     torch::nn_dropout(0.4),
+    #     torch::nn_linear(hidden, hidden),
+    #     torch::nn_relu(),
+    #     torch::nn_dropout(0.4),
+    #     torch::nn_linear(hidden, hidden),
+    #     torch::nn_relu(),
+    #     torch::nn_dropout(0.4),
+    #     torch::nn_linear(hidden, 1),
+    #     torch::nn_softplus()
+    #   ),
+    #   torch::nn_sequential(
+    #     torch::nn_linear(d_in, hidden),
+    #     torch::nn_relu(),
+    #     torch::nn_dropout(0.4),
+    #     torch::nn_linear(hidden, 1),
+    #     torch::nn_softplus()
+    #   )
+    # )
 
     model <- riesznet::riesznet(
       data = natural$train[jrt & drt, vars, drop = FALSE],
@@ -109,17 +112,17 @@ estimate_riesz <- function(natural,
       batch_size = control$.batch_size,
       weight_decay = control$.weight_decay,
       patience = control$.patience,
-      verbose = TRUE
+      verbose = FALSE
     )
 
-    # Return the full model object or return nothing
-    if (control$.return_full_fits) {
-      fits[[t]] <- model
-    } else {
-      fits[[t]] <- model$fit$model$modules$net.meta$parameters$weight_logits |>
-        torch::nnf_softmax(dim = 2) |>
-        as.numeric()
-    }
+    # # Return the full model object or return nothing
+    # if (control$.return_full_fits) {
+    #   fits[[t]] <- model
+    # } else {
+    #   fits[[t]] <- model$fit$model$modules$net.meta$parameters$weight_logits |>
+    #     torch::nnf_softmax(dim = 2) |>
+    #     as.numeric()
+    # }
 
     weights[jrt & drt, t] <- as.numeric(predict(model, natural$train[jrt & drt, vars, drop = FALSE]))
     riesz_valid[jrv & drv, t] <- as.numeric(predict(model, natural$valid[jrv & drv, vars, drop = FALSE]))
