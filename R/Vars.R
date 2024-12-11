@@ -4,16 +4,16 @@ LmtpVars <- R6Class("LmtpVars",
     L = NULL,
     A = NULL,
     C = NULL,
-    B = NULL,
+    D = NULL,
     Y = NULL,
     N = NULL,
     tau = NULL,
     k = NULL,
-    initialize = function(W, L, A, C, B, Y, outcome_type, tau, k = Inf) {
+    initialize = function(W, L, A, C, D, Y, outcome_type, tau, k = Inf) {
       assert_trt(A, tau)
       assert_character(W, null.ok = TRUE)
       assert_character(C, len = tau, null.ok = TRUE)
-      assert_character(B, len = tau, null.ok = TRUE) # competing risk indicators
+      assert_character(D, len = tau, null.ok = TRUE) # competing risk indicators
       assert_character(Y, min.len = ifelse(outcome_type == "survival", 2, 1))
       assert_list(L, types = c("NULL", "character"), len = tau, null.ok = TRUE)
       assert_number(k, lower = 0, upper = Inf)
@@ -26,7 +26,7 @@ LmtpVars <- R6Class("LmtpVars",
       if (outcome_type == "survival") {
         self$Y <- last(Y)
         self$N <- Y[1:length(Y) - 1]
-        self$B <- B
+        self$D <- D
       } else {
         self$Y <- Y
       }
