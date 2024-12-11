@@ -12,14 +12,14 @@ LmtpTask <- R6::R6Class(
     survival = NULL,
     folds = NULL,
     weights = NULL,
-    initialize = function(data, shifted, A, Y, L, W, C, k,
+    initialize = function(data, shifted, A, Y, L, W, C, B, k,
                           id, outcome_type, folds, weights) {
       # Identify tau
       self$tau <- private$tau_is(Y, A)
       self$n <- nrow(data)
 
       # Create Vars object
-      self$vars <- LmtpVars$new(W, L, A, C, Y, outcome_type, self$tau, k)
+      self$vars <- LmtpVars$new(W, L, A, C, B, Y, outcome_type, self$tau, k)
 
       # Additional checks
       assert_numeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
@@ -69,15 +69,18 @@ LmtpTask <- R6::R6Class(
     },
 
     at_risk = function(data, t) {
-      if (is.null(self$vars$N)) {
+      # always at risk and no competing risks
+      if (is.null(self$vars$N) & is.null(self$vars$D)) {
         return(rep(TRUE, nrow(data)))
       }
 
+      # always at risk at first time point
       if (t == 1) {
         return(rep(TRUE, nrow(data)))
       }
 
-      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]])
+      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]]) &
+        data[[self$vars$D[t]]] == 1 & !is.na(data[self$vars$D[t]])
     }
   ),
   private = list(
