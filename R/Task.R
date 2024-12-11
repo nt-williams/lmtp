@@ -12,7 +12,7 @@ LmtpTask <- R6::R6Class(
     survival = NULL,
     folds = NULL,
     weights = NULL,
-    initialize = function(data, shifted, A, Y, L, W, C, B, k,
+    initialize = function(data, shifted, A, Y, L, W, C, D, k,
                           id, outcome_type, folds, weights) {
       # Identify tau
       self$tau <- private$tau_is(Y, A)

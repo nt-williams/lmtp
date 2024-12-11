@@ -28,6 +28,7 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param compete \[\code{character}\]\cr
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -87,8 +88,8 @@
 #' @example inst/examples/tmle-ex.R
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                      cens = NULL, shift = NULL, shifted = NULL, k = Inf,
-                      mtp = FALSE, boot = FALSE,
+                      cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
+                      k = Inf, mtp = FALSE, boot = FALSE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL,
                       learners_outcome = "glm",
@@ -96,7 +97,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assert_not_data_table(data)
-  assert_subset(c(unlist(trt), outcome, unlist(time_vary), baseline, cens, id), names(data))
+  assert_subset(c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id), names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
 
   # Check if the treatment is continuous and warn if MTP is false
@@ -110,6 +111,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     L = time_vary,
     W = baseline,
     C = cens,
+    D = compete,
     k = k, id = id,
     outcome_type = match.arg(outcome_type),
     folds = folds, weights = weights
