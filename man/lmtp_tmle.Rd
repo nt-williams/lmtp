@@ -11,6 +11,7 @@ lmtp_tmle(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  compete = NULL,
   shift = NULL,
   shifted = NULL,
   k = Inf,
@@ -55,6 +56,8 @@ should be ordered following the time ordering of the model.}
 An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
+
+\item{compete}{[\code{character}]\cr}
 
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.

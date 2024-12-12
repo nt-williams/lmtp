@@ -19,7 +19,7 @@ LmtpTask <- R6::R6Class(
       self$n <- nrow(data)
 
       # Create Vars object
-      self$vars <- LmtpVars$new(W, L, A, C, B, Y, outcome_type, self$tau, k)
+      self$vars <- LmtpVars$new(W, L, A, C, D, Y, outcome_type, self$tau, k)
 
       # Additional checks
       assert_numeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
@@ -80,7 +80,7 @@ LmtpTask <- R6::R6Class(
       }
 
       data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]]) &
-        data[[self$vars$D[t]]] == 1 & !is.na(data[self$vars$D[t]])
+        data[[self$vars$D[t]]] == 0 & !is.na(data[self$vars$D[t]])
     }
   ),
   private = list(
