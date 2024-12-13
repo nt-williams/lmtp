@@ -10,7 +10,7 @@ sc <- shift_data(sim_cens, a, cens, function(data, trt) data[[trt]] + 0.5)
 tmle <-
   sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
                cens, k = 0, shifted = sc,
-               outcome_type = "binomial", folds = 2, mtp = TRUE, boot = F))
+               outcome_type = "binomial", folds = 2, mtp = TRUE))
 
 sdr <-
   sw(lmtp_sdr(sim_cens, a, "Y", nodes, baseline = NULL,

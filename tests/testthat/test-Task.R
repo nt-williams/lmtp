@@ -21,7 +21,7 @@ test_that("make shifted works", {
 
 test_that("task creation with most basic scenario", {
   shifted <- make_shifted(dat, "A", "C", policy, NULL)
-  task <- LmtpTask$new(dat, shifted, "A", "Y", NULL, "W", "C", Inf, NULL, "continuous", 10, NULL)
+  task <- LmtpTask$new(dat, shifted, "A", "Y", NULL, "W", "C", NULL, Inf, NULL, "continuous", 10, NULL)
 
   expect_equal(task$id, 1:nrow(dat))
   expect_equal(task$survival, FALSE)
@@ -35,7 +35,7 @@ test_that("task creation with survival outcome", {
   shifted <- make_shifted(sim_point_surv, "trt", paste0("C.", 0:5), static_binary_on, NULL)
   task <- LmtpTask$new(sim_point_surv, shifted, "trt",
                        paste0("Y.", 1:6), NULL, c("W1", "W2"),
-                       paste0("C.", 0:5), Inf, "id", "survival", 10, weights)
+                       paste0("C.", 0:5), NULL, Inf, "id", "survival", 10, weights)
 
   expect_equal(task$survival, TRUE)
   expect_equal(task$natural$..i..lmtp_id, sim_point_surv$id)

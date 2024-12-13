@@ -23,7 +23,7 @@ d <- function(data, trt) {
 
 truth <- 0.305
 
-tmle <- sw(lmtp_tmle(tmp, a, "Y", time_vary = time_varying, shift = d, mtp = T, folds = 1, boot = F))
+tmle <- sw(lmtp_tmle(tmp, a, "Y", time_vary = time_varying, shift = d, mtp = T, folds = 1))
 sdr <- sw(lmtp_sdr(tmp, a, "Y", time_vary = time_varying, shift = d, mtp = T, folds = 1))
 curve <- sw(lmtp_curve(tmp, a, "Y", time_vary = time_varying, shift = d, mtp = T, folds = 1, k = 0))
 
