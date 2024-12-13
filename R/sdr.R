@@ -31,7 +31,7 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
 
   fits <- vector("list", length = task$tau)
   for (t in task$tau:1) {
-    i <- task$observed(natural$train, t) & task$at_risk(natural$train, t)
+    i <- ii(task$observed(natural$train, t), task$at_risk(natural$train, t))
 
     history <- task$vars$history("L", t + 1)
     vars <- c("..i..lmtp_id", history, task$vars$Y)
@@ -56,27 +56,27 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
       A_t <- task$vars$A[[1]]
     }
 
-    i <- task$observed(natural$train, t - 1) & task$at_risk(natural$train, t)
+    i <- ii(task$observed(natural$train, t - 1), task$at_risk(natural$train, t))
     under_shift_train <- natural$train[i, c("..i..lmtp_id", history)]
     under_shift_train[, A_t] <- shifted$train[i, A_t]
 
     m_natural_train[i, t] <- predict(fit, natural$train[i, ], NULL)
     m_shifted_train[i, t] <- predict(fit, under_shift_train, NULL)
 
-    i <- task$observed(natural$valid, t - 1) & task$at_risk(natural$valid, t)
+    i <- ii(task$observed(natural$valid, t - 1), task$at_risk(natural$valid, t))
     under_shift_valid <- natural$valid[i, c("..i..lmtp_id", history)]
     under_shift_valid[, A_t] <- shifted$valid[i, A_t]
 
     m_natural_valid[i, t] <- predict(fit, natural$valid[i, ], NULL)
     m_shifted_valid[i, t] <- predict(fit, under_shift_valid, NULL)
 
-    m_natural_valid[!(task$at_risk(natural$valid, t)), t] <- 0
-    m_shifted_valid[!(task$at_risk(natural$valid, t)), t] <- 0
-    m_natural_train[!(task$at_risk(natural$train, t)), t] <- 0
-    m_shifted_train[!(task$at_risk(natural$train, t)), t] <- 0
+    m_natural_valid[which(!(task$at_risk(natural$valid, t))), t] <- 0
+    m_shifted_valid[which(!(task$at_risk(natural$valid, t))), t] <- 0
+    m_natural_train[which(!(task$at_risk(natural$train, t))), t] <- 0
+    m_shifted_train[which(!(task$at_risk(natural$train, t))), t] <- 0
 
     natural$train[, task$vars$Y] <- eif(ratios, m_shifted_train, m_natural_train, t)
-    natural$train[!(task$at_risk(natural$train, t)), task$vars$Y] <- 0
+    natural$train[which(!(task$at_risk(natural$train, t))), task$vars$Y] <- 0
 
     pb()
   }

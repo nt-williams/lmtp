@@ -59,6 +59,7 @@ LmtpVars <- R6Class("LmtpVars",
         if (x %in% unlist(self$A)) prefix <- "..i..A"
         else if (x %in% unlist(self$L)) prefix <- "..i..L"
         else if (x %in% self$C) prefix <- "..i..C"
+        else if (x %in% self$D) prefix <- "..i..D"
         else if (x %in% c(self$N, self$Y)) prefix <- "..i..Y"
         else if (x %in% self$W) return(self$W[which(self$W == x)])
         else return(x)
@@ -79,7 +80,7 @@ LmtpVars <- R6Class("LmtpVars",
       Y <- c(self$N, self$Y)[t]
       if (all(is.na(A))) A <- unlist(self$A[1])
       if (is.na(Y)) Y <- self$Y[1]
-      c(self$W, unlist(self$L[t]), A, self$C[t], Y)
+      c(self$W, unlist(self$L[t]), A, self$C[t], self$D[t], Y)
     }
   ),
   private = list(

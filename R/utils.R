@@ -30,7 +30,7 @@ followed_rule <- function(natural, shifted, A, mtp) {
 }
 
 trim <- function(x, trim) {
-  pmin(x, quantile(x, trim))
+  pmin(x, quantile(x, trim, na.rm = TRUE))
 }
 
 is.lmtp <- function(x) {
@@ -73,4 +73,18 @@ fix_surv_time1 <- function(x) {
 is_decimal <- function(x) {
   test <- floor(x)
   !(x == test)
+}
+
+ii <- function(o, r) {
+  i <- vector("logical", length(o))
+  for (j in 1:length(o)) {
+    if (is.na(r[j]) & !is.na(o[j])) {
+      i[j] <- o[j]
+    } else if (!is.na(r[j]) & is.na(o[j])) {
+      i[j] <- r[j]
+    } else {
+      i[j] <- o[j] & r[j]
+    }
+  }
+  i
 }

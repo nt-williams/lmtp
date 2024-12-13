@@ -49,13 +49,13 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
 
   fits <- vector("list", length = task$tau)
   for (t in 1:task$tau) {
-    at_risk <- natural$train$..i..N == 1
+    at_risk <- natural$train$..i..N == 1 & natural$train$..i..D_1 == 0
     at_risk[is.na(at_risk)] <- FALSE
     # observed <- natural$train$..i..C_1 == 1
     observed <- !is.na(natural$train$..i..Y_1)
     time <- as.numeric(natural$train$time) <= rev(1:task$tau)[t]
 
-    vars <- setdiff(names(natural$train), c("..i..C_1", "..i..wide_id", "..i..N"))
+    vars <- setdiff(names(natural$train), c("..i..C_1", "..i..wide_id", "..i..N", "..i..D_1"))
     if (t == task$tau) {
       vars <- setdiff(vars, "time")
     }
@@ -106,7 +106,8 @@ predict_long <- function(fit, newdata, t, tau) {
   time <- as.numeric(newdata$time) <= rev(1:tau)[t]
   ans <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
   observed <- newdata$..i..C_1_lag == 1
-  at_risk <- newdata$..i..N[time] == 1 & !is.na(newdata$..i..N[time])
+  at_risk <- newdata$..i..N[time] == 1 & newdata$..i..D_1[time] == 0
+    !is.na(newdata$..i..N[time]) & !is.na(newdata$..i..D_1[time])
   ans[observed[time], 1] <- predict(fit, newdata[time & observed, ], NULL)
   ans[!at_risk, 1] <- 0
   ans[, 1]

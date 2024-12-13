@@ -94,4 +94,17 @@
 
   lmtp_curve(sim_point_surv, A, Y, W, cens = C, folds = 1,
              shift = static_binary_on, outcome_type = "survival")
+
+  # Example 5.1
+  lmtp_curve(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }

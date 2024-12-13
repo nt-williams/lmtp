@@ -83,8 +83,9 @@ LmtpTask <- R6::R6Class(
         return(data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]]))
       }
 
-      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]]) &
-        data[[self$vars$D[t]]] == 0 & !is.na(data[self$vars$D[t]])
+      data[[self$vars$N[t - 1]]] == 1 & data[[self$vars$D[t]]] == 0
+      # &
+      #   !is.na(data[[self$vars$N[t - 1]]]) & !is.na(data[self$vars$D[t]])
     }
   ),
   private = list(

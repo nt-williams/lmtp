@@ -83,9 +83,8 @@
 #'
 #' @example inst/examples/curve-ex.R
 lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
-                       cens = NULL, shift = NULL, shifted = NULL,
-                       k = Inf,
-                       mtp = FALSE,
+                       cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
+                       k = Inf, mtp = FALSE,
                        outcome_type = c("binomial", "continuous", "survival"),
                        id = NULL,
                        learners_outcome = "glm",
@@ -108,6 +107,7 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     L = time_vary,
     W = baseline,
     C = cens,
+    D = compete,
     k = k, id = id,
     outcome_type = match.arg(outcome_type),
     folds = folds, weights = weights

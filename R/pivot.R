@@ -17,6 +17,10 @@ pivot <- function(data, vars) {
     longer$..i..N <- rep(1, nrow(longer))
   }
 
+  if (is.null(vars$D)) {
+      longer$..i..D_1 <- rep(0, nrow(longer))
+  }
+
   if (vars$tau > 1) {
     k <- min(vars$k, vars$tau)
     longer <- as.data.table(longer)
