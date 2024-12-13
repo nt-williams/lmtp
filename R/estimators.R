@@ -91,7 +91,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
-                      k = Inf, mtp = FALSE, boot = FALSE,
+                      k = Inf, mtp = FALSE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL,
                       learners_outcome = "glm",

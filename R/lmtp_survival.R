@@ -26,6 +26,9 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param compete \[\code{character}\]\cr
+#'  An optional vector of column names of competing risk indicators the same
+#'  length as the number of time points of observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -41,10 +44,6 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
-#' @param boot \[\code{logical(1)}\]\cr
-#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-#'  errors will be calculated using the empirical variance of the efficient influence function.
-#'  Ignored if \code{estimator = "lmtp_sdr"}.
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
@@ -64,12 +63,10 @@
 #' @example inst/examples/lmtp_survival-ex.R
 #' @export
 lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL,
-                          cens = NULL, shift = NULL, shifted = NULL,
+                          cens = NULL, compete = NULL,
+                          shift = NULL, shifted = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
-                          k = Inf,
-                          mtp = FALSE,
-                          boot = FALSE,
-                          id = NULL,
+                          k = Inf, mtp = FALSE, id = NULL,
                           learners_outcome = "glm",
                           learners_trt = "glm",
                           folds = 10,
@@ -100,13 +97,6 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   if (length(trt) == 1) args$trt <- trt
   if (length(time_vary) == 1) args$time_vary <- time_vary
 
-  if (estimator == "lmtp_tmle") {
-    args$boot <- boot
-    expr <- expression(do.call(lmtp_tmle, args))
-  } else {
-    expr <- expression(do.call(lmtp_sdr, args))
-  }
-
   t <- 1
   cli::cli_progress_step("Working on time {t}/{tau}...")
   for (t in 1:tau) {
@@ -114,6 +104,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     if (length(args$time_vary) > 1) args$time_vary <- time_vary[1:t]
     args$outcome <- outcomes[1:t]
     args$cens <- cens[1:t]
+    args$compete <- compete[1:t]
     args$outcome_type <- ifelse(t == 1, "binomial", "survival")
 
     estimates[[t]] <- future::future(eval(expr), seed = TRUE)

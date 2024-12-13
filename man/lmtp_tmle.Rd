@@ -16,7 +16,6 @@ lmtp_tmle(
   shifted = NULL,
   k = Inf,
   mtp = FALSE,
-  boot = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   learners_outcome = "glm",
