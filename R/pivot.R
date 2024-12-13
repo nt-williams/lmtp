@@ -29,7 +29,7 @@ pivot <- function(data, vars) {
     for (l in 1:(k-1)) {
       if (k > 0) {
         newcols <- paste0(to_lag, "_lag", l)
-        longer[, (newcols) := .lag(.SD, l), by = ..i..wide_id, .SDcols = to_lag]
+        longer[, (newcols) := .lag(.SD, l), by = get("..i..wide_id"), .SDcols = to_lag]
       }
     }
   }

@@ -21,15 +21,14 @@
 #' for either the treatment mechanism or outcome regression.
 #' @export
 #' @examples
+#' \dontrun{
 #' a <- c("A_1", "A_2", "A_3", "A_4")
 #' bs <- c("W_1", "W_2")
 #' time_vary <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 #'
 #' # assuming no Markov property
 #' create_node_list(a, 4, time_vary, bs, k = Inf)
-#'
-#' # assuming a Markov property
-#' create_node_list(a, 4, time_vary, bs, k = 0)
+#' }
 create_node_list <- function(trt, tau, time_vary = NULL, baseline = NULL, k = Inf) {
   lifecycle::deprecate_stop("1.6.0", "create_node_list()")
 }

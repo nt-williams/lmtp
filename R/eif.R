@@ -1,9 +1,4 @@
-eif <- function(x, ...) {
-  UseMethod("eif")
-}
-
-#' @export
-eif.matrix <- function(r, shifted, natural, t, tau) {
+eif <- function(r, shifted, natural, t, tau) {
   if (missing(tau)) tau <- ncol(r)
   if (missing(t)) t <- 1
   # natural[is.na(natural)] <- -999

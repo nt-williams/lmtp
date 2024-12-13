@@ -24,6 +24,9 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param compete \[\code{character}\]\cr
+#'  An optional vector of column names of competing risk indicators the same
+#'  length as the number of time points of observation. Only used when \code{outcome_type = "survival"}.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.

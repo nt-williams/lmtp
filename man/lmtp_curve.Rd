@@ -11,6 +11,7 @@ lmtp_curve(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  compete = NULL,
   shift = NULL,
   shifted = NULL,
   k = Inf,
@@ -54,6 +55,10 @@ should be ordered following the time ordering of the model.}
 An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
+
+\item{compete}{[\code{character}]\cr
+An optional vector of column names of competing risk indicators the same
+length as the number of time points of observation. Only used when \code{outcome_type = "survival"}.}
 
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
@@ -224,5 +229,18 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_curve(sim_point_surv, A, Y, W, cens = C, folds = 1,
              shift = static_binary_on, outcome_type = "survival")
+
+  # Example 5.1
+  lmtp_curve(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }
 }

@@ -4,6 +4,7 @@ test_that("pivot wide to long correctly", {
                         list(c("L_1"), c("L_2"), c("L_3"), c("L_4")),
                         c("A_1", "A_2", "A_3", "A_4"),
                         NULL,
+                        NULL,
                         "Y",
                         "binomial",
                         4)
@@ -18,6 +19,7 @@ test_that("pivot wide to long correctly", {
                         list(c("L1"), c("L2")),
                         c("A1", "A2"),
                         c("C1", "C2"),
+                        NULL,
                         "Y", "binomial", 2)
 
     tmp <- sim_cens

@@ -3,7 +3,7 @@ recombine <- function(x, ...) {
 }
 
 #' @export
-recombine.matrix <- function(x, folds) {
+recombine.matrix <- function(x, folds, ...) {
   i <- Reduce(c, lapply(folds, function(x) x[["validation_set"]]))
   x[order(i), , drop = FALSE]
 }

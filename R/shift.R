@@ -61,7 +61,7 @@ shift_trt_list <- function(data, trt, .f) {
 #' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 #'
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A dataframe with all treatment nodes set to 1.
 #' @export
 #'
@@ -86,7 +86,7 @@ static_binary_on <- function(data, trt) {
 #' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A dataframe with all treatment nodes set to 0.
 #' @export
 #'
@@ -111,7 +111,7 @@ static_binary_off <- function(data, trt) {
 #' @param delta \[\code{numeric(1)}\]\cr
 #'  A risk ratio between 0 and Inf.
 #'
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A shift function.
 #' @export
 #'

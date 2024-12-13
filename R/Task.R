@@ -110,9 +110,9 @@ LmtpTask <- R6::R6Class(
       if (length(unique(id)) == self$n & self$outcome_type == "binomial") {
         strata <- self$natural[[final_outcome(self$vars$Y)]]
         strata[is.na(strata)] <- 2
-        folds <- origami::make_folds(self$natural, V = V, strata_ids = strata)
+        folds <- make_folds(self$natural, V = V, strata_ids = strata)
       } else {
-        folds <- origami::make_folds(self$natural, cluster_ids = id, V = V)
+        folds <- make_folds(self$natural, cluster_ids = id, V = V)
       }
 
       if (V > 1) {
