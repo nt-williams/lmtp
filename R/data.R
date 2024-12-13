@@ -98,3 +98,10 @@
 #'   \item{Y}{Continuous outcome}
 #' }
 "multivariate_data"
+
+#' Simulated Competing Risks Data
+#'
+#' A dataset with a time-to-event outcome, a competing risk, and point-treatment.
+#'
+#' @format A data frame with 1000 rows and 21 variables.
+"sim_competing_risks"

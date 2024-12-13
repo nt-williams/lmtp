@@ -301,5 +301,19 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_sdr(multivariate_data, A, Y, W, shift = d,
            outcome_type = "continuous", folds = 1, mtp = TRUE)
+
+  # Example 7.1
+  # Time-to-event analysis with a binary time-invariant exposure and a competing-risk.
+  lmtp_sdr(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }
 }
