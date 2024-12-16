@@ -99,7 +99,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assert_not_data_table(data)
-  assert_subset(c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id), names(data))
+  av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  assert_subset(av, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
 
   # Check if the treatment is continuous and warn if MTP is false
@@ -107,7 +108,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   task <- LmtpTask$new(
     data = data,
-    shifted = make_shifted(data, trt, cens, shift, shifted),
+    shifted = make_shifted(data[, av], trt, cens, shift, shifted),
     A = trt,
     Y = outcome,
     L = time_vary,
@@ -241,7 +242,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      control = lmtp_control()) {
 
   assert_not_data_table(data)
-  assert_subset(c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id), names(data))
+  av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  assert_subset(av, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
 
   # Check if the treatment is continuous and warn if MTP is false
@@ -249,7 +251,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   task <- LmtpTask$new(
     data = data,
-    shifted = make_shifted(data, trt, cens, shift, shifted),
+    shifted = make_shifted(data[, av], trt, cens, shift, shifted),
     A = trt,
     Y = outcome,
     L = time_vary,
