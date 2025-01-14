@@ -65,7 +65,7 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)
 
-    density_ratios[, t] <- pred / (1 - pmin(pred, 0.999))#(pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
+    density_ratios[, t] <- (pred * obs * followed) / (1 - pmin(pred, 0.999))#(pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
 
     pb()
   }
