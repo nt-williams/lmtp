@@ -69,6 +69,10 @@ LmtpTask <- R6::R6Class(
     },
 
     at_risk = function(data, t) {
+      if (t > self$tau) {
+        return(rep(TRUE, nrow(data)))
+      }
+
       # always at risk and no competing risks
       if (is.null(self$vars$N) & is.null(self$vars$D)) {
         return(rep(TRUE, nrow(data)))

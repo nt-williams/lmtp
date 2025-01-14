@@ -35,7 +35,7 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
 
   fits <- vector("list", length = task$tau)
   for (t in task$tau:1) {
-    i <- ii(task$observed(natural$train, t), task$observed(natural$train, t))
+    i <- ii(task$observed(natural$train, t), task$at_risk(natural$train, t))
 
     history <- task$vars$history("L", t + 1)
     vars <- c("..i..lmtp_id", history, task$vars$Y)
