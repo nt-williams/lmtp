@@ -68,7 +68,36 @@ LmtpTask <- R6::R6Class(
       data[[self$vars$C[t]]] == 1
     },
 
-    at_risk = function(data, t) {
+    at_risk_D = function(data, t) {
+      if (t > self$tau) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      if (is.null(self$vars$D)) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      data[[self$vars$D[t]]] == 0
+    },
+
+    at_risk_N = function(data, t) {
+      if (t > self$tau) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      if (is.null(self$vars$N)) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      # always at risk at first time point
+      if (t == 1) {
+        return(rep(TRUE, nrow(data)))
+      }
+
+      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]])
+    },
+
+    at_risk_R = function(data, t) {
       if (t > self$tau) {
         return(rep(TRUE, nrow(data)))
       }
@@ -78,19 +107,9 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      # always at risk at first time point
-      if (t == 1) {
-        return(rep(TRUE, nrow(data)))
-      }
-
-      if (is.null(self$vars$D)) {
-        return(data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]]))
-      }
-
-      data[[self$vars$N[t - 1]]] == 1 & data[[self$vars$D[t]]] == 0
-      # &
-      #   !is.na(data[[self$vars$N[t - 1]]]) & !is.na(data[self$vars$D[t]])
+      self$at_risk_D(data, t) & self$at_risk_N(data, t)
     }
+
   ),
   private = list(
     bounds = NULL,

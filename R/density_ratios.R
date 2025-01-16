@@ -30,7 +30,7 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
   fits <- vector("list", length = task$tau)
 
   for (t in 1:task$tau) {
-    i <- ii(task$observed(natural$train, t - 1), task$at_risk(natural$train, t))
+    i <- ii(task$observed(natural$train, t - 1), task$at_risk_R(natural$train, t))
     i <- rep(i, 2)
 
     if (length(task$vars$A) > 1) {
@@ -54,18 +54,17 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    i <- ii(task$observed(natural$valid, t - 1), task$at_risk(natural$valid, t))
+    i <- ii(task$observed(natural$valid, t - 1), task$at_risk_R(natural$valid, t))
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[i, ] <- predict(fit, natural$valid[i, ])
 
     obs <- task$observed(natural$valid, t)
-    at_risk <- task$at_risk(natural$valid, t)
+    at_risk <- task$at_risk_R(natural$valid, t)
     followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)
-
-    density_ratios[, t] <- (pred * obs * followed) / (1 - pmin(pred, 0.999))#(pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
+    density_ratios[, t] <- (pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
 
     pb()
   }

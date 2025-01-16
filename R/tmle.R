@@ -35,7 +35,7 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
 
   fits <- vector("list", length = task$tau)
   for (t in task$tau:1) {
-    i <- ii(task$observed(natural$train, t), task$at_risk(natural$train, t))
+    i <- ii(task$observed(natural$train, t), task$at_risk_R(natural$train, t))
 
     history <- task$vars$history("L", t + 1)
     vars <- c("..i..lmtp_id", history, task$vars$Y)
@@ -60,37 +60,42 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
       A_t <- task$vars$A[[1]]
     }
 
-    i <- ii(task$observed(natural$train, t - 1), task$at_risk(natural$train, t))
+    i <- ii(task$observed(natural$train, t - 1), task$at_risk_R(natural$train, t))
     under_shift_train <- natural$train[i, c("..i..lmtp_id", history)]
     under_shift_train[, A_t] <- shifted$train[i, A_t]
 
     m_natural_train[i, t] <- predict(fit, natural$train[i, ], 1e-05)
     m_shifted_train[i, t] <- predict(fit, under_shift_train, 1e-05)
 
-    i <- ii(task$observed(natural$valid, t - 1), task$at_risk(natural$valid, t))
+    i <- ii(task$observed(natural$valid, t - 1), task$at_risk_R(natural$valid, t))
     under_shift_valid <- natural$valid[i, c("..i..lmtp_id", history)]
     under_shift_valid[, A_t] <- shifted$valid[i, A_t]
 
     m_natural_valid[i, t] <- predict(fit, natural$valid[i, ], 1e-05)
     m_shifted_valid[i, t] <- predict(fit, under_shift_valid, 1e-05)
 
-    i <- ii(task$observed(natural$train, t), task$at_risk(natural$train, t))
+    i <- ii(task$observed(natural$train, t), task$at_risk_R(natural$train, t))
 
     # fit fluctuation model
     fit <- fluc(natural$train[i, task$vars$Y],
                 m_natural_train[i, t],
                 ratios[i, t] * weights[i])
 
-    i <- ii(task$observed(natural$train, t - 1), task$at_risk(natural$train, t))
+    i <- ii(task$observed(natural$train, t - 1), task$at_risk_R(natural$train, t))
     natural$train[i, task$vars$Y] <- update(fit, m_shifted_train[i, t])
 
-    i <- ii(task$observed(natural$valid, t - 1), task$at_risk(natural$valid, t))
+    i <- ii(task$observed(natural$valid, t - 1), task$at_risk_R(natural$valid, t))
     m_natural_valid[i, t] <- update(fit, m_natural_valid[i, t])
     m_shifted_valid[i, t] <- update(fit, m_shifted_valid[i, t])
 
-    natural$train[which(!(task$at_risk(natural$train, t))), task$vars$Y] <- 0
-    m_natural_valid[which(!(task$at_risk(natural$valid, t))), t] <- 0
-    m_shifted_valid[which(!(task$at_risk(natural$valid, t))), t] <- 0
+    natural$train[which(!(task$at_risk_N(natural$train, t))), task$vars$Y] <- 0
+    natural$train[which(!(task$at_risk_D(natural$train, t))), task$vars$Y] <- 1
+
+    m_natural_valid[which(!(task$at_risk_N(natural$valid, t))), t] <- 0
+    m_natural_valid[which(!(task$at_risk_D(natural$valid, t))), t] <- 1
+
+    m_shifted_valid[which(!(task$at_risk_N(natural$valid, t))), t] <- 0
+    m_shifted_valid[which(!(task$at_risk_D(natural$valid, t))), t] <- 1
 
     pb()
   }
