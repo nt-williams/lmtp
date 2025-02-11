@@ -73,6 +73,11 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
+      # always at risk at first time point
+      if (t == 0) {
+        return(rep(TRUE, nrow(data)))
+      }
+
       if (is.null(self$vars$D)) {
         return(rep(TRUE, nrow(data)))
       }
@@ -90,14 +95,14 @@ LmtpTask <- R6::R6Class(
       }
 
       # always at risk at first time point
-      if (t == 1) {
+      if (t == 0) {
         return(rep(TRUE, nrow(data)))
       }
 
-      data[[self$vars$N[t - 1]]] == 1 & !is.na(data[[self$vars$N[t - 1]]])
+      data[[self$vars$N[t]]] == 1 & !is.na(data[[self$vars$N[t]]])
     },
 
-    at_risk_R = function(data, t) {
+    R = function(data, t) {
       if (t > self$tau) {
         return(rep(TRUE, nrow(data)))
       }
@@ -107,7 +112,11 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      self$at_risk_D(data, t) & self$at_risk_N(data, t)
+      self$at_risk_D(data, t - 1) & self$at_risk_N(data, t - 1)
+    },
+
+    Z = function(data, t) {
+      !(self$at_risk_D(data, t - 1)) & self$at_risk_N(data, t - 1)
     }
 
   ),

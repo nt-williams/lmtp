@@ -1,6 +1,6 @@
 check_lmtp_data = function(self) {
   for (t in 1:self$tau) {
-    r <- self$at_risk_R(self$natural, t)
+    r <- self$R(self$natural, t)
     o <- self$observed(self$natural, t - 1)
     i <- ii(o, r)
 
