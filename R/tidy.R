@@ -34,10 +34,3 @@ tidy.lmtp_survival <- function(x, ...) {
   out$time <- seq_along(x)
   out[, c(ncol(out), 1:ncol(out) - 1)]
 }
-
-#' @export
-tidy.lmtp_curve <- function(x, ...) {
-  out <- do.call("rbind", lapply(x$estimates, ife::tidy))
-  out$time <- seq_along(x$estimates)
-  out[, c(ncol(out), 1:ncol(out) - 1)]
-}
