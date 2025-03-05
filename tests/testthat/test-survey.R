@@ -24,12 +24,8 @@ tmle <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_bin
 sdr <- sw(lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
                 weights = wts, folds = 2))
 
-curve <- sw(lmtp_curve(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                   weights = wts, folds = 2))
-
 # tests
 test_that("survey weight fidelity", {
   expect_equal(truth, tmle$estimate@x, tolerance = 0.01)
   expect_equal(truth, sdr$estimate@x, tolerance = 0.01)
-  expect_equal(truth, curve$estimates[[1]]@x, tolerance = 0.01)
 })

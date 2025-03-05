@@ -5,7 +5,7 @@ generics::tidy
 #' Tidy a(n) lmtp object
 #'
 #' @param x A `lmtp` object produced by a call to [lmtp::lmtp_tmle()], [lmtp::lmtp_sdr()],
-#' [lmtp::lmtp_survival()], or [lmtp::lmtp_curve()].
+#' [lmtp::lmtp_survival()].
 #' @param ... Unused, included for generic consistency only.
 #'
 #' @examples

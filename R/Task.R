@@ -13,7 +13,7 @@ LmtpTask <- R6::R6Class(
     folds = NULL,
     weights = NULL,
     initialize = function(data, shifted, A, Y, L, W, C, D, k,
-                          id, outcome_type, folds, weights) {
+                          id, outcome_type, bounds, folds, weights) {
       # Identify tau
       self$tau <- private$tau_is(Y, A)
       self$n <- nrow(data)
@@ -30,7 +30,11 @@ LmtpTask <- R6::R6Class(
       self$survival <- outcome_type == "survival"
 
       # Set outcome bounds
-      private$bounds <- private$y_bounds(data[, self$vars$Y])
+      if (is.null(bounds)) {
+        private$bounds <- private$y_bounds(data[, self$vars$Y])
+      } else {
+        private$bounds <- bounds
+      }
 
       # Add cluster IDs
       self$id <- private$add_ids(data, id)

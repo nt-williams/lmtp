@@ -17,14 +17,8 @@ sdr <-
               cens, k = 0, shifted = sc,
               outcome_type = "binomial", folds = 2, mtp = TRUE))
 
-curve <-
-  sw(lmtp_curve(sim_cens, a, "Y", nodes, baseline = NULL,
-              cens, k = 0, shifted = sc,
-              outcome_type = "binomial", folds = 2, mtp = TRUE))
-
 # tests
 test_that("estimator fidelity with shifted data supplied", {
   expect_equal(truth, tmle$estimate@x, tolerance = 0.01)
   expect_equal(truth, sdr$estimate@x, tolerance = 0.01)
-  expect_equal(truth, curve$estimates[[2]]@x, tolerance = 0.01)
 })

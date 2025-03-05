@@ -18,6 +18,7 @@ lmtp_tmle(
   mtp = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
+  bounds = NULL,
   learners_outcome = "glm",
   learners_trt = "glm",
   folds = 10,
@@ -83,6 +84,11 @@ Outcome variable type (i.e., continuous, binomial, survival).}
 \item{id}{[\code{character(1)}]\cr
 An optional column name containing cluster level identifiers.}
 
+\item{bounds}{[\code{numeric(2)}]\cr
+An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
+the bounds will be taken as the minimum and maximum of the observed data.
+Should be left as \code{NULL} if the outcome type is binary.}
+
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 of the outcome regression. Default is \code{"glm"}.}
 
@@ -98,11 +104,6 @@ An optional vector containing sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}
-
-\item{bounds}{[\code{numeric(2)}]\cr
-An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
-the bounds will be taken as the minimum and maximum of the observed data.
-Should be left as \code{NULL} if the outcome type is binary.}
 }
 \value{
 A list of class \code{lmtp} containing the following components:

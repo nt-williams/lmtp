@@ -93,7 +93,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
                       k = Inf, mtp = FALSE,
                       outcome_type = c("binomial", "continuous", "survival"),
-                      id = NULL,
+                      id = NULL, bounds = NULL,
                       learners_outcome = "glm",
                       learners_trt = "glm",
                       folds = 10, weights = NULL,
@@ -102,6 +102,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
   assert_subset(av, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
+  assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
 
   # Check if the treatment is continuous and warn if MTP is false
   check_trt_type(data, unlist(trt), mtp)
@@ -117,7 +118,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     D = compete,
     k = k, id = id,
     outcome_type = match.arg(outcome_type),
-    folds = folds, weights = weights
+    folds = folds, weights = weights,
+    bounds = bounds
   )
 
   # Create progress bar object
@@ -245,6 +247,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
   assert_subset(av, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
+  assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
 
   # Check if the treatment is continuous and warn if MTP is false
   check_trt_type(data, unlist(trt), mtp)
@@ -260,7 +263,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     D = compete,
     k = k, id = id,
     outcome_type = match.arg(outcome_type),
-    folds = folds, weights = weights
+    folds = folds, weights = weights,
+    bounds = bounds
   )
 
   # Create progress bar object

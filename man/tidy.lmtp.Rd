@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{A \code{lmtp} object produced by a call to \code{\link[=lmtp_tmle]{lmtp_tmle()}}, \code{\link[=lmtp_sdr]{lmtp_sdr()}},
-\code{\link[=lmtp_survival]{lmtp_survival()}}, or \code{\link[=lmtp_curve]{lmtp_curve()}}.}
+\code{\link[=lmtp_survival]{lmtp_survival()}}.}
 
 \item{...}{Unused, included for generic consistency only.}
 }

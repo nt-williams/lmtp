@@ -142,3 +142,33 @@ test_that("Contrast assertions", {
     "Assertion on 'type' failed: 'rr' specified but one or more outcome types are not 'binomial' or 'survival'."
   )
 })
+
+test_that("'bounds' issues", {
+  set.seed(56)
+  n <- 1000
+  W <- rnorm(n, 10, 5)
+  A <- 23 + 5*W + rnorm(n)
+  Y <- 7.2*A + 3*W + rnorm(n)
+  ex1_dat <- data.frame(W, A, Y)
+
+  expect_error(
+    lmtp_tmle(ex1_dat, "A", "Y", "W", shift = NULL,
+              outcome_type = "continuous", folds = 1, mtp = TRUE,
+              bounds = c(1100, -50)),
+    "Assertion on 'bounds' failed: Must be sorted."
+  )
+
+  expect_error(
+    lmtp_tmle(ex1_dat, "A", "Y", "W", shift = NULL,
+              outcome_type = "continuous", folds = 1, mtp = TRUE,
+              bounds = c(-Inf, 1100)),
+    "Assertion on 'bounds' failed: Must be finite."
+  )
+
+  expect_error(
+    lmtp_tmle(ex1_dat, "A", "Y", "W", shift = NULL,
+              outcome_type = "continuous", folds = 1, mtp = TRUE,
+              bounds = c(-50, 1100, 20000)),
+    "Assertion on 'bounds' failed: Must have length 2, but has length 3."
+  )
+})

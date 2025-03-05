@@ -37,6 +37,7 @@ Imports:
     data.table (>= 1.13.0),
     checkmate (>= 2.1.0),
     mlr3superlearner,
+    isotone,
     ife,
     lifecycle
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
