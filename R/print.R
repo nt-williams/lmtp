@@ -25,12 +25,3 @@ print.lmtp_survival <- function(x, ...) {
   cli::cli_h2("{.emph Population intervention estimates}")
   print(format(as.data.frame(tidy.lmtp_survival(x)), digits = 3))
 }
-
-#' @export
-print.lmtp_curve <- function(x, ...) {
-  cat("\n")
-  cli::cli_text("{.strong LMTP Estimator}: SDR")
-  cli::cli_text(cat("   "), "{.strong Trt. Policy}: ", cli::col_blue(cli::style_italic("{x$shift}")))
-  cli::cli_h2("{.emph Population intervention estimates}")
-  print(format(as.data.frame(tidy.lmtp_curve(x)), digits = 3))
-}
