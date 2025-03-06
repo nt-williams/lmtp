@@ -30,17 +30,16 @@ casual effects of feasible interventions based on point-treatment and
 longitudinal modified treatment policies as described in Diaz, Williams,
 Hoffman, and Schenck (2020). Two primary estimators are supported, a
 targeted maximum likelihood (TML) estimator and a sequentially doubly
-robust (SDR) estimator (a G-computation and an inverse probability of
-treatment weighting estimator are provided for the sake of being
-thorough but their use is recommended against in favor of the TML and
-SDR estimators). Both binary and continuous outcomes (both with
-censoring) are allowed. **lmtp** is built atop the
+robust (SDR) estimator. Binary, continuous, time-to-event (including
+competing risks), and censored outcomes are allowed. **lmtp** is built
+atop the
 [`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
 computation time when treatment is continuous. Dynamic treatment regimes
-are also supported.
+and incremental propensity scores based on the risk ratio are also
+supported.
 
 A list of papers using **lmtp** is
 [here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
@@ -61,13 +60,6 @@ The stable, development version can be installed from GitHub with:
 
 ``` r
 devtools::install_github("nt-williams/lmtp@devel")
-```
-
-A version allowing for different covariates sets for the treatment,
-censoring, and outcome regressions:
-
-``` r
-devtools::install_github("nt-williams/lmtp@separate-variable-sets")
 ```
 
 ## What even is a modified treatment policy?
@@ -186,9 +178,8 @@ lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, mtp = TRUE, folds = 10)
 
 A variety of other R packages perform similar tasks as **lmtp**.
 However, **lmtp** is the only R package currently capable of estimating
-causal effects for binary, categorical, and continuous exposures in both
-the point treatment and longitudinal setting using traditional causal
-effects or modified treatment policies.
+causal effects for binary, categorical, continuous, and mixture
+exposures in both the point treatment and longitudinal setting.
 
 - [`txshift`](https://github.com/nhejazi/txshift)  
 - [`tmle3`](https://github.com/tlverse/tmle3)  
@@ -219,10 +210,3 @@ statistical methodology.
       doi = {10.1080/01621459.2021.1955691},
       URL = {https://doi.org/10.1080/01621459.2021.1955691},
     }
-
-## References
-
-Iván Díaz, Nicholas Williams, Katherine L. Hoffman & Edward J. Schenck
-(2021) Non-parametric causal effects based on longitudinal modified
-treatment policies, Journal of the American Statistical Association,
-DOI: 10.1080/01621459.2021.1955691
