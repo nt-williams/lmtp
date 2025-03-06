@@ -1,57 +1,30 @@
-#' LMTP Substitution Estimator
+#' Defunct estimators
 #'
 #' @description
-#' `r lifecycle::badge("deprecated")`
+#' `r lifecycle::badge("defunct")`
 #'
-#' This function has been deprecated. Please use [lmtp_tmle()] or [lmtp_sdr()] instead.
+#' These estimators were deprecated to encourage use of `lmtp_tmle()` and `lmtp_sdr()` functions.
 #'
 #' @keywords internal
-#'
-#' @param ... Ignored
-#'
-#' @return \code{NULL}, invisibly.
-#'
-#' @examples
-#' \dontrun{
-#' # This function is deprecated
-#' # Use lmtp_tmle() or lmtp_sdr() instead
-#' }
-#'
+#' @name defunct
+NULL
+
 #' @export
+#' @rdname defunct
 lmtp_sub <- function(...) {
   lifecycle::deprecate_stop(
     when = "2.0.0",
     what = "lmtp_sub()",
-    details = c("It requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()`.",
-                "Visit <https://beyondtheate.com/info_estimators.html> for more information")
+    details = c("G-computation requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()`.")
   )
 }
 
-#' LMTP IPW Estimator
-#'
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' This function has been deprecated. Please use [lmtp_tmle()] or [lmtp_sdr()] instead.
-#'
-#' @keywords internal
-#'
-#' @param ... Ignored
-#'
-#' @return \code{NULL}, invisibly.
-#'
-#' @examples
-#' \dontrun{
-#' # This function is deprecated
-#' # Use lmtp_tmle() or lmtp_sdr() instead
-#' }
-#'
 #' @export
+#' @rdname defunct
 lmtp_ipw <- function(...) {
   lifecycle::deprecate_stop(
     when = "2.0.0",
-    what = "lmtp_sub()",
-    details = c("It requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()`.",
-                "Visit <https://beyondtheate.com/info_estimators.html> for more information")
+    what = "lmtp_ipw()",
+    details = c("IPW requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()` instead.")
   )
 }
