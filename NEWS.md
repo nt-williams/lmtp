@@ -1,14 +1,14 @@
-# lmtp 1.4.1
+# lmtp 1.5.0
 
 ### New Features
 
+-   Added the ability to estimate the so-called "total effect" for survival outcome with competing risks (see issue \#143).
+-   IPW and g-computation estimators are no-longer supported; they have been given deprecation errors. 
 -   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
--   Bootstrap for TMLE with the `boot` argument using a modified TMLE algorithm (https://arxiv.org/abs/1810.03030).
 
 ### Bug Fixes
 
 -   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
--   Bootstrap TMLE uses cumulative density ratios (see issue \#151). 
 
 ### General
 

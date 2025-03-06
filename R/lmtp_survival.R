@@ -26,6 +26,9 @@
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
 #'  present or if time-to-event outcome, must be provided.
+#' @param compete \[\code{character}\]\cr
+#'  An optional vector of column names of competing risk indicators the same
+#'  length as the number of time points of observation.
 #' @param shift \[\code{closure}\]\cr
 #'  A two argument function that specifies how treatment variables should be shifted.
 #'  See examples for how to specify shift functions for continuous, binary, and categorical exposures.
@@ -41,16 +44,12 @@
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
 #'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
-#' @param boot \[\code{logical(1)}\]\cr
-#'  Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-#'  errors will be calculated using the empirical variance of the efficient influence function.
-#'  Ignored if \code{estimator = "lmtp_sdr"}.
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
+#'  of the outcome regression. Default is \code{"glm"}, a main effects GLM.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#'  of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -64,12 +63,10 @@
 #' @example inst/examples/lmtp_survival-ex.R
 #' @export
 lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL,
-                          cens = NULL, shift = NULL, shifted = NULL,
+                          cens = NULL, compete = NULL,
+                          shift = NULL, shifted = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
-                          k = Inf,
-                          mtp = FALSE,
-                          boot = FALSE,
-                          id = NULL,
+                          k = Inf, mtp = FALSE, id = NULL,
                           learners_outcome = "SL.glm",
                           learners_trt = "SL.glm",
                           folds = 10,
@@ -101,7 +98,6 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   if (length(time_vary) == 1) args$time_vary <- time_vary
 
   if (estimator == "lmtp_tmle") {
-    args$boot <- boot
     expr <- expression(do.call(lmtp_tmle, args))
   } else {
     expr <- expression(do.call(lmtp_sdr, args))
@@ -114,6 +110,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     if (length(args$time_vary) > 1) args$time_vary <- time_vary[1:t]
     args$outcome <- outcomes[1:t]
     args$cens <- cens[1:t]
+    args$compete <- compete[1:t]
     args$outcome_type <- ifelse(t == 1, "binomial", "survival")
 
     estimates[[t]] <- future::future(eval(expr), seed = TRUE)
@@ -129,14 +126,14 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   estimates
 }
 
-isotonic_projection <- function(x, alpha = 0.05) {
-  cv <- abs(qnorm(p = alpha / 2))
-  estim <- tidy.lmtp_survival(x)
+isotonic_projection <- function(x) {
+  estim <- do.call("rbind", lapply(x, tidy))
   iso_fit <- isotone::gpava(1:length(x), 1 - estim$estimate)
   for (i in seq_along(x)) {
-    x[[i]]$theta <- (1 - iso_fit$x[i])
-    x[[i]]$low <- x[[i]]$theta - (qnorm(0.975) * x[[i]]$standard_error)
-    x[[i]]$high <- x[[i]]$theta + (qnorm(0.975) * x[[i]]$standard_error)
+    x[[i]]$estimate <- ife::ife(1 - iso_fit$x[i],
+                                x[[i]]$estimate@eif,
+                                x[[i]]$estimate@weights,
+                                x[[i]]$estimate@id)
   }
   x
 }

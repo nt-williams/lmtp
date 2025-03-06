@@ -11,12 +11,12 @@ lmtp_survival(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  compete = NULL,
   shift = NULL,
   shifted = NULL,
   estimator = c("lmtp_tmle", "lmtp_sdr"),
   k = Inf,
   mtp = FALSE,
-  boot = FALSE,
   id = NULL,
   learners_outcome = "SL.glm",
   learners_trt = "SL.glm",
@@ -54,6 +54,10 @@ An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
+\item{compete}{[\code{character}]\cr
+An optional vector of column names of competing risk indicators the same
+length as the number of time points of observation.}
+
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
@@ -74,19 +78,14 @@ all time points.}
 Is the intervention of interest a modified treatment policy?
 Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
 
-\item{boot}{[\code{logical(1)}]\cr
-Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-errors will be calculated using the empirical variance of the efficient influence function.
-Ignored if \code{estimator = "lmtp_sdr"}.}
-
 \item{id}{[\code{character(1)}]\cr
 An optional column name containing cluster level identifiers.}
 
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
+of the outcome regression. Default is \code{"glm"}, a main effects GLM.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
@@ -108,6 +107,7 @@ Estimates are reconstructed using isotonic regression to enforce monotonicity of
 }
 \examples{
 \donttest{
+# Example 1.1
 # Time-to-event analysis with a binary time-invariant exposure. Interested in
 # the effect of treatment being given to all observations on the cumulative
 # incidence of the outcome.
@@ -120,5 +120,18 @@ curve <- lmtp_survival(sim_point_surv, A, Y, W, cens = C, folds = 1,
                        shift = static_binary_on, estimator = "lmtp_tmle")
 
 tidy(curve)
+
+# Example 1.2
+# Time-to-event analysis with a binary time-invariant exposure and a competing-risk.
+lmtp_survival(
+  data = sim_competing_risks,
+  trt = "A",
+  cens = paste0("C", 1:5),
+  compete = paste0("D", 1:5),
+  baseline = paste0("W", 1:5),
+  outcome = paste0("Y", 1:5),
+  shift = static_binary_on,
+  folds = 1
+)
 }
 }

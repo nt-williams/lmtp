@@ -1,31 +1,27 @@
-check_variation <- function(outcome, learners) {
-  if (sd(outcome) < .Machine$double.eps) {
-    return("SL.mean")
-  }
-  learners
-}
-
 #' @importFrom nnls nnls
-run_ensemble <- function(Y, X, learners, outcome_type, id, folds) {
+run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
   family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
   cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
+  features <- setdiff(names(data), c(id, y))
+  X <- data[, features, drop = FALSE]
+  Y <- data[[y]]
   fit <- SuperLearner::SuperLearner(
     Y, X, family = family[[1]], SL.library = learners,
-    id = id, method = "method.NNLS",
+    id = data[[id]], method = "method.NNLS",
     env = environment(SuperLearner::SuperLearner),
     cvControl = cv_control
   )
 
-  if (!sum(fit$coef != 0)) {
-    warning("SuperLearner fit failed. Trying main-effects GLM.", call. = FALSE)
-    fit <- glm(lmtp_tmp_outcome_vector ~ ., data = cbind(lmtp_tmp_outcome_vector = Y, X), family = family[[1]])
-  }
+  class(fit) <- append("lmtp_ensemble", class(fit))
   fit
 }
 
-SL_predict <- function(fit, newdata) {
-  if (inherits(fit, "glm")) {
-    return(as.vector(predict(fit, newdata, type = "response")))
+#' @export
+predict.lmtp_ensemble <- function(object, newdata, tol = .Machine$double.eps, ...) {
+  pred <- NextMethod("predict", newdata = newdata)
+  pred <- pred$pred[, 1]
+  if (is.null(tol)) {
+    return(pred)
   }
-  predict(fit, newdata)$pred[, 1]
+  bound(pred, tol)
 }

@@ -1,0 +1,225 @@
+> a <- c("A_1", "A_2", "A_3", "A_4")
+> bs <- c("W")
+> nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
+> foo <- LmtpVars$new(bs, nodes, a, NULL, NULL, "y", "binomial", 4)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"   "L_1"
+
+[[1]]$outcome
+[1] "W"   "L_1" "A_1"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"   "L_1" "A_1" "L_2"
+
+[[2]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3"
+
+[[3]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3" "A_3"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4"
+
+[[4]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
+
+
+
+> foo <- LmtpVars$new(bs, nodes, a, NULL, NULL, "y", "binomial", 4, k = 0)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"   "L_1"
+
+[[1]]$outcome
+[1] "W"   "L_1" "A_1"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"   "A_1" "L_2"
+
+[[2]]$outcome
+[1] "W"   "L_2" "A_2"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"   "A_2" "L_3"
+
+[[3]]$outcome
+[1] "W"   "L_3" "A_3"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"   "A_3" "L_4"
+
+[[4]]$outcome
+[1] "W"   "L_4" "A_4"
+
+
+
+> foo <- LmtpVars$new(bs, nodes, a, NULL, NULL, "y", "binomial", 4, k = 1)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"   "L_1"
+
+[[1]]$outcome
+[1] "W"   "L_1" "A_1"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"   "L_1" "A_1" "L_2"
+
+[[2]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"   "A_1" "L_2" "A_2" "L_3"
+
+[[3]]$outcome
+[1] "W"   "L_2" "A_2" "L_3" "A_3"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"   "A_2" "L_3" "A_3" "L_4"
+
+[[4]]$outcome
+[1] "W"   "L_3" "A_3" "L_4" "A_4"
+
+
+
+> foo <- LmtpVars$new(bs, nodes, a, NULL, NULL, "y", "binomial", 4, k = 2)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"   "L_1"
+
+[[1]]$outcome
+[1] "W"   "L_1" "A_1"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"   "L_1" "A_1" "L_2"
+
+[[2]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3"
+
+[[3]]$outcome
+[1] "W"   "L_1" "A_1" "L_2" "A_2" "L_3" "A_3"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"   "A_1" "L_2" "A_2" "L_3" "A_3" "L_4"
+
+[[4]]$outcome
+[1] "W"   "L_2" "A_2" "L_3" "A_3" "L_4" "A_4"
+
+
+
+> foo <- LmtpVars$new(bs, NULL, a, NULL, NULL, "y", "binomial", 4)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"
+
+[[1]]$outcome
+[1] "W"   "A_1"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"   "A_1"
+
+[[2]]$outcome
+[1] "W"   "A_1" "A_2"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"   "A_1" "A_2"
+
+[[3]]$outcome
+[1] "W"   "A_1" "A_2" "A_3"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"   "A_1" "A_2" "A_3"
+
+[[4]]$outcome
+[1] "W"   "A_1" "A_2" "A_3" "A_4"
+
+
+
+> foo <- LmtpVars$new(bs, NULL, "A", NULL, NULL, paste0("Y_", 1:4), "survival", 4)
+> lapply(1:4, function(t) {
++   list(trt = foo$history("A", t), outcome = foo$history("L", t + 1))
++ })
+[[1]]
+[[1]]$trt
+[1] "W"
+
+[[1]]$outcome
+[1] "W" "A"
+
+
+[[2]]
+[[2]]$trt
+[1] "W"
+
+[[2]]$outcome
+[1] "W" "A"
+
+
+[[3]]
+[[3]]$trt
+[1] "W"
+
+[[3]]$outcome
+[1] "W" "A"
+
+
+[[4]]
+[[4]]$trt
+[1] "W"
+
+[[4]]$outcome
+[1] "W" "A"
+
+
+
