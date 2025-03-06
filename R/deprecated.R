@@ -13,7 +13,7 @@ NULL
 #' @rdname defunct
 lmtp_sub <- function(...) {
   lifecycle::deprecate_stop(
-    when = "2.0.0",
+    when = "1.5.0",
     what = "lmtp_sub()",
     details = c("G-computation requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()`.")
   )
@@ -23,7 +23,7 @@ lmtp_sub <- function(...) {
 #' @rdname defunct
 lmtp_ipw <- function(...) {
   lifecycle::deprecate_stop(
-    when = "2.0.0",
+    when = "1.5.0",
     what = "lmtp_ipw()",
     details = c("IPW requires the use of correctly pre-specified parametric models for valid statistical inference. Use `lmtp_tmle()` or `lmtp_sdr()` instead.")
   )
