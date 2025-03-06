@@ -104,6 +104,7 @@ regimes for binary, continuous, and survival outcomes.
 | Continuous outcome                                               |   ✓    |
 | Binary outcome                                                   |   ✓    |
 | Censored outcome                                                 |   ✓    |
+| Competing risks                                                  |   ✓    |
 | Mediation                                                        |        |
 | Survey weights                                                   |   ✓    |
 | Super learner                                                    |   ✓    |
@@ -115,11 +116,6 @@ regimes for binary, continuous, and survival outcomes.
 
 ``` r
 library(lmtp)
-#> Loading required package: mlr3superlearner
-#> Loading required package: mlr3learners
-#> Warning: package 'mlr3learners' was built under R version 4.2.3
-#> Loading required package: mlr3
-#> Warning: package 'mlr3' was built under R version 4.2.3
 
 # the data: 4 treatment nodes with time varying covariates and a binary outcome
 head(sim_t4)
@@ -157,14 +153,15 @@ We can now estimate the effect of our treatment policy, `d`. In this
 example, we’ll use the cross-validated TML estimator with 10 folds.
 
 ``` r
-lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mtp", folds = 10)
+lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, mtp = TRUE, folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
-#> Population intervention estimate
-#>       Estimate: 0.2526
-#>     Std. error: 0.0223
-#>         95% CI: (0.2089, 0.2962)
+#> ── Population intervention estimate ──
+#> 
+#>       Estimate: 0.25
+#>     Std. error: 0.02
+#> 95% Conf. int.: 0.2, 0.29
 ```
 
 ## Data structure

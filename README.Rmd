@@ -79,6 +79,7 @@ Yes! **lmtp** can estimate the effects of deterministic, static treatment effect
 | Continuous outcome                                               |   ✓    |
 | Binary outcome                                                   |   ✓    |
 | Censored outcome                                                 |   ✓    |
+| Competing risks                                                  |   ✓    | 
 | Mediation                                                        |        |
 | Survey weights                                                   |   ✓    |
 | Super learner                                                    |   ✓    |
@@ -116,14 +117,15 @@ L <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 We can now estimate the effect of our treatment policy, `d`. In this example, we'll use the cross-validated TML estimator with 10 folds.
 
 ```{r, eval = FALSE}
-lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, intervention_type = "mtp", folds = 10)
+lmtp_tmle(sim_t4, A, "Y", time_vary = L, shift = policy, mtp = TRUE, folds = 10)
 #> LMTP Estimator: TMLE
 #>    Trt. Policy: (policy)
 #> 
-#> Population intervention estimate
-#>       Estimate: 0.2526
-#>     Std. error: 0.0223
-#>         95% CI: (0.2089, 0.2962)
+#> ── Population intervention estimate ──
+#> 
+#>       Estimate: 0.25
+#>     Std. error: 0.02
+#> 95% Conf. int.: 0.2, 0.29
 ```
 
 ## Data structure

@@ -19,8 +19,7 @@ A list of class \code{lmtp_contrast} containing the following components:
 
 \item{type}{The type of contrast performed.}
 \item{null}{The null hypothesis.}
-\item{vals}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
-\item{eifs}{Un-centered estimated influence functions for contrasts estimated.}
+\item{estimates}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
 }
 \description{
 Estimates contrasts of multiple LMTP fits compared to either a known reference value

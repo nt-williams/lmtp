@@ -29,5 +29,5 @@ lmtp_sdr(iptwExWide, a, "outcome", baseline = baseline, time_vary = tv,
 }
 }
 \seealso{
-\code{\link[=lmtp_tmle]{lmtp_tmle()}}, \code{\link[=lmtp_sdr]{lmtp_sdr()}}, \code{\link[=lmtp_sub]{lmtp_sub()}}, \code{\link[=lmtp_ipw]{lmtp_ipw()}}
+\code{\link[=lmtp_tmle]{lmtp_tmle()}}, \code{\link[=lmtp_sdr]{lmtp_sdr()}}
 }

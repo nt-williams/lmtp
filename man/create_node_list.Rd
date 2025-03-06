@@ -34,13 +34,12 @@ it is provided so the analyst can confirm how estimators will use variables
 before actually performing the estimation procedure.
 }
 \examples{
+\dontrun{
 a <- c("A_1", "A_2", "A_3", "A_4")
 bs <- c("W_1", "W_2")
 time_vary <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 
 # assuming no Markov property
 create_node_list(a, 4, time_vary, bs, k = Inf)
-
-# assuming a Markov property
-create_node_list(a, 4, time_vary, bs, k = 0)
+}
 }

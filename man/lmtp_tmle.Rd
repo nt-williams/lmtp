@@ -11,11 +11,11 @@ lmtp_tmle(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  compete = NULL,
   shift = NULL,
   shifted = NULL,
   k = Inf,
   mtp = FALSE,
-  boot = FALSE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
@@ -57,6 +57,10 @@ An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
+\item{compete}{[\code{character}]\cr
+An optional vector of column names of competing risk indicators the same
+length as the number of time points of observation. Only used when \code{outcome_type = "survival"}.}
+
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
@@ -73,10 +77,6 @@ all time points.}
 \item{mtp}{[\code{logical(1)}]\cr
 Is the intervention of interest a modified treatment policy?
 Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
-
-\item{boot}{[\code{logical(1)}]\cr
-Compute standard errors using the bootstrap? Default is \code{FALSE}. If \code{FALSE}, standard
-errors will be calculated using the empirical variance of the efficient influence function.}
 
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}
@@ -109,12 +109,7 @@ Output of \code{lmtp_control()}.}
 A list of class \code{lmtp} containing the following components:
 
 \item{estimator}{The estimator used, in this case "TMLE".}
-\item{theta}{The estimated population LMTP effect.}
-\item{standard_error}{The estimated standard error of the LMTP effect.}
-\item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
-\item{high}{Upper bound of the 95\% confidence interval of the LMTP effect.}
-\item{eif}{The estimated, un-centered, influence function of the estimate,
-\code{NULL} if \code{boot = TRUE}.}
+\item{estimates}{The estimated population LMTP effect as an \code{ife} object.}
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
@@ -303,5 +298,19 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_tmle(multivariate_data, A, Y, W, shift = d,
             outcome_type = "continuous", folds = 1, mtp = TRUE)
+
+  # Example 7.1
+  # Time-to-event analysis with a binary time-invariant exposure and a competing-risk.
+  lmtp_tmle(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }
 }
