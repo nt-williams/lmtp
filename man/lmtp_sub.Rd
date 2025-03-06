@@ -24,3 +24,4 @@ This function has been deprecated. Please use \code{\link[=lmtp_tmle]{lmtp_tmle(
 }
 
 }
+\keyword{internal}

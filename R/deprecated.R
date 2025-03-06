@@ -5,6 +5,7 @@
 #'
 #' This function has been deprecated. Please use [lmtp_tmle()] or [lmtp_sdr()] instead.
 #'
+#' @keywords internal
 #'
 #' @param ... Ignored
 #'
@@ -33,6 +34,7 @@ lmtp_sub <- function(...) {
 #'
 #' This function has been deprecated. Please use [lmtp_tmle()] or [lmtp_sdr()] instead.
 #'
+#' @keywords internal
 #'
 #' @param ... Ignored
 #'
