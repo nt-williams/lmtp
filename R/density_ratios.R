@@ -44,9 +44,7 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
 
     fit <- run_ensemble(stacked[i, vars], "..i..lmtp_stack_indicator",
                         learners, "binomial", "..i..lmtp_id",
-                        control$.learners_trt_folds,
-                        control$.discrete,
-                        control$.info)
+                        control$.learners_trt_folds)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit

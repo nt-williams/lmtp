@@ -43,9 +43,7 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
                         learners,
                         ifelse(t != task$tau, "continuous", task$outcome_type),
                         "..i..lmtp_id",
-                        control$.learners_outcome_folds,
-                        control$.discrete,
-                        control$.info)
+                        control$.learners_outcome_folds)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit
@@ -90,8 +88,6 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
     m_shifted_valid[which(!d0v), t] <- 1
 
     natural$train[, task$vars$Y] <- eif(ratios, m_shifted_train, m_natural_train, t)
-    # natural$train[which(!y1), task$vars$Y] <- 0
-    # # natural$train[which(!(task$at_risk_D(natural$train, t))), task$vars$Y] <- 1
 
     pb()
   }

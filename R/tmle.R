@@ -47,9 +47,7 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
                         learners,
                         ifelse(t != task$tau, "continuous", task$outcome_type),
                         "..i..lmtp_id",
-                        control$.learners_outcome_folds,
-                        control$.discrete,
-                        control$.info)
+                        control$.learners_outcome_folds)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit

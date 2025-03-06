@@ -18,8 +18,8 @@ lmtp_survival(
   k = Inf,
   mtp = FALSE,
   id = NULL,
-  learners_outcome = "glm",
-  learners_trt = "glm",
+  learners_outcome = "SL.glm",
+  learners_trt = "SL.glm",
   folds = 10,
   weights = NULL,
   control = lmtp_control()
