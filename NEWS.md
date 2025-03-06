@@ -1,9 +1,3 @@
-# lmtp 1.4.2
-
-### General
-
--   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
-
 # lmtp 1.4.1
 
 ### New Features
@@ -13,7 +7,12 @@
 
 ### Bug Fixes
 
+-   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
+-   Bootstrap TMLE uses cumulative density ratios (see issue \#151). 
+
 ### General
+
+-   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
 
 # lmtp 1.4.0
 
