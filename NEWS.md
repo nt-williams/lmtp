@@ -1,3 +1,10 @@
+# lmtp 2.0.0
+
+### New Features
+
+-   Added the ability to estimate the so-called "total effect" for survival outcome with competing risks (see issue \#143).
+-   IPW and g-computation estimators are no-longer supported; they have been removed from the package. 
+
 # lmtp 1.4.1
 
 ### New Features
