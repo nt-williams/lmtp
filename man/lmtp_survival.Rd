@@ -82,10 +82,10 @@ Default is \code{FALSE}. If treatment variables are continuous this should be \c
 An optional column name containing cluster level identifiers.}
 
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"glm"}, a main effects GLM.}
+of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
+of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
