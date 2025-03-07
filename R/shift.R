@@ -52,7 +52,7 @@ shift_trt_list <- function(data, trt, .f) {
       out[[col]] <- new[[col]]
     }
   }
-  out
+  as.data.frame(out, check.names = FALSE)
 }
 
 #' Turn All Treatment Nodes On
