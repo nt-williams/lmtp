@@ -37,20 +37,22 @@ shift_cens <- function(data, cens) {
 }
 
 shift_trt_character <- function(data, trt, .f) {
+  out <- as.list(data)
   for (a in trt) {
-    data[[a]] <- .f(data, a)
+    out[[a]] <- .f(data, a)
   }
-  data
+  as.data.frame(out, check.names = FALSE)
 }
 
 shift_trt_list <- function(data, trt, .f) {
+  out <- as.list(data)
   for (a in trt) {
     new <- .f(data, a)
     for (col in a) {
-      data[[col]] <- new[[col]]
+      out[[col]] <- new[[col]]
     }
   }
-  data
+  out
 }
 
 #' Turn All Treatment Nodes On

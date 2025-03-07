@@ -18,8 +18,8 @@ lmtp_survival(
   k = Inf,
   mtp = FALSE,
   id = NULL,
-  learners_outcome = "SL.glm",
-  learners_trt = "SL.glm",
+  learners_outcome = "glm",
+  learners_trt = "glm",
   folds = 10,
   weights = NULL,
   control = lmtp_control()
@@ -81,10 +81,10 @@ Default is \code{FALSE}. If treatment variables are continuous this should be \c
 \item{id}{[\code{character(1)}]\cr
 An optional column name containing cluster level identifiers.}
 
-\item{learners_outcome}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
+\item{learners_outcome}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 of the outcome regression. Default is \code{"glm"}, a main effects GLM.}
 
-\item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
+\item{learners_trt}{[\code{character}]\cr A vector of \code{mlr3superlearner} algorithms for estimation
 of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 \bold{Only include candidate learners capable of binary classification}.}
 

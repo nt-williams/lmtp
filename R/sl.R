@@ -1,17 +1,14 @@
-#' @importFrom nnls nnls
-run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
-  family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
-  cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
-  features <- setdiff(names(data), c(id, y))
-  X <- data[, features, drop = FALSE]
-  Y <- data[[y]]
-  fit <- SuperLearner::SuperLearner(
-    Y, X, family = family[[1]], SL.library = learners,
-    id = data[[id]], method = "method.NNLS",
-    env = environment(SuperLearner::SuperLearner),
-    cvControl = cv_control
+run_ensemble <- function(data, y, learners, outcome_type, id, folds, discrete, info) {
+  fit <- mlr3superlearner::mlr3superlearner(
+    data = data,
+    target = y,
+    library = learners,
+    outcome_type = outcome_type,
+    folds = folds,
+    group = id,
+    discrete = discrete,
+    info = info
   )
-
   class(fit) <- append("lmtp_ensemble", class(fit))
   fit
 }
@@ -19,7 +16,6 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
 #' @export
 predict.lmtp_ensemble <- function(object, newdata, tol = .Machine$double.eps, ...) {
   pred <- NextMethod("predict", newdata = newdata)
-  pred <- pred$pred[, 1]
   if (is.null(tol)) {
     return(pred)
   }

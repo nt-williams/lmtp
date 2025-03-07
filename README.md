@@ -33,7 +33,7 @@ targeted maximum likelihood (TML) estimator and a sequentially doubly
 robust (SDR) estimator. Binary, continuous, time-to-event (including
 competing risks), and censored outcomes are allowed. **lmtp** is built
 atop the
-[`SuperLearner`](https://CRAN.R-project.org/package=SuperLearner)
+[`mlr3superlearner`](https://CRAN.R-project.org/package=mlr3superlearner)
 package to utilize ensemble machine learning for estimation. The
 treatment mechanism is estimated via a density ratio classification
 procedure irrespective of treatment variable type providing decreased
