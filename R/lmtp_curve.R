@@ -121,6 +121,7 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   # Estimate density ratios
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  cf_sporadic(task, learners_trt, control, pb)
 
   # Estimate outcome regression
   curve <- cf_curve(task, ratios$ratios, learners_outcome, control, pb)
