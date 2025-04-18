@@ -121,15 +121,16 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   # Estimate density ratios
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
-  cf_sporadic(task, learners_trt, control, pb)
+  sporadic_weights <- cf_sporadic(task, learners_trt, control, pb)
 
   # Estimate outcome regression
-  curve <- cf_curve(task, ratios$ratios, learners_outcome, control, pb)
+  curve <- cf_curve(task, ratios$ratios, sporadic_weights$weights, learners_outcome, control, pb)
 
   theta_curve(
     task = task,
     m = list(natural = curve$natural, shifted = curve$shifted),
     r = ratios$ratios,
+    sporadic_weights = sporadic_weights$weights,
     fits_m = curve$fits,
     fits_r = ratios$fits,
     shift = deparse(substitute((shift)))

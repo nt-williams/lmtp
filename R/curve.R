@@ -1,9 +1,9 @@
-cf_curve <- function(task, ratios, learners, control, pb) {
+cf_curve <- function(task, ratios, sporadic_weights, learners, control, pb) {
   ans <- vector("list", length = length(task$folds))
 
   for (fold in seq_along(task$folds)) {
     ans[[fold]] <- future::future({
-      estimate_curve_sdr(task, fold, ratios, learners, control, pb)
+      estimate_curve_sdr(task, fold, ratios, sporadic_weights, learners, control, pb)
     },
     seed = TRUE)
   }
@@ -15,7 +15,7 @@ cf_curve <- function(task, ratios, learners, control, pb) {
        fits = lapply(ans, \(x) x[["fits"]]))
 }
 
-estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
+estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, control, pb) {
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
   ratios <- get_folded_data(ratios, task$folds, fold)$train
@@ -86,7 +86,7 @@ estimate_curve_sdr <- function(task, fold, ratios, learners, control, pb) {
       psuedo <- unlist(lapply((t + 1):task$tau, function(x) {
         l <- x - t + 1
         tau <- ncol(mnt[[x]])
-        eif(ratios, mst[[x]], mnt[[x]], l, tau)
+        eif(ratios, sporadic_weights, mst[[x]], mnt[[x]], l, tau)
       }))
       natural$train[, "..i..Y_1"] <- c(psuedo, rep(NA_real_, nrow(natural$train) - length(psuedo)))
     }

@@ -25,9 +25,10 @@ theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
   out
 }
 
-theta_curve <- function(task, m, r, fits_m, fits_r, shift) {
+theta_curve <- function(task, m, r, sporadic_weights, fits_m, fits_r, shift) {
+  browser()
   ics <- lapply(1:task$tau, function(t) {
-    eif(r[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
+    eif(r[, 1:t, drop = FALSE], sporadic_weights[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
   })
 
   thetas <- unlist(lapply(ics, \(x) weighted.mean(x, task$weights)))
