@@ -1,10 +1,10 @@
-theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
-  ic <- eif(r, m$shifted, m$natural)
+theta_dr <- function(task, sequential_regressions, density_ratios, fits_m, fits_r, shift, augmented = FALSE) {
+  ic <- eif(density_ratios, shifted = sequential_regressions$shifted, natural = sequential_regressions$natural)
 
   if (augmented) {
     theta <- weighted.mean(ic, task$weights)
   } else {
-    theta <- weighted.mean(m$shifted[, 1], task$weights)
+    theta <- weighted.mean(sequential_regressions$shifted[, 1], task$weights)
   }
 
   ic <- task$rescale(ic)
@@ -14,8 +14,8 @@ theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
     estimator = ifelse(augmented, "SDR", "TMLE"),
     estimate = ife::ife(theta, ic, task$weights, as.character(task$id)),
     shift = shift,
-    outcome_reg = task$rescale(m$shifted),
-    density_ratios = r,
+    outcome_reg = task$rescale(sequential_regressions$shifted),
+    density_ratios = density_ratios,
     fits_m = fits_m,
     fits_r = fits_r,
     outcome_type = task$outcome_type
@@ -26,7 +26,6 @@ theta_dr <- function(task, m, r, fits_m, fits_r, shift, augmented = FALSE) {
 }
 
 theta_curve <- function(task, m, r, sporadic_weights, fits_m, fits_r, shift) {
-  browser()
   ics <- lapply(1:task$tau, function(t) {
     eif(r[, 1:t, drop = FALSE], sporadic_weights[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
   })

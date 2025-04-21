@@ -3,6 +3,9 @@ eif <- function(density_ratios, sporadic_weights, shifted, natural, t, tau) {
   if (missing(t)) t <- 1
   # natural[is.na(natural)] <- -999
   # shifted[is.na(shifted)] <- -999
+  if (missing(sporadic_weights)) {
+    sporadic_weights <- matrix(1, nrow = nrow(density_ratios), ncol = length(t:tau))
+  }
   m <- shifted[, (t + 1):(tau + 1), drop = FALSE] - natural[, t:tau, drop = FALSE]
   rowSums(compute_weights(density_ratios, sporadic_weights, t, tau) * m, na.rm = TRUE) + shifted[, t]
 }

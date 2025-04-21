@@ -131,8 +131,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
+    sequential_regressions = list(natural = estims$natural, shifted = estims$shifted),
+    density_ratios = ratios$ratios,
     fits_m = estims$fits,
     fits_r = ratios$fits,
     shift = deparse(substitute((shift))),
@@ -271,8 +271,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
+    sequential_regressions = list(natural = estims$natural, shifted = estims$shifted),
+    density_ratios = ratios$ratios,
     fits_m = estims$fits,
     fits_r = ratios$fits,
     shift = deparse(substitute((shift))),
