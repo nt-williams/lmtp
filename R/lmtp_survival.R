@@ -97,12 +97,6 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   if (length(trt) == 1) args$trt <- trt
   if (length(time_vary) == 1) args$time_vary <- time_vary
 
-  if (estimator == "lmtp_tmle") {
-    expr <- expression(do.call(lmtp_tmle, args))
-  } else {
-    expr <- expression(do.call(lmtp_sdr, args))
-  }
-
   t <- 1
   cli::cli_progress_step("Working on time {t}/{tau}...")
   for (t in 1:tau) {
@@ -113,7 +107,12 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
     args$compete <- compete[1:t]
     args$outcome_type <- ifelse(t == 1, "binomial", "survival")
 
-    estimates[[t]] <- future::future(eval(expr), seed = TRUE)
+    if (estimator == "lmtp_tmle") {
+      estimates[[t]] <- future::future(do.call(lmtp_tmle, args), seed = TRUE)
+    } else {
+      estimates[[t]] <- future::future(do.call(lmtp_sdr, args), seed = TRUE)
+    }
+
     cli::cli_progress_update()
   }
 
