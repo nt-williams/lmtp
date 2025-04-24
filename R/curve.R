@@ -48,6 +48,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   }
 
   fits <- vector("list", length = task$tau)
+  # ONLY WHEN L (T) = 1 DO I APPLY THE SPORADIC WEIGHTS
   for (t in 1:task$tau) {
     at_risk <- natural$train$..i..N == 1 & natural$train$..i..D_1 == 0
     at_risk[is.na(at_risk)] <- FALSE
@@ -86,7 +87,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
       psuedo <- unlist(lapply((t + 1):task$tau, function(x) {
         l <- x - t + 1
         tau <- ncol(mnt[[x]])
-        eif(ratios, sporadic_weights, mst[[x]], mnt[[x]], l, tau)
+        eif(ratios, sporadic_weights, mst[[x]], mnt[[x]], l, tau, t)
       }))
       natural$train[, "..i..Y_1"] <- c(psuedo, rep(NA_real_, nrow(natural$train) - length(psuedo)))
     }
