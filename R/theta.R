@@ -46,6 +46,7 @@ theta_curve <- function(task, influence_functions, sequential_regressions, densi
     ),
     outcome_reg = lapply(sequential_regressions, \(x) task$rescale(x)),
     density_ratios = density_ratios,
+    sporadic_weights = sporadic_weights,
     fits_m = fits_m,
     fits_r = fits_r,
     fits_sporadic = fits_sporadic,

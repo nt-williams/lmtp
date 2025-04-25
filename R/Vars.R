@@ -23,12 +23,15 @@ LmtpVars <- R6Class("LmtpVars",
       self$A <- A
       self$C <- C
 
-      if (outcome_type == "survival") {
+      if (length(Y) > 1) {
         self$Y <- last(Y)
         self$N <- Y[1:length(Y) - 1]
-        self$D <- D
       } else {
         self$Y <- Y
+      }
+
+      if (outcome_type == "survival") {
+        self$D <- D
       }
 
       self$k <- k

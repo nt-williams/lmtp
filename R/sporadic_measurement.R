@@ -23,8 +23,6 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
   # List to store model fits
   fits <- vector("list", length = task$tau)
 
-  # For now this only programmed to work with a survival outcome
-  # TODO: NEED TO START PASSING TIME-VARYING OUTCOMES TO THE OUTCOME NODE
   for (t in 1:task$tau) {
     # Indicators for censoring
     i <- task$observed(natural$train, t - 1)
@@ -66,10 +64,12 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
     }
 
     # Save fit
-    if (control$.return_full_fits) {
-      fits[[t]] <- fit
-    } else {
-      fits[[t]] <- extract_sl_weights(fit)
+    if (class(fit)[1] == "lmtp_ensemble") {
+      if (control$.return_full_fits) {
+        fits[[t]] <- fit
+      } else {
+        fits[[t]] <- extract_sl_weights(fit)
+      }
     }
 
     # Indicators for censoring in the validation set

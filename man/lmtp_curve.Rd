@@ -37,8 +37,8 @@ Vectors should contain column names for the treatment variables at each time poi
 should be ordered following the time ordering of the model.}
 
 \item{outcome}{[\code{character}]\cr
-The column name of the outcome variable. In the case of time-to-event
-analysis, a vector containing the columns names of intermediate outcome variables and the final
+The column name(s) of the outcome variable. In the case of time-to-event
+analysis or an outcome with sporadic measurement, a vector containing the columns names of intermediate outcome variables and the final
 outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 is binary, data should be coded as 0 and 1.}
 
@@ -112,10 +112,12 @@ A list of class \code{lmtp_curve} containing the following components:
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{A list of length Tau, where each index, t, is a n x t + 1 matrix of outcome regression predictions.}
 \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
+\item{sporadic_weights}{An n x Tau matrix of the estimated, non-cumulative, sporadic measurment inverse probability weights.}
 \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
 for each fold for the outcome regression.}
 \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
 for each fold of density ratio estimation.}
+\item{fits_sporadic}{A list the same length as \code{folds}, containing the fits at each time-point for the probability of an observation being measured.}
 \item{outcome_type}{The outcome variable type.}
 }
 \description{

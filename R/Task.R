@@ -90,7 +90,7 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      if (is.null(self$vars$N)) {
+      if (is.null(self$vars$N) || isFALSE(self$survival)) {
         return(rep(TRUE, nrow(data)))
       }
 
@@ -107,16 +107,12 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      # always at risk and no competing risks
-      if (is.null(self$vars$N) & is.null(self$vars$D)) {
+      # If not a survival outcome, always at risk
+      if (isFALSE(self$survival)) {
         return(rep(TRUE, nrow(data)))
       }
 
       self$at_risk_D(data, t - 1) & self$at_risk_N(data, t - 1)
-    },
-
-    Z = function(data, t) {
-      !(self$at_risk_D(data, t - 1)) & self$at_risk_N(data, t - 1)
     }
 
   ),
