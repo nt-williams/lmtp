@@ -41,6 +41,8 @@ pivot <- function(data, vars) {
     longer$..i..C_1_lag <- ave(longer$..i..C_1, longer$..i..wide_id, FUN = \(x) c(1, x[-length(x)]))
   }
 
+  longer$..i..s <- as.numeric(longer$time)
+
   row.names(longer) <- NULL
   as.data.frame(longer)
 }
