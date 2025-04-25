@@ -117,7 +117,7 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   # Create progress bar object
-  pb <- progressr::progressor(task$tau*folds*2)
+  pb <- progressr::progressor(task$tau*folds*3)
 
   # Estimate density ratios
   ratios <- cf_r(task, learners_trt, mtp, control, pb)
@@ -128,11 +128,13 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   theta_curve(
     task = task,
-    m = list(natural = curve$natural, shifted = curve$shifted),
-    r = ratios$ratios,
+    influence_functions = curve$influence_functions,
+    sequential_regressions = curve$shifted,
+    density_ratios = ratios$ratios,
     sporadic_weights = sporadic_weights$weights,
     fits_m = curve$fits,
     fits_r = ratios$fits,
+    fits_sporadic = sporadic_weights$fits,
     shift = deparse(substitute((shift)))
   )
 }

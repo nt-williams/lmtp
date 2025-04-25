@@ -90,8 +90,6 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
     m_shifted_valid[which(!d0v), t] <- 1
 
     natural$train[, task$vars$Y] <- eif(ratios, shifted = m_shifted_train, natural = m_natural_train, t = t)
-    # natural$train[which(!y1), task$vars$Y] <- 0
-    # # natural$train[which(!(task$at_risk_D(natural$train, t))), task$vars$Y] <- 1
 
     pb()
   }

@@ -25,8 +25,7 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
   # For now this only programmed to work with a survival outcome
   # TODO: NEED TO START PASSING TIME-VARYING OUTCOMES TO THE OUTCOME NODE
-  for (t in 1:(task$tau - 1)) {
-    browser()
+  for (t in 1:task$tau) {
     # Indicators for censoring
     i <- task$observed(natural$train, t - 1)
 
@@ -79,7 +78,7 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
     # Create an indicator for sporadic measurement in the validation set
     # Using same logic as for training data
     if (is.null(task$vars$N[t])) {
-      ..i..R <- rep(0, nrow(natural$train))
+      ..i..R <- rep(0, nrow(natural$valid))
     } else {
       ..i..R <- as.numeric(task$observed(natural$valid, t) & is.na(natural$valid[[task$vars$N[t]]]))
     }
@@ -90,6 +89,8 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
     # Create IPW weights
     weights[, t] <- (!..i..R) / pred
+
+    pb()
   }
 
   list(weights = weights, fits = fits)

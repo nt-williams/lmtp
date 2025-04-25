@@ -10,7 +10,7 @@ cf_curve <- function(task, ratios, sporadic_weights, learners, control, pb) {
 
   ans <- future::value(ans)
 
-  list(natural = lapply(1:task$tau, \(t) recombine(rbind_depth_2(ans, "natural", t), task$folds)),
+  list(influence_functions = recombine(rbind_depth(ans, "influence_functions"), task$folds),
        shifted = lapply(1:task$tau, \(t) recombine(rbind_depth_2(ans, "shifted", t), task$folds)),
        fits = lapply(ans, \(x) x[["fits"]]))
 }
@@ -18,7 +18,8 @@ cf_curve <- function(task, ratios, sporadic_weights, learners, control, pb) {
 estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, control, pb) {
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
-  ratios <- get_folded_data(ratios, task$folds, fold)$train
+  ratios <- get_folded_data(ratios, task$folds, fold)
+  sporadic_weights <- get_folded_data(sporadic_weights, task$folds, fold)
 
   # Matrix to store predictions under the intervention for the training data
   mst <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$train), ncol = tau + 1))
@@ -28,6 +29,9 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   msv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau + 1))
   # Matrix to store predictions under the observed for the validation data
   mnv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau))
+
+  # Matrix to store final influence functions
+  influence_functions <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
 
   # Pivot into long format
   natural <- lapply(natural, \(x) pivot(x, task$vars))
@@ -96,17 +100,26 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
     msv <- update_m(msv, fit, usv, t, task$tau)
 
     # Only When t (l in the paper) = 1 do we apply the sporadic weights
-    if ((t + 1) <= task$tau) {
-      psuedo <- unlist(lapply((t + 1):task$tau, function(x) {
-        l <- x - t + 1
-        tau <- ncol(mnt[[x]])
-        eif(ratios, sporadic_weights, mst[[x]], mnt[[x]], l, tau, t)
-      }))
-      natural$train[, "..i..Y_1"] <- c(psuedo, rep(NA_real_, nrow(natural$train) - length(psuedo)))
+    pseudo <- list()
+    for (s in t:task$tau) {
+      tau <- ncol(mnt[[s]])
+
+      if (s == t) {
+        # If the smallest time point in the sequence from t:tau use validation data to calculate EIF for theta at time t
+        influence_functions[, t] <- eif(ratios$valid, sporadic_weights$valid, msv[[s]], mnv[[s]], t = 1, tau = tau, l = t)
+      } else {
+        # Otherwise calculate the DR transformation using training values as the pseudo outcome for the next iteration
+        dr_transformation <- eif(ratios$train, sporadic_weights$train, mst[[s]], mnt[[s]], t = (s - t + 1), tau = tau, l = t)
+        pseudo[[length(pseudo) + 1]] <- dr_transformation
+      }
     }
 
+    # Add the pseudo outcomes to the training data
+    pseudo <- unlist(pseudo)
+    natural$train[, "..i..Y_1"] <- c(pseudo, rep(NA_real_, nrow(natural$train) - length(pseudo)))
+
     # After the first iteration, R becomes 1 for all observations
-    # Subsetting is only based on censoring for iterations > 1
+    # Sub-setting is only based on censoring for iterations > 1
     if (t == 1) {
       natural$train$..i..R <- 1
     }
@@ -115,7 +128,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   }
 
   list(
-    natural = mnv,
+    influence_functions = influence_functions,
     shifted = msv,
     fits = fits,
     lmtp_id = natural$valid$..i..lmtp_id
@@ -133,8 +146,6 @@ predict_long <- function(fit, newdata, t, tau) {
   outcome_free <- newdata$..i..N[time] == 1
   # Indicator for not experiencing competing risk already
   competing_risk_free <- newdata$..i..D_1[time] == 0
-
-  # at_risk[is.na(at_risk)] <- FALSE
 
   predictions[is_observed[time], 1] <- predict(fit, newdata[time & is_observed, ], NULL)
   predictions[!outcome_free, 1] <- 0

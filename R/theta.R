@@ -25,10 +25,8 @@ theta_dr <- function(task, sequential_regressions, density_ratios, fits_m, fits_
   out
 }
 
-theta_curve <- function(task, m, r, sporadic_weights, fits_m, fits_r, shift) {
-  ics <- lapply(1:task$tau, function(t) {
-    eif(r[, 1:t, drop = FALSE], sporadic_weights[, 1:t, drop = FALSE], m$shifted[[t]], m$natural[[t]])
-  })
+theta_curve <- function(task, influence_functions, sequential_regressions, density_ratios, sporadic_weights, fits_m, fits_r, fits_sporadic, shift) {
+  ics <- as.list(as.data.frame(influence_functions))
 
   thetas <- unlist(lapply(ics, \(x) weighted.mean(x, task$weights)))
 
@@ -46,10 +44,11 @@ theta_curve <- function(task, m, r, sporadic_weights, fits_m, fits_r, shift) {
       seq_along(ics),
       \(x) ife::ife(thetas[[x]], ics[[x]], task$weights, as.character(task$id))
     ),
-    outcome_reg = lapply(m$shifted, \(x) task$rescale(x)),
-    density_ratios = r,
+    outcome_reg = lapply(sequential_regressions, \(x) task$rescale(x)),
+    density_ratios = density_ratios,
     fits_m = fits_m,
     fits_r = fits_r,
+    fits_sporadic = fits_sporadic,
     shift = shift,
     outcome_type = task$outcome_type
   )
