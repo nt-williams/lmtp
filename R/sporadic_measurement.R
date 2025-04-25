@@ -40,7 +40,7 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
     # Create an indicator for sporadic missingness
     # If there is no time-varying outcome, there can't be sporadic outcome measurement
-    if (is.null(task$vars$N[t])) {
+    if (is.null(task$vars$N[t]) || t == task$tau) {
       ..i..R <- rep(0, nrow(natural$train))
     } else {
       # Otherwise, sporadic outcome measurement exists if an observation is uncensored, but the outcome is missing
@@ -77,7 +77,7 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
     # Create an indicator for sporadic measurement in the validation set
     # Using same logic as for training data
-    if (is.null(task$vars$N[t])) {
+    if (is.null(task$vars$N[t]) || t == task$tau) {
       ..i..R <- rep(0, nrow(natural$valid))
     } else {
       ..i..R <- as.numeric(task$observed(natural$valid, t) & is.na(natural$valid[[task$vars$N[t]]]))
