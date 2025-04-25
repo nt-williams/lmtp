@@ -123,14 +123,23 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
 }
 
 predict_long <- function(fit, newdata, t, tau) {
+  # Create indicators for the subset of rows to use based on time
   time <- as.numeric(newdata$time) <= rev(1:tau)[t]
-  ans <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
-  observed <- newdata$..i..C_1_lag == 1
-  at_risk <- newdata$..i..N[time] == 1 & newdata$..i..D_1[time] == 0
-    !is.na(newdata$..i..N[time]) & !is.na(newdata$..i..D_1[time])
-  ans[observed[time], 1] <- predict(fit, newdata[time & observed, ], NULL)
-  ans[!at_risk, 1] <- 0
-  ans[, 1]
+  # Empty matrix to store predictions
+  predictions <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
+  # Indicator for not having been censored at the previous time point
+  is_observed <- newdata$..i..C_1_lag == 1
+  # Indicator for not experiencing the outcome already
+  outcome_free <- newdata$..i..N[time] == 1
+  # Indicator for not experiencing competing risk already
+  competing_risk_free <- newdata$..i..D_1[time] == 0
+
+  # at_risk[is.na(at_risk)] <- FALSE
+
+  predictions[is_observed[time], 1] <- predict(fit, newdata[time & is_observed, ], NULL)
+  predictions[!outcome_free, 1] <- 0
+  predictions[!competing_risk_free, 1] <- 1
+  predictions[, 1]
 }
 
 update_m <- function(m, fit, newdata, t, tau) {
