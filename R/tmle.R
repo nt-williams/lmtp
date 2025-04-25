@@ -1,9 +1,7 @@
 cf_tmle <- function(task, ratios, learners, control, pb) {
   ans <- vector("list", length = length(task$folds))
 
-  ratios <- matrix(t(apply(ratios, 1, cumprod)),
-                   nrow = nrow(ratios),
-                   ncol = ncol(ratios))
+  ratios <- matrix(t(apply(ratios, 1, cumprod)), nrow = nrow(ratios), ncol = ncol(ratios))
 
   for (fold in seq_along(task$folds)) {
     ans[[fold]] <- future::future({
