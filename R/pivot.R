@@ -17,6 +17,9 @@ pivot <- function(data, vars) {
     longer$..i..N <- rep(1, nrow(longer))
   }
 
+  # Deal with missing lagged Y due to sporadic missingness
+  longer$..i..N <- ifelse(is.na(longer$..i..N), longer$..i..Y_1, longer$..i..N)
+
   if (is.null(vars$D)) {
       longer$..i..D_1 <- rep(0, nrow(longer))
   }
@@ -41,7 +44,7 @@ pivot <- function(data, vars) {
     longer$..i..C_1_lag <- ave(longer$..i..C_1, longer$..i..wide_id, FUN = \(x) c(1, x[-length(x)]))
   }
 
-  longer$..i..s <- as.numeric(longer$time)
+  longer$..i..R <- as.numeric(!((longer$..i..C_1 == 1) & is.na(longer$..i..Y_1)))
 
   row.names(longer) <- NULL
   as.data.frame(longer)

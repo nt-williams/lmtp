@@ -20,24 +20,26 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   shifted <- get_folded_data(task$shifted, task$folds, fold)
   ratios <- get_folded_data(ratios, task$folds, fold)$train
 
-  # matrix to store predictions under the intervention for the training data
+  # Matrix to store predictions under the intervention for the training data
   mst <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$train), ncol = tau + 1))
-  # matrix to store predictions under the observed for the training data
+  # Matrix to store predictions under the observed for the training data
   mnt <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$train), ncol = tau))
-  # matrix to store predictions under the intervention for the validation data
+  # Matrix to store predictions under the intervention for the validation data
   msv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau + 1))
-  # matrix to store predictions under the observed for the validation data
+  # Matrix to store predictions under the observed for the validation data
   mnv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau))
 
-  # pivot into long format
+  # Pivot into long format
   natural <- lapply(natural, \(x) pivot(x, task$vars))
   shifted <- lapply(shifted, \(x) pivot(x, task$vars))
 
   # Keep lagged variables as natural values for predictions
+  # Under shift training
   ust <- natural$train
   As <- grep("^..i..A", names(ust), value = TRUE)
   ust[, As] <- shifted$train[, As]
 
+  # Under shift valid
   usv <- natural$valid
   usv[, As] <- shifted$valid[, As]
 
@@ -48,21 +50,30 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   }
 
   fits <- vector("list", length = task$tau)
-  # ONLY WHEN L (T) = 1 DO I APPLY THE SPORADIC WEIGHTS
   for (t in 1:task$tau) {
+    # Indicator for not experiencing the outcome or the competing risk already
     at_risk <- natural$train$..i..N == 1 & natural$train$..i..D_1 == 0
     at_risk[is.na(at_risk)] <- FALSE
-    # observed <- natural$train$..i..C_1 == 1
-    observed <- !is.na(natural$train$..i..Y_1)
+    # Indicator for having the outcome measured (i.e., no sporadic measurement)
+    is_measured <- natural$train$..i..R == 1
+    # Indicator for not having been censored
+    is_observed <- natural$train$..i..C_1 == 1
+    # Combining indicators for the training subset
+    train_subset <- at_risk & is_measured & is_observed
+
+    # Create indicators for the subset of rows to use for estimation at this time
+    # This uses slightly different logic than the paper to not rely on a variable 's'
     time <- as.numeric(natural$train$time) <= rev(1:task$tau)[t]
 
-    vars <- setdiff(names(natural$train), c("..i..C_1", "..i..wide_id", "..i..N", "..i..D_1"))
+    # Remove variables we don't need for estimation
+    vars <- setdiff(names(natural$train), c("..i..C_1", "..i..C_1_lag", "..i..wide_id", "..i..N", "..i..D_1", "..i..R"))
+    # Don't need the time variable for the last iteration
     if (t == task$tau) {
       vars <- setdiff(vars, "time")
     }
 
     fit <- run_ensemble(
-      natural$train[at_risk & observed & time, vars],
+      natural$train[train_subset & time, vars],
       "..i..Y_1",
       learners,
       ifelse(t != 1, "continuous", task$outcome_type),
@@ -78,11 +89,13 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
       fits[[t]] <- extract_sl_weights(fit)
     }
 
+    # Update the matrices storing all predictions
     mnt <- update_m(mnt, fit, natural$train, t, task$tau)
     mst <- update_m(mst, fit, ust, t, task$tau)
     mnv <- update_m(mnv, fit, natural$valid, t, task$tau)
     msv <- update_m(msv, fit, usv, t, task$tau)
 
+    # Only When t (l in the paper) = 1 do we apply the sporadic weights
     if ((t + 1) <= task$tau) {
       psuedo <- unlist(lapply((t + 1):task$tau, function(x) {
         l <- x - t + 1
@@ -90,6 +103,12 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
         eif(ratios, sporadic_weights, mst[[x]], mnt[[x]], l, tau, t)
       }))
       natural$train[, "..i..Y_1"] <- c(psuedo, rep(NA_real_, nrow(natural$train) - length(psuedo)))
+    }
+
+    # After the first iteration, R becomes 1 for all observations
+    # Subsetting is only based on censoring for iterations > 1
+    if (t == 1) {
+      natural$train$..i..R <- 1
     }
 
     pb()
