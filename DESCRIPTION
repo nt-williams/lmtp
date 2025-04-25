@@ -11,7 +11,11 @@ Authors@R:
              family = "Díaz", 
              email = "Ivan.Diaz@nyulangone.org",
              role = c("aut", "cph"),
-             comment = c(ORCID = "0000-0001-9056-2047")))
+             comment = c(ORCID = "0000-0001-9056-2047")), 
+      person(given = "Herb", 
+             family = "Susmann", 
+             email = "herbert.susmann@nyulangone.org",
+             role = "ctb"))
 Description: Non-parametric estimators for casual effects based on longitudinal modified treatment 
   policies as described in Diaz, Williams, Hoffman, and Schenck <doi:10.1080/01621459.2021.1955691>, traditional point treatment, 
   and traditional longitudinal effects. Continuous, binary, categorical treatments, and multivariate treatments are allowed as well are 
