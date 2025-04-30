@@ -55,9 +55,13 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
 
   fits <- vector("list", length = task$tau)
   for (t in 1:task$tau) {
-    # Indicator for not experiencing the outcome or the competing risk already
-    at_risk <- natural$train$..i..N == 1 & natural$train$..i..D_1 == 0
-    at_risk[is.na(at_risk)] <- FALSE
+    if (isTRUE(task$survival)) {
+      # Indicator for not experiencing the outcome or the competing risk already
+      at_risk <- natural$train$..i..N == 1 & natural$train$..i..D_1 == 0
+      at_risk[is.na(at_risk)] <- FALSE
+    } else {
+      at_risk <- rep(TRUE, nrow(natural$train))
+    }
     # Indicator for having the outcome measured (i.e., no sporadic measurement)
     is_measured <- natural$train$..i..R == 1
     # Indicator for not having been censored
