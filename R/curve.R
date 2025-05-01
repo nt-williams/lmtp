@@ -146,10 +146,16 @@ predict_long <- function(fit, newdata, t, tau) {
   predictions <- matrix(nrow = nrow(newdata[time, ]), ncol = 1)
   # Indicator for not having been censored at the previous time point
   is_observed <- newdata$..i..C_1_lag == 1
-  # Indicator for not experiencing the outcome already
-  outcome_free <- newdata$..i..N[time] == 1
-  # Indicator for not experiencing competing risk already
-  competing_risk_free <- newdata$..i..D_1[time] == 0
+
+  if (isTRUE(task$survival)) {
+    # Indicator for not experiencing the outcome already
+    outcome_free <- newdata$..i..N[time] == 1
+    # Indicator for not experiencing competing risk already
+    competing_risk_free <- newdata$..i..D_1[time] == 0
+  } else {
+    outcome_free <- rep(TRUE, nrow(newdata[time, ]))
+    competing_risk_free <- rep(TRUE, nrow(newdata[time, ]))
+  }
 
   predictions[is_observed[time], 1] <- predict(fit, newdata[time & is_observed, ], NULL)
   predictions[!outcome_free, 1] <- 0
