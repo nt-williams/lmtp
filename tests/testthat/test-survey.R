@@ -18,23 +18,14 @@ S <- rbinom(n, 1, prob_S)
 tmp <- tmp[S == 1, ]
 wts <- 1 / prob_S[S == 1]
 
-sub <- lmtp_sub(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                weights = wts, folds = 2)
+tmle <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+                  weights = wts, folds = 2))
 
-ipw <- lmtp_ipw(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                weights = wts, folds = 2)
-
-tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                  weights = wts, folds = 2)
-
-sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                weights = wts, folds = 2)
-
+sdr <- sw(lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
+                weights = wts, folds = 2))
 
 # tests
 test_that("survey weight fidelity", {
-  expect_equal(truth, sub$theta, tolerance = 0.025)
-  expect_equal(truth, ipw$theta, tolerance = 0.025)
-  expect_equal(truth, tmle$theta, tolerance = 0.025)
-  expect_equal(truth, sdr$theta, tolerance = 0.025)
+  expect_equal(truth, tmle$estimate@x, tolerance = 0.01)
+  expect_equal(truth, sdr$estimate@x, tolerance = 0.01)
 })

@@ -11,6 +11,7 @@ lmtp_tmle(
   baseline = NULL,
   time_vary = NULL,
   cens = NULL,
+  compete = NULL,
   shift = NULL,
   shifted = NULL,
   k = Inf,
@@ -56,6 +57,10 @@ An optional vector of column names of censoring indicators the same
 length as the number of time points of observation. If missingness in the outcome is
 present or if time-to-event outcome, must be provided.}
 
+\item{compete}{[\code{character}]\cr
+An optional vector of column names of competing risk indicators the same
+length as the number of time points of observation. Only used when \code{outcome_type = "survival"}.}
+
 \item{shift}{[\code{closure}]\cr
 A two argument function that specifies how treatment variables should be shifted.
 See examples for how to specify shift functions for continuous, binary, and categorical exposures.}
@@ -85,10 +90,10 @@ the bounds will be taken as the minimum and maximum of the observed data.
 Should be left as \code{NULL} if the outcome type is binary.}
 
 \item{learners_outcome}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.}
+of the outcome regression. Default is \code{"SL.glm"}.}
 
 \item{learners_trt}{[\code{character}]\cr A vector of \code{SuperLearner} algorithms for estimation
-of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+of the outcome regression. Default is \code{"SL.glm"}.
 \bold{Only include candidate learners capable of binary classification}.}
 
 \item{folds}{[\code{integer(1)}]\cr
@@ -104,11 +109,7 @@ Output of \code{lmtp_control()}.}
 A list of class \code{lmtp} containing the following components:
 
 \item{estimator}{The estimator used, in this case "TMLE".}
-\item{theta}{The estimated population LMTP effect.}
-\item{standard_error}{The estimated standard error of the LMTP effect.}
-\item{low}{Lower bound of the 95\% confidence interval of the LMTP effect.}
-\item{high}{Upper bound of the 95\% confidence interval of the LMTP effect.}
-\item{eif}{The estimated, un-centered, influence function of the estimate.}
+\item{estimates}{The estimated population LMTP effect as an \code{ife} object.}
 \item{shift}{The shift function specifying the treatment policy of interest.}
 \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 The mean of the first column is used for calculating theta.}
@@ -216,7 +217,7 @@ by some amount, use \code{mtp = TRUE}}.
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -229,7 +230,7 @@ by some amount, use \code{mtp = TRUE}}.
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_tmle(tmp, A, "Y", time_vary = L, shift = policy,
@@ -297,5 +298,19 @@ by some amount, use \code{mtp = TRUE}}.
 
   lmtp_tmle(multivariate_data, A, Y, W, shift = d,
             outcome_type = "continuous", folds = 1, mtp = TRUE)
+
+  # Example 7.1
+  # Time-to-event analysis with a binary time-invariant exposure and a competing-risk.
+  lmtp_tmle(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }
 }

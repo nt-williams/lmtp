@@ -1,63 +1,50 @@
 cf_r <- function(task, learners, mtp, control, pb) {
-  out <- vector("list", length = length(task$folds))
-  
-  if (length(learners) == 1 && learners == "SL.mean") {
-    warning("Using 'SL.mean' as the only learner of the density ratios will always result in a misspecified model! If your exposure is randomized, consider using `c('SL.glm', 'SL.glmnet')`.",
+  ans <- vector("list", length = length(task$folds))
+
+  if (length(learners) == 1 && learners == "mean") {
+    warning("Using 'mean' as the only learner of the density ratios will always result in a misspecified model! If your exposure is randomized, consider using `c('glm', 'cv_glmnet')`.",
             call. = FALSE)
   }
-  
+
   for (fold in seq_along(task$folds)) {
-    out[[fold]] <- future::future({
-      estimate_r(
-        get_folded_data(task$natural, task$folds, fold),
-        get_folded_data(task$shifted, task$folds, fold),
-        task$trt,
-        task$cens,
-        task$risk,
-        task$tau,
-        task$node_list$trt,
-        learners,
-        pb,
-        mtp,
-        control
-      )
+    ans[[fold]] <- future::future({
+      estimate_r(task, fold, learners, mtp, control, pb)
     },
     seed = TRUE)
   }
 
-  trim_ratios(recombine_ratios(future::value(out), task$folds), control$.trim)
+  ans <- future::value(ans)
+
+  ans <- list(ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
+              fits = lapply(ans, function(x) x[["fits"]]))
+
+  ans$ratios <- trim(ans$ratios, control$.trim)
+  ans
 }
 
-estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learners, pb, mtp, control) {
-  densratios <- matrix(nrow = nrow(natural$valid), ncol = tau)
-  fits <- vector("list", length = tau)
+estimate_r <- function(task, fold, learners, mtp, control, pb) {
+  natural <- get_folded_data(task$natural, task$folds, fold)
+  shifted <- get_folded_data(task$shifted, task$folds, fold)
 
-  for (t in 1:tau) {
-    jrt <- rep(censored(natural$train, cens, t)$j, 2)
-    drt <- rep(at_risk(natural$train, risk, t), 2)
-    irv <- censored(natural$valid, cens, t)$i
-    jrv <- censored(natural$valid, cens, t)$j
-    drv <- at_risk(natural$valid, risk, t)
+  density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
+  fits <- vector("list", length = task$tau)
 
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
+  for (t in 1:task$tau) {
+    i <- ii(task$observed(natural$train, t - 1), task$R(natural$train, t))
+    i <- rep(i, 2)
+
+    if (length(task$vars$A) > 1) {
+      A_t <- task$vars$A[[t]]
     } else {
-      trt_t <- trt[[1]]
+      A_t <- task$vars$A[[1]]
     }
 
-    frv <- followed_rule(natural$valid[, trt_t], shifted$valid[, trt_t], mtp)
+    vars <- c("..i..lmtp_id", task$vars$history("A", t), A_t, task$vars$C[t], "..i..lmtp_stack_indicator")
+    stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, t)
 
-    vars <- c(node_list[[t]], cens[[t]])
-    stacked <- stack_data(natural$train, shifted$train, trt, cens, t)
-
-    fit <- run_ensemble(
-      stacked[jrt & drt, ][["tmp_lmtp_stack_indicator"]],
-      stacked[jrt & drt, vars],
-      learners,
-      "binomial",
-      stacked[jrt & drt, ]$lmtp_id,
-      control$.learners_trt_folds
-    )
+    fit <- run_ensemble(stacked[i, vars], "..i..lmtp_stack_indicator",
+                        learners, "binomial", "..i..lmtp_id",
+                        control$.learners_trt_folds)
 
     if (control$.return_full_fits) {
       fits[[t]] <- fit
@@ -65,35 +52,36 @@ estimate_r <- function(natural, shifted, trt, cens, risk, tau, node_list, learne
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
-    pred[jrv & drv, ] <- bound(SL_predict(fit, natural$valid[jrv & drv, vars]), .Machine$double.eps)
+    i <- ii(task$observed(natural$valid, t - 1), task$R(natural$valid, t))
 
-    ratios <- density_ratios(pred, irv, drv, frv, mtp)
-    densratios[, t] <- ratios
+    pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
+    pred[i, ] <- predict(fit, natural$valid[i, ])
+
+    obs <- task$observed(natural$valid, t)
+    at_risk <- task$R(natural$valid, t)
+    followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
+
+    pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)
+    density_ratios[, t] <- (pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
 
     pb()
   }
 
-  list(ratios = densratios, fits = fits)
+  list(ratios = density_ratios, fits = fits)
 }
 
-stack_data <- function(natural, shifted, trt, cens, tau) {
+stack_data <- function(natural, shifted, A, C, t) {
   shifted_half <- natural
 
-  if (length(trt) > 1 || tau == 1) {
-    shifted_half[, trt[[tau]]] <- shifted[, trt[[tau]]]
+  if (length(A) > 1 || t == 1) {
+    shifted_half[, A[[t]]] <- shifted[, A[[t]]]
   }
 
-  if (!is.null(cens)) {
-    shifted_half[[cens[tau]]] <- shifted[[cens[tau]]]
+  if (!is.null(C)) {
+    shifted_half[[C[t]]] <- shifted[[C[t]]]
   }
 
   out <- rbind(natural, shifted_half)
-  out[["tmp_lmtp_stack_indicator"]] <- rep(c(0, 1), each = nrow(natural))
+  out[["..i..lmtp_stack_indicator"]] <- rep(c(0, 1), each = nrow(natural))
   out
-}
-
-density_ratios <- function(pred, cens, risk, followed, mtp) {
-  pred <- ifelse(followed & isFALSE(mtp), pmax(pred, 0.5), pred)
-  (pred * cens * risk * followed) / (1 - pmin(pred, 0.999))
 }

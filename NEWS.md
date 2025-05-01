@@ -1,3 +1,20 @@
+# lmtp 1.5.0
+
+### New Features
+
+-   Added the ability to estimate the so-called "total effect" for survival outcome with competing risks (see issue \#143).
+-   IPW and g-computation estimators are no-longer supported; they have been given deprecation errors. 
+-   Added `lmtp_survival()` function for estimating the entire survival curve. Enforces monotonicity using isotonic regression (see issue \#140).
+
+### Bug Fixes
+
+-   Using fitted values from isotonic regression in `lmtp_survival()` instead of the original values (see issue \#149).
+
+### General
+
+-   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
+-   Fixed "F used instead of FALSE" error in CRANs tests.
+
 # lmtp 1.4.0
 
 ### New Features

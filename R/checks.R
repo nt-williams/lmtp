@@ -1,13 +1,16 @@
-check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
-  for (t in 1:determine_tau(outcome, trt)) {
-    ci <- censored(x, cens, t)$j
-    di <- at_risk(x, risk_indicators(outcome), t, TRUE)
-    if (length(trt) > 1) {
-      trt_t <- trt[[t]]
+check_lmtp_data = function(self) {
+  for (t in 1:self$tau) {
+    r <- self$R(self$natural, t)
+    o <- self$observed(self$natural, t - 1)
+    i <- ii(o, r)
+
+    if (length(self$vars$A) > 1) {
+      A_t <- self$vars$A[[t]]
     } else {
-      trt_t <- trt[[1]]
+      A_t <- self$vars$A[[1]]
     }
-    data_t <- x[ci & di, c(trt_t, baseline, unlist(time_vary[t])), drop = FALSE]
+
+    data_t <- self$natural[i, c(A_t, self$vars$W, unlist(self$vars$L[t])), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
@@ -17,14 +20,14 @@ check_lmtp_data <- function(x, trt, outcome, baseline, time_vary, cens, id) {
   TRUE
 }
 
-assertLmtpData <- checkmate::makeAssertionFunction(check_lmtp_data)
+assert_lmtp_data <- checkmate::makeAssertionFunction(check_lmtp_data)
 
 assert_trt <- function(trt, tau) {
   is_list <- is.list(trt)
   if (!isTRUE(is_list)) {
-    return(assertTrtCharacter(trt, tau))
+    return(assert_trt_character(trt, tau))
   }
-  assertTrtList(trt, tau)
+  assert_trt_list(trt, tau)
 }
 
 check_trt_character <- function(trt, tau) {
@@ -40,7 +43,7 @@ check_trt_character <- function(trt, tau) {
   TRUE
 }
 
-assertTrtCharacter <- checkmate::makeAssertionFunction(check_trt_character)
+assert_trt_character <- checkmate::makeAssertionFunction(check_trt_character)
 
 check_trt_list <- function(trt, tau) {
   is_list <- checkmate::check_list(trt)
@@ -55,26 +58,12 @@ check_trt_list <- function(trt, tau) {
   TRUE
 }
 
-assertTrtList <- checkmate::makeAssertionFunction(check_trt_list)
+assert_trt_list <- checkmate::makeAssertionFunction(check_trt_list)
 
-check_reserved_names <- function(x) {
-  bad_names <- c("lmtp_id", "tmp_lmtp_stack_indicator", "tmp_lmtp_scaled_outcome") %in% names(x)
-  if (!any(bad_names)) {
-    return(TRUE)
-  }
-  "'lmtp_id', 'tmp_lmtp_stack_indicator', and 'tmp_lmtp_scaled_outcome' are reserved variable names"
-}
+check_shifted_data <- function(natural, shifted, trt, cens) {
+  is_same <- setdiff(names(natural), c(trt, cens))
 
-assertReservedNames <- checkmate::makeAssertionFunction(check_reserved_names)
-
-check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) {
-  if (is.null(x)) {
-    if (null.ok)
-      return(TRUE)
-    return("Can't be 'NULL'")
-  }
-
-  if (!(identical(natural[doesnt_change], x[doesnt_change]))) {
+  if (!(identical(natural[is_same], shifted[is_same]))) {
     return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
   }
 
@@ -82,14 +71,14 @@ check_shifted_data <- function(x, natural, doesnt_change, cens, null.ok = TRUE) 
     return(TRUE)
   }
 
-  if (!all(x[cens] == 1)) {
+  if (!all(shifted[cens] == 1)) {
     return("Censoring variables should be 1 in 'shifted'")
   }
 
   TRUE
 }
 
-assertShiftedData <- checkmate::makeAssertionFunction(check_shifted_data)
+assert_correctly_shifted <- checkmate::makeAssertionFunction(check_shifted_data)
 
 check_not_data_table <- function(x) {
   is_data_frame <- checkmate::checkDataFrame(x)
@@ -104,7 +93,7 @@ check_not_data_table <- function(x) {
   TRUE
 }
 
-assert_not_data_table <- assertNotDataTable <- checkmate::makeAssertionFunction(check_not_data_table)
+assert_not_data_table <- checkmate::makeAssertionFunction(check_not_data_table)
 
 check_outcome_types <- function(x, outcomes, outcome_type) {
   x <- x[, outcomes, drop = FALSE]
@@ -123,7 +112,7 @@ check_outcome_types <- function(x, outcomes, outcome_type) {
   TRUE
 }
 
-assertOutcomeTypes <- checkmate::makeAssertionFunction(check_outcome_types)
+assert_outcome_types <- checkmate::makeAssertionFunction(check_outcome_types)
 
 check_contrast_type <- function(x, fits) {
   if (x == "additive") {
@@ -138,7 +127,7 @@ check_contrast_type <- function(x, fits) {
   TRUE
 }
 
-assertContrastType <- checkmate::makeAssertionFunction(check_contrast_type)
+assert_contrast_type <- checkmate::makeAssertionFunction(check_contrast_type)
 
 check_lmtp_list <- function(x) {
   all_lmtp <- all(unlist(lapply(x, is.lmtp)))
@@ -148,17 +137,7 @@ check_lmtp_list <- function(x) {
   TRUE
 }
 
-assertLmtpList <- checkmate::makeAssertionFunction(check_lmtp_list)
-
-check_dr <- function(x) {
-  all_dr <- all(lapply(x, function(x) x[["estimator"]]) %in% c("TMLE", "SDR"))
-  if (!all_dr) {
-    return("Contrasts not implemented for substitution/IPW estimators")
-  }
-  TRUE
-}
-
-assertDr <- checkmate::makeAssertionFunction(check_dr)
+assert_lmtp_list <- checkmate::makeAssertionFunction(check_lmtp_list)
 
 check_ref_class <- function(x) {
   if (!is.lmtp(x)) {
@@ -170,34 +149,16 @@ check_ref_class <- function(x) {
   TRUE
 }
 
-assertRefClass <- checkmate::makeAssertionFunction(check_ref_class)
+assert_ref_class <- checkmate::makeAssertionFunction(check_ref_class)
 
 check_trt_type <- function(data, trt, mtp) {
   is_decimal <- vector("logical", length(trt))
   for (i in seq_along(trt)) {
     a <- data[[trt[i]]]
     if (is.character(a) | is.factor(a)) next
-    is_decimal[i] <- any(schoolmath::is.decimal(a[!is.na(a)]))
+    is_decimal[i] <- any(is_decimal(a[!is.na(a)]))
   }
   if (any(is_decimal) & isFALSE(mtp)) {
       cli::cli_warn("Detected decimalish `trt` values and {.code mtp = FALSE}. Consider setting {.code mtp = TRUE} if getting errors.")
   }
 }
-
-check_same_weights <- function(weights) {
-  if (length(weights) == 1) {
-    check <- TRUE
-  } else if (length(weights) == 2) {
-    check <- identical(weights[[1]], weights[[2]])
-  } else {
-    check <- all(sapply(1:(length(weights) - 1), function(i) identical(weights[[i]], weights[[i + 1]])))
-  }
-
-  if (isFALSE(check)) {
-    return("Weights must all be the same.")
-  }
-  TRUE
-}
-
-assertSameWeights <- checkmate::makeAssertionFunction(check_same_weights)
-

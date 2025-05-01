@@ -12,181 +12,36 @@
 #'
 #' \item{type}{The type of contrast performed.}
 #' \item{null}{The null hypothesis.}
-#' \item{vals}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
-#' \item{eifs}{Un-centered estimated influence functions for contrasts estimated.}
+#' \item{estimates}{A dataframe containing the contrasts estimates, standard errors, and confidence intervals.}
 #' @export
 #'
 #' @example inst/examples/contrasts-ex.R
 lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   fits <- list(...)
+  type <- match.arg(type)
 
-  assertLmtpList(fits)
-  assertDr(fits)
-  assertRefClass(ref)
-  assertContrastType(match.arg(type), fits, .var.name = "type")
+  assert_lmtp_list(fits)
+  assert_ref_class(ref)
+  assert_contrast_type(type, fits, .var.name = "type")
 
-  weights <- lapply(fits, function(x) x$weights)
-  if (isFALSE(is.numeric(ref))) {
-    weights <- append(weights, list(ref$weights))
-  }
-  assertSameWeights(weights)
-
-  if (is.numeric(ref)) {
-    type <- "additive"
-    message("Non-estimated reference value, defaulting type = 'additive'")
-  } else {
-    type <- match.arg(type)
-  }
-
-  switch(type,
-         "additive" = contrast_additive(fits = fits, ref = ref),
-         "rr" = contrast_rr(fits = fits, ref = ref),
-         "or" = contrast_or(fits = fits, ref = ref))
-}
-
-contrast_additive <- function(fits, ref) {
-  res <- lapply(fits, function(x) contrast_additive_single(x, ref))
-  vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
-  eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
-
-  out <- list(
-    type = "additive",
-    null = 0,
-    vals = vals,
-    eifs = eifs
-  )
-  class(out) <- "lmtp_contrast"
-  return(out)
-}
-
-contrast_additive_single <- function(fit, ref) {
+  fits <- lapply(fits, function(x) x$estimate)
   if (is.lmtp(ref)) {
-    theta <- fit$theta - ref$theta
-    eif <- fit$eif - ref$eif
+    ref <- ref$estimate
   }
 
-  if (isFALSE(is.lmtp(ref))) {
-    theta <- fit$theta - ref
-    eif <- fit$eif
-  }
+  ans <- switch(type,
+                "additive" = lapply(fits, function(x) x - ref),
+                "rr" = lapply(fits, function(x) x / ref),
+                "or" = lapply(fits, function(x) (x / (1 - x)) / (ref / (1 - ref))))
 
-  if (is.null(fit$id)) {
-    fit$id <- 1:length(eif)
-  }
+  ans <- do.call("rbind", lapply(ans, function(x) ife::tidy(x)))
+  ans$p.value <- pnorm(abs(ans$estimate) / ans$std.error, lower.tail = FALSE) * 2
+  ans$shift <- sapply(fits, function(x) x@x)
+  ans$ref <- ifelse(inherits(ref, "ife::influence_func_estimate"), ref@x, ref)
+  ans <- ans[, c("shift", "ref", "estimate", "std.error", "conf.low", "conf.high", "p.value")]
 
-  clusters <- split(eif*fit$weights, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
-  conf.low <- theta - qnorm(0.975) * std.error
-  conf.high <- theta + qnorm(0.975) * std.error
-  p.value <- pnorm(abs(theta) / std.error, lower.tail = FALSE) * 2
-
-  list(
-    vals = data.frame(
-      theta = theta,
-      shift = fit$theta,
-      ref = ifelse(is.lmtp(ref), ref$theta, ref),
-      std.error = std.error,
-      conf.low = conf.low,
-      conf.high = conf.high,
-      p.value = p.value
-    ),
-    eif = eif
-  )
-}
-
-contrast_rr <- function(fits, ref) {
-  res <- lapply(fits, function(x) contrast_rr_single(x, ref))
-  vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
-  eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
-
-  out <- list(
-    type = "relative risk",
-    null = 1,
-    vals = vals,
-    eifs = eifs
-  )
-
-  class(out) <- "lmtp_contrast"
-  return(out)
-}
-
-contrast_rr_single <- function(fit, ref) {
-  theta <- fit$theta / ref$theta
-  log_eif <- (fit$eif*fit$weights / fit$theta) -
-    (ref$eif*ref$weights / ref$theta)
-
-  if (is.null(fit$id)) {
-    fit$id <- 1:length(eif)
-  }
-
-  clusters <- split(log_eif, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
-  conf.low <- exp(log(theta) - qnorm(0.975) * std.error)
-  conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
-  p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
-
-  list(
-    vals = data.frame(
-      theta = theta,
-      shift = fit$theta,
-      ref = ref$theta,
-      std.error = std.error,
-      conf.low = conf.low,
-      conf.high = conf.high,
-      p.value = p.value
-    ),
-    eif = log_eif
-  )
-}
-
-contrast_or <- function(fits, ref) {
-  res <- lapply(fits, function(x) contrast_or_single(x, ref))
-  vals <- Reduce(rbind, lapply(res, function(x) x[["vals"]]))
-  eifs <- Reduce(cbind, lapply(res, function(x) x[["eif"]]))
-
-  out <- list(
-    type = "odds ratio",
-    null = 1,
-    vals = vals,
-    eifs = eifs
-  )
-  class(out) <- "lmtp_contrast"
-  out
-}
-
-contrast_or_single <- function(fit, ref) {
-  theta <- (fit$theta / (1 - fit$theta)) / (ref$theta / (1 - ref$theta))
-  log_eif <- (fit$eif*fit$weights / (fit$theta * (1 - fit$theta))) -
-    (ref$eif*ref$weights / (ref$theta * (1 - ref$theta)))
-
-  if (is.null(fit$id)) {
-    fit$id <- 1:length(eif)
-  }
-
-  clusters <- split(log_eif, fit$id)
-  j <- length(clusters)
-  std.error <- sqrt(var(vapply(clusters, function(x) mean(x), 1)) / j)
-  conf.low  <- exp(log(theta) - qnorm(0.975) * std.error)
-  conf.high <- exp(log(theta) + qnorm(0.975) * std.error)
-  p.value <- pnorm(abs(log(theta)) / std.error, lower.tail = FALSE) * 2
-
-  list(
-    vals = data.frame(
-      theta = theta,
-      shift = fit$theta,
-      ref = ref$theta,
-      std.error = std.error,
-      conf.low = conf.low,
-      conf.high = conf.high,
-      p.value = p.value
-    ),
-    eif = log_eif
-  )
-}
-
-no_stderr_warning <- function(estimator) {
-  cat("\n")
-  cli::cli_alert_warning("Standard errors aren't provided for the {estimator} estimator.")
+  structure(list(type = type,
+                 null = ifelse(type == "additive", 0, 1),
+                 estimates = ans),
+            class = "lmtp_contrast")
 }

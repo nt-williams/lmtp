@@ -1,6 +1,6 @@
 Package: lmtp
 Title: Non-Parametric Causal Effects of Feasible Interventions Based on Modified Treatment Policies
-Version: 1.4.0
+Version: 1.5.0
 Authors@R: 
     c(person(given = "Nicholas",
              family = "Williams",
@@ -17,14 +17,15 @@ Description: Non-parametric estimators for casual effects based on longitudinal 
   and traditional longitudinal effects. Continuous, binary, categorical treatments, and multivariate treatments are allowed as well are 
   censored outcomes. The treatment mechanism is estimated via a density ratio classification procedure 
   irrespective of treatment variable type. For both continuous and binary outcomes, additive treatment effects 
-  can be calculated and relative risks and odds ratios may be calculated for binary outcomes.  
+  can be calculated and relative risks and odds ratios may be calculated for binary outcomes. 
+  Supports survival outcomes with competing risks (Diaz, Hoffman, and Hejazi; <doi:10.1007/s10985-023-09606-7>).
 Depends: 
     R (>= 2.10)
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     stats,
     nnls,
@@ -37,7 +38,9 @@ Imports:
     data.table (>= 1.13.0),
     checkmate (>= 2.1.0),
     SuperLearner,
-    schoolmath
+    isotone,
+    ife,
+    lifecycle
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 

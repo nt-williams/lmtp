@@ -1,3 +1,20 @@
+make_shifted <- function(data, trt, cens, shift, shifted) {
+  assert_function(shift, nargs = 2, null.ok = TRUE)
+
+  if (!is.null(shifted)) {
+    assert_correctly_shifted(data, shifted, trt, cens)
+    return(shifted)
+  }
+
+  if (is.null(shifted) && !is.null(shift)) {
+    return(shift_data(data, trt, cens, shift))
+  }
+
+  if (is.null(shifted) && is.null(shift)) {
+    return(shift_data(data, trt, cens, shift))
+  }
+}
+
 shift_data <- function(data, trt, cens, shift) {
   if (is.null(shift)) {
     return(shift_cens(data, cens))
@@ -20,20 +37,22 @@ shift_cens <- function(data, cens) {
 }
 
 shift_trt_character <- function(data, trt, .f) {
+  out <- as.list(data)
   for (a in trt) {
-    data[[a]] <- .f(data, a)
+    out[[a]] <- .f(data, a)
   }
-  data
+  as.data.frame(out, check.names = FALSE)
 }
 
 shift_trt_list <- function(data, trt, .f) {
+  out <- as.list(data)
   for (a in trt) {
     new <- .f(data, a)
     for (col in a) {
-      data[[col]] <- new[[col]]
+      out[[col]] <- new[[col]]
     }
   }
-  data
+  as.data.frame(out, check.names = FALSE)
 }
 
 #' Turn All Treatment Nodes On
@@ -44,7 +63,7 @@ shift_trt_list <- function(data, trt, .f) {
 #' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 #'
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A dataframe with all treatment nodes set to 1.
 #' @export
 #'
@@ -69,7 +88,7 @@ static_binary_on <- function(data, trt) {
 #' @param data A dataframe containing the treatment variables.
 #' @param trt The name of the current treatment variable.
 
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A dataframe with all treatment nodes set to 0.
 #' @export
 #'
@@ -94,7 +113,7 @@ static_binary_off <- function(data, trt) {
 #' @param delta \[\code{numeric(1)}\]\cr
 #'  A risk ratio between 0 and Inf.
 #'
-#' @seealso [lmtp_tmle()], [lmtp_sdr()], [lmtp_sub()], [lmtp_ipw()]
+#' @seealso [lmtp_tmle()], [lmtp_sdr()]
 #' @return A shift function.
 #' @export
 #'

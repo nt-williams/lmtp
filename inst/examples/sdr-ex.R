@@ -79,7 +79,7 @@
   # so as to respect this.
   tmp <- sim_t4
   for (i in A) {
-    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = TRUE)
+    tmp[[i]] <- factor(tmp[[i]], levels = 0:5, ordered = FALSE)
   }
 
   policy <- function(data, trt) {
@@ -92,7 +92,7 @@
         out[[i]] <- as.numeric(as.character(a[i])) - 1
       }
     }
-    factor(unlist(out), levels = 0:5, ordered = TRUE)
+    factor(unlist(out), levels = 0:5, ordered = FALSE)
   }
 
   lmtp_sdr(tmp, A, "Y", time_vary = L, shift = policy,
@@ -162,4 +162,18 @@
 
   lmtp_sdr(multivariate_data, A, Y, W, shift = d,
            outcome_type = "continuous", folds = 1, mtp = TRUE)
+
+  # Example 7.1
+  # Time-to-event analysis with a binary time-invariant exposure and a competing-risk.
+  lmtp_sdr(
+    data = sim_competing_risks,
+    trt = "A",
+    cens = paste0("C", 1:5),
+    compete = paste0("D", 1:5),
+    baseline = paste0("W", 1:5),
+    outcome = paste0("Y", 1:5),
+    outcome_type = "survival",
+    shift = static_binary_on,
+    folds = 1
+  )
 }
