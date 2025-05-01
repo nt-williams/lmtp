@@ -13,6 +13,7 @@
 ### General
 
 -   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
+-   Fixed "F used instead of FALSE" error in CRANs tests.
 
 # lmtp 1.4.0
 
