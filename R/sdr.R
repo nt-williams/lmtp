@@ -12,7 +12,7 @@ cf_sdr <- function(task, ratios, learners, control, pb) {
 
   list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
        shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
-       fits = lapply(ans, \(x) x[["fits"]]))
+       fits = lapply(ans, function(x) x[["fits"]]))
 }
 
 estimate_sdr <- function(task, fold, ratios, learners, control, pb) {

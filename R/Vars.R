@@ -66,7 +66,7 @@ LmtpVars <- R6Class("LmtpVars",
 
         if (prefix == "..i..L" | (prefix == "..i..A" && is.list(self$A))) {
           vars <- self[[gsub("\\..i..", "", prefix)]]
-          suffix <- which(x == vars[[which(sapply(vars, \(vars) x %in% vars))]])
+          suffix <- which(x == vars[[which(sapply(vars, function(vars) x %in% vars))]])
         } else {
           suffix <- 1
         }

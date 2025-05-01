@@ -16,7 +16,7 @@ cf_r <- function(task, learners, mtp, control, pb) {
   ans <- future::value(ans)
 
   ans <- list(ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
-              fits = lapply(ans, \(x) x[["fits"]]))
+              fits = lapply(ans, function(x) x[["fits"]]))
 
   ans$ratios <- trim(ans$ratios, control$.trim)
   ans
