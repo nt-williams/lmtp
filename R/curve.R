@@ -110,10 +110,10 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
 
       if (s == t) {
         # If the smallest time point in the sequence from t:tau use validation data to calculate EIF for theta at time t
-        influence_functions[, t] <- eif(ratios$valid, sporadic_weights$valid, msv[[s]], mnv[[s]], t = 1, tau = tau, l = t)
+        influence_functions[, t] <- eif(ratios$valid, sporadic_weights$valid, msv[[s]], mnv[[s]], t = 1, tau = tau)
       } else {
         # Otherwise calculate the DR transformation using training values as the pseudo outcome for the next iteration
-        dr_transformation <- eif(ratios$train, sporadic_weights$train, mst[[s]], mnt[[s]], t = (s - t + 1), tau = tau, l = t)
+        dr_transformation <- eif(ratios$train, sporadic_weights$train, mst[[s]], mnt[[s]], t = (s - t + 1), tau = tau)
         pseudo[[length(pseudo) + 1]] <- dr_transformation
       }
     }
