@@ -23,7 +23,7 @@ LmtpVars <- R6Class("LmtpVars",
       self$A <- A
       self$C <- C
 
-      if (length(Y) > 1) {
+      if (length(Y) > 1 && outcome_type == "survival") {
         self$Y <- last(Y)
         self$N <- Y[1:length(Y) - 1]
       } else {

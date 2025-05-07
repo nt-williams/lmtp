@@ -51,5 +51,5 @@ pivot <- function(data, vars) {
 }
 
 .lag <- function(x, n) {
-  data.table::shift(x, n = n, type = "lag", fill = 1L)
+  data.table::shift(x, n = n, type = "lag", fill = -1L)
 }

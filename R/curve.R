@@ -80,6 +80,13 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
       vars <- setdiff(vars, "time")
     }
 
+    # Remove variables with no variation
+    for(var in vars) {
+      if(all(duplicated(natural$train[train_subset & time, var])[-1L])) {
+        vars <- setdiff(vars, var)
+      }
+    }
+
     fit <- run_ensemble(
       natural$train[train_subset & time, vars],
       "..i..Y_1",
