@@ -13,3 +13,7 @@
 ## R CMD check results
 
 0 errors \| 0 warnings \| 0 notes
+
+## Additional comments
+
+-  Fixed issue where "F used instead of FALSE" error was thrown in CRANs tests.
