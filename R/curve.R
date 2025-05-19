@@ -41,6 +41,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   # Under shift training
   ust <- natural$train
   As <- grep("^..i..A", names(ust), value = TRUE)
+  As <- grep("_lag", As, value = TRUE, invert = TRUE)
   ust[, As] <- shifted$train[, As]
 
   # Under shift valid
@@ -106,7 +107,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
 
     lambda <- function(x) x
     if(control$.isotonic_constraint == TRUE && task$outcome_type == "binomial") {
-      pred <- predict(fit, natural$train[train_subset & time, vars])
+      pred <- predict(fit, natural$train[train_subset & time, vars], NULL)
       out <- natural$train[train_subset & time, "..i..Y_1"]
       lambda <- isotonic_constraint(pred, out)
     }
