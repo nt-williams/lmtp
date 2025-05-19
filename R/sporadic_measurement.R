@@ -38,11 +38,21 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
     # Create an indicator for sporadic missingness
     # If there is no time-varying outcome, there can't be sporadic outcome measurement
-    if (is.null(task$vars$N[t]) || t == task$tau) {
-      ..i..R <- rep(0, nrow(natural$train))
-    } else {
-      # Otherwise, sporadic outcome measurement exists if an observation is uncensored, but the outcome is missing
-      ..i..R <- as.numeric(task$observed(natural$train, t) & is.na(natural$train[[task$vars$N[t]]]))
+    if(task$outcome_type == "survival") {
+      if (is.null(task$vars$N[t]) || t == task$tau) {
+        ..i..R <- rep(0, nrow(natural$train))
+      } else {
+        # Otherwise, sporadic outcome measurement exists if an observation is uncensored, but the outcome is missing
+        ..i..R <- as.numeric(task$observed(natural$train, t) & is.na(natural$train[[task$vars$N[t]]]))
+      }
+    }
+    else {
+      if(t == task$tau) {
+        ..i..R <- rep(0, nrow(natural$train))
+      }
+      else {
+        ..i..R <- as.numeric(is.na(natural$train[[task$vars$Y[t]]]))
+      }
     }
 
     # Adding sporadic measurement indicator to training data
@@ -77,10 +87,20 @@ estimate_sporadic <- function(task, fold, learners, control, pb) {
 
     # Create an indicator for sporadic measurement in the validation set
     # Using same logic as for training data
-    if (is.null(task$vars$N[t]) || t == task$tau) {
-      ..i..R <- rep(0, nrow(natural$valid))
-    } else {
-      ..i..R <- as.numeric(task$observed(natural$valid, t) & is.na(natural$valid[[task$vars$N[t]]]))
+    if(task$outcome_type == "survival") {
+      if (is.null(task$vars$N[t]) || t == task$tau) {
+        ..i..R <- rep(0, nrow(natural$valid))
+      } else {
+        ..i..R <- as.numeric(task$observed(natural$valid, t) & is.na(natural$valid[[task$vars$N[t]]]))
+      }
+    }
+    else {
+      if(t == task$tau) {
+        ..i..R <- rep(0, nrow(natural$valid))
+      }
+      else {
+        ..i..R <- as.numeric(is.na(natural$valid[[task$vars$Y[t]]]))
+      }
     }
 
     # Predict on validation set
