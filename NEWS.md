@@ -1,3 +1,15 @@
+# lmtp 1.5.1
+
+### New Features
+
+### Bug Fixes
+
+- Super learner prediction failing for some learners. Now using `onlySL = TRUE` in `predict.SuperLearner` (see issue \#162).
+
+### General
+
+- Making sure to only pass the necessary variables to `predict.SuperLearner` to suppress some warnings. 
+
 # lmtp 1.5.0
 
 ### New Features
