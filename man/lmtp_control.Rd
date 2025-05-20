@@ -31,7 +31,7 @@ The number of cross-validation folds for \code{learners_outcome}.}
 The number of cross-validation folds for \code{learners_trt}.}
 
 \item{.return_full_fits}{[\code{logical(1)}]\cr
-Return full 'mlr3superlearner' fits? Default is \code{FALSE}, return only 'mlr3superlearner' weights.}
+Return full 'SuperLearner' fits? Default is \code{FALSE}, return only 'SuperLearner' coefficients.}
 
 \item{.discrete}{[\code{logical(1)}]\cr
 Use discrete or ensemble super learner?}
