@@ -1,4 +1,4 @@
-## Version 1.5.0 submission
+## Version 1.5.1 submission
 
 ## Test environments
 
@@ -13,7 +13,3 @@
 ## R CMD check results
 
 0 errors \| 0 warnings \| 0 notes
-
-## Additional comments
-
--  Fixed issue where "F used instead of FALSE" error was thrown in CRANs tests.
