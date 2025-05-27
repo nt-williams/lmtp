@@ -1,4 +1,4 @@
-eif <- function(r, shifted, natural, t, tau) {
+eif_mtp <- function(r, shifted, natural, t, tau) {
   if (missing(tau)) tau <- ncol(r)
   if (missing(t)) t <- 1
   # natural[is.na(natural)] <- -999
@@ -11,4 +11,8 @@ compute_weights <- function(r, t, tau) {
   out <- t(apply(r[, t:tau, drop = FALSE], 1, cumprod))
   if (ncol(out) > ncol(r)) return(t(out))
   out
+}
+
+eif_flip <- function() {
+
 }
