@@ -33,11 +33,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
     i <- task$observed(natural$train, time - 1) %and% task$R(natural$train, time)
     i <- rep(i, 2)
 
-    if (length(task$vars$A) > 1) {
-      A_t <- task$vars$A[[time]]
-    } else {
-      A_t <- task$vars$A[[1]]
-    }
+    A_t <- current_trt(task$vars$A, time)
 
     vars <- c("..i..lmtp_id", task$vars$history("A", time), A_t, task$vars$C[time], "..i..lmtp_stack_indicator")
     stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, time)

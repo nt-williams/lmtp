@@ -34,7 +34,7 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
   m_shifted_valid[, task$tau + 1] <- natural$valid[[task$vars$Y]]
 
   fits <- vector("list", length = task$tau)
-  for (t in task$tau:1) {
+  for (t in rev(seq_len(task$tau))) {
     y1 <- task$at_risk_N(natural$train, t-1)
     d0 <- task$at_risk_D(natural$train, t-1)
     c1 <- task$observed(natural$train, t)
@@ -55,11 +55,7 @@ estimate_tmle <- function(task, fold, ratios, learners, control, pb) {
       fits[[t]] <- extract_sl_weights(fit)
     }
 
-    if (length(task$vars$A) > 1) {
-      A_t <- task$vars$A[[t]]
-    } else {
-      A_t <- task$vars$A[[1]]
-    }
+    A_t <- current_trt(task$vars$A, time)
 
     cp1 <- task$observed(natural$train, t-1) # censoring in the past = 1
     y1v <- task$at_risk_N(natural$valid, t-1)

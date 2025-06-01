@@ -88,3 +88,10 @@ is_decimal <- function(x) {
   }
   i
 }
+
+current_trt <- function(trt, time) {
+  if (length(task$vars$A) > 1) {
+    return(task$vars$A[[time]])
+  }
+  task$vars$A[[1]]
+}
