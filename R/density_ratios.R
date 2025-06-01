@@ -15,10 +15,10 @@ cf_density_ratios <- function(task, learners, mtp, control, pb) {
 
   ans <- future::value(ans)
 
-  ans <- list(ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
+  ans <- list(density_ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
               fits = lapply(ans, function(x) x[["fits"]]))
 
-  ans$ratios <- trim(ans$ratios, control$.trim)
+  ans$density_ratios <- trim(ans$density_ratios, control$.trim)
   ans
 }
 
@@ -26,11 +26,11 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
 
-  density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
-  fits <- vector("list", length = task$tau)
+  density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$time_horizon)
+  fits <- vector("list", length = task$time_horizon)
 
-  for (time in seq_len(task$tau)) {
-    i <- task$observed(natural$train, time - 1) %and% task$R(natural$train, time)
+  for (time in seq_len(task$time_horizon)) {
+    i <- task$observed(natural$train, time - 1) %and% task$is_at_risk(natural$train, time)
     i <- rep(i, 2)
 
     A_t <- current_trt(task$vars$A, time)
@@ -48,13 +48,13 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
       fits[[time]] <- extract_sl_weights(fit)
     }
 
-    i <- task$observed(natural$valid, time - 1) %and% task$R(natural$valid, time)
+    i <- task$observed(natural$valid, time - 1) %and% task$is_at_risk(natural$valid, time)
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[i, ] <- predict(fit, natural$valid[i, ])
 
     obs <- task$observed(natural$valid, time)
-    at_risk <- task$R(natural$valid, time)
+    at_risk <- task$is_at_risk(natural$valid, time)
     followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)

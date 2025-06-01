@@ -22,22 +22,22 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
   density_ratios <- get_folded_data(density_ratios, task$folds, fold)$train
 
   # Pre-allocate matrices to store predictions
-  pred_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$tau + 1)
+  pred_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$time_horizon + 1)
   pred_shifted_train <- pred_natural_train
 
-  pred_natural_valid <- matrix(nrow = nrow(natural$valid), ncol = task$tau + 1)
+  pred_natural_valid <- matrix(nrow = nrow(natural$valid), ncol = task$time_horizon + 1)
   pred_shifted_valid <- pred_natural_valid
 
-  pred_shifted_train[, task$tau + 1] <- natural$train[[task$vars$Y]]
-  pred_shifted_valid[, task$tau + 1] <- natural$valid[[task$vars$Y]]
+  pred_shifted_train[, task$time_horizon + 1] <- natural$train[[task$vars$Y]]
+  pred_shifted_valid[, task$time_horizon + 1] <- natural$valid[[task$vars$Y]]
 
   # Pre-allocate list to store fitted models
-  fits <- vector("list", length = task$tau)
+  fits <- vector("list", length = task$time_horizon)
 
   # Loop over time points in reverse order
-  for (time in rev(seq_len(task$tau))) {
-    y1 <- task$at_risk_N(natural$train, time - 1)
-    d0 <- task$at_risk_D(natural$train, time - 1)
+  for (time in rev(seq_len(task$time_horizon))) {
+    y1 <- task$is_outcome_free(natural$train, time - 1)
+    d0 <- task$is_competing_risk_free(natural$train, time - 1)
     c1 <- task$observed(natural$train, time)
     i <- c1 %and% (y1 & d0)
 
@@ -46,7 +46,7 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
 
     fit <- run_ensemble(natural$train[i, vars], task$vars$Y,
                         learners,
-                        ifelse(time != task$tau, "continuous", task$outcome_type),
+                        ifelse(time != task$time_horizon, "continuous", task$outcome_type),
                         "..i..lmtp_id",
                         control$.learners_outcome_folds)
 
@@ -59,8 +59,8 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
     A_t <- current_trt(task$vars$A, time)
 
     cp1 <- task$observed(natural$train, time - 1) # censoring in the past = 1
-    y1v <- task$at_risk_N(natural$valid, time - 1)
-    d0v <- task$at_risk_D(natural$valid, time - 1)
+    y1v <- task$is_outcome_free(natural$valid, time - 1)
+    d0v <- task$is_competing_risk_free(natural$valid, time - 1)
     cp1v <- task$observed(natural$valid, time - 1)
 
     i <- cp1 %and% (y1 & d0)

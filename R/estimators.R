@@ -123,22 +123,22 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   # Create progress bar object
-  pb <- progressr::progressor(task$tau*folds*2)
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
   # Estimate density ratios
-  ratios <- cf_density_ratios(task, learners_trt, mtp, control, pb)
+  density_ratios <- cf_density_ratios(task, learners_trt, mtp, control, progress_bar)
 
   # Estimate TMLE
-  estims <- cf_tmle(task, ratios$ratios, learners_outcome, control, pb)
+  sequential_regressions <- cf_tmle(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
-    fits_m = estims$fits,
-    fits_r = ratios$fits,
+    sequential_regressions = list(natural = sequential_regressions$natural, shifted = sequential_regressions$shifted),
+    density_ratios = density_ratios$density_ratios,
+    fits_m = sequential_regressions$fits,
+    fits_r = density_ratios$fits,
     shift = deparse(substitute((shift))),
-    augmented = FALSE
+    is_sdr = FALSE
   )
 }
 
@@ -268,18 +268,18 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   # Create progress bar object
-  pb <- progressr::progressor(task$tau*folds*2)
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
-  ratios <- cf_density_ratios(task, learners_trt, mtp, control, pb)
-  estims <- cf_sdr(task, ratios$ratios, learners_outcome, control, pb)
+  density_ratios <- cf_density_ratios(task, learners_trt, mtp, control, progress_bar)
+  sequential_regressions <- cf_sdr(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
-    fits_m = estims$fits,
-    fits_r = ratios$fits,
+    sequential_regressions = list(natural = sequential_regressions$natural, shifted = sequential_regressions$shifted),
+    density_ratios = density_ratios$density_ratios,
+    fits_m = sequential_regressions$fits,
+    fits_r = density_ratios$fits,
     shift = deparse(substitute((shift))),
-    augmented = TRUE
+    is_sdr = TRUE
   )
 }
