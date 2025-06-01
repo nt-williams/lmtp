@@ -96,3 +96,66 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
        shifted = m_shifted_valid,
        fits = fits)
 }
+
+
+
+
+cf_sequential_regression <- function(task, learners, control, time, pb = NULL) {
+  
+  folds <- task$folds
+  nf <- length(folds)
+  ans <- lapply(seq_len(nf), function(f) estimate_flip_sdr(task, f, learners, control, time, pb))
+  
+  return(list(seq_reg_ests = recombine(rbind_depth(ans, "seq_reg_ests"), task$folds),
+              fits = lapply(ans, function(x) x[["fits"]])))
+}
+
+estimate_flip_sdr <- function(task, fold, learners, control, time, pb = NULL) {
+  
+  # --- Run sequential regression on training data --- #
+  
+  # Assign data to training / validation
+  data <- get_folded_data(task$natural, task$folds, fold)
+  m_valid <- matrix(nrow = nrow(data$valid), ncol = 2)
+  
+  # Logic for dealing with censoring and competing events
+  y1 <- task$at_risk_N(data$train, time-1)
+  d0 <- task$at_risk_D(data$train, time-1)
+  c1 <- task$observed(data$train, time)
+  i <- ii(c1, y1 & d0) # i = index of subjects to use for regression
+  
+  # Get predictors for sequential regression
+  history <- task$vars$history("L", time + 1)
+  vars <- c("..i..lmtp_id", history, "pseudo")
+  
+  # Run sequential regression to estimate m_t(A_t, H_t)
+  fit <- run_ensemble(data = data$train[i, vars], 
+                      y = "pseudo", # Repeatedly updated pseudo-outcome
+                      learners = learners,
+                      outcome_type = ifelse(time != task$tau, "continuous", task$outcome_type),
+                      id = "..i..lmtp_id",
+                      folds = control$.learners_outcome_folds)
+  
+  # --- Predict under treatment and control ---- # 
+  
+  # More censoring logic: check whether censored in previous timepoint 
+  cp1 <- task$observed(data$train, time-1) # censoring in the past = 1
+  y1v <- task$at_risk_N(data$valid, time-1)
+  d0v <- task$at_risk_D(data$valid, time-1)
+  cp1v <- task$observed(data$valid, time-1)
+  iv <- ii(cp1v, y1v & d0v)
+  
+  # Predict under A_t = 0 and A_t = 1 for all relevant subjects
+  untreated <- treated <- data$valid; 
+  untreated[, task$vars$A[[time]]] <- 0; treated[, task$vars$A[[time]]] <- 1
+  
+  m_valid[iv, 1] <- predict(fit, untreated[iv, ], NULL)
+  m_valid[iv, 2] <- predict(fit, treated[iv, ], NULL)
+  
+  # Over-write for censored or already dead
+  m_valid[which(!y1v), ] <- 0
+  m_valid[which(!d0v), ] <- 1
+  
+  if (!is.null(pb)) pb()
+  return(list(seq_reg_ests = m_valid, fits = if (control$.return_full_fits) fit else extract_sl_weights(fit)))
+}
