@@ -1,9 +1,9 @@
-cf_sdr <- function(task, density_ratios, learners, control, pb) {
+cf_sdr <- function(task, density_ratios, learners, control, progress_bar) {
   ans <- vector("list", length = length(task$folds))
 
   for (fold in seq_along(task$folds)) {
     ans[[fold]] <- future::future({
-      estimate_sdr(task, fold, density_ratios, learners, control, pb)
+      estimate_sdr(task, fold, density_ratios, learners, control, progress_bar)
     },
     seed = TRUE)
   }
@@ -15,7 +15,7 @@ cf_sdr <- function(task, density_ratios, learners, control, pb) {
        fits = lapply(ans, function(x) x[["fits"]]))
 }
 
-estimate_sdr <- function(task, fold, density_ratios, learners, control, pb) {
+estimate_sdr <- function(task, fold, density_ratios, learners, control, progress_bar) {
   # Get data splits for the current fold
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
@@ -90,7 +90,7 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, pb) {
 
     natural$train[, task$vars$Y] <- eif(density_ratios, pred_shifted_train, pred_natural_train, time)
 
-    pb()
+    progress_bar()
   }
 
   list(natural = pred_natural_valid,
