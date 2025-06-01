@@ -29,7 +29,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
   density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
   fits <- vector("list", length = task$tau)
 
-  for (time in 1:task$tau) {
+  for (time in seq_len(task$tau)) {
     i <- task$observed(natural$train, time - 1) %and% task$R(natural$train, time)
     i <- rep(i, 2)
 
