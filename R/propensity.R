@@ -14,21 +14,23 @@
 cf_propensity <- function(task, learners, control, pb = NULL) {
   folds <- task$folds
   nf    <- length(folds)
-  ans   <- vector("list", length = nf)
   
-  for (f in seq_len(nf)) {
-    ans[[f]] <- future::future({
-      estimate_propensity(task, f, learners, control, pb)
+  # 1) Launch one future per fold
+  futures <- lapply(seq_len(nf), function(f) {
+    future::future({
+      estimate_propensity(task, f, learners, control)
     }, seed = TRUE)
-  }
-  ans <- future::value(ans)
+  })
   
-  prop_list <- lapply(ans, function(x) x$prop_scores)
-  prop_scores <- recombine(rbind_depth(prop_list, NULL), folds)
-  fits <- lapply(ans, function(x) x$fits)
+  # 2) Collect results
+  ans <- future::value(futures)
   
-  list(prop_scores = prop_scores, fits = fits)
+  ans <- list(prop_scores = recombine(rbind_depth(ans, "prop_scores"), task$folds),
+              fits = lapply(ans, function(x) x[["fits"]]))
+    
+  return(ans)
 }
+
 
 #' @keywords internal
 #' @title Fold‐specific propensity score estimation
@@ -45,20 +47,20 @@ cf_propensity <- function(task, learners, control, pb = NULL) {
 estimate_propensity <- function(task, fold, learners, control, pb = NULL) {
   
   # Pull natural train/validation splits
-  natural    <- get_folded_data(task$natural, task$folds, fold)
-  train_data <- natural$train
-  valid_data <- natural$valid
+  data <- get_folded_data(task$natural, task$folds, fold)
+  train_data <- data$train
+  valid_data <- data$valid
   
   n_valid <- nrow(valid_data)
   # Only estimate for timepoints with treatment data
   T_trt   <- length(task$vars$A)
   
   # Initialize outputs
-  prop_scores <- array(NA_real_, dim = c(n_valid, T_trt, 2))
+  prop_scores <- matrix(NA_real_, nrow = n_valid, ncol = T_trt)
   fits        <- vector("list", T_trt)
-  
-  baseline <- task$baseline
-  id_var   <- task$vars$id
+
+  # ID variable  
+  id_var <- "..i..lmtp_id"
   
   for (t in seq_len(T_trt)) {
     
@@ -69,35 +71,29 @@ estimate_propensity <- function(task, fold, learners, control, pb = NULL) {
     train_idx <- ii(task$observed(train_data, t - 1), task$R(train_data, t))
     valid_idx <- ii(task$observed(valid_data, t - 1), task$R(valid_data, t))
     
-    # Predictors: baseline + treatment history up to t-1 + time‐varying covariates up to t
-    pred_cols <- c(
-      baseline,
-      task$vars$history("A", t),
-      task$vars$history("L", t + 1)
-    )
-    
     # Training data frame
-    train_df <- train_data[train_idx, c(id_var, pred_cols, A_t), drop = FALSE]
+    train_df <- train_data[train_idx, c(id_var, task$vars$history("A",t), A_t), drop = FALSE]
     
     # Fit propensity model
     fit <- run_ensemble(
-      data     = train_df,
-      outcome  = A_t,
+      data = train_df,
+      y  = A_t,
       learners = learners,
-      family   = "binomial",
-      id       = id_var,
-      folds    = control$.learners_trt_folds
+      outcome_type = "binomial",
+      id = id_var,
+      folds = control$.learners_trt_folds
     )
+    
+    
     fits[[t]] <- if (control$.return_full_fits) fit else extract_sl_weights(fit)
     
     # Validation data frame and predictions
-    valid_df <- valid_data[valid_idx, c(id_var, pred_cols, A_t), drop = FALSE]
+    valid_df <- valid_data[valid_idx, c(id_var, task$vars$history("A",t), A_t), drop = FALSE]
     preds    <- predict(fit, valid_df)
     
-    # Store P(A_t=1 | H_t) and P(A_t=0 | H_t)
-    prop_scores[valid_idx, t, 2] <- preds
-    prop_scores[valid_idx, t, 1] <- 1 - preds
-    
+    # Store P(A_t=1 | H_t) 
+    prop_scores[valid_idx, t] <- preds
+
     if (!is.null(pb)) pb()
   }
   
