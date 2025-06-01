@@ -29,40 +29,40 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
   density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
   fits <- vector("list", length = task$tau)
 
-  for (t in 1:task$tau) {
-    i <- task$observed(natural$train, t - 1) %and% task$R(natural$train, t)
+  for (time in 1:task$tau) {
+    i <- task$observed(natural$train, time - 1) %and% task$R(natural$train, time)
     i <- rep(i, 2)
 
     if (length(task$vars$A) > 1) {
-      A_t <- task$vars$A[[t]]
+      A_t <- task$vars$A[[time]]
     } else {
       A_t <- task$vars$A[[1]]
     }
 
-    vars <- c("..i..lmtp_id", task$vars$history("A", t), A_t, task$vars$C[t], "..i..lmtp_stack_indicator")
-    stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, t)
+    vars <- c("..i..lmtp_id", task$vars$history("A", time), A_t, task$vars$C[time], "..i..lmtp_stack_indicator")
+    stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, time)
 
     fit <- run_ensemble(stacked[i, vars], "..i..lmtp_stack_indicator",
                         learners, "binomial", "..i..lmtp_id",
                         control$.learners_trt_folds)
 
     if (control$.return_full_fits) {
-      fits[[t]] <- fit
+      fits[[time]] <- fit
     } else {
-      fits[[t]] <- extract_sl_weights(fit)
+      fits[[time]] <- extract_sl_weights(fit)
     }
 
-    i <- task$observed(natural$valid, t - 1) %and% task$R(natural$valid, t)
+    i <- task$observed(natural$valid, time - 1) %and% task$R(natural$valid, time)
 
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[i, ] <- predict(fit, natural$valid[i, ])
 
-    obs <- task$observed(natural$valid, t)
-    at_risk <- task$R(natural$valid, t)
+    obs <- task$observed(natural$valid, time)
+    at_risk <- task$R(natural$valid, time)
     followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)
-    density_ratios[, t] <- (pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
+    density_ratios[, time] <- (pred * obs * at_risk * followed) / (1 - pmin(pred, 0.999))
 
     pb()
   }
