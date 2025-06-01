@@ -13,6 +13,41 @@ compute_weights <- function(r, t, tau) {
   out
 }
 
-eif_flip <- function() {
+eif_flip <- function(task, seq_ests, scores, time, final_time) {
+  
+  ratios <- scores$ratios
+  q_scores <- scores$q_scores
+  phi_scores <- scores$phi_scores
+  
+  # plug-in estimate of pseudo-outcome
+  pseudo <- seq_ests[, time, 1] * (1 - q_scores[, time]) + 
+    seq_ests[, time, 2] * q_scores[, time]
 
+  pseudo <- pseudo + rowSums(seq_ests[, time, ] * phi_scores[, time, ])
+    
+  for (s in time:final_time) {
+    
+    for (k in time:s) {
+      if (k == time) {
+        ratio_product <- ratios[, k]
+        
+      } else {
+        ratio_product <- ratio_product * ratios[, k]
+      }
+    }
+    
+    if (s < final_time) {
+      resid <- 
+        seq_ests[, s+1, 1] * (1 - q_scores[, s+1]) + seq_ests[, s+1, 2] * q_scores[, s+1] +
+        rowSums(seq_ests[, s+1, ] * phi_scores[, s+1, ]) -
+        seq_ests[, s, ][cbind(1:nrow(task$natural), task$natural[, task$vars$A[[time]]] + 1)]
+    } else {
+      resid <- task$natural[, task$vars$Y] -
+        seq_ests[, s, ][cbind(1:nrow(task$natural), task$natural[, task$vars$A[[time]]]+1)]
+    }
+    
+    pseudo <- pseudo + ratio_product * resid
+  }
+  
+  return(pseudo)
 }
