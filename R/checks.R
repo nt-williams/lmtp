@@ -2,7 +2,7 @@ check_lmtp_data = function(self) {
   for (t in 1:self$tau) {
     r <- self$R(self$natural, t)
     o <- self$observed(self$natural, t - 1)
-    i <- ii(o, r)
+    i <- o %and% r
 
     if (length(self$vars$A) > 1) {
       A_t <- self$vars$A[[t]]

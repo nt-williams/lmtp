@@ -75,7 +75,7 @@ is_decimal <- function(x) {
   !(x == test)
 }
 
-ii <- function(o, r) {
+`%and%` <- function(o, r) {
   i <- vector("logical", length(o))
   for (j in 1:length(o)) {
     if (is.na(r[j]) & !is.na(o[j])) {

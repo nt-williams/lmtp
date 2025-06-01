@@ -126,7 +126,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   pb <- progressr::progressor(task$tau*folds*2)
 
   # Estimate density ratios
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  ratios <- cf_density_ratios(task, learners_trt, mtp, control, pb)
 
   # Estimate TMLE
   estims <- cf_tmle(task, ratios$ratios, learners_outcome, control, pb)
@@ -270,7 +270,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   # Create progress bar object
   pb <- progressr::progressor(task$tau*folds*2)
 
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  ratios <- cf_density_ratios(task, learners_trt, mtp, control, pb)
   estims <- cf_sdr(task, ratios$ratios, learners_outcome, control, pb)
 
   theta_dr(

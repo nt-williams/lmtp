@@ -34,7 +34,7 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
     y1 <- task$at_risk_N(natural$train, t-1)
     d0 <- task$at_risk_D(natural$train, t-1)
     c1 <- task$observed(natural$train, t)
-    i <- ii(c1, y1 & d0)
+    i <- c1 %and% (y1 & d0)
 
     history <- task$vars$history("L", t + 1)
     vars <- c("..i..lmtp_id", history, task$vars$Y)
@@ -62,8 +62,8 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
     d0v <- task$at_risk_D(natural$valid, t-1)
     cp1v <- task$observed(natural$valid, t-1)
 
-    i <- ii(cp1, y1 & d0)
-    iv <- ii(cp1v, y1v & d0v)
+    i <- cp1 %and% (y1 & d0)
+    iv <- cp1v %and% (y1v & d0v)
 
     under_shift_train <- natural$train[i, c("..i..lmtp_id", history)]
     under_shift_train[, A_t] <- shifted$train[i, A_t]
