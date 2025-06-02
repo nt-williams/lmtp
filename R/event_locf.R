@@ -17,7 +17,7 @@
 event_locf <- function(data, outcomes) {
   DT <- as.data.table(data)
   tau <- length(outcomes)
-  for (j in outcomes[1:(tau - 1)]) {
+  for (j in outcomes[seq_len(tau - 1)]) {
     modify <- setdiff(outcomes[match(j, outcomes):tau], j)
     DT[get(j) == 1 & !is.na(get(j)), (modify) := lapply(.SD, function(x) 1), .SDcols = modify]
   }

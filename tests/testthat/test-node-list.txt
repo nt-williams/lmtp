@@ -2,26 +2,26 @@
 > bs <- c("W")
 > nodes <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4"))
 > create_node_list(a, 4, nodes, baseline = NULL, k = NULL)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, baseline = NULL, k = Inf)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, baseline = NULL, k = 0)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, baseline = NULL, k = 1)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, baseline = NULL, k = 2)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, bs, k = 0)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, nodes, bs, k = Inf)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 
 > create_node_list(a, 4, NULL, bs, k = Inf)
-Error: `create_node_list()` was deprecated in lmtp 1.6.0 and is now defunct.
+Error: `create_node_list()` was deprecated in lmtp 1.5.0 and is now defunct.
 

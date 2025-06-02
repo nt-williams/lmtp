@@ -1,14 +1,12 @@
-eif <- function(r, shifted, natural, t, tau) {
-  if (missing(tau)) tau <- ncol(r)
-  if (missing(t)) t <- 1
-  # natural[is.na(natural)] <- -999
-  # shifted[is.na(shifted)] <- -999
-  m <- shifted[, (t + 1):(tau + 1), drop = FALSE] - natural[, t:tau, drop = FALSE]
-  rowSums(compute_weights(r, t, tau) * m, na.rm = TRUE) + shifted[, t]
+eif <- function(density_ratios, shifted, natural, time, time_horizon) {
+  if (missing(time_horizon)) time_horizon <- ncol(density_ratios)
+  if (missing(time)) time <- 1
+  residuals <- shifted[, (time + 1):(time_horizon + 1), drop = FALSE] - natural[, time:time_horizon, drop = FALSE]
+  rowSums(compute_weights(density_ratios, time, time_horizon) * residuals, na.rm = TRUE) + shifted[, time]
 }
 
-compute_weights <- function(r, t, tau) {
-  out <- t(apply(r[, t:tau, drop = FALSE], 1, cumprod))
-  if (ncol(out) > ncol(r)) return(t(out))
+compute_weights <- function(density_ratios, time, time_horizon) {
+  out <- t(apply(density_ratios[, time:time_horizon, drop = FALSE], 1, cumprod))
+  if (ncol(out) > ncol(density_ratios)) return(t(out))
   out
 }
