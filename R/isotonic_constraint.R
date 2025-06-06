@@ -25,8 +25,8 @@ cf_isotonic <- function(task, ratios, sporadic_weights, curve) {
   for(tau in 1:task$tau) {
     for(t in 1:tau) {
       lambda <- isotonic_constraint(natural_iso[[tau]][, t], pseudo[[tau]][, t + 1])
-      natural_iso[[tau]][, t] <- lambda(natural_iso[[t]][, t])
-      shifted_iso[[tau]][, t] <- lambda(shifted_iso[[t]][, t])
+      natural_iso[[tau]][, t] <- lambda(natural_iso[[tau]][, t])
+      shifted_iso[[tau]][, t] <- lambda(shifted_iso[[tau]][, t])
     }
   }
 
