@@ -10,6 +10,7 @@ lmtp_control(
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
   .return_full_fits = FALSE,
+  .isotonic_constraint = TRUE,
   .discrete = TRUE,
   .info = FALSE
 )
@@ -38,6 +39,9 @@ Use discrete or ensemble super learner?}
 
 \item{.info}{[\code{logical(1)}]\cr
 Print super learner fitting info to the console?}
+
+\item{.iosotonic_constraint}{[\code{logical(1)}]\cr
+Constrain pseudo-outcomes using isotonic regression in curve algorithm}
 }
 \value{
 A list of parameters controlling the estimation procedure.
