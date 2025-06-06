@@ -17,3 +17,26 @@ isotonic_constraint <- function(x, y) {
 
   approxfun(x, iso, method = "constant", rule = 2, ties = mean)
 }
+
+cf_isotonic <- function(task, ratios, sporadic_weights, curve) {
+  natural_iso <- curve$natural
+  shifted_iso <- curve$shifted
+  pseudo <- curve$pseudo
+  for(tau in 1:task$tau) {
+    for(t in 1:tau) {
+      lambda <- isotonic_constraint(natural_iso[[t]][, t], pseudo[[t]][, t + 1])
+      natural_iso[[t]][, t] <- lambda(natural_iso[[t]][, t])
+      shifted_iso[[t]][, t] <- lambda(shifted_iso[[t]][, t])
+    }
+  }
+
+  influence_functions <- matrix(0, ncol = ncol(curve$influence_functions), nrow = nrow(curve$influence_functions))
+  for(t in 1:task$tau) {
+    influence_functions[, t] <- eif(ratios$ratios, sporadic_weights$weights, shifted_iso[[t]], natural_iso[[t]], t = 1, tau = t)
+  }
+
+  list(
+    influence_functions = influence_functions,
+    shifted = shifted_iso
+  )
+}
