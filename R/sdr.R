@@ -100,25 +100,19 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
 
 cf_sequential_regression <- function(task, final_time, scores, learners, control, pb = NULL) {
   
-  library(abind)
   ans <- vector("list", length = length(task$folds))
   for (fold in seq_along(task$folds)) {
-    ans[[fold]] <- estimate_flip_sdr(task, final_time, fold, scores, learners, control, pb)
+    ans[[fold]] <- future::future({
+      estimate_flip_sdr(task, final_time, fold, scores, learners, control, pb)
+    },
+    seed = TRUE)
   }
   
-    
-  # for (fold in seq_along(task$folds)) {
-  #   ans[[fold]] <- future::future({
-  #     estimate_flip_sdr(task, fold, scores, learners, control, pb)
-  #   },
-  #   seed = TRUE)
-  # }
-  # 
-  # ans <- future::value(ans)
+  ans <- future::value(ans)
 
   return(
     list(
-      seq_reg_ests = abind(lapply(ans, `[[`, "seq_reg_ests"), along = 1)[ 
+      seq_reg_ests = abind::abind(lapply(ans, `[[`, "seq_reg_ests"), along = 1)[ 
         order(unlist(lapply(task$folds, `[[`, "validation_set"))), ,, drop = F],
       fits = lapply(ans, function(x) x[["fits"]])
     )
