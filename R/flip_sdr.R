@@ -171,8 +171,8 @@ flip_sdr <- function(
 
   # Set initial pseudo-outcome equal to actual outcome
   task$natural$pseudo <- task$natural$final <- task$natural[, task$vars$Y]
-  estims <- cf_sequential_regression(task, task$tau, scores, learners_outcome, control, pb)
-  
+  estims <- cf_sequential_regression(task, task$tau, scores, learners_outcome, bounds = NULL, 
+                                     control, pb)
   # Calculate final EIF
   ifvalues <- eif_Q(task, task$natural, estims$seq_reg_ests,
                     scores$q_scores, scores$phi_scores, scores$ratios, time = 1,
@@ -238,7 +238,8 @@ flip_sdr_second_PO <- function(flip,
   
   # Set initial pseudo-outcome equal to actual outcome
   flip$task$natural$pseudo <- flip$task$natural$final <- flip$task$natural[, flip$task$vars$Y]
-  estims <- cf_sequential_regression(flip$task, flip$task$tau, scores, learners_outcome, control, pb)
+  estims <- cf_sequential_regression(flip$task, flip$task$tau, scores, learners_outcome, bounds = NULL,
+                                     control, pb)
   
   # Calculate final EIF
   ifvalues <- eif_Q(flip$task, flip$task$natural, estims$seq_reg_ests,
@@ -297,11 +298,19 @@ flip_sdr_treatment <- function(flip,
     pmax(0, pmin(1, scores$q_scores[, final_time] + scores$phi_scores[, final_time, 2]))
   
   if (final_time > 1) {
-    estims <- cf_sequential_regression(flip$task, final_time-1, scores, learners_outcome, control, pb)
+    estims <- cf_sequential_regression(flip$task, final_time-1, scores, learners_outcome, 
+                                       bounds = c(0,1), control, pb)
     fits_m <- estims$fits
+    
+    # Constrain sequential regression estimates
+    estims$seq_reg_ests[] <- pmin(1, pmax(0, estims$seq_reg_ests))
+    
     ifvalues <- eif_Q(flip$task, flip$task$natural, estims$seq_reg_ests,
                       scores$q_scores, scores$phi_scores, scores$ratios, time = 1,
                       final_time = final_time-1) 
+    
+    # Constrain influence function values
+    ifvalues <- pmin(1, pmax(0, ifvalues))
   } else {
     fits_m <- vector("list", length = 0)
     ifvalues <- flip$task$natural$pseudo

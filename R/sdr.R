@@ -98,12 +98,12 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
 }
 
 
-cf_sequential_regression <- function(task, final_time, scores, learners, control, pb = NULL) {
+cf_sequential_regression <- function(task, final_time, scores, learners, bounds = NULL, control, pb = NULL) {
   
   ans <- vector("list", length = length(task$folds))
   for (fold in seq_along(task$folds)) {
     ans[[fold]] <- future::future({
-      estimate_flip_sdr(task, final_time, fold, scores, learners, control, pb)
+      estimate_flip_sdr(task, final_time, fold, scores, learners, bounds, control, pb)
     },
     seed = TRUE)
   }
@@ -119,7 +119,7 @@ cf_sequential_regression <- function(task, final_time, scores, learners, control
   )
 }
 
-estimate_flip_sdr <- function(task, final_time, fold, scores, learners, control, pb = NULL) {
+estimate_flip_sdr <- function(task, final_time, fold, scores, learners, bounds, control, pb = NULL) {
 
   # Assign data to training / validation
   data <- get_folded_data(task$natural, task$folds, fold)
@@ -202,6 +202,10 @@ estimate_flip_sdr <- function(task, final_time, fold, scores, learners, control,
                                ratios = ratios,
                                time = time,
                                final_time = final_time)
+    
+    if(!is.null(bounds)) { # Constrain pseudo-outcome to bounded range if applicable
+      data$train$pseudo <- pmax(bounds[[1]], pmin(bounds[[2]], data$train$pseudo))
+    }
   }
   
   if (!is.null(pb)) pb()
