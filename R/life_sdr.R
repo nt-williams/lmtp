@@ -246,7 +246,9 @@ life_sdr <- function(
         always_treated_avg_PO = always_treated,
         never_treated_avg_PO = never_treated,
         always_treated_avg_tx = always_avg_treatments,
-        never_treated_avg_tx = never_avg_treatments
+        never_treated_avg_tx = never_avg_treatments,
+        overall_num_ifs = num_ifs,
+        overall_denom_ifs = denom_ifs
       )
     )
   )
