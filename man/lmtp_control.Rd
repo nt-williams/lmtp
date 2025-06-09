@@ -5,7 +5,7 @@
 \title{Set LMTP Estimation Parameters}
 \usage{
 lmtp_control(
-  .bound = 1e+05,
+  .bound = 100000,
   .trim = 0.999,
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
