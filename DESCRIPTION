@@ -40,7 +40,8 @@ Imports:
     SuperLearner,
     isotone,
     ife,
-    lifecycle
+    lifecycle,
+    abind
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
