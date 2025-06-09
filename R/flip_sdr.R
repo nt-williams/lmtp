@@ -168,36 +168,27 @@ flip_sdr <- function(
   )
 
   # --- Run sequential regressions with cross-fitting --- #
-  
-  # Initialize array for sequential regression estimates
-  seq_ests <- array(dim = c(nrow(task$natural), task$tau, 2))
-  
-  # Set initial pseudo-outcome equal to actual outcome
-  task$natural$pseudo <- task$natural[, task$vars$Y]
-  fits_m <- vector("list", length = task$tau)
-  
-  # Loop backwards through timepoints
-  for (time in task$tau:1) {
-    
-    # Run cross-fit sequential regressions
-    info <- cf_sequential_regression(task, learners_outcome, control, time, pb)
-    fits_m[[time]] <- info[["fits"]]
-    seq_ests[, time, ] <- info[["seq_reg_ests"]]
 
-    # Construct pseudo outcomes for next round
-    task$natural$pseudo <- eif_flip(task, seq_ests, scores, time, final_time = task$tau)
-  }  
+  # Set initial pseudo-outcome equal to actual outcome
+  task$natural$pseudo <- task$natural$final <- task$natural[, task$vars$Y]
+  estims <- cf_sequential_regression(task, task$tau, scores, learners_outcome, control, pb)
   
+  # Calculate final EIF
+  ifvalues <- eif_Q(task, task$natural, estims$seq_reg_ests,
+                    scores$q_scores, scores$phi_scores, scores$ratios, time = 1,
+                    final_time = task$tau) 
+    
+    
   # Return outputs!
   out <- list(
     estimator = "SDR",
-    ifvalues = task$natural$pseudo,
-    estimate = ife::ife(x = mean(task$natural$pseudo),
-                        eif = task$natural$pseudo,
+    ifvalues = ifvalues,
+    estimate = ife::ife(x = mean(ifvalues),
+                        eif = ifvalues - mean(ifvalues),
                         id = as.character(task$id)),
     prop_scores = props$prop_scores,
     fits_prop = props$fits,
-    fits_m = fits_m,
+    fits_m = estims$fits,
     outcome_type = task$outcome_type
   )
   
@@ -245,33 +236,22 @@ flip_sdr_second_PO <- function(flip,
   
   # --- Run sequential regressions with cross-fitting --- #
   
-  # Initialize array for sequential regression estimates
-  seq_ests <- array(dim = c(nrow(flip$task$natural), flip$task$tau, 2))
-  
   # Set initial pseudo-outcome equal to actual outcome
-  flip$task$natural$pseudo <- flip$task$natural[, flip$task$vars$Y]
-  fits_m <- vector("list", length = flip$task$tau)
+  flip$task$natural$pseudo <- flip$task$natural$final <- flip$task$natural[, flip$task$vars$Y]
+  estims <- cf_sequential_regression(flip$task, flip$task$tau, scores, learners_outcome, control, pb)
   
-  # Loop backwards through timepoints
-  for (time in flip$task$tau:1) {
-    
-    # Run cross-fit sequential regressions
-    info <- cf_sequential_regression(flip$task, learners_outcome, control, time, pb)
-    fits_m[[time]] <- info[["fits"]]
-    seq_ests[, time, ] <- info[["seq_reg_ests"]]
-    
-    # Construct pseudo outcomes for next round
-    flip$task$natural$pseudo <- eif_flip(flip$task, seq_ests, scores, time, final_time = flip$task$tau)
-  }  
-  
+  # Calculate final EIF
+  ifvalues <- eif_Q(flip$task, flip$task$natural, estims$seq_reg_ests,
+                    scores$q_scores, scores$phi_scores, scores$ratios, time = 1,
+                    final_time = flip$task$tau) 
   # Return outputs
   out <- list(
     estimator = "SDR",
-    ifvalues = flip$task$natural$pseudo,
-    estimate = ife::ife(x = mean(flip$task$natural$pseudo),
-                        eif = flip$task$natural$pseudo,
+    ifvalues = ifvalues,
+    estimate = ife::ife(x = mean(ifvalues),
+                        eif = ifvalues - mean(ifvalues),
                         id = as.character(flip$task$id)),
-    fits_m = fits_m
+    fits_m = estims$fits
     )
   
   class(out) <- "lmtp"
@@ -298,7 +278,6 @@ flip_sdr_treatment <- function(flip,
   # Progress bar
   pb <- progressr::progressor((final_time-1) * folds)
   
-  
   # --- Define flip weight and derivative --- # 
   flip_funcs <- define_flip_functions(overlap, trimming_threshold, smoothing_constant)
   
@@ -313,34 +292,28 @@ flip_sdr_treatment <- function(flip,
   
   # --- Run sequential regressions with cross-fitting --- #
   
-  # Initialize array for sequential regression estimates
-  seq_ests <- array(dim = c(nrow(flip$task$natural), final_time-1, 2))
-  
   # Set initial pseudo-outcome equal to actual outcome
-  flip$task$natural$pseudo <- pmax(0, pmin(1, scores$q_scores[, final_time] + scores$phi_scores[, final_time, 2]))
-  flip$task$natural[, flip$task$vars$Y] <- flip$task$natural$pseudo
-  fits_m <- vector("list", length = final_time-1)
+  flip$task$natural$pseudo <- flip$task$natural$final <- 
+    pmax(0, pmin(1, scores$q_scores[, final_time] + scores$phi_scores[, final_time, 2]))
   
-  # Loop backwards through timepoints
   if (final_time > 1) {
-    for (time in (final_time-1):1) {
-      
-      # Run cross-fit sequential regressions
-      info <- cf_sequential_regression(flip$task, learners_outcome, control, time, pb)
-      fits_m[[time]] <- info[["fits"]]
-      seq_ests[, time, ] <- info[["seq_reg_ests"]]
-      
-      # Construct pseudo outcomes for next round
-      flip$task$natural$pseudo <- eif_flip(flip$task, seq_ests, scores, time, final_time = final_time-1)
-    }  
+    estims <- cf_sequential_regression(flip$task, final_time-1, scores, learners_outcome, control, pb)
+    fits_m <- estims$fits
+    ifvalues <- eif_Q(flip$task, flip$task$natural, estims$seq_reg_ests,
+                      scores$q_scores, scores$phi_scores, scores$ratios, time = 1,
+                      final_time = final_time-1) 
+  } else {
+    fits_m <- vector("list", length = 0)
+    ifvalues <- flip$task$natural$pseudo
   }
+
   
   # Return outputs
   out <- list(
     estimator = "SDR",
-    ifvalues = flip$task$natural$pseudo,
-    estimate = ife::ife(x = mean(flip$task$natural$pseudo),
-                        eif = flip$task$natural$pseudo,
+    ifvalues = ifvalues,
+    estimate = ife::ife(x = mean(ifvalues),
+                        eif = ifvalues - mean(ifvalues),
                         id = as.character(flip$task$id)),
     fits_m = fits_m
   )

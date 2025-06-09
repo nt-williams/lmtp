@@ -78,8 +78,8 @@
 #' mydata$A_3 <- rbinom(n = nrow(mydata), size = 1, prob = 0.7)
 #' mydata$A_4 <- rbinom(n = nrow(mydata), size = 1, prob = 0.9)
 #' mydata$X <- runif(n = nrow(mydata))
-#' test2 <- life_sdr(
-#'   data = df, 
+#' life_sdr(
+#'   data = mydata, 
 #'   trt = c("A_1", "A_2", "A_3", "A_4"),
 #'   outcome = "Y",
 #'   baseline = c("X"),
