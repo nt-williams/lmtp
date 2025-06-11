@@ -4,7 +4,7 @@
 \alias{tidy.lmtp_survival}
 \title{Tidy a(n) lmtp_survival object}
 \usage{
-\method{tidy}{lmtp_survival}(x, ...)
+tidy.lmtp_survival(x, ...)
 }
 \arguments{
 \item{x}{A \code{lmtp_survival} object produced by a call to \code{\link[=lmtp_survival]{lmtp_survival()}}.}

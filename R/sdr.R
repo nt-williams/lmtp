@@ -96,3 +96,120 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
        shifted = m_shifted_valid,
        fits = fits)
 }
+
+
+cf_sequential_regression <- function(task, final_time, scores, learners, bounds = NULL, control, pb = NULL) {
+  
+  ans <- vector("list", length = length(task$folds))
+  for (fold in seq_along(task$folds)) {
+    ans[[fold]] <- future::future({
+      estimate_flip_sdr(task, final_time, fold, scores, learners, bounds, control, pb)
+    },
+    seed = TRUE)
+  }
+  
+  ans <- future::value(ans)
+
+  return(
+    list(
+      seq_reg_ests = abind::abind(lapply(ans, `[[`, "seq_reg_ests"), along = 1)[ 
+        order(unlist(lapply(task$folds, `[[`, "validation_set"))), ,, drop = F],
+      fits = lapply(ans, function(x) x[["fits"]])
+    )
+  )
+}
+
+estimate_flip_sdr <- function(task, final_time, fold, scores, learners, bounds, control, pb = NULL) {
+
+  # Assign data to training / validation
+  data <- get_folded_data(task$natural, task$folds, fold)
+
+  # Get q_scores; phi_scores; ratios into train & validation?
+  q_scores <- get_folded_data(scores$q_scores, task$folds, fold)$train
+  ratios <- get_folded_data(scores$ratios, task$folds, fold)$train
+  phi_scores <- scores$phi_scores[task$folds[[fold]]$training_set, , , drop = FALSE]
+  
+  # Initialize array for sequential regression estimates in-training
+  m_train <- array(dim = c(nrow(data$train), final_time, 2)) 
+
+  # Use m_valid to keep final output sequential regression estimates
+  m_valid <- array(dim = c(nrow = nrow(data$valid), final_time, ncol = 2))
+
+  # --- Run sequential regression on training data --- #
+  fits <- vector("list", length = final_time)
+  for (time in final_time:1) {
+    
+    # Logic for dealing with censoring and competing events
+    y1 <- task$at_risk_N(data$train, time-1)
+    d0 <- task$at_risk_D(data$train, time-1)
+    c1 <- task$observed(data$train, time)
+    i <- ii(c1, y1 & d0) # i = index of subjects to use for regression
+    
+    # Get predictors for sequential regression
+    history <- task$vars$history("L", time + 1)
+    vars <- c("..i..lmtp_id", history, "pseudo")
+    
+    # Run sequential regression to estimate m_t(A_t, H_t)
+    fit <- run_ensemble(data = data$train[i, vars], 
+                        y = "pseudo", # Repeatedly updated pseudo-outcome
+                        learners = learners,
+                        outcome_type = ifelse(time != final_time, "continuous", task$outcome_type),
+                        id = "..i..lmtp_id",
+                        folds = control$.learners_outcome_folds)
+    
+    # --- Predict under treatment and control ---- # 
+    
+    # Predict under A_t = 0 and A_t = 1 for all relevant subjects
+    # In training data
+    untreated_train <- treated_train <- data$train; 
+    untreated_train[, task$vars$A[[time]]] <- 0
+    treated_train[, task$vars$A[[time]]] <- 1
+    
+    m_train[i, time, 1] <- predict(fit, untreated_train[i, ], NULL)
+    m_train[i, time, 2] <- predict(fit, treated_train[i, ], NULL)
+    
+    # Over-write for censored or already dead
+    m_train[which(!y1), time, ] <- 0 
+    m_train[which(!d0), time, ] <- 1
+    
+    # In validation data
+    # More censoring logic: check whether censored in previous timepoint 
+    cp1 <- task$observed(data$train, time-1) # censoring in the past = 1
+    y1v <- task$at_risk_N(data$valid, time-1)
+    d0v <- task$at_risk_D(data$valid, time-1)
+    cp1v <- task$observed(data$valid, time-1)
+    iv <- ii(cp1v, y1v & d0v)
+    
+    untreated <- treated <- data$valid; 
+    untreated[, task$vars$A[[time]]] <- 0; treated[, task$vars$A[[time]]] <- 1
+    
+    m_valid[iv, time, 1] <- predict(fit, untreated[iv, ], NULL)
+    m_valid[iv, time, 2] <- predict(fit, treated[iv, ], NULL)
+    
+    # Over-write for censored or already dead
+    m_valid[which(!y1v), time, ] <- 0
+    m_valid[which(!d0v), time, ] <- 1
+    
+    # Return fits and estimates
+    fits[[time]] <- if (control$.return_full_fits) fit else extract_sl_weights(fit)
+
+    # Construct pseudo outcomes for next round
+    data$train$pseudo <- eif_Q(task = task, 
+                               data = data$train,
+                               seq_ests = m_train,
+                               q_scores = q_scores,
+                               phi_scores = phi_scores,
+                               ratios = ratios,
+                               time = time,
+                               final_time = final_time)
+    
+    if(!is.null(bounds)) { # Constrain pseudo-outcome to bounded range if applicable
+      data$train$pseudo <- pmax(bounds[[1]], pmin(bounds[[2]], data$train$pseudo))
+    }
+  }
+  
+  if (!is.null(pb)) pb()
+  
+  # Return sequential regression estimates from 
+  return(list(seq_reg_ests = m_valid, fits = fits))
+}
