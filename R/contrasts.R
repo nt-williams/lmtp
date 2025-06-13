@@ -24,6 +24,10 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
   assert_ref_class(ref)
   assert_contrast_type(type, fits, .var.name = "type")
 
+  if (checkmate::test_number(ref)) {
+    cli::cli_alert_danger("Unless {.code ref} is a known constant, standard errors may be anti-conservative!")
+  }
+
   fits <- lapply(fits, function(x) x$estimate)
   if (is.lmtp(ref)) {
     ref <- ref$estimate
