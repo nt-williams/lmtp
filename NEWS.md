@@ -7,6 +7,7 @@
 ### General
 
 - The default for the `mtp` argument has been changed from `FALSE` to `TRUE` (see issue \#170).
+- A warning message is now printed in `lmtp_contrast()` that p-values aren't adjusted for multiple comparisons (see issue \#172).
 
 # lmtp 1.5.1
 
