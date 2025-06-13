@@ -1,3 +1,13 @@
+# lmtp 1.5.2
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+- The default for the `mtp` argument has been changed from `FALSE` to `TRUE` (see issue \#170).
+
 # lmtp 1.5.1
 
 ### New Features

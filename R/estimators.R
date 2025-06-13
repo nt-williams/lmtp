@@ -43,7 +43,8 @@
 #'  all time points.
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
-#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -91,7 +92,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
-                      k = Inf, mtp = FALSE,
+                      k = Inf, mtp = TRUE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "SL.glm",
@@ -187,7 +188,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  all time points.
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
-#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -235,7 +237,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @export
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
-                     k = Inf, mtp = FALSE,
+                     k = Inf, mtp = TRUE,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = "SL.glm",
