@@ -1,16 +1,12 @@
-check_lmtp_data = function(self) {
-  for (t in 1:self$tau) {
-    r <- self$R(self$natural, t)
-    o <- self$observed(self$natural, t - 1)
-    i <- ii(o, r)
+check_lmtp_data = function(task) {
+  for (time in seq_len(task$time_horizon)) {
+    r <- task$is_at_risk(task$natural, time)
+    o <- task$observed(task$natural, time - 1)
+    i <- o %and% r
 
-    if (length(self$vars$A) > 1) {
-      A_t <- self$vars$A[[t]]
-    } else {
-      A_t <- self$vars$A[[1]]
-    }
+    A_t <- current_trt(task$vars$A, time)
 
-    data_t <- self$natural[i, c(A_t, self$vars$W, unlist(self$vars$L[t])), drop = FALSE]
+    data_t <- task$natural[i, c(A_t, task$vars$W, unlist(task$vars$L[time])), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")

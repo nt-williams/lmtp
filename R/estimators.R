@@ -43,7 +43,8 @@
 #'  all time points.
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
-#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -91,7 +92,7 @@
 #' @export
 lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
-                      k = Inf, mtp = FALSE,
+                      k = Inf, mtp = TRUE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
                       learners_outcome = "SL.glm",
@@ -99,8 +100,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assert_not_data_table(data)
-  av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
-  assert_subset(av, names(data))
+  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
 
@@ -109,7 +110,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   task <- LmtpTask$new(
     data = data,
-    shifted = make_shifted(data[, av], trt, cens, shift, shifted),
+    shifted = make_shifted(data[, variable_names], trt, cens, shift, shifted),
     A = trt,
     Y = outcome,
     L = time_vary,
@@ -123,22 +124,22 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   # Create progress bar object
-  pb <- progressr::progressor(task$tau*folds*2)
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
   # Estimate density ratios
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
+  density_ratios <- cf_density_ratios(task, learners_trt, mtp, control, progress_bar)
 
   # Estimate TMLE
-  estims <- cf_tmle(task, ratios$ratios, learners_outcome, control, pb)
+  sequential_regressions <- cf_tmle(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
-    fits_m = estims$fits,
-    fits_r = ratios$fits,
+    sequential_regressions = list(natural = sequential_regressions$natural, shifted = sequential_regressions$shifted),
+    density_ratios = density_ratios$density_ratios,
+    fits_m = sequential_regressions$fits,
+    fits_r = density_ratios$fits,
     shift = deparse(substitute((shift))),
-    augmented = FALSE
+    is_sdr = FALSE
   )
 }
 
@@ -187,7 +188,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  all time points.
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
-#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param outcome_type \[\code{character(1)}\]\cr
 #'  Outcome variable type (i.e., continuous, binomial, survival).
 #' @param id \[\code{character(1)}\]\cr
@@ -235,7 +237,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' @export
 lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      cens = NULL, compete = NULL, shift = NULL, shifted = NULL,
-                     k = Inf, mtp = FALSE,
+                     k = Inf, mtp = TRUE,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
                      learners_outcome = "SL.glm",
@@ -244,8 +246,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      control = lmtp_control()) {
 
   assert_not_data_table(data)
-  av <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
-  assert_subset(av, names(data))
+  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
 
@@ -254,7 +256,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   task <- LmtpTask$new(
     data = data,
-    shifted = make_shifted(data[, av], trt, cens, shift, shifted),
+    shifted = make_shifted(data[, variable_names], trt, cens, shift, shifted),
     A = trt,
     Y = outcome,
     L = time_vary,
@@ -268,18 +270,18 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   )
 
   # Create progress bar object
-  pb <- progressr::progressor(task$tau*folds*2)
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
-  ratios <- cf_r(task, learners_trt, mtp, control, pb)
-  estims <- cf_sdr(task, ratios$ratios, learners_outcome, control, pb)
+  density_ratios <- cf_density_ratios(task, learners_trt, mtp, control, progress_bar)
+  sequential_regressions <- cf_sdr(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
 
   theta_dr(
     task = task,
-    m = list(natural = estims$natural, shifted = estims$shifted),
-    r = ratios$ratios,
-    fits_m = estims$fits,
-    fits_r = ratios$fits,
+    sequential_regressions = list(natural = sequential_regressions$natural, shifted = sequential_regressions$shifted),
+    density_ratios = density_ratios$density_ratios,
+    fits_m = sequential_regressions$fits,
+    fits_r = density_ratios$fits,
     shift = deparse(substitute((shift))),
-    augmented = TRUE
+    is_sdr = TRUE
   )
 }

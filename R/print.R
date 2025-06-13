@@ -9,6 +9,9 @@ print.lmtp <- function(x, ...) {
 
 #' @export
 print.lmtp_contrast <- function(x, ...) {
+  if (nrow(x$estimates) > 1) {
+    cli::cli_alert_danger("P-values are not adjusted for multiple comparisons!")
+  }
   cat("\n")
   cli::cli_text(cat("  "), "{.strong LMTP Contrast}: {x$type}")
   cli::cli_text("{.strong Null hypothesis}: theta == {x$null}")

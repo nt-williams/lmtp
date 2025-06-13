@@ -7,19 +7,19 @@ LmtpTask <- R6::R6Class(
     vars = NULL,
     id = NULL,
     n = NULL,
-    tau = NULL,
+    time_horizon = NULL,
     outcome_type = NULL,
     survival = NULL,
     folds = NULL,
     weights = NULL,
     initialize = function(data, shifted, A, Y, L, W, C, D, k,
                           id, outcome_type, bounds, folds, weights) {
-      # Identify tau
-      self$tau <- private$tau_is(Y, A)
+      # Identify the time horizon
+      self$time_horizon <- private$time_horizon_is(Y, A)
       self$n <- nrow(data)
 
       # Create Vars object
-      self$vars <- LmtpVars$new(W, L, A, C, D, Y, outcome_type, self$tau, k)
+      self$vars <- LmtpVars$new(W, L, A, C, D, Y, outcome_type, self$time_horizon, k)
 
       # Additional checks
       assert_numeric(weights, len = nrow(data), finite = TRUE, any.missing = FALSE, null.ok = TRUE)
@@ -60,25 +60,25 @@ LmtpTask <- R6::R6Class(
       (x*(private$bounds[2] - private$bounds[1])) + private$bounds[1]
     },
 
-    observed = function(data, t) {
+    observed = function(data, time) {
       if (is.null(self$vars$C)) {
         return(rep(TRUE, nrow(data)))
       }
 
-      if (t == 0) {
+      if (time == 0) {
         return(rep(TRUE, nrow(data)))
       }
 
-      data[[self$vars$C[t]]] == 1
+      data[[self$vars$C[time]]] == 1
     },
 
-    at_risk_D = function(data, t) {
-      if (t > self$tau) {
+    is_competing_risk_free = function(data, time) {
+      if (time > self$time_horizon) {
         return(rep(TRUE, nrow(data)))
       }
 
       # always at risk at first time point
-      if (t == 0) {
+      if (time == 0) {
         return(rep(TRUE, nrow(data)))
       }
 
@@ -86,11 +86,11 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      data[[self$vars$D[t]]] == 0
+      data[[self$vars$D[time]]] == 0
     },
 
-    at_risk_N = function(data, t) {
-      if (t > self$tau) {
+    is_outcome_free = function(data, time) {
+      if (time > self$time_horizon) {
         return(rep(TRUE, nrow(data)))
       }
 
@@ -99,15 +99,15 @@ LmtpTask <- R6::R6Class(
       }
 
       # always at risk at first time point
-      if (t == 0) {
+      if (time == 0) {
         return(rep(TRUE, nrow(data)))
       }
 
-      data[[self$vars$N[t]]] == 1 & !is.na(data[[self$vars$N[t]]])
+      data[[self$vars$N[time]]] == 1 & !is.na(data[[self$vars$N[time]]])
     },
 
-    R = function(data, t) {
-      if (t > self$tau) {
+    is_at_risk = function(data, time) {
+      if (time > self$time_horizon) {
         return(rep(TRUE, nrow(data)))
       }
 
@@ -116,17 +116,13 @@ LmtpTask <- R6::R6Class(
         return(rep(TRUE, nrow(data)))
       }
 
-      self$at_risk_D(data, t - 1) & self$at_risk_N(data, t - 1)
-    },
-
-    Z = function(data, t) {
-      !(self$at_risk_D(data, t - 1)) & self$at_risk_N(data, t - 1)
+      self$is_competing_risk_free(data, time - 1) & self$is_outcome_free(data, time - 1)
     }
 
   ),
   private = list(
     bounds = NULL,
-    tau_is = function(Y, A) {
+    time_horizon_is = function(Y, A) {
       if (!(length(Y) > 1)) {
         return(length(A))
       }
@@ -163,7 +159,7 @@ LmtpTask <- R6::R6Class(
       if (self$outcome_type == "binomial") {
         return(c(0, 1))
       }
-      c(min(x, na.rm = T), max(x, na.rm = T))
+      c(min(x, na.rm = TRUE), max(x, na.rm = TRUE))
     },
 
     as_lmtp_data = function(x) {
