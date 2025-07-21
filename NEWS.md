@@ -1,3 +1,13 @@
+# lmtp 1.5.3
+
+### New Features
+
+### Bug Fixes
+
+- Fixes bug where the `shifted` argument wouldn't work with multivariate exposure (see issue \#175).
+
+### General
+
 # lmtp 1.5.2
 
 ### New Features
