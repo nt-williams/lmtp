@@ -57,7 +57,14 @@ check_trt_list <- function(trt, tau) {
 assert_trt_list <- checkmate::makeAssertionFunction(check_trt_list)
 
 check_shifted_data <- function(natural, shifted, trt, cens) {
-  is_same <- setdiff(names(natural), c(trt, cens))
+  # Handle when trt is a list (multivariate treatments)
+  if (is.list(trt)) {
+    trt_cols <- unlist(trt)
+  } else {
+    trt_cols <- trt
+  }
+
+  is_same <- setdiff(names(natural), c(trt_cols, cens))
 
   if (!(identical(natural[is_same], shifted[is_same]))) {
     return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
