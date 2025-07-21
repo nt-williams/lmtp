@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - Fixes bug where the `shifted` argument wouldn't work with multivariate exposure (see issue \#175).
+- Fixes bug where `mtp = FALSE` wouldn't work with multivariate exposure. 
 
 ### General
 
