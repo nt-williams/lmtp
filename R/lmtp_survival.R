@@ -102,7 +102,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   cli::cli_progress_step("Working on time {time}/{time_horizon}...")
   for (time in seq_len(time_horizon)) {
     if (length(trt) > 1) args$trt <- trt[seq_len(time)]
-    if (length(args$time_vary) > 1) args$time_vary <- time_vary[seq_len(time)]
+    if (length(time_vary) > 1) args$time_vary <- time_vary[seq_len(time)]
     args$outcome <- outcomes[seq_len(time)]
     args$cens <- cens[seq_len(time)]
     args$compete <- compete[seq_len(time)]
