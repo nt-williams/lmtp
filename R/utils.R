@@ -26,7 +26,16 @@ followed_rule <- function(natural, shifted, A, mtp) {
     return(rep(TRUE, nrow(natural)))
   }
 
-  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(natural[, A]), as.list(shifted[, A]))
+  followed <- matrix(nrow = nrow(natural), ncol = length(A))
+
+  for (i in seq_along(A)) {
+    a <- A[i]
+    followed[, i] <- mapply(function(x, y) isTRUE(all.equal(x, y)),
+                            as.list(natural[, a]),
+                            as.list(shifted[, a]))
+  }
+
+  apply(followed, 1, prod)
 }
 
 trim <- function(x, trim) {
