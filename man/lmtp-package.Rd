@@ -25,5 +25,10 @@ Authors:
   \item Iván Díaz \email{Ivan.Diaz@nyulangone.org} (\href{https://orcid.org/0000-0001-9056-2047}{ORCID}) [copyright holder]
 }
 
+Other contributors:
+\itemize{
+  \item Beaudan Campbell-Brown \email{beaudan.brown@gmail.com} (\href{https://orcid.org/0009-0006-6967-9295}{ORCID}) [contributor]
+}
+
 }
 \keyword{internal}
