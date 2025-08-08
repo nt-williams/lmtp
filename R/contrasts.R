@@ -35,14 +35,20 @@ lmtp_contrast <- function(..., ref, type = c("additive", "rr", "or")) {
 
   ans <- switch(type,
                 "additive" = lapply(fits, function(x) x - ref),
-                "rr" = lapply(fits, function(x) x / ref),
-                "or" = lapply(fits, function(x) (x / (1 - x)) / (ref / (1 - ref))))
+                "rr" = lapply(fits, function(x) log(x / ref)),
+                "or" = lapply(fits, function(x) log((x / (1 - x))) - log((ref / (1 - ref)))))
 
   ans <- do.call("rbind", lapply(ans, function(x) ife::tidy(x)))
   ans$p.value <- pnorm(abs(ans$estimate) / ans$std.error, lower.tail = FALSE) * 2
   ans$shift <- sapply(fits, function(x) x@x)
   ans$ref <- ifelse(inherits(ref, "ife::influence_func_estimate"), ref@x, ref)
   ans <- ans[, c("shift", "ref", "estimate", "std.error", "conf.low", "conf.high", "p.value")]
+
+  if (type %in% c("rr", "or")) {
+    ans$estimate <- exp(ans$estimate)
+    ans$conf.low <- exp(ans$conf.low)
+    ans$conf.high <- exp(ans$conf.high)
+  }
 
   structure(list(type = type,
                  null = ifelse(type == "additive", 0, 1),
