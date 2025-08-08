@@ -1,3 +1,14 @@
+# lmtp 1.5.4
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+- Now requires `ife` version be greater than 0.1.2 (see issue \#180).
+- Risk ratio and odds ratio in `lmtp_contrast` are now estimated on the log scale and then the estimate and confidence intervals are exponentiated (see issue \#180).
+
 # lmtp 1.5.3
 
 ### New Features
