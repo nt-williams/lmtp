@@ -12,6 +12,8 @@ cf_curve <- function(task, ratios, sporadic_weights, learners, control, pb) {
 
   list(influence_functions = recombine(rbind_depth(ans, "influence_functions"), task$folds),
        shifted = lapply(1:task$tau, \(t) recombine(rbind_depth_2(ans, "shifted", t), task$folds)),
+       natural = lapply(1:task$tau, \(t) recombine(rbind_depth_2(ans, "natural", t), task$folds)),
+       pseudo = lapply(1:task$tau, \(t) recombine(rbind_depth_2(ans, "pseudo_valid", t), task$folds)),
        fits = lapply(ans, \(x) x[["fits"]]))
 }
 
@@ -30,8 +32,9 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   # Matrix to store predictions under the observed for the validation data
   mnv <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau))
 
-  # Matrix to store final influence functions
   influence_functions <- matrix(nrow = nrow(natural$valid), ncol = task$tau)
+
+  pseudo_valid <- lapply(1:task$tau, \(tau) matrix(nrow = nrow(natural$valid), ncol = tau + 1))
 
   # Pivot into long format
   natural <- lapply(natural, \(x) pivot(x, task$vars))
@@ -41,6 +44,7 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   # Under shift training
   ust <- natural$train
   As <- grep("^..i..A", names(ust), value = TRUE)
+  As <- grep("_lag", As, value = TRUE, invert = TRUE)
   ust[, As] <- shifted$train[, As]
 
   # Under shift valid
@@ -51,6 +55,8 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   for (t in seq_along(taus)) {
     mst[[t]][, t + 1] <- subset(natural$train, time == taus[t])$..i..Y_1
     msv[[t]][, t + 1] <- subset(natural$valid, time == taus[t])$..i..Y_1
+
+    pseudo_valid[[t]][, t + 1] <- subset(natural$valid, time == taus[t])$..i..Y_1
   }
 
   fits <- vector("list", length = task$tau)
@@ -80,6 +86,13 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
       vars <- setdiff(vars, "time")
     }
 
+    # Remove variables with no variation
+    for(var in vars) {
+      if(all(duplicated(natural$train[train_subset & time, var])[-1L])) {
+        vars <- setdiff(vars, var)
+      }
+    }
+
     fit <- run_ensemble(
       natural$train[train_subset & time, vars],
       "..i..Y_1",
@@ -98,15 +111,17 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
     }
 
     # Update the matrices storing all predictions
-    mnt <- update_m(mnt, fit, natural$train, t, task$tau)
-    mst <- update_m(mst, fit, ust, t, task$tau)
-    mnv <- update_m(mnv, fit, natural$valid, t, task$tau)
-    msv <- update_m(msv, fit, usv, t, task$tau)
+    mnt <- update_m(mnt, fit, natural$train, t, task$tau, task$survival)
+    mst <- update_m(mst, fit, ust, t, task$tau, task$survival)
+    mnv <- update_m(mnv, fit, natural$valid, t, task$tau, task$survival)
+    msv <- update_m(msv, fit, usv, t, task$tau, task$survival)
 
     # Only When t (l in the paper) = 1 do we apply the sporadic weights
     pseudo <- list()
     for (s in t:task$tau) {
       tau <- ncol(mnt[[s]])
+
+      pseudo_valid[[s]][, t] <- eif(ratios$valid, sporadic_weights$valid, msv[[s]], mnv[[s]], t = (s - t + 1), tau = tau)
 
       if (s == t) {
         # If the smallest time point in the sequence from t:tau use validation data to calculate EIF for theta at time t
@@ -134,12 +149,14 @@ estimate_curve_sdr <- function(task, fold, ratios, sporadic_weights, learners, c
   list(
     influence_functions = influence_functions,
     shifted = msv,
+    natural = mnv,
+    pseudo_valid = pseudo_valid,
     fits = fits,
     lmtp_id = natural$valid$..i..lmtp_id
   )
 }
 
-predict_long <- function(fit, newdata, t, tau) {
+predict_long <- function(fit, newdata, t, tau, survival) {
   # Create indicators for the subset of rows to use based on time
   time <- as.numeric(newdata$time) <= rev(1:tau)[t]
   # Empty matrix to store predictions
@@ -147,7 +164,7 @@ predict_long <- function(fit, newdata, t, tau) {
   # Indicator for not having been censored at the previous time point
   is_observed <- newdata$..i..C_1_lag == 1
 
-  if (isTRUE(task$survival)) {
+  if (isTRUE(survival)) {
     # Indicator for not experiencing the outcome already
     outcome_free <- newdata$..i..N[time] == 1
     # Indicator for not experiencing competing risk already
@@ -163,8 +180,8 @@ predict_long <- function(fit, newdata, t, tau) {
   predictions[, 1]
 }
 
-update_m <- function(m, fit, newdata, t, tau) {
-  pred <- predict_long(fit, newdata, t, tau)
+update_m <- function(m, fit, newdata, t, tau, survival) {
+  pred <- predict_long(fit, newdata, t, tau, survival)
   time <- as.numeric(newdata$time) >= t
 
   for (l in seq_along(t:tau)) {

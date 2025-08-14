@@ -30,6 +30,7 @@ estimate_sdr <- function(task, fold, ratios, learners, control, pb) {
   m_shifted_valid[, task$tau + 1] <- natural$valid[[task$vars$Y]]
 
   fits <- vector("list", length = task$tau)
+
   for (t in task$tau:1) {
     y1 <- task$at_risk_N(natural$train, t-1)
     d0 <- task$at_risk_D(natural$train, t-1)
