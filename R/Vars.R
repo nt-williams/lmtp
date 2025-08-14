@@ -45,8 +45,8 @@ LmtpVars <- R6Class("LmtpVars",
         return(as.vector(na.omit(self$W)))
       }
       ans <- switch(private$.var,
-        L = private$parents_L(t),
-        A = private$parents_A(t)
+                    L = private$parents_L(t),
+                    A = private$parents_A(t)
       )
       private$.var <- NULL
       private$l <- NULL

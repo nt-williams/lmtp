@@ -28,7 +28,7 @@ pivot <- function(data, vars) {
     k <- min(vars$k, vars$tau)
     longer <- as.data.table(longer)
 
-    to_lag <- grep("^(..i..L)|(..i..A)", names(longer), value = TRUE)
+    to_lag <- grep("^(..i..L)|(..i..A)|(..i..Y)", names(longer), value = TRUE)
     for (l in 1:(k-1)) {
       if (k > 0) {
         newcols <- paste0(to_lag, "_lag", l)
@@ -51,5 +51,5 @@ pivot <- function(data, vars) {
 }
 
 .lag <- function(x, n) {
-  data.table::shift(x, n = n, type = "lag", fill = -1L)
+  data.table::shift(x, n = n, type = "lag", fill = 0L)
 }
