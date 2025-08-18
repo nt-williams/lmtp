@@ -43,7 +43,7 @@ Imports:
     checkmate (>= 2.1.0),
     mlr3superlearner,
     isotone,
-    ife (>= 0.1.2),
+    ife (>= 0.2.0),
     lifecycle
 URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
