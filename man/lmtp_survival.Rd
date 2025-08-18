@@ -76,7 +76,8 @@ all time points.}
 
 \item{mtp}{[\code{logical(1)}]\cr
 Is the intervention of interest a modified treatment policy?
-Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
+Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.}
 
 \item{id}{[\code{character(1)}]\cr
 An optional column name containing cluster level identifiers.}

@@ -41,9 +41,6 @@ computation time when treatment is continuous. Dynamic treatment regimes
 and incremental propensity scores based on the risk ratio are also
 supported.
 
-A list of papers using **lmtp** is
-[here](https://gist.github.com/nt-williams/15068f5849a67ff4d2cb7f2dcf97b3de).
-
 For an in-depth look at the package’s functionality, please consult the
 accompanying technical paper in [Observational
 Studies](https://muse.jhu.edu/article/883479).

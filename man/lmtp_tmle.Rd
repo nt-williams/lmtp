@@ -15,7 +15,7 @@ lmtp_tmle(
   shift = NULL,
   shifted = NULL,
   k = Inf,
-  mtp = FALSE,
+  mtp = TRUE,
   outcome_type = c("binomial", "continuous", "survival"),
   id = NULL,
   bounds = NULL,
@@ -76,7 +76,8 @@ all time points.}
 
 \item{mtp}{[\code{logical(1)}]\cr
 Is the intervention of interest a modified treatment policy?
-Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.}
+Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.}
 
 \item{outcome_type}{[\code{character(1)}]\cr
 Outcome variable type (i.e., continuous, binomial, survival).}

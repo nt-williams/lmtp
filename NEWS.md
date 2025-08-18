@@ -1,3 +1,49 @@
+# lmtp 1.5.4
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+- Now requires `ife` version be greater than 0.1.2 (see issue \#180).
+- Risk ratio and odds ratio in `lmtp_contrast` are now estimated on the log scale and then the estimate and confidence intervals are exponentiated (see issue \#180).
+
+# lmtp 1.5.3
+
+### New Features
+
+### Bug Fixes
+
+- Fixes bug where the `shifted` argument wouldn't work with multivariate exposure (see issue \#175).
+- Fixes bug where `mtp = FALSE` wouldn't work with multivariate exposure. 
+
+### General
+
+# lmtp 1.5.2
+
+### New Features
+
+### Bug Fixes
+
+### General
+
+- The default for the `mtp` argument has been changed from `FALSE` to `TRUE` (see issue \#170).
+- A warning message is now printed in `lmtp_contrast()` that p-values aren't adjusted for multiple comparisons (see issue \#172).
+- A warning message is now printed in `lmtp_contrast()` if `ref` is a constant.
+
+# lmtp 1.5.1
+
+### New Features
+
+### Bug Fixes
+
+- Super learner prediction failing for some learners. Now using `onlySL = TRUE` in `predict.SuperLearner` (see issue \#162).
+
+### General
+
+- Making sure to only pass the necessary variables to `predict.SuperLearner` to suppress some warnings. 
+
 # lmtp 1.5.0
 
 ### New Features
@@ -13,6 +59,7 @@
 ### General
 
 -   Removed dependency on `schoolmath` which used a very slow function for testing if a vector was "decimalish".
+-   Fixed "F used instead of FALSE" error in CRANs tests.
 
 # lmtp 1.4.0
 

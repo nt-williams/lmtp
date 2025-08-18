@@ -43,7 +43,8 @@
 #'  all time points.
 #' @param mtp \[\code{logical(1)}\]\cr
 #'  Is the intervention of interest a modified treatment policy?
-#'  Default is \code{FALSE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  Default is \code{TRUE}. If treatment variables are continuous this should be \code{TRUE}.
+#'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
@@ -76,8 +77,8 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   checkmate::assertCharacter(outcomes, min.len = 2, null.ok = FALSE, unique = TRUE, any.missing = FALSE)
 
   estimator <- match.arg(estimator)
-  tau <- length(outcomes)
-  estimates <- vector("list", tau)
+  time_horizon <- length(outcomes)
+  estimates <- vector("list", time_horizon)
 
   args <- list(
     data = data,
@@ -97,23 +98,22 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
   if (length(trt) == 1) args$trt <- trt
   if (length(time_vary) == 1) args$time_vary <- time_vary
 
-  if (estimator == "lmtp_tmle") {
-    expr <- expression(do.call(lmtp_tmle, args))
-  } else {
-    expr <- expression(do.call(lmtp_sdr, args))
-  }
+  time <- 1
+  cli::cli_progress_step("Working on time {time}/{time_horizon}...")
+  for (time in seq_len(time_horizon)) {
+    if (length(trt) > 1) args$trt <- trt[seq_len(time)]
+    if (length(time_vary) > 1) args$time_vary <- time_vary[seq_len(time)]
+    args$outcome <- outcomes[seq_len(time)]
+    args$cens <- cens[seq_len(time)]
+    args$compete <- compete[seq_len(time)]
+    args$outcome_type <- ifelse(time == 1, "binomial", "survival")
 
-  t <- 1
-  cli::cli_progress_step("Working on time {t}/{tau}...")
-  for (t in 1:tau) {
-    if (length(trt) > 1) args$trt <- trt[1:t]
-    if (length(args$time_vary) > 1) args$time_vary <- time_vary[1:t]
-    args$outcome <- outcomes[1:t]
-    args$cens <- cens[1:t]
-    args$compete <- compete[1:t]
-    args$outcome_type <- ifelse(t == 1, "binomial", "survival")
+    if (estimator == "lmtp_tmle") {
+      estimates[[time]] <- future::future(do.call(lmtp_tmle, args), seed = TRUE)
+    } else {
+      estimates[[time]] <- future::future(do.call(lmtp_sdr, args), seed = TRUE)
+    }
 
-    estimates[[t]] <- future::future(eval(expr), seed = TRUE)
     cli::cli_progress_update()
   }
 

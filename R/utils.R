@@ -26,7 +26,16 @@ followed_rule <- function(natural, shifted, A, mtp) {
     return(rep(TRUE, nrow(natural)))
   }
 
-  mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(natural[, A]), as.list(shifted[, A]))
+  followed <- matrix(nrow = nrow(natural), ncol = length(A))
+
+  for (i in seq_along(A)) {
+    a <- A[i]
+    followed[, i] <- mapply(function(x, y) isTRUE(all.equal(x, y)),
+                            as.list(natural[, a]),
+                            as.list(shifted[, a]))
+  }
+
+  apply(followed, 1, prod)
 }
 
 trim <- function(x, trim) {
@@ -75,7 +84,7 @@ is_decimal <- function(x) {
   !(x == test)
 }
 
-ii <- function(o, r) {
+`%and%` <- function(o, r) {
   i <- vector("logical", length(o))
   for (j in 1:length(o)) {
     if (is.na(r[j]) & !is.na(o[j])) {
@@ -87,4 +96,11 @@ ii <- function(o, r) {
     }
   }
   i
+}
+
+current_trt <- function(trt, time) {
+  if (length(trt) > 1) {
+    return(trt[[time]])
+  }
+  trt[[1]]
 }
