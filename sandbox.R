@@ -23,7 +23,7 @@ for(t in 1:2) {
   }
 }
 
-mean(data[, 'y2'])
+1 - mean(data[, 'y2'])
 
 head(data)
 
