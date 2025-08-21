@@ -120,6 +120,10 @@ LmtpTask <- R6::R6Class(
     },
 
     support = function(time) {
+      # TODO: better logic here, don't want to limit to binary or numeric
+      # Should really return the reference level
+      if (time < 1) return(0)
+
       A <- self$vars$A[time]
       unique(na.omit(self$natural[[A]]))
     }

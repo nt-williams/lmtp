@@ -109,3 +109,10 @@ current_trt <- function(trt, time) {
   }
   trt[[1]]
 }
+
+#' @export
+summary.SuperLearner <- function(x, time = NULL, fold = NULL, level = NULL, ...) {
+  values <- data.frame(risk = x$cvRisk, coef = x$coef)
+  values <- data.frame(learner = rownames(values), values, row.names = NULL)
+  data.table(time = time, fold = fold, level = level, values)
+}
