@@ -116,3 +116,12 @@ summary.SuperLearner <- function(x, time = NULL, fold = NULL, level = NULL, ...)
   values <- data.frame(learner = rownames(values), values, row.names = NULL)
   data.table(time = time, fold = fold, level = level, values)
 }
+
+this_propensity <- function(this_A, propensity_scores) {
+  # One hot encode the treatment
+  this_A <- as.character(this_A)
+  ohe <- model.matrix(~ 0 + this_A)
+  # Make sure the matrix is in the same order as the propensity scores
+  ohe <- ohe[, paste0("this_A", colnames(propensity_scores))]
+  as.vector(rowSums(ohe * propensity_scores))
+}
