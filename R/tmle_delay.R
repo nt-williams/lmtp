@@ -1,23 +1,28 @@
-estimate_tmle_delay <- function(task, fold, propensity_score, learners, control, progress_bar) {
+estimate_tmle_delay <- function(task, fold, propensity, learners, control, progress_bar) {
   data <- get_folded_data(task$natural, task$folds, fold)
   no_levels <- length(task$support(task$time_horizon))
 
+  propensity <- lapply(propensity, \(x) get_folded_data(x, task$folds, fold)$train)
+
   # Create empty array to store predictions
   # TODO: better logic column names, currently assumes the support is the same over time
-  predictions_train <- array(
+  predictions_train_m <- array(
     NA_real_,
     c(nrow(data$train), no_levels, task$time_horizon),
     dimnames = list(NULL, task$support(task$time_horizon), NULL)
   )
+  predictions_train_q <- predictions_train_m
 
-  predictions_valid <- array(
+  predictions_valid_m <- array(
     NA_real_,
     c(nrow(data$valid), no_levels, task$time_horizon),
     dimnames = list(NULL, task$support(task$time_horizon), NULL)
   )
+  predictions_valid_q <- predictions_valid_m
 
   # Loop backwards in time for sequential regressions
   for (time in rev(seq_len(task$time_horizon))) {
+    browser()
     y1 <- task$is_outcome_free(data$train, time - 1)
     d0 <- task$is_competing_risk_free(data$train, time - 1)
     c1 <- task$observed(data$train, time)
@@ -97,7 +102,6 @@ estimate_tmle_delay <- function(task, fold, propensity_score, learners, control,
         this_A <- data$train[ip, A_t]
         pred <- vector("numeric", length(this_A))
 
-        # TODO: need to figure out how to handle subsetting indicators---currently only works if no censoring/survival/competing risks
         # Loop over fits
         for (s2 in task$support(time)) {
           pred[this_A == s2] <-

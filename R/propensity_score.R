@@ -86,8 +86,10 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
       task$is_at_risk(data$valid, time)
 
     # j=2 will index A = 1, j=1 will index A = 0
+    # TODO: dont hard code this
     propensity_scores[[time]][i, 2] <- predict(fit_trt, data$valid[i, ])
     propensity_scores[[time]][i, 1] <- 1 - propensity_scores[[time]][i, 2]
+    colnames(propensity_scores[[time]]) <- c("0", "1")
 
     if (!is.null(C_t)) {
       # TODO: predict probability of being observed

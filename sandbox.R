@@ -41,3 +41,34 @@ m1_1 <- glm(q2_1 ~ a1, data = data)
 
 1 - mean((1 - data$a1)*predict(m1_0, mutate(data, a1 = 0)) +
 data$a1 * predict(m1_1, mutate(data, a1 = 0)))
+
+# testing functions -------------------------------------------------------
+
+data$w <- rnorm(nrow(data))
+trt <- c("a1", "a2")
+baseline <- "w"
+time_vary <- NULL
+cens <- NULL
+compete <- NULL
+id <- NULL
+outcome <- c("y1", "y2")
+
+variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+
+task <- LmtpTask$new(
+  data = data,
+  shifted = make_shifted(data[, variable_names], trt, cens, static_binary_on, NULL),
+  A = trt,
+  Y = outcome,
+  L = time_vary,
+  W = baseline,
+  C = cens,
+  D = compete,
+  k = Inf, id = id,
+  outcome_type = "survival",
+  folds = 10,
+  weights = NULL,
+  bounds = NULL
+)
+
+estimate_tmle_delay(task, 1, NULL, "SL.glm", lmtp_control(), NULL)
