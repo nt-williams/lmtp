@@ -94,7 +94,7 @@ estimate_tmle_delay <- function(task, fold, propensity_score, learners, control,
         # Predictions for training
         tmp <- data$train
         tmp[[A_t]] <- s
-        this_A <- data$train[[A_t]]
+        this_A <- data$train[ip, A_t]
         pred <- vector("numeric", length(this_A))
 
         # TODO: need to figure out how to handle subsetting indicators---currently only works if no censoring/survival/competing risks
@@ -108,7 +108,7 @@ estimate_tmle_delay <- function(task, fold, propensity_score, learners, control,
         # Predictions for validation
         tmp <- data$valid
         tmp[[A_t]] <- s
-        this_A <- data$valid[[A_t]]
+        this_A <- data$valid[iv, A_t]
         pred <- vector("numeric", length(this_A))
 
         for (s2 in task$support(time)) {
@@ -119,9 +119,14 @@ estimate_tmle_delay <- function(task, fold, propensity_score, learners, control,
       }
     }
 
-    # TODO: iterate the progress bar
-    # TODO: handle deterministic predictions from survival/competing risks
+    # Handle deterministic predictions from survival/competing risks
+    predictions_train[which(!y1), , time] <- 0
+    predictions_train[which(!d0), , time] <- 1
+    predictions_valid[which(!y1v), , time] <- 0
+    predictions_valid[which(!d0v), , time] <- 1
 
+    # TODO: iterate the progress bar
   }
+
   predictions_valid
 }
