@@ -117,6 +117,11 @@ LmtpTask <- R6::R6Class(
       }
 
       self$is_competing_risk_free(data, time - 1) & self$is_outcome_free(data, time - 1)
+    },
+
+    support = function(time) {
+      A <- self$vars$A[time]
+      unique(na.omit(self$natural[[A]]))
     }
 
   ),
