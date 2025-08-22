@@ -1,28 +1,20 @@
-estimate_tmle_delay <- function(task, fold, propensity, learners, control, progress_bar) {
+estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control, progress_bar) {
   data <- get_folded_data(task$natural, task$folds, fold)
-  no_levels <- length(task$support(task$time_horizon))
+  levels <- task$support(task$time_horizon)
+  number_levels <- length(levels)
 
-  propensity <- lapply(propensity, \(x) get_folded_data(x, task$folds, fold)$train)
+  propensity_scores <- get_folded_data(propensity_scores, task$folds, fold)$train
 
   # Create empty array to store predictions
   # TODO: better logic column names, currently assumes the support is the same over time
-  predictions_train_m <- array(
-    NA_real_,
-    c(nrow(data$train), no_levels, task$time_horizon),
-    dimnames = list(NULL, task$support(task$time_horizon), NULL)
-  )
+  predictions_train_m <- array(NA_real_, c(nrow(data$train), number_levels, task$time_horizon), dimnames = list(NULL, levels, NULL))
   predictions_train_q <- predictions_train_m
 
-  predictions_valid_m <- array(
-    NA_real_,
-    c(nrow(data$valid), no_levels, task$time_horizon),
-    dimnames = list(NULL, task$support(task$time_horizon), NULL)
-  )
+  predictions_valid_m <- array(NA_real_, c(nrow(data$valid), number_levels, task$time_horizon), dimnames = list(NULL, levels, NULL))
   predictions_valid_q <- predictions_valid_m
 
   # Loop backwards in time for sequential regressions
   for (time in rev(seq_len(task$time_horizon))) {
-    browser()
     y1 <- task$is_outcome_free(data$train, time - 1)
     d0 <- task$is_competing_risk_free(data$train, time - 1)
     c1 <- task$observed(data$train, time)
@@ -35,11 +27,8 @@ estimate_tmle_delay <- function(task, fold, propensity, learners, control, progr
     # If its the last time point just perform this once using the real outcome
     if (time == task$time_horizon) {
       fit <- run_ensemble(
-        data$train[i, vars], task$vars$Y,
-        learners,
-        task$outcome_type,
-        "..i..lmtp_id",
-        control$.learners_outcome_folds
+        data$train[i, vars], task$vars$Y, learners,
+        task$outcome_type, "..i..lmtp_id", control$.learners_outcome_folds
       )
 
       learner_summary <- summary(fit, time, fold, level = NA_character_)
@@ -52,14 +41,11 @@ estimate_tmle_delay <- function(task, fold, propensity, learners, control, progr
       names(fits) <- task$support(time)
 
       for (s in task$support(time)) {
-        data$train[[task$vars$Y]] <- predictions_train[, as.character(s), time + 1]
+        data$train[[task$vars$Y]] <- predictions_train_q[, as.character(s), time + 1]
 
         fits[[as.character(s)]] <- run_ensemble(
-          data$train[i, vars], task$vars$Y,
-          learners,
-          "continuous",
-          "..i..lmtp_id",
-          control$.learners_outcome_folds
+          data$train[i, vars], task$vars$Y, learners,
+          "continuous", "..i..lmtp_id", control$.learners_outcome_folds
         )
 
         learner_summary <- rbind(learner_summary, summary(fits[[as.character(s)]], time, fold, s))
@@ -67,7 +53,7 @@ estimate_tmle_delay <- function(task, fold, propensity, learners, control, progr
     }
 
     # Get treatment at this time
-    A_t <- current_trt(task$vars$A, time)
+    this_treatment <- current_trt(task$vars$A, time)
 
     # Create subset indicators for survival, competing risk, censoring
     cp1 <- task$observed(data$train, time - 1)
@@ -83,13 +69,13 @@ estimate_tmle_delay <- function(task, fold, propensity, learners, control, progr
       for (s in task$support(time - 1)) {
         # Predictions for validation data
         tmp <- data$valid
-        tmp[[A_t]] <- s
-        predictions_valid[iv, as.character(s), time] <- predict(fit, tmp[iv, ], 1e-05)
+        tmp[[this_treatment]] <- s
+        predictions_valid_q[iv, as.character(s), time] <- predict(fit, tmp[iv, ], 1e-05)
 
         # Predictions for training data
         tmp <- data$train
-        tmp[[A_t]] <- s
-        predictions_train[ip, as.character(s), time] <- predict(fit, tmp[ip, ], 1e-05)
+        tmp[[this_treatment]] <- s
+        predictions_train_q[ip, as.character(s), time] <- predict(fit, tmp[ip, ], 1e-05)
       }
     }
 
@@ -98,39 +84,37 @@ estimate_tmle_delay <- function(task, fold, propensity, learners, control, progr
       for (s in task$support(time - 1)) {
         # Predictions for training
         tmp <- data$train
-        tmp[[A_t]] <- s
-        this_A <- data$train[ip, A_t]
-        pred <- vector("numeric", length(this_A))
+        tmp[[this_treatment]] <- s
+        this_treatment_vector <- data$train[ip, this_treatment]
+        pred <- vector("numeric", length(this_treatment_vector))
 
         # Loop over fits
         for (s2 in task$support(time)) {
-          pred[this_A == s2] <-
-            predict(fits[[as.character(s2)]], tmp[ip, ], 1e-05)[this_A == s2]
+          pred[this_treatment_vector == s2] <- predict(fits[[as.character(s2)]], tmp[ip, ], 1e-05)[this_treatment_vector == s2]
         }
-        predictions_train[ip, as.character(s), time] <- pred
+        predictions_train_q[ip, as.character(s), time] <- pred
 
         # Predictions for validation
         tmp <- data$valid
-        tmp[[A_t]] <- s
-        this_A <- data$valid[iv, A_t]
-        pred <- vector("numeric", length(this_A))
+        tmp[[this_treatment]] <- s
+        this_treatment_vector <- data$valid[iv, this_treatment]
+        pred <- vector("numeric", length(this_treatment_vector))
 
         for (s2 in task$support(time)) {
-          pred[this_A == s2] <-
-            predict(fits[[as.character(s2)]], tmp[iv, ], 1e-05)[this_A == s2]
+          pred[this_treatment_vector == s2] <- predict(fits[[as.character(s2)]], tmp[iv, ], 1e-05)[this_treatment_vector == s2]
         }
-        predictions_valid[iv, as.character(s), time] <- pred
+        predictions_valid_q[iv, as.character(s), time] <- pred
       }
     }
 
     # Handle deterministic predictions from survival/competing risks
-    predictions_train[which(!y1), , time] <- 0
-    predictions_train[which(!d0), , time] <- 1
-    predictions_valid[which(!y1v), , time] <- 0
-    predictions_valid[which(!d0v), , time] <- 1
+    predictions_train_q[which(!y1), , time] <- 0
+    predictions_train_q[which(!d0), , time] <- 1
+    predictions_valid_q[which(!y1v), , time] <- 0
+    predictions_valid_q[which(!d0v), , time] <- 1
 
     # TODO: iterate the progress bar
   }
 
-  predictions_valid
+  predictions_valid_q
 }

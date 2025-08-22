@@ -1,7 +1,23 @@
-get_folded_data <- function(data, folds, index) {
+get_folded_data <- function(x, ...) {
+  UseMethod("get_folded_data")
+}
+
+#' @export
+get_folded_data.data.frame <- function(x, folds, index) {
   out <- list()
-  out[["train"]] <- data[folds[[index]]$training_set, , drop = FALSE]
-  out[["valid"]] <- data[folds[[index]]$validation_set, , drop = FALSE]
+  out[["train"]] <- x[folds[[index]]$training_set, , drop = FALSE]
+  out[["valid"]] <- x[folds[[index]]$validation_set, , drop = FALSE]
+  out
+}
+
+#' @export
+get_folded_data.matrix <- get_folded_data.data.frame
+
+#' @export
+get_folded_data.array <- function(x, folds, index) {
+  out <- list()
+  out[["train"]] <- x[folds[[index]]$training_set, , , drop = FALSE]
+  out[["valid"]] <- x[folds[[index]]$validation_set, , , drop = FALSE]
   out
 }
 
