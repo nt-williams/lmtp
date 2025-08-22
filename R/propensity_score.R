@@ -97,6 +97,7 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
       # TODO: predict probability of being observed
     }
 
+    # Iterate the progress bar
     pb()
   }
 
