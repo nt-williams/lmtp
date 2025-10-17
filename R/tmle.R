@@ -66,14 +66,15 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
     iv <- cp1v %and% (y1v & d0v)
 
     under_shift_train <- natural$train[ip, c("..i..lmtp_id", history)]
-    under_shift_train[, A_t] <- shifted$train[ip, A_t]
+    under_shift_valid <- natural$valid[iv, c("..i..lmtp_id", history)]
+
+    if (!is.na(A_t)) {
+      under_shift_train[, A_t] <- shifted$train[ip, A_t]
+      under_shift_valid[, A_t] <- shifted$valid[iv, A_t]
+    }
 
     pred_natural_train[ip, time] <- predict(fit, natural$train[ip, ], 1e-05)
     pred_shifted_train[ip, time] <- predict(fit, under_shift_train, 1e-05)
-
-    under_shift_valid <- natural$valid[iv, c("..i..lmtp_id", history)]
-    under_shift_valid[, A_t] <- shifted$valid[iv, A_t]
-
     pred_natural_valid[iv, time] <- predict(fit, natural$valid[iv, ], 1e-05)
     pred_shifted_valid[iv, time] <- predict(fit, under_shift_valid, 1e-05)
 

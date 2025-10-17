@@ -36,6 +36,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
     A_t <- current_trt(task$vars$A, time)
 
     vars <- c("..i..lmtp_id", task$vars$history("A", time), A_t, task$vars$C[time], "..i..lmtp_stack_indicator")
+    vars <- na.omit(vars)
     stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, time)
 
     fit <- run_ensemble(stacked[i, vars], "..i..lmtp_stack_indicator",
@@ -72,7 +73,9 @@ stack_data <- function(natural, shifted, trt, cens, time) {
   shifted_half <- natural
 
   if (length(trt) > 1 || time == 1) {
-    shifted_half[, trt[[time]]] <- shifted[, trt[[time]]]
+    if (!is.na(trt[[time]])) {
+      shifted_half[, trt[[time]]] <- shifted[, trt[[time]]]
+    }
   }
 
   if (!is.null(cens)) {

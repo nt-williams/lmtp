@@ -6,7 +6,7 @@ check_lmtp_data = function(task) {
 
     A_t <- current_trt(task$vars$A, time)
 
-    data_t <- task$natural[i, c(A_t, task$vars$W, unlist(task$vars$L[time])), drop = FALSE]
+    data_t <- task$natural[i, na.omit(c(A_t, task$vars$W, unlist(task$vars$L[time]))), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
@@ -150,6 +150,7 @@ assert_ref_class <- checkmate::makeAssertionFunction(check_ref_class)
 check_trt_type <- function(data, trt, mtp) {
   is_decimal <- vector("logical", length(trt))
   for (i in seq_along(trt)) {
+    if (is.na(trt[i])) next
     a <- data[[trt[i]]]
     if (is.character(a) | is.factor(a)) next
     is_decimal[i] <- any(is_decimal(a[!is.na(a)]))

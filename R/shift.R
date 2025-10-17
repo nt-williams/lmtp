@@ -39,6 +39,7 @@ shift_cens <- function(data, cens) {
 shift_trt_character <- function(data, trt, .f) {
   out <- as.list(data)
   for (a in trt) {
+    if (is.na(a)) next
     out[[a]] <- .f(data, a)
   }
   as.data.frame(out, check.names = FALSE)
