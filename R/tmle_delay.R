@@ -15,6 +15,7 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
 
   # Loop backwards in time for sequential regressions
   for (time in rev(seq_len(task$time_horizon))) {
+    browser()
     y1 <- task$is_outcome_free(data$train, time - 1)
     d0 <- task$is_competing_risk_free(data$train, time - 1)
     c1 <- task$observed(data$train, time)

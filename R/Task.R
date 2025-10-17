@@ -126,7 +126,19 @@ LmtpTask <- R6::R6Class(
 
       A <- self$vars$A[time]
       unique(na.omit(self$natural[[A]]))
-    }
+    },
+
+    combos = function(t) {
+      if (missing(t)) t <- self$time_horizon
+      expand.grid(lapply(seq_len(t), self$support))
+    },
+
+    future_combos = function(sbk, k) {
+      t <- ncol(sbk)
+      expand.grid(c(sbk, lapply((t + 1):k, self$support)))
+    },
+
+    Dtk = function(sbk, t, k)
 
   ),
   private = list(
