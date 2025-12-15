@@ -4,7 +4,8 @@ pivot <- function(data, vars) {
   to_bind <- lapply(to_bind, \(df) setNames(df, vars$rename(names(df))))
   to_bind <- lapply(1:vars$tau, function(t) {
     to_bind[[t]]$..i..wide_id <- 1:nrow(to_bind[[t]])
-    to_bind[[t]]$time <- factor(t)
+    #to_bind[[t]]$time <- factor(t)
+    to_bind[[t]]$time <- t
     to_bind[[t]]
   })
   # NEED TO THINK ABOUT HOW TO HANDLE THE EDGE OF CASE OF NON-SURVIVAL TIME-VARYING Y
