@@ -128,10 +128,20 @@ lmtp_curve <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   # Estimate outcome regression
   curve <- cf_curve(task, ratios$ratios, sporadic_weights$weights, learners_outcome, control, pb)
 
+  influence_functions <- curve$influence_functions
+  shifted <- curve$shifted
+
+  if(control$.isotonic_constraint == TRUE && task$outcome_type == "binomial") {
+    iso <- cf_isotonic(task, ratios, sporadic_weights, curve)
+
+    influence_functions <- iso$influence_functions
+    shifted <- iso$shifted
+  }
+
   theta_curve(
     task = task,
-    influence_functions = curve$influence_functions,
-    sequential_regressions = curve$shifted,
+    influence_functions = influence_functions,
+    sequential_regressions = shifted,
     density_ratios = ratios$ratios,
     sporadic_weights = sporadic_weights$weights,
     fits_m = curve$fits,

@@ -13,6 +13,8 @@
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
 #'  Return full 'mlr3superlearner' fits? Default is \code{FALSE}, return only 'mlr3superlearner' weights.
+#' @param .iosotonic_constraint \[\code{logical(1)}]\cr
+#'  Constrain pseudo-outcomes using isotonic regression in curve algorithm
 #' @param .discrete \[\code{logical(1)}\]\cr
 #'  Use discrete or ensemble super learner?
 #' @param .info \[\code{logical(1)}\]\cr
@@ -28,6 +30,7 @@ lmtp_control <- function(.bound = 1e5,
                          .learners_outcome_folds = 10,
                          .learners_trt_folds = 10,
                          .return_full_fits = FALSE,
+                         .isotonic_constraint = TRUE,
                          .discrete = TRUE,
                          .info = FALSE) {
 
@@ -36,6 +39,7 @@ lmtp_control <- function(.bound = 1e5,
   assert_number(.bound)
   assert_number(.trim, upper = 1)
   assert_logical(.return_full_fits, len = 1)
+  assert_logical(.isotonic_constraint, len = 1)
   assert_logical(.discrete, len = 1)
   assert_logical(.info, len = 1)
 
@@ -44,6 +48,7 @@ lmtp_control <- function(.bound = 1e5,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
        .return_full_fits = .return_full_fits,
+       .isotonic_constraint = .isotonic_constraint,
        .discrete = .discrete,
        .info = .info)
 }

@@ -23,7 +23,7 @@ LmtpVars <- R6Class("LmtpVars",
       self$A <- A
       self$C <- C
 
-      if (length(Y) > 1) {
+      if (length(Y) > 1 && outcome_type == "survival") {
         self$Y <- last(Y)
         self$N <- Y[1:length(Y) - 1]
       } else {
@@ -45,8 +45,8 @@ LmtpVars <- R6Class("LmtpVars",
         return(as.vector(na.omit(self$W)))
       }
       ans <- switch(private$.var,
-        L = private$parents_L(t),
-        A = private$parents_A(t)
+                    L = private$parents_L(t),
+                    A = private$parents_A(t)
       )
       private$.var <- NULL
       private$l <- NULL

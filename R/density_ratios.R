@@ -60,7 +60,14 @@ estimate_r <- function(task, fold, learners, mtp, control, pb) {
     pred[i, ] <- predict(fit, natural$valid[i, ])
 
     obs <- task$observed(natural$valid, t)
-    at_risk <- task$R(natural$valid, t)
+
+    if(task$outcome_type == "survival") {
+      at_risk <- task$R(natural$valid, t)
+    }
+    else {
+      at_risk <- rep(1, )
+    }
+
     followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)

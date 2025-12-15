@@ -4,7 +4,8 @@ pivot <- function(data, vars) {
   to_bind <- lapply(to_bind, \(df) setNames(df, vars$rename(names(df))))
   to_bind <- lapply(1:vars$tau, function(t) {
     to_bind[[t]]$..i..wide_id <- 1:nrow(to_bind[[t]])
-    to_bind[[t]]$time <- factor(t)
+    #to_bind[[t]]$time <- factor(t)
+    to_bind[[t]]$time <- t
     to_bind[[t]]
   })
   # NEED TO THINK ABOUT HOW TO HANDLE THE EDGE OF CASE OF NON-SURVIVAL TIME-VARYING Y
@@ -28,7 +29,7 @@ pivot <- function(data, vars) {
     k <- min(vars$k, vars$tau)
     longer <- as.data.table(longer)
 
-    to_lag <- grep("^(..i..L)|(..i..A)", names(longer), value = TRUE)
+    to_lag <- grep("^(..i..L)|(..i..A)|(..i..Y)", names(longer), value = TRUE)
     for (l in 1:(k-1)) {
       if (k > 0) {
         newcols <- paste0(to_lag, "_lag", l)
@@ -51,5 +52,5 @@ pivot <- function(data, vars) {
 }
 
 .lag <- function(x, n) {
-  data.table::shift(x, n = n, type = "lag", fill = 1L)
+  data.table::shift(x, n = n, type = "lag", fill = 0L)
 }
