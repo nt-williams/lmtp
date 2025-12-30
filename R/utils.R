@@ -141,3 +141,20 @@ this_propensity <- function(this_A, propensity_scores) {
   ohe <- ohe[, paste0("this_A", colnames(propensity_scores))]
   as.vector(rowSums(ohe * propensity_scores))
 }
+
+possible_sequences <- function(task, this_sequence, horizon) {
+  this_time <- length(this_sequence)
+  # Create the sequence of future times
+  times <- (this_time + 1):horizon
+  # Get the combination of support of each treatment in the sequence of future times
+  future_sequences <- expand.grid(lapply(times, task$support))
+  names(future_sequences) <- task$vars$A[times]
+
+  # Replicate the seeding sequence t:k times
+  this_sequence <- as.data.frame(t(this_sequence))[rep(1, nrow(future_sequences)), , drop = FALSE]
+  names(this_sequence) <- task$vars$A[seq_len(this_time)]
+
+  cbind(this_sequence, future_sequences)
+}
+
+
