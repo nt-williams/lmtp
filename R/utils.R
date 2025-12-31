@@ -157,4 +157,33 @@ possible_sequences <- function(task, this_sequence, horizon) {
   cbind(this_sequence, future_sequences)
 }
 
+# Assume 1-time delay: d_t(bar(s)_t) = s_(t-1)
+create_tmle_delay_weights <- function(task, this_sequence, propensity_scores) {
+  time <- 1
+  horizon <- length(this_sequence)
+  trts <- task$vars$A[time:horizon]
+  n <- nrow(task$natural)
 
+  # Vectorized shifted matrix creation
+  shifted <- matrix(one_time_delay(this_sequence), nrow = n, ncol = horizon, byrow = TRUE)
+
+  # Vectorized indicator calculation (no conversion to data.frame)
+  natural_mat <- as.matrix(task$natural[, trts])
+  indicators <- apply(natural_mat == shifted, 1, prod)
+
+  # Pre-allocate and vectorize weight calculation
+  weights <- numeric(n)
+  weights[] <- 1  # Initialize
+
+  i <- seq_len(n)
+  shifted_seq <- as.character(this_sequence)
+
+  for (u in seq_len(horizon)) {
+    col_indices <- match(as.character(task$natural[[trts[u]]]), colnames(propensity_scores[, , u]))
+    prob_trt_natural <- propensity_scores[, , u][cbind(i, col_indices)]
+    prob_trt_shifted <- propensity_scores[, shifted_seq[u], u]
+    weights <- weights * (prob_trt_shifted / prob_trt_natural)
+  }
+
+  indicators * weights
+}
