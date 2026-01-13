@@ -40,7 +40,7 @@ Imports:
     origami,
     future (>= 1.17.0),
     progressr,
-    data.table (>= 1.13.0),
+    data.table,
     checkmate (>= 2.1.0),
     SuperLearner,
     isotone,

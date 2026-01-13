@@ -1,6 +1,6 @@
 library(tidyverse)
 
-n0 <- 1e6
+n0 <- 1e4
 data <- data.frame(matrix(NA, nrow = n0, ncol = 4))
 names(data)  <- c(paste0('a', 1:2), paste0('y', 1:2))
 
@@ -29,6 +29,18 @@ head(data)
 
 at_risk_time_1 <- data$y1 == 0
 m2 <- glm(y2 ~ a1 + a2, data = data, subset = at_risk_time_1)
+
+augmented <- delay_augment.data.frame(data, task$sequences(1))
+augmented$a2 <- one_time_delay(augmented, c("..i..lmtp_tmp_s1", "a2"))
+
+q2 <- predict(m2, augmented)
+q2[augmented$y1 == 1] <- 1
+
+m1 <- glm(q2 ~ ..i..lmtp_tmp_s1*a1, data = augmented)
+
+1 - mean(predict(m1, mutate(data, ..i..lmtp_tmp_s1 = a1, a1 = 0)))
+
+
 
 q2_0 <- predict(m2, mutate(data, a2 = 0))
 q2_0[!at_risk_time_1] <- 1
@@ -66,9 +78,11 @@ task <- LmtpTask$new(
   D = compete,
   k = Inf, id = id,
   outcome_type = "survival",
-  folds = 10,
+  folds = 1,
   weights = NULL,
   bounds = NULL
 )
 
-estimate_tmle_delay(task, 1, NULL, "SL.glm", lmtp_control(), NULL)
+prop <- cf_propensity_score(task, "SL.glm", lmtp_control(), NULL)
+
+estimate_tmle_delay(task, 1, prop$propensity_score, "SL.glm.interaction", lmtp_control(), NULL)

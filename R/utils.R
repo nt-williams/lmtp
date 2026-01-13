@@ -157,33 +157,76 @@ possible_sequences <- function(task, this_sequence, horizon) {
   cbind(this_sequence, future_sequences)
 }
 
-# Assume 1-time delay: d_t(bar(s)_t) = s_(t-1)
-create_tmle_delay_weights <- function(task, this_sequence, propensity_scores) {
-  time <- 1
-  horizon <- length(this_sequence)
-  trts <- task$vars$A[time:horizon]
-  n <- nrow(task$natural)
-
-  # Vectorized shifted matrix creation
-  shifted <- matrix(one_time_delay(this_sequence), nrow = n, ncol = horizon, byrow = TRUE)
-
-  # Vectorized indicator calculation (no conversion to data.frame)
-  natural_mat <- as.matrix(task$natural[, trts])
-  indicators <- apply(natural_mat == shifted, 1, prod)
-
-  # Pre-allocate and vectorize weight calculation
-  weights <- numeric(n)
-  weights[] <- 1  # Initialize
-
-  i <- seq_len(n)
-  shifted_seq <- as.character(this_sequence)
-
-  for (u in seq_len(horizon)) {
-    col_indices <- match(as.character(task$natural[[trts[u]]]), colnames(propensity_scores[, , u]))
-    prob_trt_natural <- propensity_scores[, , u][cbind(i, col_indices)]
-    prob_trt_shifted <- propensity_scores[, shifted_seq[u], u]
-    weights <- weights * (prob_trt_shifted / prob_trt_natural)
+# Really only need to do this once, in terms of efficiency
+create_tmle_delay_weights <- function(data, treatments, this_treatment,
+                                      time_horizon, propensity_scores) {
+  D <- rep(TRUE, nrow(data))
+  for (time in seq_len(time_horizon)) {
+    D <- D * one_time_delay(data, paste0("..i..lmtp_tmp_s", seq_len(time))) == data[[this_treatment]]
   }
 
-  indicators * weights
+  i <- seq_len(dim(propensity_scores)[1])
+
+  dr <- rep(1, nrow(data))
+  for (time in seq_len(time_horizon)) {
+    column_a <- match(as.character(data[[treatments[time]]]),
+                      colnames(propensity_scores[, , time]))
+    column_s <- match(as.character(data[[paste0("..i..lmtp_tmp_s", time)]]),
+                      colnames(propensity_scores[, , time]))
+
+    prob_trt_natural <- propensity_scores[, , time][cbind(i, column_a)]
+    prob_trt_shifted <- propensity_scores[, , time][cbind(i, column_s)]
+    dr <- dr * (prob_trt_shifted / prob_trt_natural)
+  }
+
+  D %*0% dr
+}
+
+preallocate_delay_predictions <- function(n, time_horizon) {
+  lapply(seq_len(time_horizon), function(t) {
+    matrix(nrow = n, ncol = nrow(task$sequences(t - 1)))
+  })
+}
+
+# predict_delay_augment <- function(data, object, sequences, time, time_horizon, treatment, outcome, i, y1, d0) {
+#   if (time > 1) {
+#     vars <- c(paste0("..i..lmtp_tmp_s", time - 1), treatment)
+#   } else {
+#     vars <- treatment
+#   }
+#
+#   tmp <- data
+#   tmp[[treatment]] <- one_time_delay(data, vars)
+#   # If not the last time point, we replace s_t with a_t
+#   if (time < time_horizon) {
+#     tmp[[paste0("..i..lmtp_tmp_s", time)]] <- data[[treatment]]
+#   }
+#   ai <- delay_augment(i, sequences)
+#
+#   data[[outcome]] <- NA_real_
+#   data[ai, outcome] <- predict(object, tmp[ai, ], 1e-05)
+#
+#   # Handle deterministic predictions from survival/competing risks
+#   data[which(!delay_augment(y1, sequences)), outcome] <- 0
+#   data[which(!delay_augment(d0, sequences)), outcome] <- 1
+#
+#   data
+# }
+
+subset_augmented <- function(data, time, time_horizon) {
+  if (time == time_horizon) return(data)
+  x <- c("..i..lmtp_id", paste0("..i..lmtp_tmp_s", time))
+  data[!duplicated(data[, x]), ]
+}
+
+`%*0%` <- function(x, y) {
+  res <- x * y
+  res[is.na(res)] <- 0
+  res
+}
+
+calibrate <- function(pred, prior_free, comp_free) {
+  pred[!prior_free] <- 0
+  pred[!comp_free] <- 1
+  pred
 }

@@ -1,9 +1,9 @@
-cf_propensity_score <- function(task, learners, control, pb) {
+cf_propensity_score <- function(task, learners, control, progress_bar) {
   ans <- vector("list", length = length(task$folds))
 
   for (fold in seq_along(task$folds)) {
     ans[[fold]] <- future::future({
-      estimate_propensity_score(task, fold, learners, control, pb)
+      estimate_propensity_score(task, fold, learners, control, progress_bar)
     },
     seed = TRUE)
   }
@@ -73,7 +73,7 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
         learners, "binomial", "..i..lmtp_id", control$.learners_trt_folds
       )
 
-      propensity_scores[iv, this_level, time] <- predict(fit, data$valid[iv, ])
+      propensity_scores[iv, this_level, time] <- predict(fit, data$valid[iv, vars, drop = FALSE])
 
       # Add fit summary
       learner_treatment_summary <- rbind(learner_treatment_summary, summary(fit, time, fold, level = this_level))
@@ -98,7 +98,7 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
     }
 
     # Iterate the progress bar
-    pb()
+    # progress_bar()
   }
 
   list(propensity_score = propensity_scores,
