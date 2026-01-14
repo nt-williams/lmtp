@@ -8,7 +8,10 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
   propensity_scores <- get_folded_data(propensity_scores, task$folds, fold)$train
 
   # Pre-allocate list to store predictions
-  predictions <- vector("list", task$time_horizon)
+  pred_train_shifted <- vector("list", task$time_horizon)
+  pred_valid_shifted <- pred_train_shifted
+
+  ic <- numeric(nrow(data$valid))
 
   # Loop backwards in time for sequential regressions
   for (time in rev(seq_len(task$time_horizon))) {
@@ -18,14 +21,16 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     i <- c1 %and% (y1 & d0)
 
     history <- task$vars$history("L", time + 1)
-    vars <- c("..i..lmtp_id", history, task$vars$Y)
+    idvar <- "..i..lmtp_id"
+    seqvar <- "..i..lmtp_tmp_s"
+    vars <- c(idvar, history, task$vars$Y)
 
     # Estimate the outcome regressions
     # If its the last time point just perform this once using the real outcome
     if (time == task$time_horizon) {
       fit <- run_ensemble(
         data$train[i, vars], task$vars$Y, learners,
-        task$outcome_type, "..i..lmtp_id", control$.learners_outcome_folds
+        task$outcome_type, idvar, control$.learners_outcome_folds
       )
 
       learner_summary <- summary(fit, time, fold, level = NA_character_)
@@ -35,13 +40,21 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     sequences <- task$sequences(time)
 
     if (time < task$time_horizon) {
+      train[[task$vars$Y]] <- pred_train_shifted[[time + 1]]
+    }
+
+    # Subset the augmented data
+    train <- subset_augmented(train, time, task$time_horizon)
+    valid <- subset_augmented(valid, time, task$time_horizon)
+
+    if (time < task$time_horizon) {
       # Fit regressions for each level of support using a pooled regression
       # Add the pooling variable
-      vars <- c(vars, paste0("..i..lmtp_tmp_s", time))
+      vars <- c(vars, paste0(seqvar, time))
       fit <- run_ensemble(
-        subset_augmented(train, time, task$time_horizon)[delay_augment(i, sequences), vars],
+        train[delay_augment(i, sequences), vars],
         task$vars$Y, learners,
-        "continuous", "..i..lmtp_id",
+        "continuous", idvar,
         control$.learners_outcome_folds
       )
 
@@ -61,45 +74,53 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     ip <- cp1 %and% (y1 & d0)
     iv <- cp1v %and% (y1v & d0v)
 
-    # Store Y_(t+1) before overriding
-    outcome <- subset_augmented(train, time, task$time_horizon)[[task$vars$Y]]
-
     # Generate predictions
-    train <- predict_delay_augment(
-      subset_augmented(train, time, task$time_horizon), fit,
-      sequences, time, task$time_horizon,
-      this_treatment, task$vars$Y,
-      ip, y1, d0
+    pred_train_shifted[[time]] <- predict_delay_augment(
+      train, fit, sequences, time,
+      task$time_horizon, this_treatment, task$vars$Y, ip, y1, d0, TRUE
     )
 
-    valid <- predict_delay_augment(
-      subset_augmented(valid, time, task$time_horizon), fit,
-      sequences, time, task$time_horizon,
-      this_treatment, task$vars$Y,
-      iv, y1v, d0v
+    pred_train_natural <- predict_delay_augment(
+      train, fit, sequences, time,
+      task$time_horizon, this_treatment, task$vars$Y, ip, y1, d0, FALSE
     )
 
-    weights <- create_tmle_delay_weights(
-      train,
-      task$vars$A, this_treatment,
-      time,
-      propensity_scores
+    pred_valid_shifted[[time]] <- predict_delay_augment(
+      valid, fit, sequences, time,
+      task$time_horizon, this_treatment, task$vars$Y, iv, y1v, d0v, TRUE
     )
 
-    fit <- fluc(outcome[delay_augment(i, sequences)],
-                train[delay_augment(i, sequences), task$vars$Y],
-                weights[delay_augment(i, sequences)])
+    pred_valid_natural <- predict_delay_augment(
+      train, fit, sequences, time,
+      task$time_horizon, this_treatment, task$vars$Y, iv, y1v, d0v, FALSE
+    )
 
-    train[delay_augment(i, sequences), task$vars$Y] <-
-      update(fit, train[delay_augment(i, sequences), task$vars$Y])
-    valid[delay_augment(iv, sequences), task$vars$Y] <-
-      update(fit, valid[delay_augment(iv, sequences), task$vars$Y])
+    # Riesz representer
+    weights <- tmle_delay_weights(train, task$vars$A, this_treatment, time, propensity_scores)
 
-    # Save all validation predictions
-    predictions[[time]] <- valid[, c("..i..lmtp_id", paste0("..i..lmtp_tmp_s", seq_len(time)), task$vars$Y)]
+    # Fit tilting model
+    i_aug <- delay_augment(i, sequences)
+    iv_aug <- delay_augment(iv, sequences)
+
+    fit <- fluc(train[[task$vars$Y]][i_aug], pred_train_natural[i_aug], weights[i_aug])
+
+    # Update predictions
+    pred_train_shifted[[time]][i_aug] <- update(fit, pred_train_shifted[[time]][i_aug])
+    pred_valid_shifted[[time]][iv_aug] <- update(fit, pred_valid_shifted[[time]][iv_aug])
+    pred_valid_natural[iv_aug] <- update(fit, pred_valid_natural[iv_aug])
+
+    # Construct the EIF
+    ic_comp <- weights * (train[[task$vars$Y]] - pred_valid_natural)
+    ic <- ic + collapse::fsum(ic_comp, valid[[idvar]])
 
     # TODO: iterate the progress bar
   }
 
-  predictions
+  valid[[task$vars$Y]] <- pred_valid_shifted[[1]]
+  valid <- subset_augmented(valid, 0, task$time_horizon)
+  ic <- as.vector(ic + (valid[[task$vars$Y]] - collapse::fmean(valid[[task$vars$Y]])))
+
+  list(predictions = pred_valid_shifted,
+       efficient_influence_function = ic,
+       learner_summary = learner_summary)
 }

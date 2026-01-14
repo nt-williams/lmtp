@@ -158,8 +158,7 @@ possible_sequences <- function(task, this_sequence, horizon) {
 }
 
 # Really only need to do this once, in terms of efficiency
-create_tmle_delay_weights <- function(data, treatments, this_treatment,
-                                      time_horizon, propensity_scores) {
+tmle_delay_weights <- function(data, treatments, this_treatment, time_horizon, propensity_scores) {
   D <- rep(TRUE, nrow(data))
   for (time in seq_len(time_horizon)) {
     D <- D * one_time_delay(data, paste0("..i..lmtp_tmp_s", seq_len(time))) == data[[this_treatment]]
@@ -182,11 +181,11 @@ create_tmle_delay_weights <- function(data, treatments, this_treatment,
   D %*0% dr
 }
 
-preallocate_delay_predictions <- function(n, time_horizon) {
-  lapply(seq_len(time_horizon), function(t) {
-    matrix(nrow = n, ncol = nrow(task$sequences(t - 1)))
-  })
-}
+# preallocate_delay_predictions <- function(n, task) {
+#   lapply(seq_len(task$time_horizon), function(t) {
+#     matrix(nrow = n, ncol = nrow(task$sequences(t - 1)))
+#   })
+# }
 
 # predict_delay_augment <- function(data, object, sequences, time, time_horizon, treatment, outcome, i, y1, d0) {
 #   if (time > 1) {
@@ -215,8 +214,17 @@ preallocate_delay_predictions <- function(n, time_horizon) {
 
 subset_augmented <- function(data, time, time_horizon) {
   if (time == time_horizon) return(data)
-  x <- c("..i..lmtp_id", paste0("..i..lmtp_tmp_s", time))
-  data[!duplicated(data[, x]), ]
+  x <- "..i..lmtp_id"
+  if (time > 0) {
+    x <- c(x, paste0("..i..lmtp_tmp_s", time))
+  }
+  data[!duplicated(data[, x, drop = FALSE]), ]
+}
+
+preallocate_delay_predictions <- function(init, time_horizon) {
+  lapply(seq_len(time_horizon), function(time) {
+    matrix(nrow = nrow(subset_augmented(init, time, time_horizon)), ncol = 1)
+  })
 }
 
 `%*0%` <- function(x, y) {
