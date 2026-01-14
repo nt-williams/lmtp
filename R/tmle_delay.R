@@ -1,28 +1,35 @@
 estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control, progress_bar) {
   data <- get_folded_data(task$natural, task$folds, fold)
 
+  # Cache used objects to prevent look-ups
+  time_horizon <- task$time_horizon
+  seq_time_horizon <- task$sequences(time_horizon)
+
   # Augment data
   train <- data$train
   valid <- data$valid
-  train_aug <- delay_augment(data$train, task$sequences(task$time_horizon))
-  valid_aug <- delay_augment(data$valid, task$sequences(task$time_horizon))
+  train_aug <- delay_augment(train, seq_time_horizon)
+  valid_aug <- delay_augment(valid, seq_time_horizon)
 
-  propensity_scores <- get_folded_data(propensity_scores, task$folds, fold)$train
+  propensity_scores <- get_folded_data(propensity_scores, task$folds, fold)
 
-  # Pre-allocate list to store predictions
-  pred_train_shifted <- vector("list", task$time_horizon)
+  # Pre-allocate lists
+  pred_train_shifted <- vector("list", time_horizon)
   pred_valid_shifted <- pred_train_shifted
+  learner_summaries <- vector("list", time_horizon)
 
   # Pre-allocate vector for the EIF
-  ic <- numeric(nrow(data$valid))
+  ic <- numeric(nrow(valid))
 
   # Cache used objects to prevent look-ups
   outcomevar <- task$vars$Y
   trtvars <- task$vars$A
-  time_horizon <- task$time_horizon
   idvar <- "..i..lmtp_id"
   seqvar <- "..i..lmtp_tmp_s"
   cvfolds <- control$.learners_outcome_folds
+
+  # Pre-computations
+  all_sequences <- lapply(seq_len(time_horizon), task$sequences)
 
   # Loop backwards in time for sequential regressions
   for (time in rev(seq_len(time_horizon))) {
@@ -39,15 +46,16 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     # If its the last time point just perform this once using the real outcome
     if (time == task$time_horizon) {
       fit <- run_ensemble(train[i, vars], outcomevar, learners, task$outcome_type, idvar, cvfolds)
-      learner_summary <- summary(fit, time, fold)
+      learner_summaries[[time]] <- summary(fit, time, fold)
     }
 
     # Treatment sequences we need to generate under
-    sequences <- task$sequences(time)
+    sequences <- all_sequences[[time]]
     i_aug <- delay_augment(i, sequences)
 
     if (time < time_horizon) {
       train_aug[[outcomevar]] <- pred_train_shifted[[time + 1]]
+      valid_aug[[outcomevar]] <- pred_valid_shifted[[time + 1]]
     }
 
     # Subset the augmented data
@@ -59,7 +67,7 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
       # Add the pooling variable
       vars <- c(vars, paste0(seqvar, time))
       fit <- run_ensemble(train_aug[i_aug, vars], outcomevar, learners, "continuous", idvar, cvfolds)
-      learner_summary <- rbind(learner_summary, summary(fit, time, fold))
+      learner_summaries[[time]] <- summary(fit, time, fold)
     }
 
     # Generate predictions
@@ -79,8 +87,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
 
     iv <- cp1v %and% (y1v & d0v)
     iv_aug <- delay_augment(iv, sequences)
-    y1v_aug <- delay_augment(y1, sequences)
-    d0v_aug <- delay_augment(d0, sequences)
+    y1v_aug <- delay_augment(y1v, sequences)
+    d0v_aug <- delay_augment(d0v, sequences)
 
     # Generate predictions
     pred_train_shifted[[time]] <- predict_delay_augment(
@@ -99,12 +107,12 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     )
 
     pred_valid_natural <- predict_delay_augment(
-      train_aug, fit, time, time_horizon, this_treatment,
+      valid_aug, fit, time, time_horizon, this_treatment,
       outcomevar, iv_aug, y1v_aug, d0v_aug, FALSE
     )
 
     # Riesz representer
-    weights <- tmle_delay_weights(train_aug, trtvars, this_treatment, time, propensity_scores)
+    weights <- tmle_delay_weights(train_aug, trtvars, this_treatment, time, propensity_scores$train)
 
     # Fit tilting model
     fit <- fluc(train_aug[[outcomevar]][i_aug], pred_train_natural[i_aug], weights[i_aug])
@@ -115,7 +123,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     pred_valid_natural[iv_aug] <- update(fit, pred_valid_natural[iv_aug])
 
     # Construct the EIF
-    ic_comp <- weights * (train_aug[[outcomevar]] - pred_valid_natural)
+    weights <- tmle_delay_weights(valid_aug, trtvars, this_treatment, time, propensity_scores$valid)
+    ic_comp <- weights * (valid_aug[[outcomevar]] - pred_valid_natural)
     ic <- ic + collapse::fsum(ic_comp, valid_aug[[idvar]])
 
     # TODO: iterate the progress bar
@@ -123,10 +132,10 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
 
   # Time 0 component
   valid_aug[[outcomevar]] <- pred_valid_shifted[[1]]
-  valid_aug <- subset_augmented(valid, 0, time_horizon)
-  ic <- as.vector(ic + (valid[[outcomevar]] - collapse::fmean(valid_aug[[outcomevar]])))
+  valid_aug <- subset_augmented(valid_aug, 0, time_horizon)
+  ic <- as.vector(ic + (valid_aug[[outcomevar]] - collapse::fmean(valid_aug[[outcomevar]])))
 
   list(predictions = pred_valid_shifted,
        efficient_influence_function = ic,
-       learner_summary = learner_summary)
+       learner_summary = data.table::rbindlist(learner_summaries))
 }
