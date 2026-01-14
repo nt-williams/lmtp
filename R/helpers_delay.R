@@ -47,3 +47,45 @@ delay_augment.logical <- function(x, sequences) {
   n <- nrow(sequences)
   rep(x, n)
 }
+
+subset_augmented <- function(x, ...) {
+  UseMethod("subset_augmented")
+}
+
+subset_augmented.data.frame <- function(x, time, time_horizon) {
+  if (time == time_horizon) return(x)
+  id <- "..i..lmtp_id"
+  if (time > 0) {
+    id <- c(id, seqvars(seq_len(time)))
+  }
+  x[!collapse::fduplicated(x[, id, drop = FALSE]), ]
+}
+
+subset_augmented.numeric <- function(x, id) {
+  x[!collapse::fduplicated(id)]
+}
+
+delay_riesz_rep <- function(data, treatments, propensity_scores,
+                            this_treatment, this_time, time_horizon) {
+  i <- seq_len(dim(propensity_scores)[1])
+
+  # Create indicators (D in paper)
+  ind <- rep(TRUE, nrow(data))
+  for (time in this_time:time_horizon) {
+    ind <- ind * one_time_delay(data, seqvars(this_time:time)) == data[[this_treatment]]
+  }
+
+  # Pre-allocate density ratios
+  density_ratios <- rep(1, nrow(data))
+  for (time in this_time:time_horizon) {
+    column_obs <- match(as.character(data[[treatments[time]]]),
+                        colnames(propensity_scores[, , time]))
+    column_s <- match(as.character(data[[seqvars(time)]]),
+                      colnames(propensity_scores[, , time]))
+    prob_trt_natural <- propensity_scores[, , time][cbind(i, column_obs)]
+    prob_trt_shifted <- propensity_scores[, , time][cbind(i, column_s)]
+    density_ratios <- density_ratios * (prob_trt_shifted / prob_trt_natural)
+  }
+
+  ind %*0% density_ratios
+}

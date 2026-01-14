@@ -181,52 +181,6 @@ tmle_delay_weights <- function(data, treatments, this_treatment, time_horizon, p
   D %*0% dr
 }
 
-# preallocate_delay_predictions <- function(n, task) {
-#   lapply(seq_len(task$time_horizon), function(t) {
-#     matrix(nrow = n, ncol = nrow(task$sequences(t - 1)))
-#   })
-# }
-
-# predict_delay_augment <- function(data, object, sequences, time, time_horizon, treatment, outcome, i, y1, d0) {
-#   if (time > 1) {
-#     vars <- c(paste0("..i..lmtp_tmp_s", time - 1), treatment)
-#   } else {
-#     vars <- treatment
-#   }
-#
-#   tmp <- data
-#   tmp[[treatment]] <- one_time_delay(data, vars)
-#   # If not the last time point, we replace s_t with a_t
-#   if (time < time_horizon) {
-#     tmp[[paste0("..i..lmtp_tmp_s", time)]] <- data[[treatment]]
-#   }
-#   ai <- delay_augment(i, sequences)
-#
-#   data[[outcome]] <- NA_real_
-#   data[ai, outcome] <- predict(object, tmp[ai, ], 1e-05)
-#
-#   # Handle deterministic predictions from survival/competing risks
-#   data[which(!delay_augment(y1, sequences)), outcome] <- 0
-#   data[which(!delay_augment(d0, sequences)), outcome] <- 1
-#
-#   data
-# }
-
-subset_augmented <- function(data, time, time_horizon) {
-  if (time == time_horizon) return(data)
-  x <- "..i..lmtp_id"
-  if (time > 0) {
-    x <- c(x, paste0("..i..lmtp_tmp_s", time))
-  }
-  data[!duplicated(data[, x, drop = FALSE]), ]
-}
-
-preallocate_delay_predictions <- function(init, time_horizon) {
-  lapply(seq_len(time_horizon), function(time) {
-    matrix(nrow = nrow(subset_augmented(init, time, time_horizon)), ncol = 1)
-  })
-}
-
 `%*0%` <- function(x, y) {
   res <- x * y
   res[is.na(res)] <- 0
@@ -237,4 +191,9 @@ calibrate <- function(pred, prior_free, comp_free) {
   pred[!prior_free] <- 0
   pred[!comp_free] <- 1
   pred
+}
+
+seqvars <- function(times) {
+  if (length(times) == 0) return(NULL)
+  paste0("..i..lmtp_tmp_s", times)
 }
