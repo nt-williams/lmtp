@@ -1,3 +1,20 @@
+cf_tmle_delay <- function(task, propensity_scores, learners, control, progress_bar) {
+  ans <- vector("list", length = length(task$folds))
+
+  for (fold in seq_along(task$folds)) {
+    ans[[fold]] <- future::future({
+      estimate_tmle_delay(task, fold, propensity_scores, learners, control, progress_bar)
+    },
+    seed = TRUE)
+  }
+
+  ans <- future::value(ans)
+
+  list(predictions = recombine(c_depth(ans, "predictions"), task$folds),
+       uncentered_eif = recombine(c_depth(ans, "uncentered_eif"), task$folds),
+       learner_outcome_summary = rbind_depth(ans, "learner_summary"))
+}
+
 estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control, progress_bar) {
   data <- get_folded_data(task$natural, task$folds, fold)
 
@@ -19,7 +36,7 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
   learner_summaries <- vector("list", time_horizon)
 
   # Pre-allocate vector for the EIF
-  ic <- numeric(nrow(valid))
+  eif <- numeric(nrow(valid))
 
   # Cache used objects to prevent look-ups
   outcomevar <- task$vars$Y
@@ -124,8 +141,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
 
     # Construct the EIF
     weights <- tmle_delay_weights(valid_aug, trtvars, this_treatment, time, propensity_scores$valid)
-    ic_comp <- weights * (valid_aug[[outcomevar]] - pred_valid_natural)
-    ic <- ic + collapse::fsum(ic_comp, valid_aug[[idvar]])
+    eif_comp <- weights * (valid_aug[[outcomevar]] - pred_valid_natural)
+    eif <- eif + collapse::fsum(eif_comp, valid_aug[[idvar]])
 
     # TODO: iterate the progress bar
   }
@@ -133,9 +150,10 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
   # Time 0 component
   valid_aug[[outcomevar]] <- pred_valid_shifted[[1]]
   valid_aug <- subset_augmented(valid_aug, 0, time_horizon)
-  ic <- as.vector(ic + (valid_aug[[outcomevar]] - collapse::fmean(valid_aug[[outcomevar]])))
+  # eif <- as.vector(eif + (valid_aug[[outcomevar]] - collapse::fmean(valid_aug[[outcomevar]])))
+  eif <- as.vector(eif + valid_aug[[outcomevar]])
 
-  list(predictions = pred_valid_shifted,
-       efficient_influence_function = ic,
+  list(predictions = valid_aug[[outcomevar]],
+       uncentered_eif = eif,
        learner_summary = data.table::rbindlist(learner_summaries))
 }
