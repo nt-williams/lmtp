@@ -28,6 +28,7 @@ delay_augment <- function(x, ...) {
   UseMethod("delay_augment")
 }
 
+#' @export
 delay_augment.data.frame <- function(x, sequences) {
   n <- nrow(sequences)
   t <- ncol(sequences)
@@ -43,6 +44,7 @@ delay_augment.data.frame <- function(x, sequences) {
   cbind(augmented, seq_cols)
 }
 
+#' @export
 delay_augment.logical <- function(x, sequences) {
   n <- nrow(sequences)
   rep(x, n)
@@ -52,6 +54,7 @@ subset_augmented <- function(x, ...) {
   UseMethod("subset_augmented")
 }
 
+#' @export
 subset_augmented.data.frame <- function(x, time, time_horizon) {
   if (time == time_horizon) return(x)
   id <- "..i..lmtp_id"
@@ -61,6 +64,7 @@ subset_augmented.data.frame <- function(x, time, time_horizon) {
   x[!collapse::fduplicated(x[, id, drop = FALSE]), ]
 }
 
+#' @export
 subset_augmented.numeric <- function(x, id) {
   x[!collapse::fduplicated(id)]
 }
