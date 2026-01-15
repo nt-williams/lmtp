@@ -35,7 +35,7 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
   number_levels <- length(levels)
 
   # Create arrays to store predictions
-  propensity_scores <- array(NA_real_, c(nrow(data$train), number_levels, task$time_horizon), dimnames = list(NULL, levels, NULL))
+  propensity_scores <- array(NA_real_, c(nrow(data$valid), number_levels, task$time_horizon), dimnames = list(NULL, levels, NULL))
   probability_observed <- matrix(1, nrow = nrow(data$valid), ncol = task$time_horizon)
 
   learner_treatment_summary <- NULL

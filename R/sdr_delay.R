@@ -16,7 +16,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
   # Pre-allocate lists
   pred_train_shifted <- vector("list", time_horizon + 1)
   pred_train_natural <- vector("list", time_horizon)
-  pred_valid_shifted <- pred_train_natural
+  pred_valid_shifted <- vector("list", time_horizon)
   learner_summaries <- vector("list", time_horizon)
 
   # Pre-allocate vector for the EIF
@@ -112,7 +112,6 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
       outcomevar, iv_aug, y1v_aug, d0v_aug, FALSE
     )
 
-    browser()
     # Compute pseudo outcome for the next time point
     if (time > 1) {
       pseudo <- delay_sdr_transformation(
@@ -126,25 +125,15 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
       train_aug[[outcomevar]] <- pseudo + train_aug[[outcomevar]]
     }
 
-    # pseudo <- 0
-    # for (k in time:time_horizon) {
-    #   riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, time, k)
-    #   comp <- riesz * (pred_train_shifted[[k + 1]] - pred_train_natural[[k]])
-    #   pseudo <- pseudo + subset_augmented(comp, aug_copy[, c(idvar, seqvars(seq_len(time - 1))), drop = FALSE])
-    # }
-    # train_aug[[outcomevar]] <- pred_train_shifted[[time]]
-    # train_aug <- subset_augmented(train_aug, time - 1, time_horizon)
-    # train_aug[[outcomevar]] <- pseudo + train_aug[[outcomevar]]
-
     # Construct the EIF
-    riesz <- delay_riesz_rep(valid_aug, trtvars, propensity_scores$train, this_treatment, 1, time)
+    riesz <- delay_riesz_rep(valid_aug, trtvars, propensity_scores$valid, this_treatment, 1, time)
     ic_comp <- riesz * (valid_aug[[outcomevar]] - pred_valid_natural)
     ic <- ic + collapse::fsum(ic_comp, valid_aug[[idvar]])
 
     # TODO: iterate the progress bar
   }
 
-  # Time 0 EIF component (uncentered)
+  # Time 0 EIF component (un-centered)
   valid_aug[[outcomevar]] <- pred_valid_shifted[[1]]
   valid_aug <- subset_augmented(valid_aug, 0, time_horizon)
   ic <- as.vector(ic + valid_aug[[outcomevar]])
