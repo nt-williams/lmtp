@@ -147,6 +147,16 @@ check_ref_class <- function(x) {
 
 assert_ref_class <- checkmate::makeAssertionFunction(check_ref_class)
 
+check_trt_discrete <- function(data, trt) {
+  is_decimal <- vector("logical", length(trt))
+  for (i in seq_along(trt)) {
+    a <- data[[trt[i]]]
+    if (is.character(a) | is.factor(a)) next
+    is_decimal[i] <- any(is_decimal(a[!is.na(a)]))
+  }
+  isFALSE(any(is_decimal))
+}
+
 check_trt_type <- function(data, trt, mtp) {
   is_decimal <- vector("logical", length(trt))
   for (i in seq_along(trt)) {
