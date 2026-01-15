@@ -39,7 +39,7 @@ estimate_propensity_score <- function(task, fold, learners, control, pb) {
   probability_observed <- matrix(1, nrow = nrow(data$valid), ncol = task$time_horizon)
 
   learner_treatment_summary <- NULL
-  learner_cens_summary <- learner_treatment_summary
+  learner_cens_summary <- NULL
 
   for (time in seq_len(task$time_horizon)) {
     # Get indices of observations that aren't censored and haven't experienced
