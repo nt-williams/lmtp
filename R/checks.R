@@ -154,8 +154,14 @@ check_trt_discrete <- function(data, trt) {
     if (is.character(a) | is.factor(a)) next
     is_decimal[i] <- any(is_decimal(a[!is.na(a)]))
   }
-  isFALSE(any(is_decimal))
+
+  if (any(is_decimal)) {
+    return("Treatments must be discrete")
+  }
+  TRUE
 }
+
+assert_trt_discrete <- checkmate::makeAssertionFunction(check_trt_discrete)
 
 check_trt_type <- function(data, trt, mtp) {
   is_decimal <- vector("logical", length(trt))

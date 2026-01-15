@@ -128,7 +128,6 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     )
 
     # Riesz representer
-    # weights <- tmle_delay_weights(train_aug, trtvars, this_treatment, time, propensity_scores$train)
     riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, 1, time)
 
     # Fit tilting model

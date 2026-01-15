@@ -1,4 +1,4 @@
-#' LHMTP Sequential Doubly Robust Estimator
+#' LMTP Sequential Doubly Robust Estimator
 #'
 #' Modified treatment policies that depend on the natural history of treatment.
 #'
@@ -50,7 +50,10 @@
 #' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
 #'  of the outcome regression. Default is \code{"SL.glm"}.
 #' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}.
+#'  of the propensity scores. Default is \code{"SL.glm"}.
+#'  \bold{Only include candidate learners capable of binary classification}.
+#' @param learners_cens \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
+#'  of the censoring mechanism. Default is \code{"SL.glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -65,6 +68,46 @@
 #'
 #' @example
 #' @export
-lhmtp_sdr <- function() {
+htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
+                       cens = NULL, compete = NULL, shift = NULL,
+                       k = Inf, outcome_type = c("binomial", "continuous", "survival"),
+                       id = NULL, bounds = NULL,
+                       learners_outcome = "SL.glm",
+                       learners_trt = "SL.glm",
+                       learners_cens = "SL.glm",
+                       folds = 10, weights = NULL,
+                       control = lmtp_control()) {
+  assert_not_data_table(data)
+  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  assert_subset(variable_names, names(data))
+  assert_outcome_types(data, outcome, match.arg(outcome_type))
+  assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
+  # Check that treatment is discrete
+  assert_trt_discrete(data, unlist(trt))
 
+  task <- LmtpTask$new(
+    data = data,
+    shifted = NULL,
+    A = trt,
+    Y = outcome,
+    L = time_vary,
+    W = baseline,
+    C = cens,
+    D = compete,
+    k = k, id = id,
+    outcome_type = match.arg(outcome_type),
+    folds = folds, weights = weights,
+    bounds = bounds
+  )
+
+  # TODO: Figure out the iteration number needed
+  # # Create progress bar object
+  # progress_bar <- progressr::progressor(task$time_horizon*folds*2)
+
+  propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, NULL)
+  estimator <- cf_tmle_delay(
+    task, propensity_score$propensity_score, learners_outcome, control, NULL
+  )
+
+  theta_htlmtp(task, estimator, propensity_score, deparse(substitute((shift))), TRUE)
 }
