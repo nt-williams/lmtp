@@ -147,7 +147,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
     eif_comp <- riesz * (valid_aug[[outcomevar]] - pred_valid_natural)
     eif <- eif + collapse::fsum(eif_comp, valid_aug[[idvar]])
 
-    # TODO: iterate the progress bar
+    progress_bar()
   }
 
   # Time 0 EIF component (un-centered)

@@ -97,13 +97,12 @@ htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bounds = bounds
   )
 
-  # TODO: Figure out the iteration number needed
   # # Create progress bar object
-  # progress_bar <- progressr::progressor(task$time_horizon*folds*2)
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
-  propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, NULL)
+  propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, progress_bar)
   estimator <- cf_sdr_delay(
-    task, propensity_score$propensity_score, learners_outcome, control, NULL
+    task, propensity_score$propensity_score, learners_outcome, control, progress_bar
   )
 
   theta_htlmtp(task, estimator, propensity_score, deparse(substitute((shift))), TRUE)
@@ -208,13 +207,12 @@ htlmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     bounds = bounds
   )
 
-  # TODO: Figure out the iteration number needed
-  # # Create progress bar object
-  # progress_bar <- progressr::progressor(task$time_horizon*folds*2)
+  # Create progress bar object
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
 
-  propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, NULL)
+  propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, progress_bar)
   estimator <- cf_tmle_delay(
-    task, propensity_score$propensity_score, learners_outcome, control, NULL
+    task, propensity_score$propensity_score, learners_outcome, control, progress_bar
   )
 
   theta_htlmtp(task, estimator, propensity_score, deparse(substitute((shift))), FALSE)

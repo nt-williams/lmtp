@@ -98,7 +98,7 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     }
 
     # Iterate the progress bar
-    # progress_bar()
+    progress_bar()
   }
 
   list(propensity_score = propensity_scores,
