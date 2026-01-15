@@ -29,7 +29,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
   cvfolds <- control$.learners_outcome_folds
 
   pred_train_shifted[[time_horizon + 1]] <- train_aug[[outcomevar]]
-  aug_copy <- train_aug[, c(idvar, seqvars(seq_len(time_horizon)))]
+  aug_key <- train_aug[, c(idvar, seqvars(seq_len(time_horizon)))]
 
   # Pre-computations
   all_sequences <- lapply(seq_len(time_horizon), task$sequences)
@@ -56,14 +56,12 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
     sequences <- all_sequences[[time]]
     i_aug <- delay_augment(i, sequences)
 
-    # if (time < time_horizon) {
-    #   train_aug[[outcomevar]] <- pred_train_shifted[[time + 1]]
-    #   valid_aug[[outcomevar]] <- pred_valid_shifted[[time + 1]]
-    # }
-    #
-    # # Subset the augmented data
-    # train_aug <- subset_augmented(train_aug, time, time_horizon)
-    # valid_aug <- subset_augmented(valid_aug, time, time_horizon)
+    if (time < time_horizon) {
+      valid_aug[[outcomevar]] <- pred_valid_shifted[[time + 1]]
+    }
+
+    # Subset the augmented data
+    valid_aug <- subset_augmented(valid_aug, time, time_horizon)
 
     if (time < time_horizon) {
       # Fit regressions for each level of support using a pooled regression
@@ -114,37 +112,44 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, learners, control,
       outcomevar, iv_aug, y1v_aug, d0v_aug, FALSE
     )
 
-    # Riesz representer
-    # browser()
-    # riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, time, time_horizon)
-
+    browser()
     # Compute pseudo outcome for the next time point
-    pseudo <- 0
-    for (k in time:time_horizon) {
-      riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, time, k)
-      comp <- riesz * (pred_train_shifted[[k + 1]] - pred_train_natural[[k]])
-      pseudo <- pseudo + subset_augmented(comp, aug_copy[, c(idvar, seqvars(seq_len(time - 1))), drop = FALSE])
+    if (time > 1) {
+      pseudo <- delay_sdr_transformation(
+        train_aug, pred_train_shifted, pred_train_natural,
+        propensity_scores$train, trtvars, this_treatment,
+        time, time_horizon, outcomevar, aug_key
+      )
+
+      train_aug[[outcomevar]] <- pred_train_shifted[[time]]
+      train_aug <- subset_augmented(train_aug, time - 1, time_horizon)
+      train_aug[[outcomevar]] <- pseudo + train_aug[[outcomevar]]
     }
 
-    train_aug[[outcomevar]] <- pred_train_shifted[[time]]
-    train_aug <- subset_augmented(train_aug, time - 1, time_horizon)
-    train_aug[[outcomevar]] <- pseudo + train_aug[[outcomevar]]
+    # pseudo <- 0
+    # for (k in time:time_horizon) {
+    #   riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, time, k)
+    #   comp <- riesz * (pred_train_shifted[[k + 1]] - pred_train_natural[[k]])
+    #   pseudo <- pseudo + subset_augmented(comp, aug_copy[, c(idvar, seqvars(seq_len(time - 1))), drop = FALSE])
+    # }
+    # train_aug[[outcomevar]] <- pred_train_shifted[[time]]
+    # train_aug <- subset_augmented(train_aug, time - 1, time_horizon)
+    # train_aug[[outcomevar]] <- pseudo + train_aug[[outcomevar]]
 
-    # # Construct the EIF
-    # weights <- tmle_delay_weights(valid_aug, trtvars, this_treatment, time, propensity_scores$valid)
-    # ic_comp <- weights * (valid_aug[[outcomevar]] - pred_valid_natural)
-    # ic <- ic + collapse::fsum(ic_comp, valid_aug[[idvar]])
+    # Construct the EIF
+    riesz <- delay_riesz_rep(valid_aug, trtvars, propensity_scores$train, this_treatment, 1, time)
+    ic_comp <- riesz * (valid_aug[[outcomevar]] - pred_valid_natural)
+    ic <- ic + collapse::fsum(ic_comp, valid_aug[[idvar]])
 
     # TODO: iterate the progress bar
   }
-  browser()
 
-  # Time 0 component
+  # Time 0 EIF component (uncentered)
   valid_aug[[outcomevar]] <- pred_valid_shifted[[1]]
   valid_aug <- subset_augmented(valid_aug, 0, time_horizon)
-  ic <- as.vector(ic + (valid_aug[[outcomevar]] - collapse::fmean(valid_aug[[outcomevar]])))
+  ic <- as.vector(ic + valid_aug[[outcomevar]])
 
   list(predictions = pred_valid_shifted,
-       efficient_influence_function = ic,
+       uncentered_efficient_influence_function = ic,
        learner_summary = data.table::rbindlist(learner_summaries))
 }

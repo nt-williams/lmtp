@@ -89,3 +89,25 @@ delay_riesz_rep <- function(data, treatments, propensity_scores,
 
   ind %*0% density_ratios
 }
+
+delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
+                                     propensity_scores, trtvars, this_treatment,
+                                     time, time_horizon, outcomevar, aug_key) {
+
+  idvar <- "..i..lmtp_id"
+
+  # Pre-compute the subset indices once (used for all k)
+  subset_cols <- c(idvar, seqvars(seq_len(time - 1)))
+  subset_keys <- aug_key[, subset_cols, drop = FALSE]
+
+  # Vectorized accumulation over k = time:time_horizon
+  pseudo <- 0
+  for (k in time:time_horizon) {
+    riesz <- delay_riesz_rep(data, trtvars, propensity_scores, this_treatment, time, k)
+    # Compute residual, take product with Riesz representers, then subset
+    resid <- pred_shifted[[k + 1]] - pred_natural[[k]]
+    pseudo <- pseudo + subset_augmented(riesz * resid, subset_keys)
+  }
+
+  pseudo
+}
