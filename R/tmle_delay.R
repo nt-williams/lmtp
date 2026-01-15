@@ -129,10 +129,10 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
 
     # Riesz representer
     # weights <- tmle_delay_weights(train_aug, trtvars, this_treatment, time, propensity_scores$train)
-    weights <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, 1, time)
+    riesz <- delay_riesz_rep(train_aug, trtvars, propensity_scores$train, this_treatment, 1, time)
 
     # Fit tilting model
-    fit <- fluc(train_aug[[outcomevar]][i_aug], pred_train_natural[i_aug], weights[i_aug])
+    fit <- fluc(train_aug[[outcomevar]][i_aug], pred_train_natural[i_aug], riesz[i_aug])
 
     # Update predictions
     pred_train_shifted[[time]][i_aug] <- update(fit, pred_train_shifted[[time]][i_aug])
@@ -140,8 +140,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, learners, control
     pred_valid_natural[iv_aug] <- update(fit, pred_valid_natural[iv_aug])
 
     # Construct the EIF
-    weights <- tmle_delay_weights(valid_aug, trtvars, this_treatment, time, propensity_scores$valid)
-    eif_comp <- weights * (valid_aug[[outcomevar]] - pred_valid_natural)
+    riesz <- delay_riesz_rep(valid_aug, trtvars, propensity_scores$valid, this_treatment, 1, time)
+    eif_comp <- riesz * (valid_aug[[outcomevar]] - pred_valid_natural)
     eif <- eif + collapse::fsum(eif_comp, valid_aug[[idvar]])
 
     # TODO: iterate the progress bar

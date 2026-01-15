@@ -157,30 +157,6 @@ possible_sequences <- function(task, this_sequence, horizon) {
   cbind(this_sequence, future_sequences)
 }
 
-# Really only need to do this once, in terms of efficiency
-tmle_delay_weights <- function(data, treatments, this_treatment, time_horizon, propensity_scores) {
-  D <- rep(TRUE, nrow(data))
-  for (time in seq_len(time_horizon)) {
-    D <- D * one_time_delay(data, paste0("..i..lmtp_tmp_s", seq_len(time))) == data[[this_treatment]]
-  }
-
-  i <- seq_len(dim(propensity_scores)[1])
-
-  dr <- rep(1, nrow(data))
-  for (time in seq_len(time_horizon)) {
-    column_a <- match(as.character(data[[treatments[time]]]),
-                      colnames(propensity_scores[, , time]))
-    column_s <- match(as.character(data[[paste0("..i..lmtp_tmp_s", time)]]),
-                      colnames(propensity_scores[, , time]))
-
-    prob_trt_natural <- propensity_scores[, , time][cbind(i, column_a)]
-    prob_trt_shifted <- propensity_scores[, , time][cbind(i, column_s)]
-    dr <- dr * (prob_trt_shifted / prob_trt_natural)
-  }
-
-  D %*0% dr
-}
-
 `%*0%` <- function(x, y) {
   res <- x * y
   res[is.na(res)] <- 0
