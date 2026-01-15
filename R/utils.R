@@ -173,3 +173,9 @@ seqvars <- function(times) {
   if (length(times) == 0) return(NULL)
   paste0("..i..lmtp_tmp_s", times)
 }
+
+one_hot_encode <- function(data, x) {
+  ohe <- model.matrix(~ -1 + as.character(data[[x]]))
+  colnames(ohe) <- gsub("as.character\\(data\\[\\[x\\]\\]\\)", "", colnames(ohe))
+  ohe
+}
