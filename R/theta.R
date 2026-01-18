@@ -2,9 +2,9 @@ theta_lmtp <- function(task, sequential_regressions, density_ratios, fits_m, fit
   influence_function <- eif(density_ratios, sequential_regressions$shifted, sequential_regressions$natural)
 
   if (is_sdr) {
-    theta <- weighted.mean(influence_function, task$weights)
+    theta <- fmean(influence_function, w = task$weights)
   } else {
-    theta <- weighted.mean(sequential_regressions$shifted[, 1], task$weights)
+    theta <- fmean(sequential_regressions$shifted[, 1], w = task$weights)
   }
 
   influence_function <- task$rescale(influence_function)
@@ -27,9 +27,9 @@ theta_lmtp <- function(task, sequential_regressions, density_ratios, fits_m, fit
 
 theta_htlmtp <- function(task, estimator, propensity_scores, shift, is_sdr) {
   if (is_sdr) {
-    theta <- weighted.mean(estimator$uncentered_eif, task$weights)
+    theta <- fmean(estimator$uncentered_eif, w = task$weights)
   } else {
-    theta <- weighted.mean(estimator$predictions, task$weights)
+    theta <- fmean(estimator$predictions, w = task$weights)
   }
 
   influence_function <- task$rescale(estimator$uncentered_eif)
