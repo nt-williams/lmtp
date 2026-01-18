@@ -30,3 +30,13 @@ delay_weights <- function(task, propensity, levels, time, time_horizon) {
   # ASK IVAN: this just returns a bunch of 0's and 1's
   D * apply(ratios, 1, prod)
 }
+
+update_htlmtp_eif <- function(eif, augmented, A, Y, id, predictions,
+                              propensity_scores, prob_observed, this_A, this_C, time) {
+  # Construct component Riesz representer
+  riesz <- delay_riesz_rep(augmented, A, propensity_scores, prob_observed, this_A, this_C, 1, time)
+  # Multiply Riesz representer by residual
+  component <- riesz * (augmented[[Y]] - predictions)
+  # Add to the given EIF
+  eif + fsum(component, augmented[[id]])
+}
