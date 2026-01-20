@@ -106,6 +106,7 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   # Need to do this for each level of treatment
   levels <- task$support(1)
+  estimates <- list()
   for (level in levels) {
     # Update shifted for the current level
     task$shifted <- make_shifted(task$natural, task$vars$A, task$vars$C, tsm(level), NULL)
@@ -128,10 +129,11 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       }
     )
 
-    sequential_regressions <- cf_tmle(
+    estimates[[as.character(level)]] <- cf_tmle(
       task, riesz_components, learners_outcome, control, progress_bar
     )
 
   }
 
+  theta_ltmle(task, estimates, propensity_score, levels)
 }
