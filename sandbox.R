@@ -1,6 +1,6 @@
 library(tidyverse)
 
-n0 <- 1e4
+n0 <- 1e3
 data <- data.frame(matrix(NA, nrow = n0, ncol = 4))
 names(data)  <- c(paste0('a', 1:2), paste0('y', 1:2))
 
@@ -23,44 +23,33 @@ for(t in 1:2) {
   }
 }
 
-1 - mean(data[, 'y2'])
-
-head(data)
-
-at_risk_time_1 <- data$y1 == 0
-m2 <- glm(y2 ~ a1 + a2, data = data, subset = at_risk_time_1)
-
-augmented <- delay_augment.data.frame(data, task$sequences(1))
-augmented$a2 <- one_time_delay(augmented, c("..i..lmtp_tmp_s1", "a2"))
-
-q2 <- predict(m2, augmented)
-q2[augmented$y1 == 1] <- 1
-
-m1 <- glm(q2 ~ ..i..lmtp_tmp_s1*a1, data = augmented)
-
-1 - mean(predict(m1, mutate(data, ..i..lmtp_tmp_s1 = a1, a1 = 0)))
-
-
-
-q2_0 <- predict(m2, mutate(data, a2 = 0))
-q2_0[!at_risk_time_1] <- 1
-
-q2_1 <- predict(m2, mutate(data, a2 = 1))
-q2_1[!at_risk_time_1] <- 1
-
-m1_0 <- glm(q2_0 ~ a1, data = data)
-m1_1 <- glm(q2_1 ~ a1, data = data)
-
-1 - mean((1 - data$a1)*predict(m1_0, mutate(data, a1 = 0)) +
-data$a1 * predict(m1_1, mutate(data, a1 = 0)))
+# 1 - mean(data[, 'y2'])
+#
+# head(data)
+#
+# at_risk_time_1 <- data$y1 == 0
+# m2 <- glm(y2 ~ a1 + a2, data = data, subset = at_risk_time_1)
+#
+# augmented <- delay_augment.data.frame(data, task$sequences(1))
+# augmented$a2 <- one_time_delay(augmented, c("..i..lmtp_tmp_s1", "a2"))
+#
+# q2 <- predict(m2, augmented)
+# q2[augmented$y1 == 1] <- 1
+#
+# m1 <- glm(q2 ~ ..i..lmtp_tmp_s1*a1, data = augmented)
+#
+# q1 <- predict(m1, mutate(data, ..i..lmtp_tmp_s1 = a1, a1 = 0))
+#
+# 1 - mean(q1)
 
 # testing functions -------------------------------------------------------
 
-data$w <- rnorm(nrow(data))
+# data$w <- rnorm(nrow(data))
+data$w <- rep(1, nrow(data))
 trt <- c("a1", "a2")
 baseline <- "w"
 time_vary <- NULL
-cens <- NULL
+# cens <- c("c1", "c2")
 compete <- NULL
 id <- NULL
 outcome <- c("y1", "y2")
@@ -69,7 +58,7 @@ variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, com
 
 task <- LmtpTask$new(
   data = data,
-  shifted = make_shifted(data[, variable_names], trt, cens, static_binary_on, NULL),
+  shifted = NULL,
   A = trt,
   Y = outcome,
   L = time_vary,
@@ -78,11 +67,35 @@ task <- LmtpTask$new(
   D = compete,
   k = Inf, id = id,
   outcome_type = "survival",
-  folds = 1,
+  folds = 10,
   weights = NULL,
   bounds = NULL
 )
 
 prop <- cf_propensity_score(task, "SL.glm", lmtp_control(), NULL)
 
-estimate_tmle_delay(task, 1, prop$propensity_score, "SL.glm.interaction", lmtp_control(), NULL)
+cf_tmle_delay(task, prop$propensity_score, "SL.glm.interaction", lmtp_control(), NULL)
+
+foo <- estimate_sdr_delay(task, 1, prop$propensity_score, "SL.glm.interaction", lmtp_control(), NULL)
+ife::ife(mean(foo$predictions[[1]]), foo$efficient_influence_function)
+
+
+htlmtp_sdr(data, trt, outcome, baseline,
+           outcome_type = "survival",
+           learners_outcome = "SL.glm.interaction",
+           learners_trt = "SL.glm",
+           learners_cens = "SL.glm",
+           folds = 10,
+           control = lmtp_control())
+
+
+htlmtp_tmle(data, trt, outcome, baseline,
+           outcome_type = "survival",
+           learners_outcome = "SL.glm.interaction",
+           learners_trt = "SL.glm",
+           learners_cens = "SL.glm",
+           folds = 10,
+           control = lmtp_control())
+
+
+

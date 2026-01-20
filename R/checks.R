@@ -82,7 +82,7 @@ check_not_data_table <- function(x) {
     return(is_data_frame)
   }
 
-  is_data_table <- data.table::is.data.table(x)
+  is_data_table <- is.data.table(x)
   if (is_data_table) {
     return("Must be a 'data.frame', not a 'data.table'")
   }

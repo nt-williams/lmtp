@@ -69,8 +69,9 @@ subset_augmented.numeric <- function(x, id) {
   x[!collapse::fduplicated(id)]
 }
 
-delay_riesz_rep <- function(data, treatments, propensity_scores,
-                            this_treatment, this_time, time_horizon) {
+# TODO: Need to figure out how to incorporate the censoring indicators
+delay_riesz_rep <- function(data, treatments, propensity_scores, prob_observed,
+                            this_treatment, this_censoring, this_time, time_horizon) {
   i <- seq_len(dim(propensity_scores)[1])
 
   # Create indicators (D in paper)
@@ -95,7 +96,8 @@ delay_riesz_rep <- function(data, treatments, propensity_scores,
 }
 
 delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
-                                     propensity_scores, trtvars, this_treatment,
+                                     propensity_scores, prob_observed,
+                                     trtvars, this_treatment, this_censoring,
                                      time, time_horizon, outcomevar, aug_key) {
 
   idvar <- "..i..lmtp_id"
@@ -107,7 +109,8 @@ delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
   # Vectorized accumulation over k = time:time_horizon
   pseudo <- 0
   for (k in time:time_horizon) {
-    riesz <- delay_riesz_rep(data, trtvars, propensity_scores, this_treatment, time, k)
+    riesz <- delay_riesz_rep(data, trtvars, propensity_scores, prob_observed,
+                             this_treatment, this_censoring, time, k)
     # Compute residual, take product with Riesz representers, then subset
     resid <- pred_shifted[[k + 1]] - pred_natural[[k]]
     pseudo <- pseudo + subset_augmented(riesz * resid, subset_keys)

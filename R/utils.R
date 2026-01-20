@@ -21,14 +21,22 @@ get_folded_data.array <- function(x, folds, index) {
   out
 }
 
+#' @export
+get_folded_data.numeric <- function(x, folds, index) {
+  out <- list()
+  out[["train"]] <- x[folds[[index]]$training_set]
+  out[["valid"]] <- x[folds[[index]]$validation_set]
+  out
+}
+
 fix_censoring_ind <- function(data, cens) {
   if (is.null(cens)) {
     return(data)
   }
 
-  data <- data.table::copy(data)
+  data <- copy(data)
   for (cen in cens) {
-    data.table::set(data, j = cen, value = ifelse(is.na(data[[cen]]), 0, data[[cen]]))
+    set(data, j = cen, value = ifelse(is.na(data[[cen]]), 0, data[[cen]]))
   }
   data
 }
@@ -83,7 +91,7 @@ extract_sl_weights <- function(fit) {
 }
 
 convert_to_surv <- function(x) {
-  data.table::fcase(
+  fcase(
     x == 0, 1,
     x == 1, 0
   )

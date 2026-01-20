@@ -102,7 +102,8 @@ htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, progress_bar)
   estimator <- cf_sdr_delay(
-    task, propensity_score$propensity_score, learners_outcome, control, progress_bar
+    task, propensity_score$propensity_score, propensity_score$prob_observed,
+    learners_outcome, control, progress_bar
   )
 
   theta_htlmtp(task, estimator, propensity_score, deparse(substitute((shift))), TRUE)
@@ -212,7 +213,8 @@ htlmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   propensity_score <- cf_propensity_score(task, learners_trt, learners_cens, control, progress_bar)
   estimator <- cf_tmle_delay(
-    task, propensity_score$propensity_score, learners_outcome, control, progress_bar
+    task, propensity_score$propensity_score, propensity_score$prob_observed,
+    learners_outcome, control, progress_bar
   )
 
   theta_htlmtp(task, estimator, propensity_score, deparse(substitute((shift))), FALSE)

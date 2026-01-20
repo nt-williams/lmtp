@@ -11,7 +11,7 @@ test_that("'data' is a 'data.frame'", {
   )
 
   expect_error(
-    lmtp_tmle(data.table::as.data.table(sim_cens), A, "Y", time_vary = L, cens = cens),
+    lmtp_tmle(as.data.table(sim_cens), A, "Y", time_vary = L, cens = cens),
     "Assertion on 'data' failed: Must be a 'data.frame', not a 'data.table'."
   )
 })

@@ -12,7 +12,7 @@ theta_lmtp <- function(task, sequential_regressions, density_ratios, fits_m, fit
 
   out <- list(
     estimator = ifelse(is_sdr, "SDR", "TMLE"),
-    estimate = ife::ife(theta, influence_function, task$weights, as.character(task$id)),
+    estimate = ife(theta, influence_function, task$weights, as.character(task$id)),
     shift = shift,
     outcome_reg = task$rescale(sequential_regressions$shifted),
     density_ratios = density_ratios,
@@ -37,7 +37,7 @@ theta_htlmtp <- function(task, estimator, propensity_scores, shift, is_sdr) {
 
   out <- list(
     estimator = ifelse(is_sdr, "History of Treatment - SDR", "History of Treatment - TMLE"),
-    estimate = ife::ife(theta, influence_function, task$weights, as.character(task$id)),
+    estimate = ife(theta, influence_function, task$weights, as.character(task$id)),
     shift = shift,
     outcome_reg = task$rescale(estimator$predictions),
     propensity_scores = propensity_scores$propensity_score,
