@@ -13,7 +13,7 @@ cf_tmle <- function(task, density_ratios, learners, control, progress_bar) {
   ans <- future::value(ans)
 
   list(predictions = recombine(rbind_depth(ans, "predictions"), task$folds),
-       uncentered_eif = recombine(rbind_depth(ans, "uncentered_eif"), task$folds),
+       uncentered_eif = recombine(c_depth(ans, "uncentered_eif"), task$folds),
        learner_outcome_summary = rbind_depth(ans, "learner_summary"))
 }
 
@@ -112,8 +112,10 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
     pred_shifted_valid[, time] <- calibrate(pred_shifted_valid[, time], y1v, d0v)
 
     # Construct the EIF
-    eif <- update_tmle_eif(eif, pred_shifted_valid[, time + 1],
-                           weights$valid, pred_natural_valid[, time])
+    eif <- update_tmle_eif(
+      eif, pred_shifted_valid[, time + 1],
+      densrat_valid[, time], pred_natural_valid[, time]
+    )
 
     progress_bar()
   }
