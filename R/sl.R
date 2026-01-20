@@ -30,5 +30,5 @@ predict.lmtp_ensemble <- function(object, newdata, tol = .Machine$double.eps, ..
 summary.SuperLearner <- function(x, time = NULL, fold = NULL, level = NULL, ...) {
   values <- data.frame(risk = x$cvRisk, coef = x$coef)
   values <- data.frame(learner = rownames(values), values, row.names = NULL)
-  data.frame(time = time, fold = fold, level = level, values)
+  data.table::data.table(time = time, fold = fold, level = level, values)
 }
