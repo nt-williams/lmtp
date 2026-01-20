@@ -22,3 +22,7 @@ rbind_depth_2 <- function(x, n, t) {
   vals <- lapply(x, function(x) x[[n]])
   Reduce("rbind", lapply(vals, function(x) x[[t]]))
 }
+
+c_depth <- function(x, n) {
+  Reduce(c, lapply(x, function(x) x[[n]]))
+}
