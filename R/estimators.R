@@ -130,14 +130,12 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   density_ratios <- cf_density_ratios(task, learners_trt, mtp, control, progress_bar)
 
   # Estimate TMLE
-  sequential_regressions <- cf_tmle(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
+  estimates <- cf_tmle(task, density_ratios$density_ratios, learners_outcome, control, progress_bar)
 
-  theta_dr(
+  theta_lmtp(
     task = task,
-    sequential_regressions = list(natural = sequential_regressions$natural, shifted = sequential_regressions$shifted),
-    density_ratios = density_ratios$density_ratios,
-    fits_m = sequential_regressions$fits,
-    fits_r = density_ratios$fits,
+    estimates = estimates,
+    density_ratios = density_ratios,
     shift = deparse(substitute((shift))),
     is_sdr = FALSE
   )
