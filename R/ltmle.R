@@ -79,4 +79,21 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
   assert_trt_discrete(data, unlist(trt))
 
+  task <- LmtpTask$new(
+    data = data,
+    shifted = NULL,
+    A = trt,
+    Y = outcome,
+    L = time_vary,
+    W = baseline,
+    C = cens,
+    D = compete,
+    k = k,
+    id = id,
+    outcome_type = match.arg(outcome_type),
+    folds = folds,
+    weights = weights,
+    bounds = bounds
+  )
+
 }
