@@ -104,3 +104,16 @@ current_trt <- function(trt, time) {
   }
   trt[[1]]
 }
+
+
+calibrate <- function(pred, prior_free, comp_free) {
+  pred[!prior_free] <- 0
+  pred[!comp_free] <- 1
+  pred
+}
+
+one_hot_encode <- function(data, x) {
+  ohe <- model.matrix(~ -1 + as.character(data[[x]]))
+  colnames(ohe) <- gsub("as.character\\(data\\[\\[x\\]\\]\\)", "", colnames(ohe))
+  ohe
+}
