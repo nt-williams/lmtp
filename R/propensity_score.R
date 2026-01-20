@@ -44,7 +44,8 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
 
   # Create arrays to store predictions
   propensity_scores <- array(
-    NA_real_, c(nrow(valid), number_levels, time_horizon),
+    NA_real_,
+    c(nrow(valid), number_levels, time_horizon),
     dimnames = list(NULL, levels, NULL)
   )
 

@@ -63,7 +63,7 @@
 #' @export
 ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                   cens = NULL, compete = NULL,
-                  k = Inf, mtp = TRUE,
+                  k = Inf,
                   outcome_type = c("binomial", "continuous", "survival"),
                   id = NULL, bounds = NULL,
                   learners_outcome = "SL.glm",
@@ -78,6 +78,7 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
   assert_trt_discrete(data, unlist(trt))
+  # TODO: likely need to some check about the support is the same across time-points
 
   task <- LmtpTask$new(
     data = data,
@@ -95,5 +96,42 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     weights = weights,
     bounds = bounds
   )
+
+  # Create progress bar object
+  progress_bar <- progressr::progressor(task$time_horizon*folds*2)
+
+  propensity_score <- cf_propensity_score(
+    task, learners_trt, learners_cens, control, progress_bar
+  )
+
+  # Need to do this for each level of treatment
+  levels <- task$support(1)
+  for (level in levels) {
+    # Update shifted for the current level
+    task$shifted <- make_shifted(task$natural, task$vars$A, task$vars$C, tsm(level), NULL)
+
+    # Construct IPW weights for the current level
+    riesz_components <- sapply(
+      seq_len(task$time_horizon),
+      function(time) {
+        ipw <- (task$natural[[current_trt(task$vars$A, time)]] == level) /
+          propensity_score$propensity_score[, as.character(level), time]
+
+        if (!is.null(task$vars$C)) {
+          ipcw <- (task$natural[[current_trt(task$vars$C, time)]] == 1) /
+            propensity_score$prob_observed[, time]
+        } else {
+          ipcw <- propensity_score$prob_observed[, time]
+        }
+
+        ipw * ipcw
+      }
+    )
+
+    sequential_regressions <- cf_tmle(
+      task, riesz_components, learners_outcome, control, progress_bar
+    )
+
+  }
 
 }
