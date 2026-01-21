@@ -34,3 +34,17 @@ tidy.lmtp_survival <- function(x, ...) {
   out$time <- seq_along(x)
   out[, c(ncol(out), 1:ncol(out) - 1)]
 }
+
+#' Tidy a(n) lmtp_ltmle object
+#'
+#' @param x A `lmtp_ltmle` object produced by a call to [lmtp::ltmle()].
+#' @param ... Unused, included for generic consistency only.
+#'
+#' @example
+#'
+#' @export
+tidy.lmtp_ltmle <- function(x, ...) {
+  out <- do.call("rbind", lapply(x$estimates, ife::tidy))
+  out$level <- names(x$estimates)
+  out[, c(ncol(out), 1:ncol(out) - 1)]
+}

@@ -28,3 +28,11 @@ print.lmtp_survival <- function(x, ...) {
   cli::cli_h2("{.emph Population intervention estimates}")
   print(format(as.data.frame(tidy.lmtp_survival(x)), digits = 3))
 }
+
+#' @export
+print.lmtp_ltmle <- function(x, ...) {
+  cat("\n")
+  cli::cli_text("{.strong LMTP Estimator}: LTMLE")
+  cli::cli_h2("{.emph Treatment specific means}")
+  print(format(as.data.frame(tidy.lmtp_ltmle(x)), digits = 3))
+}
