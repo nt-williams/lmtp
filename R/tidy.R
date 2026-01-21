@@ -30,7 +30,7 @@ tidy.lmtp <- function(x, ...) ife::tidy(x$estimate)
 #'
 #' @export
 tidy.lmtp_survival <- function(x, ...) {
-  out <- do.call("rbind", lapply(x, tidy))
+  out <- do.call("rbind", lapply(x, ife::tidy))
   out$time <- seq_along(x)
   out[, c(ncol(out), 1:ncol(out) - 1)]
 }
