@@ -11,7 +11,7 @@ compute_weights <- function(density_ratios, time, time_horizon) {
   out
 }
 
-update_tmle_eif <- function(eif, Y, riesz, predictions) {
+update_lmtp_eif <- function(eif, Y, riesz, predictions) {
   if (missing(eif)) eif <- numeric(length(Y))
   # Multiply Riesz representer by residual
   component <- riesz * (Y - predictions)
