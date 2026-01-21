@@ -1,6 +1,6 @@
 theta_lmtp <- function(task, estimates, density_ratios, shift, is_sdr) {
   if (is_sdr) {
-    theta <- fmean(influence_function, w = task$weights)
+    theta <- fmean(estimates$uncentered_eif, w = task$weights)
   } else {
     theta <- fmean(estimates$predictions[, 1], w = task$weights)
   }
