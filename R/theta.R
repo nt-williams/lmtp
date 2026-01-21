@@ -34,7 +34,7 @@ theta_ltmle <- function(task, estimates, propensity_scores, levels) {
   ifes <- lapply(seq_along(theta), function(i) {
     ife::ife(theta[i], influence_functions[[i]], task$weights, as.character(task$id))
   })
-  names(estimates) <- levels
+  names(ifes) <- levels
 
   out <- list(
     estimator = "TMLE",
@@ -48,6 +48,6 @@ theta_ltmle <- function(task, estimates, propensity_scores, levels) {
     outcome_type = task$outcome_type
   )
 
-  class(out) <- "ltmle"
+  class(out) <- "lmtp_ltmle"
   out
 }
