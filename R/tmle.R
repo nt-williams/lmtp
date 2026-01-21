@@ -112,7 +112,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
     pred_shifted_valid[, time] <- calibrate(pred_shifted_valid[, time], y1v, d0v)
 
     # Construct the EIF
-    eif <- update_tmle_eif(
+    eif <- update_lmtp_eif(
       eif, pred_shifted_valid[, time + 1],
       densrat_valid[, time], pred_natural_valid[, time]
     )
