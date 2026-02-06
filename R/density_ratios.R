@@ -1,3 +1,4 @@
+# TODO: Needs refactor
 cf_density_ratios <- function(task, learners, mtp, control, pb) {
   ans <- vector("list", length = length(task$folds))
 
@@ -15,8 +16,10 @@ cf_density_ratios <- function(task, learners, mtp, control, pb) {
 
   ans <- future::value(ans)
 
-  ans <- list(density_ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
-              fits = lapply(ans, function(x) x[["fits"]]))
+  ans <- list(
+    density_ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
+    learner_treatment_summary = rbind_depth(ans, "learner_treatment_summary")
+  )
 
   ans$density_ratios <- trim(ans$density_ratios, control$.trim)
   ans
@@ -27,7 +30,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
   shifted <- get_folded_data(task$shifted, task$folds, fold)
 
   density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$time_horizon)
-  fits <- vector("list", length = task$time_horizon)
+  learner_summaries <- vector("list", task$time_horizon)
 
   for (time in seq_len(task$time_horizon)) {
     i <- task$observed(natural$train, time - 1) %and% task$is_at_risk(natural$train, time)
@@ -42,11 +45,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
                         learners, "binomial", "..i..lmtp_id",
                         control$.learners_trt_folds)
 
-    if (control$.return_full_fits) {
-      fits[[time]] <- fit
-    } else {
-      fits[[time]] <- extract_sl_weights(fit)
-    }
+    learner_summaries[[time]] <- summary(fit, time, fold)
 
     i <- task$observed(natural$valid, time - 1) %and% task$is_at_risk(natural$valid, time)
 
@@ -63,7 +62,8 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
     pb()
   }
 
-  list(ratios = density_ratios, fits = fits)
+  list(ratios = density_ratios,
+       learner_treatment_summary = learner_summaries)
 }
 
 stack_data <- function(natural, shifted, trt, cens, time) {

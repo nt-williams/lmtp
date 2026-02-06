@@ -57,6 +57,7 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
   learner_treatment_summary <- NULL
   learner_cens_summary <- NULL
 
+  # TODO: fix issues with point-treatment survival
   for (time in seq_len(time_horizon)) {
     # Get indices of observations that aren't censored and haven't experienced
     # the outcome or the competing risk

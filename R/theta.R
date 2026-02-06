@@ -15,7 +15,7 @@ theta_lmtp <- function(task, estimates, density_ratios, shift, is_sdr) {
     outcome_reg = task$rescale(estimates$predictions),
     density_ratios = density_ratios$density_ratios,
     fits_outcome = estimates$learner_outcome_summary,
-    fits_treatment = density_ratios$fits,
+    fits_treatment = density_ratios$learner_treatment_summary,
     outcome_type = task$outcome_type
   )
 
