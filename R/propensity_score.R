@@ -45,7 +45,7 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
   # Create arrays to store predictions
   propensity_scores <- array(NA_real_, c(nrow(valid), number_levels, time_horizon),
                              dimnames = list(NULL, levels, NULL))
-  prob_observed <- matrix(ifelse(is.null(task$vars$C), 1, 0),
+  prob_observed <- matrix(ifelse(is.null(task$vars$C), 1, NA_real_),
                           nrow = nrow(valid), ncol = time_horizon)
 
   learner_treatment_summary <- NULL
@@ -70,13 +70,13 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     number_levels <- length(levels)
 
     # One hot encode the treatment
-    ohe <- one_hot_encode(train, this_treatment)
+    ohe <- one_hot_encode(train[i, ], this_treatment)
 
     # Loop over K-1 treatment levels as binomial models
     for (l in 2:number_levels) {
       this_level <- colnames(ohe)[l]
       fit <- run_ensemble(
-        collapse::ftransform(train, this_treatment = ohe[, l])[i, c(vars, this_treatment)],
+        collapse::ftransform(train[i, ], this_treatment = ohe[, l])[, c(vars, this_treatment)],
         this_treatment,
         learners_trt, "binomial", idvar, control$.learners_trt_folds
       )

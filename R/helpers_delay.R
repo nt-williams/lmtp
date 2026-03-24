@@ -44,6 +44,20 @@ delay_augment.data.frame <- function(x, sequences) {
   cbind(augmented, seq_cols)
 }
 
+# #' @export
+# delay_augment.matrix <- function(x, sequences) {
+#   n <- nrow(sequences)
+#   t <- ncol(sequences)
+#   nr <- nrow(x)
+
+#   augmented <- x[rep(seq_len(nr), n), , drop = FALSE]
+
+#   seq_cols <- as.matrix(sequences[rep(seq_len(n), each = nr), , drop = FALSE])
+#   colnames(seq_cols) <- paste0("..i..lmtp_tmp_s", seq_len(t))
+
+#   cbind(augmented, seq_cols)
+# }
+
 #' @export
 delay_augment.logical <- function(x, sequences) {
   n <- nrow(sequences)
@@ -64,13 +78,18 @@ subset_augmented.data.frame <- function(x, time, time_horizon) {
   x[!collapse::fduplicated(x[, id, drop = FALSE]), ]
 }
 
+# #' @export
+# subset_augmented.matrix <- function(x, id) {
+#   x[!collapse::fduplicated(id), , drop = FALSE]
+# }
+
 #' @export
 subset_augmented.numeric <- function(x, id) {
   x[!collapse::fduplicated(id)]
 }
 
 # TODO: Need to figure out how to incorporate the censoring indicators
-delay_riesz_rep <- function(data, treatments, propensity_scores, prob_observed,
+delay_riesz_rep <- function(data, treatments, cens, propensity_scores, prob_observed,
                             this_treatment, this_censoring, this_time, time_horizon) {
   i <- seq_len(dim(propensity_scores)[1])
 
@@ -79,6 +98,9 @@ delay_riesz_rep <- function(data, treatments, propensity_scores, prob_observed,
   for (time in this_time:time_horizon) {
     ind <- ind * one_time_delay(data, seqvars(this_time:time)) == data[[this_treatment]]
   }
+
+  po <- prob_observed[cbind(i, seq_len(nrow(data)))[, 1], ]
+  ipcw <- apply(data[, cens[this_time:time_horizon], drop = FALSE] %*0% (1 / po), 1, prod)
 
   # Pre-allocate density ratios
   density_ratios <- rep(1, nrow(data))
@@ -92,12 +114,12 @@ delay_riesz_rep <- function(data, treatments, propensity_scores, prob_observed,
     density_ratios <- density_ratios * (prob_trt_shifted / prob_trt_natural)
   }
 
-  ind %*0% density_ratios
+  ind %*0% density_ratios * ipcw
 }
 
 delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
                                      propensity_scores, prob_observed,
-                                     trtvars, this_treatment, this_censoring,
+                                     trtvars, cens, this_treatment, this_censoring,
                                      time, time_horizon, outcomevar, aug_key) {
 
   idvar <- "..i..lmtp_id"
@@ -108,12 +130,13 @@ delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
 
   # Vectorized accumulation over k = time:time_horizon
   pseudo <- 0
+
   for (k in time:time_horizon) {
-    riesz <- delay_riesz_rep(data, trtvars, propensity_scores, prob_observed,
+    riesz <- delay_riesz_rep(data, trtvars, cens, propensity_scores, prob_observed,
                              this_treatment, this_censoring, time, k)
     # Compute residual, take product with Riesz representers, then subset
     resid <- pred_shifted[[k + 1]] - pred_natural[[k]]
-    pseudo <- pseudo + subset_augmented(riesz * resid, subset_keys)
+    pseudo <- pseudo + subset_augmented(riesz %*0% resid, subset_keys)
   }
 
   pseudo

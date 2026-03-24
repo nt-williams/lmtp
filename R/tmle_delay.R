@@ -133,7 +133,7 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, prob_observed, le
 
     # Riesz representer
     riesz <- delay_riesz_rep(
-      train_aug, A, propensity_scores$train, prob_observed$train,
+      train_aug, A, C, propensity_scores$train, prob_observed$train,
       this_A, this_C, 1, time
     )
 
@@ -147,7 +147,7 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, prob_observed, le
 
     # Construct the EIF
     eif <- update_htlmtp_eif(
-      eif, valid_aug, A, Y, id, pred_valid_natural,
+      eif, valid_aug, A, C, Y, id, pred_valid_natural,
       propensity_scores$valid, prob_observed$valid, this_A, this_C, time
     )
 

@@ -137,7 +137,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, prob_observed, lea
     if (time > 1) {
       pseudo <- delay_sdr_transformation(
         train_aug, pred_train_shifted, pred_train_natural,
-        propensity_scores$train, prob_observed$train, A,
+        propensity_scores$train, prob_observed$train, A, C,
         this_A, this_C,
         time, time_horizon, Y, aug_key
       )
@@ -149,7 +149,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, prob_observed, lea
 
     # Construct the EIF
     eif <- update_htlmtp_eif(
-      eif, valid_aug, A, Y, id, pred_valid_natural,
+      eif, valid_aug, A, C, Y, id, pred_valid_natural,
       propensity_scores$valid, prob_observed$valid, this_A, this_C, time
     )
 
