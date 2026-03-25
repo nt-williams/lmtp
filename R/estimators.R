@@ -95,8 +95,8 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       k = Inf, mtp = TRUE,
                       outcome_type = c("binomial", "continuous", "survival"),
                       id = NULL, bounds = NULL,
-                      learners_outcome = "SL.glm",
-                      learners_trt = "SL.glm",
+                      learners_outcome = "glm",
+                      learners_trt = "glm",
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assert_not_data_table(data)
@@ -240,8 +240,8 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      k = Inf, mtp = TRUE,
                      outcome_type = c("binomial", "continuous", "survival"),
                      id = NULL, bounds = NULL,
-                     learners_outcome = "SL.glm",
-                     learners_trt = "SL.glm",
+                     learners_outcome = "glm",
+                     learners_trt = "glm",
                      folds = 10, weights = NULL,
                      control = lmtp_control()) {
 

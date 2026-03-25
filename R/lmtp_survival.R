@@ -68,8 +68,8 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
                           shift = NULL, shifted = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
                           k = Inf, mtp = TRUE, id = NULL,
-                          learners_outcome = "SL.glm",
-                          learners_trt = "SL.glm",
+                          learners_outcome = "glm",
+                          learners_trt = "glm",
                           folds = 10,
                           weights = NULL,
                           control = lmtp_control()) {

@@ -41,14 +41,18 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
 
     fit_trt <- run_ensemble(stacked[rep(i_train, 2), trt_vars], "..i..lmtp_stack_indicator",
                             learners, "binomial", "..i..lmtp_id",
-                            control$.learners_trt_folds)
+                            control$.learners_trt_folds,
+                            control$.discrete,
+                            control$.info)
 
     # Separate censoring model
     if (!is.null(task$vars$C)) {
       cens_vars <- c("..i..lmtp_id", task$vars$history_cens(time), task$vars$C[time])
       fit_cens <- run_ensemble(natural$train[i_train, cens_vars], task$vars$C[time],
                                learners, "binomial", "..i..lmtp_id",
-                               control$.learners_trt_folds)
+                               control$.learners_trt_folds,
+                               control$.discrete,
+                               control$.info)
       pred_cens <- rep(-999L, nrow(natural$valid))
       pred_cens[i_valid] <- predict(fit_cens, natural$valid[i_valid, ])
     } else {

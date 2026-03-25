@@ -12,7 +12,7 @@
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_trt}.
 #' @param .return_full_fits \[\code{logical(1)}\]\cr
-#'  Return full 'SuperLearner' fits? Default is \code{FALSE}, return only 'SuperLearner' coefficients.
+#'  Return full 'mlr3superlearner' fits? Default is \code{FALSE}, return only learner weights.
 #' @param .discrete \[\code{logical(1)}\]\cr
 #'  Use discrete or ensemble super learner?
 #' @param .info \[\code{logical(1)}\]\cr

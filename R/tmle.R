@@ -45,7 +45,9 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
                         learners,
                         ifelse(time != task$time_horizon, "continuous", task$outcome_type),
                         "..i..lmtp_id",
-                        control$.learners_outcome_folds)
+                        control$.learners_outcome_folds,
+                        control$.discrete,
+                        control$.info)
 
     if (control$.return_full_fits) {
       fits[[time]] <- fit
