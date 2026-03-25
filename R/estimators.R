@@ -17,13 +17,13 @@
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  An optional named list with elements \code{trt}, \code{cens}, and \code{outcome},
+#'  each containing the column names of baseline covariates for the respective model.
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  An optional named list with elements \code{trt}, \code{cens}, and \code{outcome},
+#'  each a list of length equal to the number of time points with time-varying covariates
+#'  for the respective model.
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
@@ -100,7 +100,7 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                       folds = 10, weights = NULL,
                       control = lmtp_control()) {
   assert_not_data_table(data)
-  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  variable_names <- c(unlist(trt), outcome, unique(unlist(baseline)), unique(unlist(time_vary)), cens, compete, id)
   assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
@@ -162,13 +162,13 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  analysis, a vector containing the columns names of intermediate outcome variables and the final
 #'  outcome variable ordered by time. Only numeric values are allowed. If the outcome type
 #'  is binary, data should be coded as 0 and 1.
-#' @param baseline \[\code{character}\]\cr
-#'  An optional vector containing the column names of baseline covariates to be
-#'  included for adjustment at every time point.
+#' @param baseline \[\code{list}\]\cr
+#'  An optional named list with elements \code{trt}, \code{cens}, and \code{outcome},
+#'  each containing the column names of baseline covariates for the respective model.
 #' @param time_vary \[\code{list}\]\cr
-#'  A list the same length as the number of time points of observation with
-#'  the column names for new time-varying covariates introduced at each time point. The list
-#'  should be ordered following the time ordering of the model.
+#'  An optional named list with elements \code{trt}, \code{cens}, and \code{outcome},
+#'  each a list of length equal to the number of time points with time-varying covariates
+#'  for the respective model.
 #' @param cens \[\code{character}\]\cr
 #'  An optional vector of column names of censoring indicators the same
 #'  length as the number of time points of observation. If missingness in the outcome is
@@ -246,7 +246,7 @@ lmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                      control = lmtp_control()) {
 
   assert_not_data_table(data)
-  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  variable_names <- c(unlist(trt), outcome, unique(unlist(baseline)), unique(unlist(time_vary)), cens, compete, id)
   assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)

@@ -1,11 +1,15 @@
 context("Fidelity of estimates with shifted data supplied")
 
 a <- c("A1", "A2")
-nodes <- list(c("L1"), c("L2"))
+nodes <- list(
+  trt     = list(c("L1"), c("L2")),
+  cens    = list(c("L1"), c("L2")),
+  outcome = list(c("L1"), c("L2"))
+)
 cens <- c("C1", "C2")
 truth <- 0.88
 
-sc <- shift_data(sim_cens, a, cens, function(data, trt) data[[trt]] + 0.5)
+sc <- shift_data(sim_cens, a, function(data, trt) data[[trt]] + 0.5)
 
 tmle <-
   sw(lmtp_tmle(sim_cens, a, "Y", nodes, baseline = NULL,
@@ -24,7 +28,7 @@ test_that("estimator fidelity with shifted data supplied", {
 
 # Testing with multivariate exposure
 A <- list(c("D1", "D2"))
-W <- paste0("C", 1:3)
+W <- list(trt = paste0("C", 1:3), cens = paste0("C", 1:3), outcome = paste0("C", 1:3))
 Y <- "Y"
 
 shifted <- multivariate_data

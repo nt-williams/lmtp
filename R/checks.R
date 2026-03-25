@@ -6,7 +6,11 @@ check_lmtp_data = function(task) {
 
     A_t <- current_trt(task$vars$A, time)
 
-    data_t <- task$natural[i, c(A_t, task$vars$W, unlist(task$vars$L[time])), drop = FALSE]
+    all_covars <- unique(c(task$vars$W, task$vars$W_trt, task$vars$W_cens,
+                            unlist(task$vars$L[time]),
+                            unlist(task$vars$L_trt[time]),
+                            unlist(task$vars$L_cens[time])))
+    data_t <- task$natural[i, c(A_t, all_covars), drop = FALSE]
 
     if (any(is.na(data_t))) {
       return("Missing data found in treatment and/or covariate nodes for uncensored observations")
@@ -61,14 +65,6 @@ check_shifted_data <- function(natural, shifted, trt, cens) {
 
   if (!(identical(natural[is_same], shifted[is_same]))) {
     return("The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`")
-  }
-
-  if (is.null(cens)) {
-    return(TRUE)
-  }
-
-  if (!all(shifted[cens] == 1)) {
-    return("Censoring variables should be 1 in 'shifted'")
   }
 
   TRUE

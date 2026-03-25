@@ -18,11 +18,13 @@ S <- rbinom(n, 1, prob_S)
 tmp <- tmp[S == 1, ]
 wts <- 1 / prob_S[S == 1]
 
-tmle <- sw(lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                  weights = wts, folds = 2))
+tmle <- sw(lmtp_tmle(tmp, "A", "Y",
+                  baseline = list(trt = c("W1", "W2"), cens = c("W1", "W2"), outcome = c("W1", "W2")),
+                  shift = static_binary_on, weights = wts, folds = 2))
 
-sdr <- sw(lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on,
-                weights = wts, folds = 2))
+sdr <- sw(lmtp_sdr(tmp, "A", "Y",
+                 baseline = list(trt = c("W1", "W2"), cens = c("W1", "W2"), outcome = c("W1", "W2")),
+                 shift = static_binary_on, weights = wts, folds = 2))
 
 # tests
 test_that("survey weight fidelity", {

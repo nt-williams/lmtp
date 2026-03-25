@@ -1,7 +1,7 @@
 context("Fidelity of estimates with censoring")
 
 A <- c("A1", "A2")
-L <- list(c("L1"), c("L2"))
+L <- list(trt = list(c("L1"), c("L2")), cens = list(c("L1"), c("L2")), outcome = list(c("L1"), c("L2")))
 C <- c("C1", "C2")
 truth <- 0.8
 

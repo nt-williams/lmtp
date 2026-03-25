@@ -13,7 +13,6 @@ policy <- function(data, x) {
 test_that("make shifted works", {
   shifted <- dat
   shifted$A <- policy(dat, "A")
-  shifted$C <- 1
 
   expect_equal(make_shifted(dat, "A", "C", policy, NULL), shifted)
   expect_equal(make_shifted(dat, "A", "C", NULL, shifted), shifted)

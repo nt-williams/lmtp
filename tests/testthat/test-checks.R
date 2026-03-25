@@ -65,11 +65,10 @@ test_that("Time_vary is a list", {
 
 test_that("Variable length mismatch", {
   A <- c("A1")
-  L <- c("L1", "L2")
   cens <- c("C1", "C2")
 
   expect_error(
-    sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens)),
+    sw(lmtp_tmle(sim_cens, A, "Y", cens = cens)),
     "Assertion on 'C' failed: Must have length 1, but has length 2."
   )
 })
@@ -98,9 +97,9 @@ test_that("Issues with 'outcome_type' being or not being survival", {
 
 test_that("Issues with 'shift' function and providing 'shifted' data", {
   A <- c("A1", "A2")
-  L <- list(c("L1"), c("L2"))
+  L <- list(trt = list(c("L1"), c("L2")), cens = list(c("L1"), c("L2")), outcome = list(c("L1"), c("L2")))
   cens <- c("C1", "C2")
-  shifted <- shift_data(sim_cens, A, cens, function(data, trt) data[[trt]] + 0.5)
+  shifted <- shift_data(sim_cens, A, function(data, trt) data[[trt]] + 0.5)
   shifted$L1 <- 1
 
   expect_error(
@@ -111,12 +110,6 @@ test_that("Issues with 'shift' function and providing 'shifted' data", {
   expect_error(
     sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens, shifted = shifted)),
     "Assertion on 'data' failed: The only columns that can be different between `data` and `shifted` are those indicated in `trt` and `cens`."
-  )
-
-  shifted <- shift_data(sim_cens, A, NULL, function(data, trt) data[[trt]] + 0.5)
-  expect_error(
-    sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens, shifted = shifted)),
-    "Assertion on 'data' failed: Censoring variables should be 1 in 'shifted'."
   )
 })
 

@@ -6,35 +6,22 @@ make_shifted <- function(data, trt, cens, shift, shifted) {
     return(shifted)
   }
 
-  if (is.null(shifted) && !is.null(shift)) {
-    return(shift_data(data, trt, cens, shift))
-  }
-
-  if (is.null(shifted) && is.null(shift)) {
-    return(shift_data(data, trt, cens, shift))
-  }
+  shift_data(data, trt, shift)
 }
 
-shift_data <- function(data, trt, cens, shift) {
+shift_data <- function(data, trt, shift) {
   if (is.null(shift)) {
-    return(shift_cens(data, cens))
+    return(data)
   }
 
   is_multivariate <- is.list(trt)
   if (isTRUE(is_multivariate)) {
-    return(shift_trt_list(shift_cens(data, cens), trt, shift))
+    return(shift_trt_list(data, trt, shift))
   }
 
-  shift_trt_character(shift_cens(data, cens), trt, shift)
+  shift_trt_character(data, trt, shift)
 }
 
-shift_cens <- function(data, cens) {
-  out <- as.list(data)
-  for (ce in cens) {
-    out[[ce]] <- 1
-  }
-  as.data.frame(out, check.names = FALSE)
-}
 
 shift_trt_character <- function(data, trt, .f) {
   out <- as.list(data)
