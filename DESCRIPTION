@@ -45,7 +45,7 @@ Imports:
     isotone,
     ife (>= 0.2.0),
     lifecycle
-URL: https://beyondtheate.com/, https://github.com/nt-williams/lmtp
+URL: https://www.beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
     testthat (>= 2.1.0),
