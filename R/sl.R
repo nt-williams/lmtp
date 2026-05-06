@@ -1,5 +1,11 @@
 #' @importFrom nnls nnls
 run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
+  n_ids <- length(unique(data[[id]]))
+  if (folds > n_ids) {
+    cli::cli_abort(
+      "The number of Super Learner folds ({folds}) exceeds the number of unique IDs ({n_ids}) in the training data. Set {.code .learners_trt_folds} or {.code .learners_outcome_folds} in {.fn lmtp_control} to at most {n_ids}."
+    )
+  }
   family <- ifelse(outcome_type == "binomial", binomial(), gaussian())
   cv_control <- SuperLearner::SuperLearner.CV.control(V = folds)
   features <- setdiff(names(data), c(id, y))

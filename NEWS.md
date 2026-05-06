@@ -6,6 +6,7 @@
 
 ### General
 
+- Added check that the number of Super Learner cross-validation folds isn't greater than the number of clusters (see issue \#105).
 - `origami` has been removed as a dependency.
 - Now requires `ife` version be greater than 0.1.2 (see issue \#180).
 - Risk ratio and odds ratio in `lmtp_contrast` are now estimated on the log scale and then the estimate and confidence intervals are exponentiated (see issue \#180).
