@@ -28,6 +28,7 @@ Authors:
 Other contributors:
 \itemize{
   \item Beaudan Campbell-Brown \email{beaudan.brown@gmail.com} (\href{https://orcid.org/0009-0006-6967-9295}{ORCID}) [contributor]
+  \item Molly Davies \email{mollydavies@pinterest.com} [contributor]
 }
 
 }
