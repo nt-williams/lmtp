@@ -1,4 +1,14 @@
+# 1.5.5
+
+### New Features
+
+### Bug Fixes
+
+### General
+
 # lmtp 1.5.4
+
+- Fixes bug where clustered cross-fitting folds are silently disabled and the package returns row-level V-fold CV instead (see issue \#188).
 
 ### New Features
 
