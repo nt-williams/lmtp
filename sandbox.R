@@ -2,7 +2,7 @@ library(tidyverse)
 
 set.seed(435634)
 
-n0 <- 1e5
+n0 <- 1e3
 data <- data.frame(matrix(NA, nrow = n0, ncol = 9))
 names(data)  <- c(paste0('a', 1:3), paste0('y', 1:3), paste0("c", 1:3))
 
@@ -66,7 +66,11 @@ data$y3[data$c3 == 0] <- NA_real_
 # data$w <- rnorm(nrow(data))
 data$w <- rep(1, nrow(data))
 trt <- c("a1", "a2", "a3")
-baseline <- "w"
+baseline <- list(
+  trt     = "w",
+  cens    = "w",
+  outcome = "w"
+)
 time_vary <- NULL
 cens <- c("c1", "c2", "c3")
 compete <- NULL

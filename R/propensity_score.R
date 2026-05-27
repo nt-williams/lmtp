@@ -32,7 +32,7 @@ cf_propensity_score <- function(task, learners_trt, learners_cens, control, prog
 estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, control, pb) {
   time_horizon <- task$time_horizon
   data <- get_folded_data(task$natural, task$folds, fold)
-  levels <- task$support(time_horizon)
+  levels <- task$support(1)
   number_levels <- length(levels)
 
   # Local caching
@@ -66,31 +66,46 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     vars <- c(idvar, task$vars$history("A", time))
 
     # Treatment levels at this time
-    levels <- task$support(time_horizon)
+    levels <- task$support(time)
     number_levels <- length(levels)
-
+    
+    # Loop over K-1 treatment levels as binomial models
+    # Need to handle degenerate case of no variation in treatment
+    if (number_levels > 1) {
     # One hot encode the treatment
     ohe <- one_hot_encode(train[i, ], this_treatment)
+      for (l in 2:number_levels) {
+        this_level <- colnames(ohe)[l]
+        fit <- run_ensemble(
+          collapse::ftransform(train[i, ], this_treatment = ohe[, l])[, c(vars, this_treatment)],
+          this_treatment,
+          learners_trt, "binomial", idvar, control$.learners_trt_folds
+        )
 
-    # Loop over K-1 treatment levels as binomial models
-    for (l in 2:number_levels) {
-      this_level <- colnames(ohe)[l]
+        propensity_scores[iv, this_level, time] <- predict(fit, valid[iv, vars, drop = FALSE])
+      }
+
+      # Add probability for the reference level
+      propensity_scores[iv, colnames(ohe)[1], time] <-
+        1 - rowSums(propensity_scores[iv, colnames(ohe)[2:number_levels], time, drop = FALSE])
+    } else {
+      this_level <- as.character(unique(train[[this_treatment]]))
       fit <- run_ensemble(
-        collapse::ftransform(train[i, ], this_treatment = ohe[, l])[, c(vars, this_treatment)],
+        collapse::ftransform(train[i, ], this_treatment = train[[this_treatment]])[, c(vars, this_treatment)],
         this_treatment,
-        learners_trt, "binomial", idvar, control$.learners_trt_folds
+        "SL.mean", "binomial", idvar, control$.learners_trt_folds
       )
 
       propensity_scores[iv, this_level, time] <- predict(fit, valid[iv, vars, drop = FALSE])
 
-      # Add fit summary
-      learner_treatment_summary <-
-        rbind(learner_treatment_summary, summary(fit, time, fold, level = this_level))
+      # Add probability for the reference level
+      propensity_scores[iv, colnames(ohe)[1], time] <-
+        1 - rowSums(propensity_scores[iv, this_level, time, drop = FALSE])
     }
 
-    # Add probability for the reference level
-    propensity_scores[iv, colnames(ohe)[1], time] <-
-      1 - rowSums(propensity_scores[iv, colnames(ohe)[2:number_levels], time, drop = FALSE])
+    # Add fit summary
+    learner_treatment_summary <-
+      rbind(learner_treatment_summary, summary(fit, time, fold, level = this_level))
 
     # Fit model for censoring if there is censoring
     if (!is.null(this_censoring)) {
