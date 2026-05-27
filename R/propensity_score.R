@@ -95,7 +95,7 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     # Fit model for censoring if there is censoring
     if (!is.null(this_censoring)) {
       fit <- run_ensemble(
-        train[i, c(vars, this_treatment, this_censoring)], this_censoring,
+        train[i, c(task$vars$history_cens(time), this_censoring)], this_censoring,
         learners_cens, "binomial", "..i..lmtp_id", control$.learners_trt_folds
       )
 
