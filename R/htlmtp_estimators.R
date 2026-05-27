@@ -75,7 +75,7 @@ htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                        folds = 10, weights = NULL,
                        control = lmtp_control()) {
   assert_not_data_table(data)
-  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  variable_names <- c(unlist(trt), outcome, unique(unlist(baseline)), unique(unlist(time_vary)), cens, compete, id)
   assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
@@ -186,7 +186,7 @@ htlmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                         folds = 10, weights = NULL,
                         control = lmtp_control()) {
   assert_not_data_table(data)
-  variable_names <- c(unlist(trt), outcome, unlist(time_vary), baseline, cens, compete, id)
+  variable_names <- c(unlist(trt), outcome, unique(unlist(baseline)), unique(unlist(time_vary)), cens, compete, id)
   assert_subset(variable_names, names(data))
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
