@@ -137,10 +137,10 @@ LmtpTask <- R6::R6Class(
     },
 
     make_folds = function(V) {
-      id <- self$natural$._lmtp_id
+      id <- self$natural$..i..lmtp_id
 
       if (length(unique(id)) == self$n & self$outcome_type == "binomial") {
-        strata <- self$natural[[final_outcome(self$vars$Y)]]
+        strata <- self$natural[[self$vars$Y]]
         strata[is.na(strata)] <- 2
         folds <- make_folds(self$natural, V = V, strata_ids = strata)
       } else {
