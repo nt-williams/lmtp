@@ -82,9 +82,9 @@
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
-#' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+#' \item{fits_outcome}{A list the same length as \code{folds}, containing the fits at each time-point
 #'  for each fold for the outcome regression.}
-#' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+#' \item{fits_treatment}{A list the same length as \code{folds}, containing the fits at each time-point
 #' for each fold of density ratio estimation.}
 #' \item{outcome_type}{The outcome variable type.}
 #'
@@ -227,9 +227,9 @@ lmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #' \item{outcome_reg}{An n x Tau + 1 matrix of outcome regression predictions.
 #'  The mean of the first column is used for calculating theta.}
 #' \item{density_ratios}{An n x Tau matrix of the estimated, non-cumulative, density ratios.}
-#' \item{fits_m}{A list the same length as \code{folds}, containing the fits at each time-point
+#' \item{fits_outcome}{A list the same length as \code{folds}, containing the fits at each time-point
 #'  for each fold for the outcome regression.}
-#' \item{fits_r}{A list the same length as \code{folds}, containing the fits at each time-point
+#' \item{fits_treatment}{A list the same length as \code{folds}, containing the fits at each time-point
 #' for each fold of density ratio estimation.}
 #' \item{outcome_type}{The outcome variable type.}
 #'

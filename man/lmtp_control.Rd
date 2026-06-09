@@ -9,7 +9,6 @@ lmtp_control(
   .trim = 0.999,
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
-  .return_full_fits = FALSE,
   .discrete = TRUE,
   .info = FALSE
 )
@@ -29,9 +28,6 @@ The number of cross-validation folds for \code{learners_outcome}.}
 
 \item{.learners_trt_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_trt}.}
-
-\item{.return_full_fits}{[\code{logical(1)}]\cr
-Return full 'SuperLearner' fits? Default is \code{FALSE}, return only 'SuperLearner' coefficients.}
 
 \item{.discrete}{[\code{logical(1)}]\cr
 Use discrete or ensemble super learner?}

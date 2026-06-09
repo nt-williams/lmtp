@@ -6,6 +6,7 @@
 
 - Fixes bug where clustered cross-fitting folds are silently disabled and the package returns row-level V-fold CV instead (see issue \#188).
 - TMLE fluctutation step was using training data and not validation data resulting in EIF not being mean zero.
+- `fits_r`/`fits_m` changed to `fits_treatment`/`fits_outcome`.
 
 ### General
 
