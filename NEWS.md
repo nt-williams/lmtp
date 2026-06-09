@@ -4,13 +4,14 @@
 
 ### Bug Fixes
 
+- Fixes bug where clustered cross-fitting folds are silently disabled and the package returns row-level V-fold CV instead (see issue \#188).
 - TMLE fluctutation step was using training data and not validation data resulting in EIF not being mean zero.
 
 ### General
 
-# lmtp 1.5.4
+- Removed the `lmtp_control()` option `return_full_fits`. A summary `data.table` is now always returned.
 
-- Fixes bug where clustered cross-fitting folds are silently disabled and the package returns row-level V-fold CV instead (see issue \#188).
+# lmtp 1.5.4
 
 ### New Features
 
