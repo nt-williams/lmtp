@@ -48,7 +48,8 @@ Imports:
     SuperLearner,
     isotone,
     ife (>= 0.2.0),
-    lifecycle
+    lifecycle,
+    collapse
 URL: https://www.beyondtheate.com/, https://github.com/nt-williams/lmtp
 BugReports: https://github.com/nt-williams/lmtp/issues
 Suggests: 
