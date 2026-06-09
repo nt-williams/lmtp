@@ -12,7 +12,7 @@ cf_sdr <- function(task, density_ratios, learners, control, progress_bar) {
 
   list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
        shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
-       fits = lapply(ans, function(x) x[["fits"]]))
+       fits = rbind_depth(ans, "fits"))
 }
 
 estimate_sdr <- function(task, fold, density_ratios, learners, control, progress_bar) {
@@ -50,11 +50,7 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
                         "..i..lmtp_id",
                         control$.learners_outcome_folds)
 
-    if (control$.return_full_fits) {
-      fits[[time]] <- fit
-    } else {
-      fits[[time]] <- extract_sl_weights(fit)
-    }
+    fits[[time]] <- summary(fit, time, fold)
 
     A_t <- current_trt(task$vars$A, time)
 
@@ -95,5 +91,5 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
 
   list(natural = pred_natural_valid,
        shifted = pred_shifted_valid,
-       fits = fits)
+       fits = rbindlist(fits))
 }

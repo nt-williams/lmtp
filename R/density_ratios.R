@@ -16,7 +16,7 @@ cf_density_ratios <- function(task, learners, mtp, control, pb) {
   ans <- future::value(ans)
 
   ans <- list(density_ratios = recombine(rbind_depth(ans, "ratios"), task$folds),
-              fits = lapply(ans, function(x) x[["fits"]]))
+              fits = rbind_depth(ans, "fits"))
 
   ans$density_ratios <- trim(ans$density_ratios, control$.trim)
   ans
@@ -42,11 +42,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
                         learners, "binomial", "..i..lmtp_id",
                         control$.learners_trt_folds)
 
-    if (control$.return_full_fits) {
-      fits[[time]] <- fit
-    } else {
-      fits[[time]] <- extract_sl_weights(fit)
-    }
+    fits[[time]] <- summary(fit, time, fold)
 
     i <- task$observed(natural$valid, time - 1) %and% task$is_at_risk(natural$valid, time)
 
@@ -63,7 +59,7 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
     pb()
   }
 
-  list(ratios = density_ratios, fits = fits)
+  list(ratios = density_ratios, fits = rbindlist(fits))
 }
 
 stack_data <- function(natural, shifted, trt, cens, time) {
