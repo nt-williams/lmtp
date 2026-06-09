@@ -14,14 +14,14 @@ cf_tmle <- function(task, density_ratios, learners, control, progress_bar) {
 
   list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
        shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
-       fits = lapply(ans, function(x) x[["fits"]]))
+       fits = rbind_depth(ans, "fits"))
 }
 
 estimate_tmle <- function(task, fold, density_ratios, learners, control, progress_bar) {
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
-  density_ratios <- get_folded_data(density_ratios, task$folds, fold)$train
-  weights <- task$weights[task$folds[[fold]]$training_set]
+  density_ratios <- get_folded_data(density_ratios, task$folds, fold)$valid
+  weights_valid <- task$weights[task$folds[[fold]]$validation_set]
 
   pred_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$time_horizon + 1)
   pred_shifted_train <- pred_natural_train
@@ -32,6 +32,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
   pred_shifted_valid[, task$time_horizon + 1] <- natural$valid[[task$vars$Y]]
 
   fits <- vector("list", length = task$time_horizon)
+
   for (time in rev(seq_len(task$time_horizon))) {
     y1 <- task$is_outcome_free(natural$train, time - 1)
     d0 <- task$is_competing_risk_free(natural$train, time - 1)
@@ -47,11 +48,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
                         "..i..lmtp_id",
                         control$.learners_outcome_folds)
 
-    if (control$.return_full_fits) {
-      fits[[time]] <- fit
-    } else {
-      fits[[time]] <- extract_sl_weights(fit)
-    }
+    fits[[time]] <- summary(fit, time, fold)
 
     A_t <- current_trt(task$vars$A, time)
 
@@ -75,8 +72,11 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
     pred_natural_valid[iv, time] <- predict(fit, natural$valid[iv, ], 1e-05)
     pred_shifted_valid[iv, time] <- predict(fit, under_shift_valid, 1e-05)
 
-    # fit fluctuation model
-    fit <- fluc(natural$train[i, task$vars$Y], pred_natural_train[i, time], density_ratios[i, time] * weights[i])
+    # fit fluctuation model on held-out fold so score equations hold on validation data
+    c1v <- task$observed(natural$valid, time)
+    i_valid <- c1v %and% (y1v & d0v)
+
+    fit <- fluc(pred_shifted_valid[i_valid, time + 1], pred_natural_valid[i_valid, time], density_ratios[i_valid, time] * weights_valid[i_valid])
 
     natural$train[ip, task$vars$Y] <- update(fit, pred_shifted_train[ip, time])
 
@@ -97,7 +97,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
   list(
     natural = pred_natural_valid,
     shifted = pred_shifted_valid,
-    fits = fits
+    fits = rbindlist(fits)
   )
 }
 
