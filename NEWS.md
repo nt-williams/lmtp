@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+- TMLE fluctutation step was using training data and not validation data resulting in EIF not being mean zero.
+
 ### General
 
 # lmtp 1.5.4
