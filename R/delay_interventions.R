@@ -13,6 +13,7 @@ one_time_delay <- function(data, sequence) {
   if (time == 1) return(rep(0, nrow(data)))
 
   at <- data[[sequence[time]]]
+  if (time == 11) return(at)
   abartm1 <- data[, sequence[seq_len(time - 1)], drop = FALSE]
   test <- at * as.numeric(rowSums(abartm1) == 0)
   ifelse(test, 0, at)

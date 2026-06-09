@@ -33,7 +33,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     stats,
-    nnls,
     cli,
     R6,
     generics,
@@ -42,7 +41,7 @@ Imports:
     progressr,
     data.table,
     checkmate (>= 2.1.0),
-    SuperLearner,
+    mlr3superlearner,
     isotone,
     ife,
     lifecycle,

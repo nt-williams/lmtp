@@ -44,13 +44,13 @@
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the propensity scores. Default is \code{"SL.glm"}.
+#' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"glm"}.
+#' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the propensity scores. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
-#' @param learners_cens \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the censoring mechanism. Default is \code{"SL.glm"}.
+#' @param learners_cens \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the censoring mechanism. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -69,9 +69,9 @@ htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                        cens = NULL, compete = NULL, shift = NULL,
                        k = Inf, outcome_type = c("binomial", "continuous", "survival"),
                        id = NULL, bounds = NULL,
-                       learners_outcome = "SL.glm",
-                       learners_trt = "SL.glm",
-                       learners_cens = "SL.glm",
+                       learners_outcome = "glm",
+                       learners_trt = "glm",
+                       learners_cens = "glm",
                        folds = 10, weights = NULL,
                        control = lmtp_control()) {
   assert_not_data_table(data)
@@ -155,13 +155,13 @@ htlmtp_sdr <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 #'  An optional, ordered vector of the bounds for a continuous outcomes. If \code{NULL},
 #'  the bounds will be taken as the minimum and maximum of the observed data.
 #'  Should be left as \code{NULL} if the outcome type is binary.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the propensity scores. Default is \code{"SL.glm"}.
+#' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"glm"}.
+#' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the propensity scores. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
-#' @param learners_cens \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the censoring mechanism. Default is \code{"SL.glm"}.
+#' @param learners_cens \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the censoring mechanism. Default is \code{"glm"}.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -180,9 +180,9 @@ htlmtp_tmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
                         cens = NULL, compete = NULL, shift = NULL,
                         k = Inf, outcome_type = c("binomial", "continuous", "survival"),
                         id = NULL, bounds = NULL,
-                        learners_outcome = "SL.glm",
-                        learners_trt = "SL.glm",
-                        learners_cens = "SL.glm",
+                        learners_outcome = "glm",
+                        learners_trt = "glm",
+                        learners_cens = "glm",
                         folds = 10, weights = NULL,
                         control = lmtp_control()) {
   assert_not_data_table(data)

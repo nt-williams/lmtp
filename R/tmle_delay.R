@@ -63,7 +63,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, prob_observed, le
     # Estimate the outcome regressions
     # If its the last time point just perform this once using the real outcome
     if (time == task$time_horizon) {
-      fit <- run_ensemble(train[i, vars], Y, learners, task$outcome_type, id, cvfolds)
+      fit <- run_ensemble(train[i, vars], Y, learners, task$outcome_type, id, cvfolds,
+                          control$.discrete, control$.info)
       learner_summaries[[time]] <- summary(fit, time, fold)
     }
 
@@ -84,7 +85,8 @@ estimate_tmle_delay <- function(task, fold, propensity_scores, prob_observed, le
       # Fit regressions for each level of support using a pooled regression
       # Add the pooling variable
       vars <- c(vars, seqvars(time))
-      fit <- run_ensemble(train_aug[i_aug, vars], Y, learners, "continuous", id, cvfolds)
+      fit <- run_ensemble(train_aug[i_aug, vars], Y, learners, "continuous", id, cvfolds,
+                          control$.discrete, control$.info)
       learner_summaries[[time]] <- summary(fit, time, fold)
     }
 

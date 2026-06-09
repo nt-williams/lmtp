@@ -79,7 +79,8 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
         fit <- run_ensemble(
           collapse::ftransform(train[i, ], this_treatment = ohe[, l])[, c(vars, this_treatment)],
           this_treatment,
-          learners_trt, "binomial", idvar, control$.learners_trt_folds
+          learners_trt, "binomial", idvar, control$.learners_trt_folds,
+          control$.discrete, control$.info
         )
 
         propensity_scores[iv, this_level, time] <- predict(fit, valid[iv, vars, drop = FALSE])
@@ -93,7 +94,8 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
       fit <- run_ensemble(
         collapse::ftransform(train[i, ], this_treatment = train[[this_treatment]])[, c(vars, this_treatment)],
         this_treatment,
-        "SL.mean", "binomial", idvar, control$.learners_trt_folds
+        "mean", "binomial", idvar, control$.learners_trt_folds,
+        control$.discrete, control$.info
       )
 
       propensity_scores[iv, this_level, time] <- predict(fit, valid[iv, vars, drop = FALSE])
@@ -111,7 +113,8 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     if (!is.null(this_censoring)) {
       fit <- run_ensemble(
         train[i, c(task$vars$history_cens(time), this_censoring)], this_censoring,
-        learners_cens, "binomial", "..i..lmtp_id", control$.learners_trt_folds
+        learners_cens, "binomial", "..i..lmtp_id", control$.learners_trt_folds,
+        control$.discrete, control$.info
       )
 
       # Add fit summary

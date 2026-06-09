@@ -47,10 +47,10 @@
 #'  If the treatment variables are not continuous, setting this to \code{FALSE} may improve performance.
 #' @param id \[\code{character(1)}\]\cr
 #'  An optional column name containing cluster level identifiers.
-#' @param learners_outcome \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the outcome regression. Default is \code{"SL.glm"}, a main effects GLM.
-#' @param learners_trt \[\code{character}\]\cr A vector of \code{SuperLearner} algorithms for estimation
-#'  of the exposure mechanism. Default is \code{"SL.glm"}, a main effects GLM.
+#' @param learners_outcome \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the outcome regression. Default is \code{"glm"}, a main effects GLM.
+#' @param learners_trt \[\code{character}\]\cr A vector of \code{mlr3superlearner} algorithms for estimation
+#'  of the exposure mechanism. Default is \code{"glm"}, a main effects GLM.
 #'  \bold{Only include candidate learners capable of binary classification}.
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
@@ -68,8 +68,8 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
                           shift = NULL, shifted = NULL,
                           estimator = c("lmtp_tmle", "lmtp_sdr"),
                           k = Inf, mtp = TRUE, id = NULL,
-                          learners_outcome = "SL.glm",
-                          learners_trt = "SL.glm",
+                          learners_outcome = "glm",
+                          learners_trt = "glm",
                           folds = 10,
                           weights = NULL,
                           control = lmtp_control()) {

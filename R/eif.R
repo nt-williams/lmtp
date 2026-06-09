@@ -38,5 +38,5 @@ update_htlmtp_eif <- function(eif, augmented, A, C, Y, id, predictions,
   # Multiply Riesz representer by residual
   component <- riesz %*0% (augmented[[Y]] - predictions)
   # Add to the given EIF
-  eif + fsum(component, augmented[[id]])
+  eif + fsum(component, augmented[, c("..i..row_number", id)])
 }

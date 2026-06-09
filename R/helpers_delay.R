@@ -33,6 +33,7 @@ delay_augment.data.frame <- function(x, sequences) {
   n <- nrow(sequences)
   t <- ncol(sequences)
   nr <- nrow(x)
+  x$..i..row_number <- seq_len(nrow(x))
 
   # Replicate data n times
   augmented <- x[rep(seq_len(nr), n), ]
@@ -71,7 +72,7 @@ subset_augmented <- function(x, ...) {
 #' @export
 subset_augmented.data.frame <- function(x, time, time_horizon) {
   if (time == time_horizon) return(x)
-  id <- "..i..lmtp_id"
+  id <- c("..i..row_number", "..i..lmtp_id")
   if (time > 0) {
     id <- c(id, seqvars(seq_len(time)))
   }
@@ -88,6 +89,7 @@ subset_augmented.numeric <- function(x, id) {
   x[!collapse::fduplicated(id)]
 }
 
+# I THINK LINE 102 IS INCORRECT. NEEDS TO COMPARE TO A_time
 # TODO: Need to figure out how to incorporate the censoring indicators
 delay_riesz_rep <- function(data, treatments, cens, propensity_scores, prob_observed,
                             this_treatment, this_censoring, this_time, time_horizon) {
@@ -96,7 +98,7 @@ delay_riesz_rep <- function(data, treatments, cens, propensity_scores, prob_obse
   # Create indicators (D in paper)
   ind <- rep(TRUE, nrow(data))
   for (time in this_time:time_horizon) {
-    ind <- ind * one_time_delay(data, seqvars(this_time:time)) == data[[this_treatment]]
+    ind <- ind * one_time_delay(data, seqvars(this_time:time)) == data[[treatments[time]]]
   }
 
   po <- prob_observed[cbind(i, seq_len(nrow(data)))[, 1], ]
@@ -121,8 +123,7 @@ delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
                                      propensity_scores, prob_observed,
                                      trtvars, cens, this_treatment, this_censoring,
                                      time, time_horizon, outcomevar, aug_key) {
-
-  idvar <- "..i..lmtp_id"
+  idvar <- c("..i..row_number", "..i..lmtp_id")
 
   # Pre-compute the subset indices once (used for all k)
   subset_cols <- c(idvar, seqvars(seq_len(time - 1)))
