@@ -12,99 +12,118 @@ cf_tmle <- function(task, density_ratios, learners, control, progress_bar) {
 
   ans <- future::value(ans)
 
-  list(natural = recombine(rbind_depth(ans, "natural"), task$folds),
-       shifted = recombine(rbind_depth(ans, "shifted"), task$folds),
-       fits = rbind_depth(ans, "fits"))
+  list(predictions = recombine(rbind_depth(ans, "predictions"), task$folds),
+       uncentered_eif = recombine(c_depth(ans, "uncentered_eif"), task$folds),
+       learner_outcome_summary = rbind_depth(ans, "learner_summary"))
 }
 
 estimate_tmle <- function(task, fold, density_ratios, learners, control, progress_bar) {
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
-  density_ratios <- get_folded_data(density_ratios, task$folds, fold)$valid
-  weights_valid <- task$weights[task$folds[[fold]]$validation_set]
+  densrat <- get_folded_data(density_ratios, task$folds, fold)
+  weights <- task$weights[task$folds[[fold]]$validation_set]
 
-  pred_natural_train <- matrix(nrow = nrow(natural$train), ncol = task$time_horizon + 1)
-  pred_shifted_train <- pred_natural_train
+  # Caching
+  time_horizon <- task$time_horizon
 
-  pred_natural_valid <- matrix(nrow = nrow(natural$valid), ncol = task$time_horizon + 1)
-  pred_shifted_valid <- pred_natural_valid
+  natural_train <- natural$train
+  natural_valid <- natural$valid
+  shifted_train <- shifted$train
+  shifted_valid <- shifted$valid
+  densrat_valid <- densrat$valid
+
 
   Y       <- task$vars$Y
   A       <- task$vars$A
   id      <- "..i..lmtp_id"
-  tau     <- task$time_horizon
   cvfolds <- control$.learners_outcome_folds
 
-  pred_shifted_valid[, tau + 1] <- natural$valid[[Y]]
+  learner_summaries <- vector("list", time_horizon)
 
-  fits <- vector("list", length = tau)
+  pred_natural_train <- matrix(nrow = nrow(natural_train), ncol = time_horizon + 1)
+  pred_shifted_train <- matrix(nrow = nrow(shifted_train), ncol = time_horizon + 1)
 
-  for (time in rev(seq_len(tau))) {
-    y1 <- task$is_outcome_free(natural$train, time - 1)
-    d0 <- task$is_competing_risk_free(natural$train, time - 1)
-    c1 <- task$observed(natural$train, time)
-    i  <- c1 %and% (y1 & d0)
+  pred_natural_valid <- matrix(nrow = nrow(natural_valid), ncol = time_horizon + 1)
+  pred_shifted_valid <- matrix(nrow = nrow(shifted_valid), ncol = time_horizon + 1)
+
+  pred_shifted_valid[, time_horizon + 1] <- natural_valid[[Y]]
+
+  # Pre-allocate vector for the EIF
+  eif <- numeric(nrow(natural_valid))
+
+  fits <- vector("list", length = time_horizon)
+  for (time in rev(seq_len(time_horizon))) {
+    y1 <- task$is_outcome_free(natural_train, time - 1)
+    d0 <- task$is_competing_risk_free(natural_train, time - 1)
+    c1 <- task$observed(natural_train, time)
+    i <- c1 %and% (y1 & d0)
 
     history <- task$vars$history("L", time + 1)
     vars <- c(id, history, Y)
 
-    fit <- run_ensemble(natural$train[i, vars], Y,
-                        learners,
-                        ifelse(time != tau, "continuous", task$outcome_type),
-                        id,
-                        cvfolds)
+    fit <- run_ensemble(
+      natural_train[i, vars], Y, learners,
+      ifelse(time != time_horizon, "continuous", task$outcome_type),
+      id, cvfolds
+    )
 
-    fits[[time]] <- summary(fit, time, fold)
+    learner_summaries[[time]] <- summary(fit, time, fold)
 
     A_t <- current_trt(A, time)
 
-    cp1  <- task$observed(natural$train, time - 1)
-    y1v  <- task$is_outcome_free(natural$valid, time - 1)
-    d0v  <- task$is_competing_risk_free(natural$valid, time - 1)
-    cp1v <- task$observed(natural$valid, time - 1)
+    cp1 <- task$observed(natural_train, time - 1)
+    y1v <- task$is_outcome_free(natural_valid, time - 1)
+    d0v <- task$is_competing_risk_free(natural_valid, time - 1)
+    cp1v <- task$observed(natural_valid, time - 1)
 
     ip <- cp1  %and% (y1 & d0)
     iv <- cp1v %and% (y1v & d0v)
 
-    under_shift_train <- natural$train[ip, c(id, history)]
-    under_shift_train[, A_t] <- shifted$train[ip, A_t]
+    under_shift_train <- natural_train[ip, c(id, history)]
+    under_shift_train[, A_t] <- shifted_train[ip, A_t]
 
-    pred_natural_train[ip, time] <- predict(fit, natural$train[ip, ], 1e-05)
+    pred_natural_train[ip, time] <- predict(fit, natural_train[ip, ], 1e-05)
     pred_shifted_train[ip, time] <- predict(fit, under_shift_train, 1e-05)
 
-    under_shift_valid <- natural$valid[iv, c(id, history)]
+    under_shift_valid <- natural_valid[iv, c(id, history)]
     under_shift_valid[, A_t] <- shifted$valid[iv, A_t]
 
-    pred_natural_valid[iv, time] <- predict(fit, natural$valid[iv, ], 1e-05)
+    pred_natural_valid[iv, time] <- predict(fit, natural_valid[iv, ], 1e-05)
     pred_shifted_valid[iv, time] <- predict(fit, under_shift_valid, 1e-05)
 
-    # fit fluctuation model on held-out fold so score equations hold on validation data
+    # Fit fluctuation model on held-out fold so score equations hold on validation data
     c1v     <- task$observed(natural$valid, time)
     i_valid <- c1v %and% (y1v & d0v)
 
-    fit <- fluc(pred_shifted_valid[i_valid, time + 1], pred_natural_valid[i_valid, time], density_ratios[i_valid, time] * weights_valid[i_valid])
+    fit <- fluc(pred_shifted_valid[i_valid, time + 1], 
+                pred_natural_valid[i_valid, time], 
+                densrat_valid[i_valid, time] * weights[i_valid])
 
-    natural$train[ip, Y] <- update(fit, pred_shifted_train[ip, time])
+    natural_train[ip, Y] <- update(fit, pred_shifted_train[ip, time])
 
     pred_natural_valid[iv, time] <- update(fit, pred_natural_valid[iv, time])
     pred_shifted_valid[iv, time] <- update(fit, pred_shifted_valid[iv, time])
 
-    natural$train[which(!y1), Y] <- 0
-    natural$train[which(!d0), Y] <- 1
+    # Calibrate deterministic predictions
+    natural_train[[Y]] <- calibrate(natural_train[[Y]], y1, d0)
+    pred_natural_valid[, time] <- calibrate(pred_natural_valid[, time], y1v, d0v)
+    pred_shifted_valid[, time] <- calibrate(pred_shifted_valid[, time], y1v, d0v)
 
-    pred_natural_valid[which(!y1v), time] <- 0
-    pred_natural_valid[which(!d0v), time] <- 1
-    pred_shifted_valid[which(!y1v), time] <- 0
-    pred_shifted_valid[which(!d0v), time] <- 1
+    # Construct the EIF
+    eif <- update_lmtp_eif(
+      eif, pred_shifted_valid[, time + 1],
+      densrat_valid[, time], pred_natural_valid[, time]
+    )
 
     progress_bar()
   }
 
-  list(
-    natural = pred_natural_valid,
-    shifted = pred_shifted_valid,
-    fits = rbindlist(fits)
-  )
+  # EIF time 0 component
+  eif <- eif + pred_shifted_valid[, 1]
+
+  list(predictions = pred_shifted_valid,
+       uncentered_eif = eif,
+       learner_summary = rbindlist(learner_summaries))
 }
 
 fluc <- function(y, offset, weights) {

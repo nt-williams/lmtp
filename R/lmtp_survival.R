@@ -127,7 +127,7 @@ lmtp_survival <- function(data, trt, outcomes, baseline = NULL, time_vary = NULL
 }
 
 isotonic_projection <- function(x) {
-  estim <- do.call("rbind", lapply(x, tidy))
+  estim <- do.call("rbind", lapply(x, tidy.lmtp))
   iso_fit <- isotone::gpava(1:length(x), 1 - estim$estimate)
   for (i in seq_along(x)) {
     x[[i]]$estimate <- ife::ife(1 - iso_fit$x[i],

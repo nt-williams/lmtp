@@ -117,6 +117,13 @@ LmtpTask <- R6::R6Class(
       }
 
       self$is_competing_risk_free(data, time - 1) & self$is_outcome_free(data, time - 1)
+    },
+
+    support = function(time) {
+      if (time < 1) return(NULL)
+
+      A <- self$vars$A[time]
+      unique(na.omit(self$natural[[A]]))
     }
 
   ),
@@ -163,6 +170,8 @@ LmtpTask <- R6::R6Class(
     },
 
     as_lmtp_data = function(x) {
+      if (is.null(x)) return(x)
+
       data <- data.table::copy(as.data.frame(x))
       data$..i..lmtp_id <- self$id
       data <- fix_censoring_ind(data, self$vars$C)

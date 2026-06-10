@@ -1,7 +1,23 @@
-get_folded_data <- function(data, folds, index) {
+get_folded_data <- function(x, ...) {
+  UseMethod("get_folded_data")
+}
+
+#' @export
+get_folded_data.data.frame <- function(x, folds, index, ...) {
   out <- list()
-  out[["train"]] <- data[folds[[index]]$training_set, , drop = FALSE]
-  out[["valid"]] <- data[folds[[index]]$validation_set, , drop = FALSE]
+  out[["train"]] <- x[folds[[index]]$training_set, , drop = FALSE]
+  out[["valid"]] <- x[folds[[index]]$validation_set, , drop = FALSE]
+  out
+}
+
+#' @export
+get_folded_data.matrix <- get_folded_data.data.frame
+
+#' @export
+get_folded_data.numeric <- function(x, folds, index, ...) {
+  out <- list()
+  out[["train"]] <- x[folds[[index]]$training_set]
+  out[["valid"]] <- x[folds[[index]]$validation_set]
   out
 }
 
@@ -105,9 +121,27 @@ current_trt <- function(trt, time) {
   trt[[1]]
 }
 
+calibrate <- function(pred, prior_free, comp_free) {
+  pred[!prior_free] <- 0
+  pred[!comp_free] <- 1
+  pred
+}
+
+one_hot_encode <- function(data, x) {
+  ohe <- model.matrix(~ -1 + as.character(data[[x]]))
+  colnames(ohe) <- gsub("as.character\\(data\\[\\[x\\]\\]\\)", "", colnames(ohe))
+  ohe
+}
+
 #' @export
 summary.SuperLearner <- function(object, time = NULL, fold = NULL, level = NULL, ...) {
   values <- data.frame(risk = round(object$cvRisk, 3), coef = round(object$coef, 3))
   values <- data.frame(learner = rownames(values), values, row.names = NULL)
   data.table(time = time, fold = fold, level = level, values)
+}
+
+`%*0%` <- function(x, y) {
+  res <- x * y
+  res[is.na(res)] <- 0
+  res
 }

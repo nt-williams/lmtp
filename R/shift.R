@@ -146,3 +146,9 @@ ipsi_down <- function(delta) {
     ifelse(eps < delta, data[[trt]], 0)
   }
 }
+
+tsm <- function(level) {
+  function(data, trt) {
+    rep(level, length(data[[trt]]))
+  }
+}
