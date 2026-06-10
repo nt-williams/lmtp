@@ -21,7 +21,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
   natural <- get_folded_data(task$natural, task$folds, fold)
   shifted <- get_folded_data(task$shifted, task$folds, fold)
   densrat <- get_folded_data(density_ratios, task$folds, fold)
-  weights <- get_folded_data(task$weights, task$folds, fold)
+  weights <- task$weights[task$folds[[fold]]$validation_set]
 
   # Caching
   time_horizon <- task$time_horizon
@@ -30,7 +30,6 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
   natural_valid <- natural$valid
   shifted_train <- shifted$train
   shifted_valid <- shifted$valid
-  densrat_train <- densrat$train
   densrat_valid <- densrat$valid
 
 
@@ -98,7 +97,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
 
     fit <- fluc(pred_shifted_valid[i_valid, time + 1], 
                 pred_natural_valid[i_valid, time], 
-                density_ratios[i_valid, time] * weights_valid[i_valid])
+                densrat_valid[i_valid, time] * weights[i_valid])
 
     natural$train[ip, Y] <- update(fit, pred_shifted_train[ip, time])
 
@@ -124,7 +123,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
 
   list(predictions = pred_shifted_valid,
        uncentered_eif = eif,
-       learner_summary = data.table::rbindlist(learner_summaries))
+       learner_summary = rbindlist(learner_summaries))
 }
 
 fluc <- function(y, offset, weights) {
