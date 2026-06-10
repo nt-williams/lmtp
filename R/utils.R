@@ -3,7 +3,7 @@ get_folded_data <- function(x, ...) {
 }
 
 #' @export
-get_folded_data.data.frame <- function(x, folds, index) {
+get_folded_data.data.frame <- function(x, folds, index, ...) {
   out <- list()
   out[["train"]] <- x[folds[[index]]$training_set, , drop = FALSE]
   out[["valid"]] <- x[folds[[index]]$validation_set, , drop = FALSE]
@@ -14,7 +14,7 @@ get_folded_data.data.frame <- function(x, folds, index) {
 get_folded_data.matrix <- get_folded_data.data.frame
 
 #' @export
-get_folded_data.numeric <- function(x, folds, index) {
+get_folded_data.numeric <- function(x, folds, index, ...) {
   out <- list()
   out[["train"]] <- x[folds[[index]]$training_set]
   out[["valid"]] <- x[folds[[index]]$validation_set]
@@ -138,4 +138,10 @@ summary.SuperLearner <- function(object, time = NULL, fold = NULL, level = NULL,
   values <- data.frame(risk = round(object$cvRisk, 3), coef = round(object$coef, 3))
   values <- data.frame(learner = rownames(values), values, row.names = NULL)
   data.table(time = time, fold = fold, level = level, values)
+}
+
+`%*0%` <- function(x, y) {
+  res <- x * y
+  res[is.na(res)] <- 0
+  res
 }

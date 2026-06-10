@@ -29,7 +29,7 @@ cf_propensity_score <- function(task, learners_trt, learners_cens, control, prog
   ans
 }
 
-estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, control, pb) {
+estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, control, progress_bar) {
   time_horizon <- task$time_horizon
   data <- get_folded_data(task$natural, task$folds, fold)
   levels <- task$support(time_horizon)

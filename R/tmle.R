@@ -40,11 +40,11 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
 
   learner_summaries <- vector("list", time_horizon)
 
-  pred_natural_train <- matrix(nrow = nrow(natural_train), ncol = task$time_horizon + 1)
-  pred_shifted_train <- matrix(nrow = nrow(shifted_train), ncol = task$time_horizon + 1)
+  pred_natural_train <- matrix(nrow = nrow(natural_train), ncol = time_horizon + 1)
+  pred_shifted_train <- matrix(nrow = nrow(shifted_train), ncol = time_horizon + 1)
 
-  pred_natural_valid <- matrix(nrow = nrow(natural_valid), ncol = task$time_horizon + 1)
-  pred_shifted_valid <- matrix(nrow = nrow(shifted_valid), ncol = task$time_horizon + 1)
+  pred_natural_valid <- matrix(nrow = nrow(natural_valid), ncol = time_horizon + 1)
+  pred_shifted_valid <- matrix(nrow = nrow(shifted_valid), ncol = time_horizon + 1)
 
   pred_shifted_valid[, time_horizon + 1] <- natural_valid[[Y]]
 
@@ -99,7 +99,7 @@ estimate_tmle <- function(task, fold, density_ratios, learners, control, progres
                 pred_natural_valid[i_valid, time], 
                 densrat_valid[i_valid, time] * weights[i_valid])
 
-    natural$train[ip, Y] <- update(fit, pred_shifted_train[ip, time])
+    natural_train[ip, Y] <- update(fit, pred_shifted_train[ip, time])
 
     pred_natural_valid[iv, time] <- update(fit, pred_natural_valid[iv, time])
     pred_shifted_valid[iv, time] <- update(fit, pred_shifted_valid[iv, time])
