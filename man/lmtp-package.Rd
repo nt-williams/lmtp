@@ -11,7 +11,7 @@ Non-parametric estimators for casual effects based on longitudinal modified trea
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://beyondtheate.com/}
+  \item \url{https://www.beyondtheate.com/}
   \item \url{https://github.com/nt-williams/lmtp}
   \item Report bugs at \url{https://github.com/nt-williams/lmtp/issues}
 }
@@ -28,6 +28,7 @@ Authors:
 Other contributors:
 \itemize{
   \item Beaudan Campbell-Brown \email{beaudan.brown@gmail.com} (\href{https://orcid.org/0009-0006-6967-9295}{ORCID}) [contributor]
+  \item Molly Davies \email{mollydavies@pinterest.com} [contributor]
 }
 
 }

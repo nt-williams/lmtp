@@ -121,7 +121,6 @@ current_trt <- function(trt, time) {
   trt[[1]]
 }
 
-
 calibrate <- function(pred, prior_free, comp_free) {
   pred[!prior_free] <- 0
   pred[!comp_free] <- 1
@@ -132,4 +131,11 @@ one_hot_encode <- function(data, x) {
   ohe <- model.matrix(~ -1 + as.character(data[[x]]))
   colnames(ohe) <- gsub("as.character\\(data\\[\\[x\\]\\]\\)", "", colnames(ohe))
   ohe
+}
+
+#' @export
+summary.SuperLearner <- function(object, time = NULL, fold = NULL, level = NULL, ...) {
+  values <- data.frame(risk = round(object$cvRisk, 3), coef = round(object$coef, 3))
+  values <- data.frame(learner = rownames(values), values, row.names = NULL)
+  data.table(time = time, fold = fold, level = level, values)
 }

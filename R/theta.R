@@ -10,7 +10,7 @@ theta_lmtp <- function(task, estimates, density_ratios, shift, is_sdr) {
 
   out <- list(
     estimator = ifelse(is_sdr, "SDR", "TMLE"),
-    estimate = ife::ife(theta, influence_function, task$weights, as.character(task$id)),
+    estimate = ife(theta, influence_function, task$weights, as.character(task$id)),
     shift = shift,
     outcome_reg = task$rescale(estimates$predictions),
     density_ratios = density_ratios$density_ratios,

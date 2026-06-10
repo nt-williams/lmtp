@@ -1,3 +1,17 @@
+# 1.5.5
+
+### New Features
+
+### Bug Fixes
+
+- Fixes bug where clustered cross-fitting folds are silently disabled and the package returns row-level V-fold CV instead (see issue \#188).
+- TMLE fluctutation step was using training data and not validation data resulting in EIF not being mean zero.
+- `fits_r`/`fits_m` changed to `fits_treatment`/`fits_outcome`.
+
+### General
+
+- Removed the `lmtp_control()` option `return_full_fits`. A summary `data.table` is now always returned.
+
 # lmtp 1.5.4
 
 ### New Features
@@ -6,6 +20,8 @@
 
 ### General
 
+- Added check that the number of Super Learner cross-validation folds isn't greater than the number of clusters (see issue \#105).
+- `origami` has been removed as a dependency.
 - Now requires `ife` version be greater than 0.1.2 (see issue \#180).
 - Risk ratio and odds ratio in `lmtp_contrast` are now estimated on the log scale and then the estimate and confidence intervals are exponentiated (see issue \#180).
 

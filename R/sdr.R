@@ -81,7 +81,7 @@ estimate_sdr <- function(task, fold, density_ratios, learners, control, progress
     d0v <- task$is_competing_risk_free(natural_valid, time - 1)
     cp1v <- task$observed(natural_valid, time - 1)
 
-    i <- cp1 %and% (y1 & d0)
+    i  <- cp1  %and% (y1 & d0)
     iv <- cp1v %and% (y1v & d0v)
 
     under_shift_train <- natural_train[i, c(id, history)]

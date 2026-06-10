@@ -1,7 +1,8 @@
 #' @importFrom stats setNames ave runif as.formula coef glm plogis predict qlogis qnorm pnorm sd quantile var binomial gaussian na.omit weighted.mean
 #' @importFrom checkmate assert_character assert_list assert_number assert_function assert_subset assert_numeric assert_logical
-#' @importFrom origami make_folds
-#' @importFrom collapse fmean
+#' @importFrom data.table data.table rbindlist set fcase copy is.data.table setnames
+#' @importFrom collapse fsum fmean
+#' @importFrom ife ife
 #' @keywords internal
 "_PACKAGE"
 

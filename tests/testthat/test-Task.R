@@ -50,3 +50,25 @@ test_that("task creation with survival outcome", {
   expect_equal(head(task$is_outcome_free(sim_point_surv, 5)), c(F, F, F, T, F, F))
   expect_equal(head(task$is_competing_risk_free(sim_point_surv, 5)), rep(TRUE, 6))
 })
+
+test_that("task folds respect cluster ids when id= is supplied", {
+  set.seed(1)
+  n_clusters <- 20
+  cid <- rep(seq_len(n_clusters), each = 10)
+  n <- length(cid)
+  d <- data.frame(W = rnorm(n), A = rnorm(n), Y = rnorm(n), cluster_id = cid)
+  sh <- make_shifted(d, "A", NULL, function(data, x) data[[x]] - 1, NULL)
+
+  task <- LmtpTask$new(
+    data = d, shifted = sh,
+    A = "A", Y = "Y", L = NULL, W = "W", C = NULL, D = NULL,
+    k = Inf, id = "cluster_id", outcome_type = "continuous",
+    bounds = NULL, folds = 5, weights = NULL
+  )
+
+  for (f in task$folds) {
+    train_clusters <- unique(cid[f$training_set])
+    val_clusters   <- unique(cid[f$validation_set])
+    expect_length(intersect(train_clusters, val_clusters), 0)
+  }
+})

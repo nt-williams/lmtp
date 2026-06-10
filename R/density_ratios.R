@@ -1,4 +1,3 @@
-# TODO: Needs refactor
 cf_density_ratios <- function(task, learners, mtp, control, pb) {
   ans <- vector("list", length = length(task$folds))
 
@@ -31,19 +30,24 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
 
   density_ratios <- matrix(nrow = nrow(natural$valid), ncol = task$time_horizon)
   learner_summaries <- vector("list", task$time_horizon)
+  A       <- task$vars$A
+  C       <- task$vars$C
+  id      <- "..i..lmtp_id"
+  tau     <- task$time_horizon
+  cvfolds <- control$.learners_trt_folds
 
-  for (time in seq_len(task$time_horizon)) {
+  for (time in seq_len(tau)) {
     i <- task$observed(natural$train, time - 1) %and% task$is_at_risk(natural$train, time)
     i <- rep(i, 2)
 
-    A_t <- current_trt(task$vars$A, time)
+    A_t <- current_trt(A, time)
 
-    vars <- c("..i..lmtp_id", task$vars$history("A", time), A_t, task$vars$C[time], "..i..lmtp_stack_indicator")
-    stacked <- stack_data(natural$train, shifted$train, task$vars$A, task$vars$C, time)
+    vars <- c(id, task$vars$history("A", time), A_t, C[time], "..i..lmtp_stack_indicator")
+    stacked <- stack_data(natural$train, shifted$train, A, C, time)
 
     fit <- run_ensemble(stacked[i, vars], "..i..lmtp_stack_indicator",
-                        learners, "binomial", "..i..lmtp_id",
-                        control$.learners_trt_folds)
+                        learners, "binomial", id,
+                        cvfolds)
 
     learner_summaries[[time]] <- summary(fit, time, fold)
 
@@ -52,8 +56,8 @@ estimate_density_ratios <- function(task, fold, learners, mtp, control, pb) {
     pred <- matrix(-999L, nrow = nrow(natural$valid), ncol = 1)
     pred[i, ] <- predict(fit, natural$valid[i, ])
 
-    obs <- task$observed(natural$valid, time)
-    at_risk <- task$is_at_risk(natural$valid, time)
+    obs      <- task$observed(natural$valid, time)
+    at_risk  <- task$is_at_risk(natural$valid, time)
     followed <- followed_rule(natural$valid, shifted$valid, A_t, mtp)
 
     pred <- ifelse(followed & !mtp, pmax(pred, 0.5), pred)

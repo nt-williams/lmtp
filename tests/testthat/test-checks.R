@@ -172,3 +172,16 @@ test_that("'bounds' issues", {
     "Assertion on 'bounds' failed: Must have length 2, but has length 3."
   )
 })
+
+test_that("Super Learner folds exceed unique IDs", {
+  dat <- data.frame(
+    id = rep(1:3, each = 4),
+    x = rnorm(12),
+    y = rbinom(12, 1, 0.5)
+  )
+
+  expect_error(
+    lmtp:::run_ensemble(dat, "y", "SL.glm", "binomial", "id", 5),
+    "Super Learner folds \\(5\\) exceeds the number of unique IDs"
+  )
+})
