@@ -128,8 +128,14 @@ calibrate <- function(pred, prior_free, comp_free) {
 }
 
 one_hot_encode <- function(data, x) {
+  na_rows <- is.na(data[[x]])
   ohe <- model.matrix(~ -1 + as.character(data[[x]]))
   colnames(ohe) <- gsub("as.character\\(data\\[\\[x\\]\\]\\)", "", colnames(ohe))
+  if (any(na_rows)) {
+    full <- matrix(NA_real_, nrow = nrow(data), ncol = ncol(ohe), dimnames = list(NULL, colnames(ohe)))
+    full[!na_rows, ] <- ohe
+    ohe <- full
+  }
   ohe
 }
 

@@ -59,20 +59,20 @@ sdr <- sw(lmtp_sdr(
   folds = 1
 ))
 
-# curve <- lmtp_curve(
-#   data = df,
-#   trt = c("A1", "A2"),
-#   compete = c("D2", "D3"),
-#   baseline = c("W1", "W2", "W3"),
-#   cens = c("C1", "C2"),
-#   outcome = c("Y2", "Y3"),
-#   shift = static_binary_on,
-#   outcome_type = "survival",
-#   folds = 1
-# )
+tmle2 <- sw(ltmle(
+  data = df,
+  trt = c("A1", "A2"),
+  compete = c("D2", "D3"),
+  baseline = c("W1", "W2", "W3"),
+  cens = c("C1", "C2"),
+  outcome = c("Y2", "Y3"),
+  outcome_type = "survival",
+  folds = 1
+))
 
 truth <- 0.8688
 test_that("estimator fidelity with competing risks", {
   expect_equal(truth, tmle$estimate@x, tolerance = 0.01)
   expect_equal(truth, sdr$estimate@x, tolerance = 0.01)
+  expect_equal(truth, as.vector(tmle2$estimates$`1`@x), tolerance = 0.01)
 })

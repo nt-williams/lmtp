@@ -83,6 +83,7 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     for (l in 2:number_levels) {
       this_level <- colnames(ohe)[l]
       train_ohe <- train
+
       train_ohe[[this_treatment]] <- ohe[, l]
       fit <- run_ensemble(
         train_ohe[i, c(vars, this_treatment)],
