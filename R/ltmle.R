@@ -104,6 +104,8 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     task, learners_trt, learners_cens, control, progress_bar
   )
 
+  cobalt_weights <- matrix(nrow = nrow(data), ncol = task$time_horizon)
+
   estimates <- list()
   for (level in levels) {
     # Update shifted for the current level
@@ -127,11 +129,23 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       }
     )
 
+    for (time in seq_len(task$time_horizon)) {
+      cobalt_weights[(task$natural[[current_trt(task$vars$A, time)]] == level), time] <- 
+        riesz_components[(task$natural[[current_trt(task$vars$A, time)]] == level), time]
+    }
+
     estimates[[as.character(level)]] <- cf_tmle(
       task, riesz_components, learners_outcome, control, progress_bar
     )
-
   }
 
-  theta_ltmle(task, estimates, propensity_score, levels)
+  # TODO: Going to have bugs with point-treatment survival
+  balance <- lapply(seq_len(task$time_horizon), function(time) {
+    cobalt::bal.tab(data[, task$vars$history("A", time), drop = FALSE], 
+                    treat = data[[current_trt(task$vars$A, time)]], 
+                    weights = cobalt_weights[, time], 
+                    un = TRUE)$Balance
+  })
+
+  theta_ltmle(task, estimates, propensity_score, levels, balance)
 }
