@@ -32,7 +32,7 @@ cf_propensity_score <- function(task, learners_trt, learners_cens, control, prog
 estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, control, progress_bar) {
   time_horizon <- task$time_horizon
   data <- get_folded_data(task$natural, task$folds, fold)
-  levels <- task$support(time_horizon)
+  levels <- task$levels()
   number_levels <- length(levels)
 
   # Local caching
@@ -57,7 +57,6 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
   learner_treatment_summary <- NULL
   learner_cens_summary <- NULL
 
-  # TODO: fix issues with point-treatment survival
   for (time in seq_len(time_horizon)) {
     # Get indices of observations that aren't censored and haven't experienced
     # the outcome or the competing risk
@@ -72,9 +71,27 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     # Covariates
     vars <- c(idvar, task$vars$history("A", time))
 
-    # Treatment levels at this time
-    levels <- task$support(time_horizon)
-    number_levels <- length(levels)
+    # For point-treatment survival the treatment only appears at t=1; at later
+    # time points there is no new treatment randomization so the propensity
+    # contribution is 1 for all levels. I(A=a) is an indicator so I(A=a)^k =
+    # I(A=a), meaning the cumprod in compute_weights stays correct without
+    # touching the Riesz numerator.
+    if (time > length(trtvars)) {
+      propensity_scores[iv, , time] <- 1
+
+      # Fit model for censoring if there is censoring
+      if (!is.null(this_censoring)) {
+        fit <- run_ensemble(
+          train[i, c(vars, this_treatment, this_censoring)], this_censoring,
+          learners_cens, "binomial", "..i..lmtp_id", control$.learners_trt_folds
+        )
+
+        learner_cens_summary <- rbind(learner_cens_summary, summary(fit, time, fold))
+        prob_observed[iv, time] <- predict(fit, valid[iv, c(vars, this_treatment), drop = FALSE])
+      }
+
+      next
+    }
 
     # One hot encode the treatment
     ohe <- one_hot_encode(train, this_treatment)
@@ -90,7 +107,6 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
         this_treatment,
         learners_trt, "binomial", idvar, control$.learners_trt_folds
       )
-
       propensity_scores[iv, this_level, time] <- predict(fit, valid[iv, vars, drop = FALSE])
 
       # Add fit summary

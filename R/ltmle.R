@@ -78,7 +78,6 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
   assert_outcome_types(data, outcome, match.arg(outcome_type))
   assert_numeric(bounds, len = 2, unique = TRUE, sorted = TRUE, finite = TRUE, null.ok = TRUE)
   assert_trt_discrete(data, unlist(trt))
-  # TODO: likely need to some check about the support is the same across time-points
 
   task <- LmtpTask$new(
     data = data,
@@ -99,13 +98,12 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
 
   # Create progress bar object
   progress_bar <- progressr::progressor(task$time_horizon*folds*2)
+  levels <- task$levels()
 
   propensity_score <- cf_propensity_score(
     task, learners_trt, learners_cens, control, progress_bar
   )
 
-  # Need to do this for each level of treatment
-  levels <- task$support(1)
   estimates <- list()
   for (level in levels) {
     # Update shifted for the current level

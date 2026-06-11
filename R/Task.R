@@ -12,6 +12,12 @@ LmtpTask <- R6::R6Class(
     survival = NULL,
     folds = NULL,
     weights = NULL,
+    levels = function() {
+      if (is.null(private$.levels)) {
+        private$.levels <- private$compute_levels()
+      }
+      private$.levels
+    },
     initialize = function(data, shifted, A, Y, L, W, C, D, k,
                           id, outcome_type, bounds, folds, weights) {
       # Identify the time horizon
@@ -117,18 +123,27 @@ LmtpTask <- R6::R6Class(
       }
 
       self$is_competing_risk_free(data, time - 1) & self$is_outcome_free(data, time - 1)
-    },
-
-    support = function(time) {
-      if (time < 1) return(NULL)
-
-      A <- self$vars$A[time]
-      unique(na.omit(self$natural[[A]]))
     }
 
   ),
   private = list(
     bounds = NULL,
+    .levels = NULL,
+    compute_levels = function() {
+      # For point-treatment survival, length(vars$A) == 1 but time_horizon > 1.
+      # Always derive levels from the first treatment time point and verify that
+      # all other time points share the same support.
+      ref_levels <- unique(na.omit(self$natural[[self$vars$A[1]]]))
+      if (length(self$vars$A) > 1) {
+        for (a in self$vars$A[-1]) {
+          if (!setequal(ref_levels, unique(na.omit(self$natural[[a]])))) {
+            stop("Treatment support must be identical across all time points.")
+          }
+        }
+      }
+      ref_levels
+    },
+
     time_horizon_is = function(Y, A) {
       if (!(length(Y) > 1)) {
         return(length(A))
