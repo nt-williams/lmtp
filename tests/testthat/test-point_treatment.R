@@ -15,9 +15,11 @@ truth <- mean(tmp$Y.1)
 
 tmle <- lmtp_tmle(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
 sdr <- lmtp_sdr(tmp, "A", "Y", baseline = c("W1", "W2"), shift = static_binary_on, folds = 1)
+tmle2 <- ltmle(tmp, "A", "Y", baseline = c("W1", "W2"), folds = 1)
 
 # tests
 test_that("point treatment fidelity", {
   expect_equal(truth, tmle$estimate@x, tolerance = 0.01)
   expect_equal(truth, sdr$estimate@x, tolerance = 0.01)
+  expect_equal(truth, as.vector(tmle2$estimates$`1`@x), tolerance = 0.01)
 })

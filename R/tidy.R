@@ -44,7 +44,7 @@ tidy.lmtp_survival <- function(x, ...) {
 #'
 #' @export
 tidy.lmtp_ltmle <- function(x, ...) {
-  out <- do.call("rbind", lapply(x$estimates, tidy))
+  out <- do.call("rbind", lapply(x$estimates, ife::tidy))
   out$level <- names(x$estimates)
   out[, c(ncol(out), 1:ncol(out) - 1)]
 }

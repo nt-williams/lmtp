@@ -82,8 +82,10 @@ estimate_propensity_score <- function(task, fold, learners_trt, learners_cens, c
     # Loop over K-1 treatment levels as binomial models
     for (l in 2:number_levels) {
       this_level <- colnames(ohe)[l]
+      train_ohe <- train
+      train_ohe[[this_treatment]] <- ohe[, l]
       fit <- run_ensemble(
-        collapse::ftransform(train, this_treatment = ohe[, l])[i, c(vars, this_treatment)],
+        train_ohe[i, c(vars, this_treatment)],
         this_treatment,
         learners_trt, "binomial", idvar, control$.learners_trt_folds
       )
