@@ -129,9 +129,11 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
       }
     )
 
-    for (time in seq_len(task$time_horizon)) {
-      cobalt_weights[(task$natural[[current_trt(task$vars$A, time)]] == level), time] <- 
-        riesz_components[(task$natural[[current_trt(task$vars$A, time)]] == level), time]
+    cum_riesz <- compute_weights(riesz_components, 1, task$time_horizon)
+    for (time in seq_len(length(task$vars$A))) {
+      observed <- !is.na(task$natural[[current_trt(task$vars$A, time)]])
+      on_level <- observed & (task$natural[[current_trt(task$vars$A, time)]] == level)
+      cobalt_weights[on_level, time] <- cum_riesz[on_level, time]
     }
 
     estimates[[as.character(level)]] <- cf_tmle(
@@ -139,13 +141,25 @@ ltmle <- function(data, trt, outcome, baseline = NULL, time_vary = NULL,
     )
   }
 
-  # TODO: Going to have bugs with point-treatment survival
-  balance <- lapply(seq_len(task$time_horizon), function(time) {
-    cobalt::bal.tab(data[, task$vars$history("A", time), drop = FALSE], 
-                    treat = data[[current_trt(task$vars$A, time)]], 
-                    weights = cobalt_weights[, time], 
+  trt_balance <- lapply(seq_len(length(task$vars$A)), function(time) {
+    observed <- !is.na(data[[current_trt(task$vars$A, time)]])
+    cobalt::bal.tab(data[observed, task$vars$history("A", time), drop = FALSE],
+                    treat = data[[current_trt(task$vars$A, time)]][observed],
+                    weights = cobalt_weights[observed, time],
                     un = TRUE)$Balance
   })
 
-  theta_ltmle(task, estimates, propensity_score, levels, balance)
+  cens_balance <- if (!is.null(task$vars$C)) {
+    lapply(seq_len(task$time_horizon), function(time) {
+      at_risk <- task$observed(task$natural, time - 1)
+      cobalt::bal.tab(data[at_risk, task$vars$history("A", time), drop = FALSE],
+                      treat = task$natural[[task$vars$C[time]]][at_risk],
+                      weights = propensity_score$prob_observed[at_risk, time],
+                      un = TRUE)$Balance
+    })
+  } else {
+    NULL
+  }
+
+  theta_ltmle(task, estimates, propensity_score, levels, trt_balance, cens_balance)
 }

@@ -23,7 +23,7 @@ theta_lmtp <- function(task, estimates, density_ratios, shift, is_sdr) {
   out
 }
 
-theta_ltmle <- function(task, estimates, propensity_scores, levels, balance) {
+theta_ltmle <- function(task, estimates, propensity_scores, levels, trt_balance, cens_balance) {
   theta <- sapply(estimates, function(x) fmean(x$predictions[, 1], w = task$weights))
 
   # Rescale estimates
@@ -42,7 +42,10 @@ theta_ltmle <- function(task, estimates, propensity_scores, levels, balance) {
     outcome_reg = lapply(estimates, function(x) task$rescale(x$predictions)),
     propensity_scores = propensity_scores$propensity_score,
     prob_observed = propensity_scores$prob_observed,
-    balance = setNames(balance, paste0("time ", seq_len(task$time_horizon))),
+    balance = list(
+      treatment = setNames(trt_balance, paste0("time ", seq_len(length(task$vars$A)))),
+      censoring = if (!is.null(cens_balance)) setNames(cens_balance, paste0("time ", seq_len(task$time_horizon))) else NULL
+    ),
     fits_outcome = lapply(estimates, function(x) x$learner_outcome_summary),
     fits_treatment = propensity_scores$learner_treatment_summary,
     fits_censoring = propensity_scores$learner_cens_summary,
