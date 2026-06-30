@@ -55,9 +55,29 @@
 #' @param folds \[\code{integer(1)}\]\cr
 #'  The number of folds to be used for cross-fitting.
 #' @param weights \[\code{numeric(nrow(data))}\]\cr
-#'  An optional vector containing sampling weights.
+#'  An optional vector containing known survey sampling weights.
 #' @param control \[\code{list()}\]\cr
 #'  Output of \code{lmtp_control()}.
+#' 
+#' @details
+#' ## Should \code{mtp = TRUE}?
+#' A modified treatment policy (MTP) is an intervention that depends
+#' on the natural value of the exposure (the value that the treatment would have taken under no intervention).
+#' This differs from other causal effects,
+#' such as the average treatment effect (ATE), where an exposure would be increased (or decreased) deterministically.
+#' \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
+#' by some amount, use \code{mtp = TRUE}}.
+#' 
+#' ## Clustering
+#' If cluster level identifiers are provided by the \code{id} argument, the returned parameter estimate is a 
+#' an "individual-level" estimand and the corresponding TMLE is the so-called hierarchical TMLE. For more information on 
+#' how variance is estimated and interepreting the individidual-level estimand see DOI: 10.1002/sim.9813. 
+#' 
+#' ## Survival outcomes and competing risks
+#' For survival outcomes, the returned estimate may be interepreted as the cumulative incidence of the event 
+#' under the intervention. In the presence of competing risks, cumulative incidence effects
+#' can be interpreted as the total effect of treatment operating through pathways that include the competing events.
+#' For more information on this interpretation see DOI: 10.1002/sim.8471.
 #'
 #' @return A list of class \code{lmtp_survival} containing \code{lmtp} objects for each time point.
 #'

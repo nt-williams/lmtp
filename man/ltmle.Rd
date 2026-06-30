@@ -88,7 +88,7 @@ of the censoring mechanism. Default is \code{"SL.glm"}.
 The number of folds to be used for cross-fitting.}
 
 \item{weights}{[\code{numeric(nrow(data))}]\cr
-An optional vector containing sampling weights.}
+An optional vector containing known survey sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}

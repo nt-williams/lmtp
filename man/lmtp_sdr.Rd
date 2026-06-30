@@ -101,7 +101,7 @@ of the outcome regression. Default is \code{"SL.glm"}.
 The number of folds to be used for cross-fitting.}
 
 \item{weights}{[\code{numeric(nrow(data))}]\cr
-An optional vector containing sampling weights.}
+An optional vector containing known survey sampling weights.}
 
 \item{control}{[\code{list()}]\cr
 Output of \code{lmtp_control()}.}
@@ -143,6 +143,14 @@ If cluster level identifiers are provided by the \code{id} argument, the returne
 an "individual-level" estimand and the corresponding estimator is the SDR version of the
 so-called hierarchical TMLE. For more information on how variance is estimated and interepreting the
 individidual-level estimand see DOI: 10.1002/sim.9813.
+}
+
+\subsection{Survival outcomes and competing risks}{
+
+For survival outcomes, the returned estimate may be interepreted as the cumulative incidence of the event
+under the intervention. In the presence of competing risks, cumulative incidence effects
+can be interpreted as the total effect of treatment operating through pathways that include the competing events.
+For more information on this interpretation see DOI: 10.1002/sim.8471.
 }
 }
 \examples{
