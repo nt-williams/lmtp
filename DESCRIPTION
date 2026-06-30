@@ -47,7 +47,7 @@ Imports:
     checkmate (>= 2.1.0),
     SuperLearner,
     isotone,
-    ife (>= 0.2.0),
+    ife (>= 0.2.5),
     lifecycle,
     collapse,
     cobalt
