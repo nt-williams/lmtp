@@ -136,6 +136,13 @@ such as the average treatment effect (ATE), where an exposure would be increased
 \bold{If your intervention of interest adds, subtracts, or multiplies the observed treatment values
 by some amount, use \code{mtp = TRUE}}.
 }
+
+\subsection{Clustering}{
+
+If cluster level identifiers are provided by the \code{id} argument, the returned parameter estimate is a
+an "individual-level" estimand and the corresponding TMLE is the so-called hierarchical TMLE. For more information on
+how variance is estimated and interepreting the individidual-level estimand see DOI: 10.1002/sim.9813.
+}
 }
 \examples{
 \donttest{
