@@ -21,7 +21,7 @@ LmtpTask <- R6::R6Class(
     initialize = function(data, shifted, A, Y, L, W, C, D, k,
                           id, outcome_type, bounds, folds, weights) {
       # Identify the time horizon
-      self$time_horizon <- private$time_horizon_is(Y, A)
+      self$time_horizon <- private$time_horizon_is(Y, A, C)
       self$n <- nrow(data)
 
       # Create Vars object
@@ -144,8 +144,11 @@ LmtpTask <- R6::R6Class(
       ref_levels
     },
 
-    time_horizon_is = function(Y, A) {
+    time_horizon_is = function(Y, A, C) {
       if (!(length(Y) > 1)) {
+        if (length(C) > length(A)) {
+          return(length(C))
+        }
         return(length(A))
       }
       length(Y)

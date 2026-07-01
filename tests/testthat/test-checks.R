@@ -63,17 +63,6 @@ test_that("Time_vary is a list", {
   )
 })
 
-test_that("Variable length mismatch", {
-  A <- c("A1")
-  L <- c("L1", "L2")
-  cens <- c("C1", "C2")
-
-  expect_error(
-    sw(lmtp_tmle(sim_cens, A, "Y", time_vary = L, cens = cens)),
-    "Assertion on 'C' failed: Must have length 1, but has length 2."
-  )
-})
-
 test_that("Only 0 and 1 in 'outcome' when binary or survival", {
   A <- c("A1", "A2")
   L <- list(c("L1"), c("L2"))
