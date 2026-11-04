@@ -46,12 +46,44 @@ followed_rule <- function(natural, shifted, A, mtp) {
 
   for (i in seq_along(A)) {
     a <- A[i]
-    followed[, i] <- mapply(function(x, y) isTRUE(all.equal(x, y)),
-                            as.list(natural[, a]),
-                            as.list(shifted[, a]))
+    followed[, i] <- equal_elementwise(natural[[a]], shifted[[a]])
   }
 
-  apply(followed, 1, prod)
+  as.numeric(rowSums(!followed) == 0)
+}
+
+# Vectorised version of
+#   mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y))
+# Comparing one observation at a time with all.equal() makes followed_rule()
+# the bottleneck of the density ratio estimation for large data. For numeric,
+# factor and character vectors this returns the same result as the element-wise
+# all.equal():
+#   numeric:   relative difference <= tolerance (absolute when |x| <= tolerance)
+#   factor:    same class and levels, then same value
+#   character: same value
+#   NA equals NA, and NA never equals a value.
+# Other types fall back to the element-wise all.equal().
+equal_elementwise <- function(x, y, tolerance = sqrt(.Machine$double.eps)) {
+  if (is.numeric(x) && is.numeric(y)) {
+    scale <- ifelse(is.finite(x) & abs(x) > tolerance, abs(x), 1)
+    eq <- (x == y) | (abs(x - y) / scale <= tolerance)
+  } else if (is.factor(x) && is.factor(y)) {
+    if (!identical(class(x), class(y)) || !identical(levels(x), levels(y))) {
+      return(rep(FALSE, length(x)))
+    }
+    eq <- as.character(x) == as.character(y)
+  } else if (is.character(x) && is.character(y)) {
+    eq <- x == y
+  } else {
+    return(mapply(function(x, y) isTRUE(all.equal(x, y)), as.list(x), as.list(y),
+                  USE.NAMES = FALSE))
+  }
+
+  na_x <- is.na(x)
+  na_y <- is.na(y)
+  eq[na_x & na_y] <- TRUE
+  eq[xor(na_x, na_y)] <- FALSE
+  eq
 }
 
 trim <- function(x, trim) {

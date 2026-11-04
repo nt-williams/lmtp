@@ -11,6 +11,7 @@
 ### General
 
 - Removed the `lmtp_control()` option `return_full_fits`. A summary `data.table` is now always returned.
+- The check of whether each observation followed the intervention (used when `mtp = FALSE`) is now vectorised instead of calling `all.equal()` once per observation, which substantially reduces computation time for large data. Results are unchanged.
 
 # lmtp 1.5.4
 
