@@ -18,6 +18,19 @@ run_ensemble <- function(data, y, learners, outcome_type, id, folds) {
     cvControl = cv_control
   )
 
+  # NNLS can assign weight 0 to every learner (e.g. a single, overfitting learner
+  # in a small sample); SuperLearner then predicts 0 for everyone. Fall back to
+  # the discrete Super Learner: the learner with the lowest cross-validated risk.
+  if (all(is.na(fit$coef) | fit$coef == 0)) {
+    best <- which.min(replace(fit$cvRisk, is.na(fit$cvRisk), Inf))
+    cli::cli_warn(
+      "All Super Learner weights were zero; using the learner with the lowest cross-validated risk ({.val {names(fit$coef)[best]}})."
+    )
+    fit$coef[] <- 0
+    fit$coef[best] <- 1
+    fit$SL.predict <- fit$library.predict[, best, drop = FALSE]
+  }
+
   class(fit) <- append("lmtp_ensemble", class(fit))
   fit
 }
