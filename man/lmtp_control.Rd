@@ -7,6 +7,7 @@
 lmtp_control(
   .bound = 1e+05,
   .trim = 0.999,
+  .trim_riesz = 0.975,
   .learners_outcome_folds = 10,
   .learners_trt_folds = 10,
   .return_full_fits = FALSE,
@@ -23,6 +24,12 @@ will be bounded by. The default is 1e-5, bounding predictions by 1e-5 and 0.9999
 Determines the amount the density ratios should be trimmed.
 The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 to the 0.999 percentile. A value of 1 indicates no trimming.}
+
+\item{.trim_riesz}{[\code{numeric(1)}]\cr
+Determines the amount the Riesz representers of the delayed intervention
+estimators (\code{htlmtp_tmle()} and \code{htlmtp_sdr()}) should be trimmed.
+The default is 0.975, trimming representers greater than the 0.975 percentile
+of the non-zero representers to that percentile. A value of 1 indicates no trimming.}
 
 \item{.learners_outcome_folds}{[\code{integer(1)}]\cr
 The number of cross-validation folds for \code{learners_outcome}.}

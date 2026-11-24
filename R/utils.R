@@ -66,6 +66,19 @@ trim <- function(x, trim) {
   pmin(x, quantile(x, trim, na.rm = TRUE))
 }
 
+# Trim the Riesz representers of the delayed intervention estimators.
+# The representers are structurally zero for the majority of the augmented data
+# (rows where the observed treatment doesn't follow the candidate sequence, or
+# where the observation is censored), so the quantile is computed among the
+# non-zero values only.
+trim_riesz <- function(x, trim) {
+  if (is.null(trim) || trim >= 1) return(x)
+  i <- which(is.finite(x) & x > 0)
+  if (!length(i)) return(x)
+  x[i] <- pmin(x[i], quantile(x[i], trim))
+  x
+}
+
 is.lmtp <- function(x) {
   class(x) == "lmtp"
 }

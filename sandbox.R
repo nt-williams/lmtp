@@ -115,9 +115,6 @@ outcome <- c("y1", "y2", "y3")
 wc <- htlmtp_sdr(data, trt, outcome, baseline,
             cens = cens,
            outcome_type = "survival",
-           learners_outcome = "SL.glm.interaction",
-           learners_trt = "SL.glm",
-           learners_cens = "SL.glm",
            folds = 1,
            control = lmtp_control())
 

@@ -7,6 +7,11 @@
 #'  Determines the amount the density ratios should be trimmed.
 #'  The default is 0.999, trimming the density ratios greater than the 0.999 percentile
 #'  to the 0.999 percentile. A value of 1 indicates no trimming.
+#' @param .trim_riesz \[\code{numeric(1)}\]\cr
+#'  Determines the amount the Riesz representers of the delayed intervention
+#'  estimators (\code{htlmtp_tmle()} and \code{htlmtp_sdr()}) should be trimmed.
+#'  The default is 0.975, trimming representers greater than the 0.975 percentile
+#'  of the non-zero representers to that percentile. A value of 1 indicates no trimming.
 #' @param .learners_outcome_folds \[\code{integer(1)}\]\cr
 #'  The number of cross-validation folds for \code{learners_outcome}.
 #' @param .learners_trt_folds \[\code{integer(1)}\]\cr
@@ -25,6 +30,7 @@
 #' lmtp_control(.trim = 0.975)
 lmtp_control <- function(.bound = 1e5,
                          .trim = 0.999,
+                         .trim_riesz = 0.975,
                          .learners_outcome_folds = 10,
                          .learners_trt_folds = 10,
                          .return_full_fits = FALSE,
@@ -35,12 +41,14 @@ lmtp_control <- function(.bound = 1e5,
   assert_number(.learners_trt_folds, null.ok = TRUE)
   assert_number(.bound)
   assert_number(.trim, upper = 1)
+  assert_number(.trim_riesz, upper = 1)
   assert_logical(.return_full_fits, len = 1)
   assert_logical(.discrete, len = 1)
   assert_logical(.info, len = 1)
 
   list(.bound = .bound,
        .trim = .trim,
+       .trim_riesz = .trim_riesz,
        .learners_outcome_folds = .learners_outcome_folds,
        .learners_trt_folds = .learners_trt_folds,
        .return_full_fits = .return_full_fits,

@@ -14,6 +14,7 @@ predict_delay_augment <- function(data, object, time, time_horizon,
   }
 
   tmp <- data
+  browser()
   tmp[[treatment]] <- one_time_delay(data, vars)
   # If not the last time point, we replace s_t with a_t
   if (time < time_horizon) {
@@ -89,16 +90,18 @@ subset_augmented.numeric <- function(x, id) {
   x[!collapse::fduplicated(id)]
 }
 
-# I THINK LINE 102 IS INCORRECT. NEEDS TO COMPARE TO A_time
-# TODO: Need to figure out how to incorporate the censoring indicators
 delay_riesz_rep <- function(data, treatments, cens, propensity_scores, prob_observed,
-                            this_treatment, this_censoring, this_time, time_horizon) {
+                            this_treatment, this_censoring, this_time, time_horizon,
+                            trim = 0.975) {
   i <- seq_len(dim(propensity_scores)[1])
 
-  # Create indicators (D in paper)
-  ind <- rep(TRUE, nrow(data))
+  # Create indicators (D in paper): D_{t,k} = prod_{u=this_time..time_horizon} 1{A_u = d_u}.
+  # The window starts at time 1 so first-initiation is detected across the full expand.grid
+  # support, and so length(sequence) == the absolute timepoint, letting one_time_delay handle
+  # the last-timepoint boundary itself.
+  ind <- rep(1, nrow(data))
   for (time in this_time:time_horizon) {
-    ind <- ind * one_time_delay(data, seqvars(this_time:time)) == data[[treatments[time]]]
+    ind <- ind * (one_time_delay(data, seqvars(seq_len(time))) == data[[treatments[time]]])
   }
 
   po <- prob_observed[cbind(i, seq_len(nrow(data)))[, 1], ]
@@ -116,13 +119,14 @@ delay_riesz_rep <- function(data, treatments, cens, propensity_scores, prob_obse
     density_ratios <- density_ratios * (prob_trt_shifted / prob_trt_natural)
   }
 
-  ind %*0% density_ratios * ipcw
+  trim_riesz(ind %*0% density_ratios * ipcw, trim)
 }
 
 delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
                                      propensity_scores, prob_observed,
                                      trtvars, cens, this_treatment, this_censoring,
-                                     time, time_horizon, outcomevar, aug_key) {
+                                     time, time_horizon, outcomevar, aug_key,
+                                     trim = 0.975) {
   idvar <- c("..i..row_number", "..i..lmtp_id")
 
   # Pre-compute the subset indices once (used for all k)
@@ -134,7 +138,7 @@ delay_sdr_transformation <- function(data, pred_shifted, pred_natural,
 
   for (k in time:time_horizon) {
     riesz <- delay_riesz_rep(data, trtvars, cens, propensity_scores, prob_observed,
-                             this_treatment, this_censoring, time, k)
+                             this_treatment, this_censoring, time, k, trim)
     # Compute residual, take product with Riesz representers, then subset
     resid <- pred_shifted[[k + 1]] - pred_natural[[k]]
     pseudo <- pseudo + subset_augmented(riesz %*0% resid, subset_keys)

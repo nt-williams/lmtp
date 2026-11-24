@@ -24,7 +24,8 @@ cf_propensity_score <- function(task, learners_trt, learners_cens, control, prog
     learner_cens_summary = rbind_depth(ans, "learner_cens_summary")
   )
 
-  # TODO: trimming
+  # # TODO: trimming
+  # browser()
   # ans$propensity_score <- trim(ans$propensity_score, control$.trim)
   ans
 }

@@ -141,7 +141,7 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, prob_observed, lea
         train_aug, pred_train_shifted, pred_train_natural,
         propensity_scores$train, prob_observed$train, A, C,
         this_A, this_C,
-        time, time_horizon, Y, aug_key
+        time, time_horizon, Y, aug_key, control$.trim_riesz
       )
 
       train_aug[[Y]] <- pred_train_shifted[[time]]
@@ -152,7 +152,8 @@ estimate_sdr_delay <- function(task, fold, propensity_scores, prob_observed, lea
     # Construct the EIF
     eif <- update_htlmtp_eif(
       eif, valid_aug, A, C, Y, id, pred_valid_natural,
-      propensity_scores$valid, prob_observed$valid, this_A, this_C, time
+      propensity_scores$valid, prob_observed$valid, this_A, this_C, time,
+      control$.trim_riesz
     )
 
     progress_bar()
