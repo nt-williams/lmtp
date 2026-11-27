@@ -70,3 +70,18 @@ test_that("pulls proper variables for a given time", {
   expect_equal(foo$time(1), c("W", "L_1_1", "L_1_2", "A_1", "y"))
   expect_equal(foo$time(2), c("W", "L_2_1", "L_2_2", "A_2", "y"))
 })
+
+test_that("point treatment with time-varying covariates keeps L in history('A', t)", {
+  nodes <- list(NULL, "L_2", "L_3", "L_4")
+  foo <- LmtpVars$new("W", nodes, "A_1", paste0("C_", 1:4), NULL, "Y", "binomial", 4)
+
+  expect_equal(foo$history("A", 1), "W")
+  expect_equal(foo$history("A", 2), c("W", "L_2"))
+  expect_equal(foo$history("A", 3), c("W", "L_2", "L_3"))
+  expect_equal(foo$history("A", 4), c("W", "L_2", "L_3", "L_4"))
+
+  foo_k0 <- LmtpVars$new("W", list("L_1", "L_2", "L_3"), "A_1", paste0("C_", 1:3), NULL, "Y", "binomial", 3, k = 0)
+  expect_equal(foo_k0$history("A", 1), c("W", "L_1"))
+  expect_equal(foo_k0$history("A", 2), c("W", "L_2"))
+  expect_equal(foo_k0$history("A", 3), c("W", "L_3"))
+})
