@@ -38,16 +38,18 @@ LmtpVars <- R6Class("LmtpVars",
     history = function(var = c("L", "A"), t) {
       private$l <- t - self$k - 1
       private$.var <- match.arg(var)
-      if (private$.var == "A" && self$tau > 1 && length(self$A) == 1) {
-        return(as.vector(na.omit(self$W)))
-      }
       ans <- switch(private$.var,
         L = private$parents_L(t),
         A = private$parents_A(t)
       )
+      is_a <- private$.var == "A"
       private$.var <- NULL
       private$l <- NULL
-      as.vector(na.omit(c(self$W, ans)))
+      out <- as.vector(na.omit(c(self$W, ans)))
+      if (is_a && self$tau > 1 && length(self$A) == 1) {
+        out <- setdiff(out, unlist(self$A))
+      }
+      out
     },
 
     all = function() {

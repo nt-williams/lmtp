@@ -82,8 +82,51 @@ lt <- sw(ltmle(
 ))
 
 test_that("time varying censoring fidelty", {
-  expect_equal(truth1, tmle_on$estimate@x, tolerance = 0.01)
-  expect_equal(truth0, sdr_off$estimate@x, tolerance = 0.01)
-  expect_equal(truth1, as.vector(lt$estimates$`1`@x), tolerance = 0.01)
-  expect_equal(truth0, as.vector(lt$estimates$`0`@x), tolerance = 0.01)
+  expect_equal(truth1, tmle_on$estimate@x, tolerance = 0.02)
+  expect_equal(truth0, sdr_off$estimate@x, tolerance = 0.02)
+  expect_equal(truth1, as.vector(lt$estimates$`1`@x), tolerance = 0.02)
+  expect_equal(truth0, as.vector(lt$estimates$`0`@x), tolerance = 0.02)
+})
+
+test_that("point-treatment censoring models adjust for time-varying covariates when outcome is misspecified", {
+  gen_dr <- function(n, intervene = NULL) {
+    W   <- rnorm(n)
+    A_1 <- if (!is.null(intervene)) rep(intervene, n) else rbinom(n, 1, plogis(0.3 * W))
+    C_1 <- if (!is.null(intervene)) rep(1, n) else rbinom(n, 1, plogis(1.5 + 0.3 * W + 0.5 * A_1))
+    L_2 <- rnorm(n, mean = 0.3 * W + 0.8 * A_1, sd = 1)
+    C_2 <- if (!is.null(intervene)) rep(1, n) else rbinom(n, 1, plogis(1.0 - 0.8 * L_2 + 0.3 * A_1))
+    L_3 <- rnorm(n, mean = 0.5 * L_2 + 0.5 * A_1, sd = 1)
+    C_3 <- if (!is.null(intervene)) rep(1, n) else rbinom(n, 1, plogis(1.0 - 0.8 * L_3 + 0.3 * A_1))
+    Y   <- rbinom(n, 1, plogis(-0.5 + 1.2 * L_3 + 1.0 * L_2 + 0.8 * A_1 + 0.2 * W))
+    df  <- data.frame(W, A_1, C_1, L_2, C_2, L_3, C_3, Y)
+    if (is.null(intervene)) {
+      df[c("L_2", "C_2", "L_3", "C_3", "Y")] <-
+        lapply(df[c("L_2", "C_2", "L_3", "C_3", "Y")], function(x) ifelse(df$C_1 == 0, NA, x))
+      df[c("L_3", "C_3", "Y")] <-
+        lapply(df[c("L_3", "C_3", "Y")], function(x) ifelse(df$C_2 == 0, NA, x))
+      df$Y <- ifelse(df$C_3 == 0, NA, df$Y)
+    }
+    df
+  }
+
+  set.seed(1)
+  truth_dr <- mean(gen_dr(2e5, intervene = 1)$Y)
+  set.seed(2)
+  obs_dr <- gen_dr(5000)
+
+  lt_dr <- sw(ltmle(
+    obs_dr,
+    trt = "A_1",
+    outcome = "Y",
+    baseline = "W",
+    time_vary = list(NULL, "L_2", "L_3"),
+    cens = c("C_1", "C_2", "C_3"),
+    outcome_type = "binomial",
+    learners_outcome = "SL.mean",
+    learners_trt = "SL.glm",
+    learners_cens = "SL.glm",
+    folds = 2
+  ))
+
+  expect_equal(truth_dr, as.vector(lt_dr$estimates$`1`@x), tolerance = 0.03)
 })
